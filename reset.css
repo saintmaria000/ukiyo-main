@@ -1,0 +1,65 @@
+/* -----------------------------
+   Modern Reset CSS
+   Author: arisa-style minimal base
+------------------------------ */
+
+/* 余白とパディングの初期化 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* HTMLのデフォルト設定をリセット */
+html, body {
+  height: 100%;
+  font-family: sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  color-scheme: light dark;
+}
+
+/* リストやリンクなどの装飾を消す */
+ul, ol {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 画像・動画をブロック扱いにしてサイズを自動調整 */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* フォーム関連 */
+input, button, textarea, select {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* テーブルの初期化 */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* デフォルトのscroll挙動 */
+html {
+  scroll-behavior: smooth;
+}
