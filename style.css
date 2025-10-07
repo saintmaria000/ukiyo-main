@@ -63,7 +63,7 @@ body {
   flex: 0 0 auto;
   width: 480px;                 /* 画像1の文字塊の幅感 */           
   scroll-snap-align: start;
-  transform: translateY(-20px); /* 視覚的な“左中央”に寄せる微調整 */
+  transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
   padding-left: 210px;
 }
 .name {
@@ -114,7 +114,7 @@ body {
   scroll-snap-align: start;
 }
 .reel video, .reel iframe {
-  width: min(840px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
+  width: min(980px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
   height: auto;
   aspect-ratio: 16/9;      /* 余白のズレ防止 */
   object-fit: cover;
