@@ -47,7 +47,7 @@ body {
 /* ===== Main（横スクロール舞台） ===== */
 .body {
   position: relative;
-  background-color: #dce5e9ff;
+  background-color: #72aec7ff;
   display: flex;
   align-items: center;
   height: 100vh;
