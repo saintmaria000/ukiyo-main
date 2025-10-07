@@ -13,7 +13,7 @@ body {
 }
 
 /* ===== Header ===== */
-.site-header {
+.header {
   position: fixed;
   inset: 0 auto auto 0; /* top:0, left:0 */
   height: 80px;
@@ -45,7 +45,7 @@ body {
 }
 
 /* ===== Main（横スクロール舞台） ===== */
-.stage {
+.body {
   position: relative;
   display: flex;
   align-items: center;
@@ -58,7 +58,7 @@ body {
 }
 
 /* 左余白50px ＋ 名刺ブロック */
-.card {
+.about {
   flex: 0 0 auto;
   width: 480px;                 /* 画像1の文字塊の幅感 */
   margin-left: 50px;            /* 指定どおり左余白 */
