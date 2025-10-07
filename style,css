@@ -20,7 +20,7 @@ body {
   width: 100%;
   background: #fff;
   z-index: 20;
-  border-bottom: 1px solid #ededed;
+  border-bottom: 1px solid #dce5e9ff;
   display: flex;
   align-items: center;
   padding-left: 30px;
@@ -47,6 +47,7 @@ body {
 /* ===== Main（横スクロール舞台） ===== */
 .body {
   position: relative;
+  background-color: #dce5e9ff;
   display: flex;
   align-items: center;
   height: 100vh;
