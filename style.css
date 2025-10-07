@@ -64,7 +64,7 @@ body {
   width: 480px;                 /* 画像1の文字塊の幅感 */           
   scroll-snap-align: start;
   transform: translateY(-20px); /* 視覚的な“左中央”に寄せる微調整 */
-  padding-left: 30px;
+  padding-left: 210px;
 }
 .name {
   font-size: 28px;
@@ -107,6 +107,7 @@ body {
   align-items: center;
   gap: 8vw;           /* 画像2の左右の余白イメージ */
   padding-right: 12vw;/* 最後の要素右にも空き */
+  padding-left: 1000px;
 }
 .reel {
   flex: 0 0 auto;
