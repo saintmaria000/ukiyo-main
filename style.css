@@ -68,19 +68,19 @@ body {
   padding-left: 210px;
 }
 .name {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 600;
   letter-spacing: 0.04em;
   margin: 24px 0 6px;
 }
 .role {
-  font-size: 14px;
+  font-size: 24px;
   color: #666;
   letter-spacing: 0.24em; /* D i r e c t e r の字間再現 */
   margin-bottom: 28px;
 }
 .contact {
-  font-size: 13px;
+  font-size: 16px;
   color: #333;
   margin: 18px 0;
 }
