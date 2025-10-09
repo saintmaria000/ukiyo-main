@@ -68,9 +68,9 @@ body {
   padding-left: 210px;
 }
 .name {
-  font-size: 27px;
+  font-size: 30px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.54em;
   margin: 24px 0 6px;
 }
 .role {
