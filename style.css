@@ -50,7 +50,6 @@ body {
   background-color: #72aec7ff;
   display: flex;
   align-items: center;
-  width: 100vh;
   height: 100vh;
   padding-top: 80px; /* = header */
   scroll-snap-type: x mandatory;
