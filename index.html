@@ -45,9 +45,15 @@
     <section class="reels">
       <!-- プレビューは <video> を推奨。YouTube/Vimeo 埋め込みでもOK -->
       <article class="reel">
-        <video muted loop playsinline preload="metadata" poster="assets/thumb1.jpg">
+        <!-- <video muted loop playsinline preload="metadata" poster="assets/thumb1.jpg">
           <source src="videos/sample1.mp4" type="video/mp4" />
-        </video>
+        </video> -->
+        <iframe width="560" height="315" 
+        src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
+          title="YouTube video player"
+          frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+        </iframe>
       </article>
 
       <article class="reel">
@@ -69,8 +75,6 @@
       </article>
     </section>
 
-    <!-- main 下辺の黒ライン（横スクロールに追従） -->
-    <div class="baseline" aria-hidden="true"></div>
   </main>
 
   <!-- ================= Footer ================= -->
