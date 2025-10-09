@@ -42,7 +42,9 @@ body {
 }
 
 /* ===== Main（横スクロール舞台） ===== */
-
+.main{
+  height: 100%;
+}
 .main-body {
   position: relative;
   display: flex;
@@ -102,7 +104,6 @@ body {
 .reels {
   display: flex;
   align-items: center;
-  gap: 30vw;           /* 画像2の左右の余白イメージ */
   padding-right: 12vw;/* 最後の要素右にも空き */
 }
 .reel {
@@ -120,10 +121,6 @@ body {
   transition: transform .25s ease, box-shadow .25s ease;
   cursor: pointer;
 }
-.reel video:hover, .reel iframe:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 24px rgba(0,0,0,.08);
-}
 /* プレビュー画像 */
 .preview {
   width: min(1100px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
@@ -131,11 +128,10 @@ body {
   aspect-ratio: 16/9;      /* 余白のズレ防止 */
   object-fit: cover;
   display: block;
+  border: 1px solid #ddd;
   box-shadow: 0 0 0 0 rgba(0,0,0,0);
   transition: transform .25s ease, box-shadow .25s ease;
   cursor: pointer;
-  border: 1px solid #ccc;
-
 }
 .preview:hover {
   transform: scale(1.02);
@@ -233,7 +229,7 @@ body {
 }
 
 /* ===== Footer（高さは見た目合わせ用） ===== */
-footer {
+.site-footer {
   height: 10px; /* 今回は使わない（1画面構成） */
 }
 
