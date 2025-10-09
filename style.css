@@ -10,7 +10,7 @@ body {
                Meiryo, sans-serif;
   line-height: 1.4;
   overflow-x: auto;
-  /* overflow-y: hidden; 画面は常に1面。横スクロールはmainだけに限定 */
+  overflow-y: hidden; /* 画面は常に1面。横スクロールはmainだけに限定 */
 }
 
 /* ===== Header ===== */
