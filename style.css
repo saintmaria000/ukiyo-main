@@ -52,7 +52,7 @@ body {
   height: 100vh;
   padding-top: 80px; /* = header */
   scroll-snap-type: x mandatory;
-  gap: 40vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
+  gap: 30vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
   border-bottom: 1px solid rgb(0, 0, 0);
   overflow-x: scroll;
   overflow-y: hidden;
@@ -63,7 +63,7 @@ body {
 /* 左余白50px ＋ 名刺ブロック */
 .about {
   flex: 0 0 auto;       
-  /* scroll-snap-align: start; */
+  scroll-snap-align: start;
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
   padding-left: 300px;
   
