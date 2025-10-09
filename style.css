@@ -115,7 +115,7 @@ body {
   scroll-snap-align: start;
 }
 .reel video, .reel iframe {
-  width: min(980px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
+  width: min(1000px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
   height: auto;
   aspect-ratio: 16/9;      /* 余白のズレ防止 */
   object-fit: cover;
