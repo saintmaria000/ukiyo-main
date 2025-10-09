@@ -57,9 +57,6 @@ body {
   border-bottom: 1px solid rgb(0, 0, 0);
   overflow-x: scroll;
 }
-/* .body::-webkit-scrollbar {
-  display: none;
-} */
 
 /* 左余白50px ＋ 名刺ブロック */
 .about {
