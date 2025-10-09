@@ -68,8 +68,7 @@ body {
   width: 100% auto;                 /* 画像1の文字塊の幅感 */           
   scroll-snap-align: start;
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
-  /* padding-left: 210px; */
-  margin-left: 100px;
+  padding-left: 210px;
   
 }
 .name {
