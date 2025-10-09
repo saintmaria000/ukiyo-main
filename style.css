@@ -54,7 +54,6 @@ body {
   height: 100vh;
   padding-top: 80px; /* = header */
   overflow-x: scroll;  /* 横スクロール */
-  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   gap: 8vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
 }
