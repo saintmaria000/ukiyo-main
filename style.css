@@ -62,13 +62,13 @@ body {
 /* 左余白50px ＋ 名刺ブロック */
 .about {
   flex: 0 0 auto;
-  width: 480px;                 /* 画像1の文字塊の幅感 */           
+  width: 100% auto;                 /* 画像1の文字塊の幅感 */           
   scroll-snap-align: start;
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
   padding-left: 210px;
 }
 .name {
-  font-size: 30px;
+  font-size: 27px;
   font-weight: 600;
   letter-spacing: 0.04em;
   margin: 24px 0 6px;
