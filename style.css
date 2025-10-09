@@ -77,12 +77,12 @@ body {
   font-size: 20px;
   color: #666;
   letter-spacing: 0.60em; /* D i r e c t e r の字間再現 */
-  margin-bottom: 80px;
+  margin-bottom: 100px;
 }
 .contact {
   font-size: 16px;
   color: #333;
-  margin: 30px 0;
+  margin: 24px 0;
 }
 .contact a {
   color: inherit;
@@ -92,7 +92,7 @@ body {
 .contact a:hover { border-bottom-color: #111; }
 .sns {
   display: grid;
-  gap: 8px;
+  gap: 5px;
   margin-top: 22px;
 }
 .sns a {
