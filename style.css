@@ -107,7 +107,7 @@ body {
 .reels {
   display: flex;
   align-items: center;
-  gap: 8vw;           /* 画像2の左右の余白イメージ */
+  gap: 20vw;           /* 画像2の左右の余白イメージ */
   padding-right: 12vw;/* 最後の要素右にも空き */
 }
 .reel {
