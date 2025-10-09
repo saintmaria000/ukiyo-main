@@ -1,7 +1,7 @@
 body {
   margin: 0;
   color: #111;
-  background: #fff;
+  background: #f3f6ff;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
                "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN",
                Meiryo, sans-serif;
@@ -15,7 +15,6 @@ body {
   inset: 0 auto auto 0; /* top:0, left:0 ss*/
   height: 80px;
   width: 100%;
-  background: #fff;
   z-index: 20;
   border-bottom: 1px solid rgb(0, 0, 0);
   display: flex;
@@ -62,7 +61,7 @@ body {
 #about {
   flex: 0 0 auto;       
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
-  /* margin-left: 300px; */
+  padding-left: 300px;
   margin-right: 30vw;
   
 }
@@ -72,19 +71,19 @@ body {
   letter-spacing: 0.26em;
   margin: 15px 0 2px;
 }
-.role {
+.job{
   font-size: 20px;
   color: #666;
   letter-spacing: 0.60em; /* D i r e c t e r の字間再現 */
   margin-bottom: 100px;
 }
 .message{
-  font-size: 16px;
+  font-size: 19px;
   color: #333;
   margin: 24px 0;
 }
 .text{
-  font-size: 16px;
+  font-size: 18px;
   color: #333;
   margin: 24px 0;
 }
@@ -218,6 +217,12 @@ body {
   letter-spacing: 0.26em;
   margin: 15px 0 2px;
 }
+.role {
+  font-size: 20px;
+  color: #666;
+  letter-spacing: 0.60em; /* D i r e c t e r の字間再現 */
+  margin-bottom: 100px;
+}
 .adress {
   font-size: 16px;
   color: #333;
@@ -243,6 +248,17 @@ body {
 .sc-bar{
   border: solid 1px rgb(0, 0, 0);
 }
+.jump{
+  display: grid;
+  gap: 2px;
+  margin-top: 40px;
+}
+.jump a {
+  font-size: 17px;
+  color: #333;
+  text-decoration: none;
+}
+.jump a:hover { opacity: .7; }
 
 /* ===== Footer（高さは見た目合わせ用） ===== */
 .footer {

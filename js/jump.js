@@ -1,14 +1,21 @@
-function smoothScrollToX(container, targetX, duration = 1200, easing = "easeOutExpo") {
+// ===========================================
+// 横スクロール用ジャンプスクリプト
+// ===========================================
+
+function smoothScrollToX(container, targetX, duration = 1500, easing = "easeOutExpo") {
   const startX = container.scrollLeft;
   const distance = targetX - startX;
   let startTime = null;
 
   const easingFunctions = {
-    easeOutExpo: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -15 * t)),
+    linear: (t) => t,
     easeInOutCubic: (t) =>
       t < 0.5
         ? 4 * t * t * t
-        : 1 - Math.pow(1 - (t - 0.5) * 2, 4) / 2,
+        : 1 - Math.pow(-2 * t + 2, 3) / 2,
+    easeOutExpo: (t) =>
+      t === 1 ? 1 : 1 - Math.pow(2, -15 * t),
+    easeOutQuad: (t) => t * (2 - t),
   };
 
   function animationStep(currentTime) {
@@ -17,12 +24,18 @@ function smoothScrollToX(container, targetX, duration = 1200, easing = "easeOutE
     const progress = Math.min(timeElapsed / duration, 1);
     const easedProgress = easingFunctions[easing](progress);
     container.scrollLeft = startX + distance * easedProgress;
-    if (timeElapsed < duration) requestAnimationFrame(animationStep);
+
+    if (timeElapsed < duration) {
+      requestAnimationFrame(animationStep);
+    }
   }
 
   requestAnimationFrame(animationStep);
 }
 
+// ===========================================
+// スクロールリンク（#id と .class 両対応）
+// ===========================================
 document.querySelectorAll('a[href^="#"], a[href^="."]').forEach((link) => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
@@ -34,23 +47,22 @@ document.querySelectorAll('a[href^="#"], a[href^="."]').forEach((link) => {
     const target = document.querySelector(href);
     if (!target) return;
 
-    const containerRect = container.getBoundingClientRect();
-    let targetX = target.offsetLeft - (containerRect.left - container.scrollLeft);
+    // ✅ targetのX座標を正確に取得（ズレ補正あり）
+    // paddingやtransformの影響を受けにくい安定版
+    let targetX = container.scrollLeft + (target.getBoundingClientRect().left - container.getBoundingClientRect().left);
 
+    // 範囲外防止
     const minX = 0;
     const maxX = container.scrollWidth - container.clientWidth;
     targetX = Math.min(maxX, Math.max(minX, targetX));
 
+    // 距離とdurationを可変に設定
     const dist = Math.abs(targetX - container.scrollLeft);
     const baseDuration = 1500;
-    const animDuration = Math.min(4000, Math.max(1200, dist * 0.8 + baseDuration));
+    const animDuration = Math.min(4000, Math.max(1000, dist * 0.6 + baseDuration));
 
-    // ✅ 強制的に「少しだけ動かす」ように調整
-    // → 左端 (#about) に戻る時も1px右に動かして発火
-    const adjustedTargetX =
-      dist < 3
-        ? (targetX === 0 ? 1 : targetX - 1)
-        : targetX;
+    // ✅ 左端(#about)に戻る時でも必ず動くよう補正
+    const adjustedTargetX = dist < 3 ? (targetX === 0 ? 1 : targetX - 1) : targetX;
 
     console.log({
       name: href,
@@ -61,6 +73,7 @@ document.querySelectorAll('a[href^="#"], a[href^="."]').forEach((link) => {
       dist,
     });
 
+    // ✅ 実際のスクロール
     smoothScrollToX(container, adjustedTargetX, animDuration, "easeOutExpo");
   });
 });
