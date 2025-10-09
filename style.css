@@ -55,7 +55,8 @@ body {
   padding-top: 80px; /* = header */
   overflow-x: scroll;  /* 横スクロール */
   scroll-snap-type: x mandatory;
-  gap: 8vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
+  gap: 16vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
+  border-bottom: 1px solid rgb(0, 0, 0);
 }
 .body::-webkit-scrollbar {
   display: none;
@@ -67,8 +68,8 @@ body {
   width: 100% auto;                 /* 画像1の文字塊の幅感 */           
   scroll-snap-align: start;
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
-  padding-left: 210px;
-  border-bottom: 1px solid rgb(0, 0, 0);
+  /* padding-left: 210px; */
+  
 }
 .name {
   font-size: 26px;
@@ -111,7 +112,6 @@ body {
   align-items: center;
   gap: 8vw;           /* 画像2の左右の余白イメージ */
   padding-right: 12vw;/* 最後の要素右にも空き */
-  padding-left: 1000px;
 }
 .reel {
   flex: 0 0 auto;
