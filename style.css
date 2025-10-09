@@ -47,6 +47,7 @@ body {
   background-color: #72aec7ff;
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   width: 100vw;
   height: 100vh;
   padding-top: 80px; /* = header */
@@ -54,8 +55,11 @@ body {
   gap: 50vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
   border-bottom: 1px solid rgb(0, 0, 0);
   overflow-x: scroll;
+  overflow-y: hidden;
 }
-
+.main-body > * {
+  flex: 0 0 auto;
+}
 /* 左余白50px ＋ 名刺ブロック */
 .about {
   flex: 0 0 auto;       
