@@ -1,22 +1,24 @@
-// scroll.js
+// scroll.js（統合・最適化版）
 window.addEventListener("DOMContentLoaded", () => {
-  const container = document.querySelector(".body");
-  if (!container) return;
+  const container = document.querySelector(".main-body");
+  if (!container) {
+    console.error("[scroll.js] .body が見つかりません");
+    return;
+  }
 
+  // --- デバッグ情報 ---
+  console.log("[scroll.js] OK?", !!container);
+  console.log(
+    "scrollWidth:", container.scrollWidth,
+    "clientWidth:", container.clientWidth
+  );
+
+  // --- スクロール処理 ---
   window.addEventListener("wheel", (e) => {
-    // 縦スクロール入力（deltaY）を横方向に変換
+    // デバッグ出力（必要なければ削除OK）
+    console.log("wheel event:", e.deltaY);
+
+    // 縦スクロール入力を横スクロールに変換
     container.scrollLeft += e.deltaY;
   });
-});
-
-
-window.addEventListener("DOMContentLoaded", () => {
-  const container = document.querySelector(".body");
-  console.log("scroll.js OK?", !!container);
-
-  window.addEventListener("wheel", (e) => {
-    console.log("wheel event:", e.deltaY);
-  });
-
-  console.log("scrollWidth:", container.scrollWidth, "clientWidth:", container.clientWidth);
 });
