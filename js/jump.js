@@ -1,5 +1,4 @@
-
-function smoothScrollToX(container, targetX, duration = 1000, easing = "easeInOutCubic") {
+function smoothScrollToX(container, targetX, duration = 2800, easing = "easeOutExop") {
   const startX = container.scrollLeft;
   const distance = targetX - startX;
   let startTime = null;
@@ -25,16 +24,18 @@ function smoothScrollToX(container, targetX, duration = 1000, easing = "easeInOu
   requestAnimationFrame(animationStep);
 }
 
-// =======================
-// hrefクリックで発動（端までスクロール版）
-// =======================
-document.querySelectorAll('a[href^="."]').forEach((link) => {
+document.querySelectorAll('a[href^="."], a[href^="#"]').forEach((link) => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
 
-    const targetClass = link.getAttribute("href").replace(".", "");
-    const target = document.querySelector(`.${targetClass}`);
+    const href = link.getAttribute("href");
     const container = document.querySelector(".main-body");
+
+    // hrefが「.」で始まるならクラス、「#」ならID
+    const target =
+      href.startsWith(".")
+        ? document.querySelector(href)
+        : document.querySelector(href.replace("#", "#"));
 
     if (target && container) {
       const containerRect = container.getBoundingClientRect();
