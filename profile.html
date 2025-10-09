@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ukiyo — Portfolio</title>
+  <link rel="stylesheet" href="reset.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ================= Header ================= -->
+  <header class="header">
+    <a class="brand" href="index.html">
+      <span class="logo-main">u k i y o</span>
+      <span class="logo-sub">Film</span>
+    </a>
+  </header>
+
+  <!-- ================= Main ================= -->
+  <main id="main">
+    <div class="main-body">
+      <!-- 名刺（左中央） -->
+      <section class="about">
+        <h1 class="name">Matias maehama</h1>
+        <p class="role">Directer.Producer</p>
+
+        <address class="contact">
+          〒156-0055<br />
+          東京都世田谷区船橋<br />
+          4-3-6-11 205
+        </address>
+
+        <div class="contact">
+          <a href="tel:+818040983423">080-4098-3423</a><br />
+          <a href="mailto:matiasmaehama@ukiyofilm.com">matiasmaehama@ukiyofilm.com</a>
+        </div>
+
+        <nav class="sns">
+          <a href="#" aria-label="Instagram">Instagram</a>
+          <a href="#" aria-label="Vimeo">Vimeo</a>
+          <a href="#" aria-label="YouTube">Youtube</a>
+        </nav>
+      </section>
+
+      <!-- 映像プレビュー（右に等間隔） -->
+      <section class="reels">
+        <!-- プレビューは <video> を推奨。YouTube/Vimeo 埋め込みでもOK -->
+        <article class="reel" data-video="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv">
+          <img class="preview" src="assets/thumb1.jpg" alt="preview" />
+
+          <!-- モーダル（初期は非表示） -->
+          <div class="modal">
+            <div class="modal-content">
+              <iframe width="560" height="315" 
+              src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
+              title="YouTube video player"frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              referrerpolicy="strict-origin-when-cross-origin" 
+              allowfullscreen></iframe>
+
+              <button class="credit-btn">CREDIT</button>
+
+              <div class="credit-overlay">
+                <div class="credit-content">
+                  <p>Directed by Matias Maehama</p>
+                  <p>Produced by Ukiyo Film</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+        
+      </section>
+
+      <section class="reels">
+        <!-- プレビューは <video> を推奨。YouTube/Vimeo 埋め込みでもOK -->
+        <article class="reel"data-video="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv">
+          <img class="preview" src="assets/thumb1.jpg" alt="preview" />
+
+          <!-- モーダル（初期は非表示） -->
+          <div class="modal">
+            <div class="modal-content">
+              <iframe width="560" height="315" 
+              src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
+              title="YouTube video player"frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              referrerpolicy="strict-origin-when-cross-origin" 
+              allowfullscreen></iframe>
+
+              <button class="credit-btn">CREDIT</button>
+
+              <div class="credit-overlay">
+                <div class="credit-content">
+                  <p>Directed by Matias Maehama</p>
+                  <p>Produced by Ukiyo Film</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+        
+      </section>
+
+      <section class="reels">
+        <!-- プレビューは <video> を推奨。YouTube/Vimeo 埋め込みでもOK -->
+        <article class="reel"data-video="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv">
+          <img class="preview" src="assets/thumb1.jpg" alt="preview" />
+
+          <!-- モーダル（初期は非表示） -->
+          <div class="modal">
+            <div class="modal-content">
+              <iframe width="560" height="315" 
+              src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
+              title="YouTube video player"frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              referrerpolicy="strict-origin-when-cross-origin" 
+              allowfullscreen></iframe>
+
+              <button class="credit-btn">CREDIT</button>
+
+              <div class="credit-overlay">
+                <div class="credit-content">
+                  <p>Directed by Matias Maehama</p>
+                  <p>Produced by Ukiyo Film</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+        
+      </section>
+
+    </div>
+    <div class="sc-bar">
+
+    </div>
+  </main>
+  <!-- ================= Footer ================= -->
+  <footer class="footer">
+    <div class="box">
+    </div>
+  </footer>
+  <script src="./js/scroll.js"></script>
+  <script src="./js/modal.js"></script>
+  <script>
+    // ホバー or フォーカス時だけプレビュー再生を強めたい場合は以下を有効化
+    document.querySelectorAll('.reel video').forEach(v => {
+      v.addEventListener('mouseenter', () => v.play().catch(()=>{}));
+      v.addEventListener('mouseleave', () => v.pause());
+      // 初期はサムネが見えるよう、明示的に停止（必要ならコメントアウト）
+      v.pause();
+    });
+  </script>
+</body>
+</html>

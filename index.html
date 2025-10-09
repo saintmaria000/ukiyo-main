@@ -10,7 +10,7 @@
 <body>
   <!-- ================= Header ================= -->
   <header class="header">
-    <a class="brand" href="#">
+    <a class="brand" href="index.html">
       <span class="logo-main">u k i y o</span>
       <span class="logo-sub">Film</span>
     </a>
@@ -20,25 +20,23 @@
   <main id="main">
     <div class="main-body">
       <!-- 名刺（左中央） -->
-      <section class="about">
-        <h1 class="name">Matias maehama</h1>
-        <p class="role">Directer.Producer</p>
+      <section id="about">
+        <h1 class="company-name">u k i y o</h1>
+        <p class="role">Film</p>
 
-        <address class="contact">
-          〒156-0055<br />
-          東京都世田谷区船橋<br />
-          4-3-6-11 205
+        <address class="message">
+          Visual direction & production for a floating world.<br/>
         </address>
 
-        <div class="contact">
-          <a href="tel:+818040983423">080-4098-3423</a><br />
-          <a href="mailto:matiasmaehama@ukiyofilm.com">matiasmaehama@ukiyofilm.com</a>
+        <div class="text">
+          <p>Ukiyo Film is a visual creative studio<br/>
+          specializing in direction, production, and design.<br/>
+          Direction and Produce for Images</p>
         </div>
 
         <nav class="sns">
-          <a href="#" aria-label="Instagram">Instagram</a>
-          <a href="#" aria-label="Vimeo">Vimeo</a>
-          <a href="#" aria-label="YouTube">Youtube</a>
+          <a href="#contact" aria-label="Contact">Contact</a>
+          <a href="#" aria-label="Aout">About</a>
         </nav>
       </section>
 
@@ -130,6 +128,30 @@
         
       </section>
 
+      <section id="contact">
+
+        <h1 class="name">Matias maehama</h1>
+        <p class="role">Directer.Producer</p>
+
+        <address class="adress">
+          〒156-0055<br />
+          東京都世田谷区船橋<br />
+          4-3-6-11 205
+        </address>
+
+        <div class="adress">
+          <a href="tel:+818040983423">080-4098-3423</a><br />
+          <a href="mailto:matiasmaehama@ukiyofilm.com">matiasmaehama@ukiyofilm.com</a>
+        </div>
+
+        <nav class="sns">
+          <a href="#" aria-label="Instagram">Instagram</a>
+          <a href="#" aria-label="Vimeo">Vimeo</a>
+          <a href="#" aria-label="YouTube">Youtube</a>
+        </nav>
+
+      </section>
+
     </div>
     <div class="sc-bar">
 
@@ -142,6 +164,7 @@
   </footer>
   <script src="./js/scroll.js"></script>
   <script src="./js/modal.js"></script>
+  <script src="./js/jump.js"></script>
   <script>
     // ホバー or フォーカス時だけプレビュー再生を強めたい場合は以下を有効化
     document.querySelectorAll('.reel video').forEach(v => {
