@@ -47,18 +47,19 @@ body {
 /* ===== Main（横スクロール舞台） ===== */
 .main-body {
   position: relative;
-  /* background-color: #72aec7ff; */
+  background-color: #72aec7ff;
   display: flex;
   align-items: center;
+  width: 100vh;
   height: 100vh;
   padding-top: 80px; /* = header */
   scroll-snap-type: x mandatory;
   gap: 16vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
   border-bottom: 1px solid rgb(0, 0, 0);
 }
-.body::-webkit-scrollbar {
+/* .body::-webkit-scrollbar {
   display: none;
-}
+} */
 
 /* 左余白50px ＋ 名刺ブロック */
 .about {
