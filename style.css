@@ -63,7 +63,7 @@ body {
   flex: 0 0 auto;       
   scroll-snap-align: start;
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
-  padding-left: 250px;
+  padding-left: 300px;
   
 }
 .name {
