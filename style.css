@@ -104,7 +104,7 @@ body {
 
 /* 映像リスト（右に等間隔） */
 .reels {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8vw;           /* 画像2の左右の余白イメージ */
   padding-right: 12vw;/* 最後の要素右にも空き */
