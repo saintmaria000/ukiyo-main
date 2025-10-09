@@ -52,7 +52,7 @@ body {
   height: 100vh;
   padding-top: 80px; /* = header */
   scroll-snap-type: x mandatory;
-  gap: 50vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
+  gap: 60vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
   border-bottom: 1px solid rgb(0, 0, 0);
   overflow-x: scroll;
   overflow-y: hidden;
@@ -115,7 +115,7 @@ body {
   scroll-snap-align: start;
 }
 .reel video, .reel iframe {
-  width: min(1000px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
+  width: min(1200px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
   height: auto;
   aspect-ratio: 16/9;      /* 余白のズレ防止 */
   object-fit: cover;
