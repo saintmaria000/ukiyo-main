@@ -8,14 +8,12 @@ body {
                "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN",
                Meiryo, sans-serif;
   line-height: 1.4;
-  overflow-x: auto;
-  overflow-y: auto;
 }
 
 /* ===== Header ===== */
 .header {
   position: fixed;
-  inset: 0 auto auto 0; /* top:0, left:0 */
+  inset: 0 auto auto 0; /* top:0, left:0 ss*/
   height: 80px;
   width: 100%;
   background: #fff;
@@ -56,7 +54,7 @@ body {
   scroll-snap-type: x mandatory;
   gap: 16vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
   border-bottom: 1px solid rgb(0, 0, 0);
-  overflow-x: auto;
+  overflow-x: scroll;
 }
 /* .body::-webkit-scrollbar {
   display: none;
