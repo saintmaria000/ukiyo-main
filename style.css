@@ -57,13 +57,12 @@ body {
   overflow-x: scroll;
   overflow-y: hidden;
 }
-.main-body > * {
+/* .main-body > * {
   flex: 0 0 auto;
-}
+} */
 /* 左余白50px ＋ 名刺ブロック */
 .about {
   flex: 0 0 auto;       
-  scroll-snap-align: start;
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
   padding-left: 300px;
   
