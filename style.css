@@ -9,8 +9,6 @@ body {
                "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN",
                Meiryo, sans-serif;
   line-height: 1.4;
-  overflow-x: auto;
-  overflow-y: hidden; /* 画面は常に1面。横スクロールはmainだけに限定 */
 }
 
 /* ===== Header ===== */
@@ -53,8 +51,6 @@ body {
   align-items: center;
   height: 100vh;
   padding-top: 80px; /* = header */
-  overflow-x: scroll;  /* 横スクロール */
-  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   gap: 8vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
 }
