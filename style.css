@@ -68,6 +68,7 @@ body {
   scroll-snap-align: start;
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
   padding-left: 210px;
+  border-bottom: 1px solid rgb(0, 0, 0);
 }
 .name {
   font-size: 26px;
