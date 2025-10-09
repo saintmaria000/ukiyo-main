@@ -21,7 +21,7 @@ body {
   width: 100%;
   background: #fff;
   z-index: 20;
-  border-bottom: 1px solid #dce5e9ff;
+  border-bottom: 1px solid rgb(0, 0, 0);
   display: flex;
   align-items: center;
   padding-left: 30px;
@@ -140,7 +140,7 @@ body {
   bottom: 0;
   width: 100vw;
   height: 2px;
-  background: #111;
+  background: #000000;
   flex: 0 0 auto; /* 横スクロール末尾でも残る */
   margin-right: -100vw; /* ラインが映像列に重ならないよう最後で切る */
   align-self: flex-end;
