@@ -8,6 +8,7 @@ body {
                "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN",
                Meiryo, sans-serif;
   line-height: 1.4;
+  overflow: hidden;
 }
 
 /* ===== Header ===== */
