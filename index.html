@@ -45,43 +45,88 @@
     <section class="reels">
       <!-- プレビューは <video> を推奨。YouTube/Vimeo 埋め込みでもOK -->
       <article class="reel">
-        <!-- <video muted loop playsinline preload="metadata" poster="assets/thumb1.jpg">
-          <source src="videos/sample1.mp4" type="video/mp4" />
-        </video> -->
-        <iframe width="560" height="315" 
-        src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
-          title="YouTube video player"
-          frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-        </iframe>
-      </article>
+        <img class="preview" src="assets/thumb1.jpg" alt="preview" />
 
-      <article class="reel">
-        <iframe width="560" height="315" 
-        src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
-          title="YouTube video player"
-          frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-        </iframe>
-      </article>
+        <!-- モーダル（初期は非表示） -->
+        <div class="modal">
+          <div class="modal-content">
+            <iframe width="560" height="315" 
+            src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
+            title="YouTube video player"frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            referrerpolicy="strict-origin-when-cross-origin" 
+            allowfullscreen></iframe>
 
-      <article class="reel">
-        <iframe width="560" height="315" 
-        src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
-          title="YouTube video player"
-          frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-        </iframe>
-      </article>
+            <button class="credit-btn">CREDIT</button>
 
-      <article class="reel">
-        <iframe width="560" height="315" 
-        src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
-          title="YouTube video player"
-          frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-        </iframe>
+            <div class="credit-overlay">
+              <div class="credit-content">
+                <p>Directed by Matias Maehama</p>
+                <p>Produced by Ukiyo Film</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </article>
+      
+    </section>
+
+    <section class="reels">
+      <!-- プレビューは <video> を推奨。YouTube/Vimeo 埋め込みでもOK -->
+      <article class="reel">
+        <img class="preview" src="assets/thumb1.jpg" alt="preview" />
+
+        <!-- モーダル（初期は非表示） -->
+        <div class="modal">
+          <div class="modal-content">
+            <iframe width="560" height="315" 
+            src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
+            title="YouTube video player"frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            referrerpolicy="strict-origin-when-cross-origin" 
+            allowfullscreen></iframe>
+
+            <button class="credit-btn">CREDIT</button>
+
+            <div class="credit-overlay">
+              <div class="credit-content">
+                <p>Directed by Matias Maehama</p>
+                <p>Produced by Ukiyo Film</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+      
+    </section>
+
+    <section class="reels">
+      <!-- プレビューは <video> を推奨。YouTube/Vimeo 埋め込みでもOK -->
+      <article class="reel">
+        <img class="preview" src="assets/thumb1.jpg" alt="preview" />
+
+        <!-- モーダル（初期は非表示） -->
+        <div class="modal">
+          <div class="modal-content">
+            <iframe width="560" height="315" 
+            src="https://www.youtube-nocookie.com/embed/iLoUU-hTWNg?si=V1mbPB6WiRWVPBBv"
+            title="YouTube video player"frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            referrerpolicy="strict-origin-when-cross-origin" 
+            allowfullscreen></iframe>
+
+            <button class="credit-btn">CREDIT</button>
+
+            <div class="credit-overlay">
+              <div class="credit-content">
+                <p>Directed by Matias Maehama</p>
+                <p>Produced by Ukiyo Film</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+      
     </section>
 
   </main>
@@ -89,6 +134,7 @@
   <!-- ================= Footer ================= -->
   <footer class="site-footer" aria-hidden="true"></footer>
   <script src="./js/scroll.js"></script>
+  <script src="./js/modal.js"></script>
   <script>
     // ホバー or フォーカス時だけプレビュー再生を強めたい場合は以下を有効化
     document.querySelectorAll('.reel video').forEach(v => {
