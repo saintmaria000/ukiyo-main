@@ -53,7 +53,7 @@ body {
   height: 100vh;
   padding-top: 80px; /* = header */
   scroll-snap-type: x mandatory;
-  gap: 80vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
+  gap: 50vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
   border-bottom: 1px solid rgb(0, 0, 0);
   overflow-x: scroll;
 }
