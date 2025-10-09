@@ -7,7 +7,7 @@ window.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("wheel", (e) => {
     // body に overflow-y:hidden があるため、window で拾う
     if (e.deltaY === 0) return; // 縦入力がない場合は無視
-    e.preventDefault();
+    // e.preventDefault();
 
     // 横方向に移動量を加算
     container.scrollLeft += e.deltaY;
