@@ -62,7 +62,7 @@ body {
 #about {
   flex: 0 0 auto;       
   transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
-  margin-left: 300px;
+  /* margin-left: 300px; */
   margin-right: 30vw;
   
 }
