@@ -52,7 +52,7 @@ body {
   height: 100vh;
   padding-top: 80px; /* = header */
   scroll-snap-type: x mandatory;
-  gap: 60vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
+  gap: 40vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
   border-bottom: 1px solid rgb(0, 0, 0);
   overflow-x: scroll;
   overflow-y: hidden;
@@ -109,6 +109,7 @@ body {
   align-items: center;
   gap: 30vw;           /* 画像2の左右の余白イメージ */
   padding-right: 12vw;/* 最後の要素右にも空き */
+  padding-left: 30vw;
 }
 .reel {
   flex: 0 0 auto;
