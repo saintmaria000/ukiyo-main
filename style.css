@@ -1,6 +1,5 @@
 /* ===== Reset (最小限) ===== */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
+
 body {
   margin: 0;
   color: #111;
@@ -9,8 +8,8 @@ body {
                "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN",
                Meiryo, sans-serif;
   line-height: 1.4;
-  /* overflow-x: auto; */
-  /* overflow-y: hidden; 画面は常に1面。横スクロールはmainだけに限定 */
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 /* ===== Header ===== */
@@ -46,14 +45,13 @@ body {
 }
 
 /* ===== Main（横スクロール舞台） ===== */
-.body {
+.main-body {
   position: relative;
   /* background-color: #72aec7ff; */
   display: flex;
   align-items: center;
   height: 100vh;
   padding-top: 80px; /* = header */
-  /* overflow-x: scroll;  横スクロール */
   scroll-snap-type: x mandatory;
   gap: 16vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
   border-bottom: 1px solid rgb(0, 0, 0);
