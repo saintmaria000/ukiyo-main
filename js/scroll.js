@@ -16,9 +16,9 @@ window.addEventListener("DOMContentLoaded", () => {
   // --- スクロール処理 ---
   window.addEventListener("wheel", (e) => {
     // デバッグ出力（必要なければ削除OK）
-    console.log("wheel event:", e.deltaX);
+    console.log("wheel event:", e.deltaY);
 
     // 縦スクロール入力を横スクロールに変換
-    container.scrollLeft += e.deltaX;
+    container.scrollLeft += e.deltaY;
   });
 });
