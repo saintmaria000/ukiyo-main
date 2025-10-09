@@ -2,7 +2,7 @@
 window.addEventListener("DOMContentLoaded", () => {
   const container = document.querySelector(".main-body");
   if (!container) {
-    console.error("[scroll.js] .body が見つかりません");
+    console.error("[scroll.js] .main-body が見つかりません");
     return;
   }
 
