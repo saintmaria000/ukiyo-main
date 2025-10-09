@@ -9,7 +9,7 @@ body {
                Meiryo, sans-serif;
   line-height: 1.4;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 /* ===== Header ===== */
