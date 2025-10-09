@@ -42,6 +42,7 @@ body {
 }
 
 /* ===== Main（横スクロール舞台） ===== */
+
 .main-body {
   position: relative;
   display: flex;
@@ -63,19 +64,19 @@ body {
   
 }
 .name {
-  font-size: 26px;
+  font-size: 25px;
   font-weight: 600;
   letter-spacing: 0.26em;
   margin: 15px 0 2px;
 }
 .role {
-  font-size: 21px;
+  font-size: 20px;
   color: #666;
   letter-spacing: 0.60em; /* D i r e c t e r の字間再現 */
   margin-bottom: 100px;
 }
 .contact {
-  font-size: 17px;
+  font-size: 16px;
   color: #333;
   margin: 24px 0;
 }
@@ -87,7 +88,7 @@ body {
 .contact a:hover { border-bottom-color: #111; }
 .sns {
   display: grid;
-  gap: 5px;
+  gap: 2px;
   margin-top: 22px;
 }
 .sns a {
@@ -120,19 +121,25 @@ body {
   cursor: pointer;
 }
 .reel video:hover, .reel iframe:hover {
-  transform: translateY(-2px);
+  transform: scale(1.02);
   box-shadow: 0 6px 24px rgba(0,0,0,.08);
 }
 /* プレビュー画像 */
 .preview {
-  width: 300px;
+  width: min(1100px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
   height: auto;
+  aspect-ratio: 16/9;      /* 余白のズレ防止 */
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 0 0 0 rgba(0,0,0,0);
+  transition: transform .25s ease, box-shadow .25s ease;
   cursor: pointer;
   border: 1px solid #ccc;
-  transition: transform 0.3s ease;
+
 }
 .preview:hover {
   transform: scale(1.02);
+  box-shadow: 0 6px 24px rgba(0,0,0,.08);
 }
 
 /* モーダル全体 */
@@ -156,8 +163,8 @@ body {
 /* 中央の動画コンテンツ */
 .modal-content {
   position: relative;
-  width: 70vw;
-  max-width: 1000px;
+  width: 90vw;
+  max-width: 1500px;
   aspect-ratio: 16 / 9;
   background: #000;
   display: flex;
@@ -175,15 +182,13 @@ body {
 /* CREDIT ボタン */
 .credit-btn {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
+  bottom: 5px;
   padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.6);
   color: #fff;
-  font-size: 13px;
+  font-size: 15px;
   border: none;
   cursor: pointer;
-  z-index: 10;
+  z-index: 21;
 }
 .credit-btn:hover {
   opacity: 0.8;
@@ -228,7 +233,7 @@ body {
 }
 
 /* ===== Footer（高さは見た目合わせ用） ===== */
-.site-footer {
+footer {
   height: 10px; /* 今回は使わない（1画面構成） */
 }
 

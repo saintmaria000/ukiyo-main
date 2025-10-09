@@ -1,15 +1,15 @@
 // videoModal.js
 document.addEventListener("DOMContentLoaded", () => {
     // === ① YouTube埋め込みURL → プレビュー画像を設定 ===
-    document.querySelectorAll(".reel").forEach((reel) => {
-        const url = reel.dataset.video;
-        const match = url.match(/embed\/([^?]+)/); // YouTube動画IDを抽出
-        if (match) {
-            const id = match[1];
-            const preview = reel.querySelector(".preview");
-            preview.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-         }
-    });
+    // document.querySelectorAll(".reel").forEach((reel) => {
+    //     const url = reel.dataset.video;
+    //     const match = url.match(/embed\/([^?]+)/); // YouTube動画IDを抽出
+    //     if (match) {
+    //         const id = match[1];
+    //         const preview = reel.querySelector(".preview");
+    //         preview.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    //      }
+    // });
     
 
     // 1️⃣ プレビューをクリック → モーダル表示
@@ -38,5 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const modalContent = btn.closest(".modal-content");
         modalContent.classList.toggle("active");
         });
+        
     });
 });
