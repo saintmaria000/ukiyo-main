@@ -68,13 +68,13 @@ body {
   padding-left: 210px;
 }
 .name {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.54em;
   margin: 24px 0 6px;
 }
 .role {
-  font-size: 23px;
+  font-size: 22px;
   color: #666;
   letter-spacing: 0.24em; /* D i r e c t e r の字間再現 */
   margin-bottom: 28px;
