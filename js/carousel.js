@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 円周に配置
     const total = reels.length;
-    const radius = 700; // CSSの transform-origin のZと合わせる
+    const radius = 400; // CSSの transform-origin のZと合わせる
     reels.forEach((reel, i) => {
       const angle = (360 / total) * i;
       reel.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let rotationY = 0;
     let dragging = false;
     let startX = 0;
-    let velocity = 0;           // 慣性用
+    let velocity = 0;   // 慣性用
     let rafId = null;
 
     const start = (x) => {
