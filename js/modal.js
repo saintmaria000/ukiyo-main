@@ -1,111 +1,65 @@
-// modal.js（統合版）
+// videoModal.js（安定版・credit開閉動作修正版）
 document.addEventListener("DOMContentLoaded", () => {
-  // =========================
-  // 0) ユーティリティ
-  // =========================
-  const getYouTubeId = (url) => {
-    if (!url) return null;
-    // /embed/XXXX, ?v=XXXX, youtu.be/XXXX などに対応
-    const m =
-      url.match(/embed\/([^?&#/]+)/) ||
-      url.match(/[?&]v=([^?&#/]+)/) ||
-      url.match(/youtu\.be\/([^?&#/]+)/);
-    return m ? m[1] : null;
-  };
-
-  // =========================
-  // 1) プレビュー画像を高画質で自動設定
-  // =========================
+  // === ① YouTube埋め込みURL → 高画質プレビュー画像を設定 ===
   document.querySelectorAll(".reel").forEach((reel) => {
     const url = reel.dataset.video;
-    const id = getYouTubeId(url);
-    const img = reel.querySelector(".preview");
-    if (!img || !id) return;
+    if (!url) return;
 
-    // まず maxres、ダメなら hq にフォールバック
-    const maxres = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-    const hq = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-
-    img.loading = "lazy";
-    img.decoding = "async";
-    img.src = maxres;
-    img.onerror = () => (img.src = hq);
-  });
-
-  // =========================
-  // 2) モーダル開閉 & 再生/停止
-  // =========================
-  const openModal = (modal) => {
-    if (!modal) return;
-    // 再生（autoplay=1を付与／既にあればそのまま）
-    const iframe = modal.querySelector("iframe");
-    if (iframe) {
-      const src = iframe.getAttribute("src") || "";
-      iframe.dataset.srcOriginal = src; // 退避
-      if (!/[?&]autoplay=1/.test(src)) {
-        const joiner = src.includes("?") ? "&" : "?";
-        iframe.src = src + joiner + "autoplay=1";
+    const match = url.match(/embed\/([^?]+)/);
+    if (match) {
+      const id = match[1];
+      const preview = reel.querySelector(".preview");
+      if (preview) {
+        // 高画質サムネイル（maxresdefault）優先
+        const maxres = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+        const hq = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+        preview.src = maxres;
+        preview.loading = "lazy";
+        preview.decoding = "async";
+        preview.onerror = () => (preview.src = hq);
       }
     }
-    modal.classList.add("active");
-    document.body.style.overflow = "hidden";
-  };
+  });
 
-  const closeModal = (modal) => {
-    if (!modal) return;
-    // 停止（srcを元に戻す→再読み込みを止める）
-    const iframe = modal.querySelector("iframe");
-    if (iframe && iframe.dataset.srcOriginal) {
-      iframe.src = iframe.dataset.srcOriginal;
-    }
-    modal.classList.remove("active");
-    // クレジット開いてたら閉じる
-    const credit = modal.querySelector(".credit-overlay");
-    if (credit) credit.classList.remove("is-open");
-    document.body.style.overflow = "";
-  };
-
-  // プレビュークリック→モーダル表示
+  // === ② プレビュークリック → モーダル表示 ===
   document.querySelectorAll(".preview").forEach((img) => {
     img.addEventListener("click", () => {
-      const modal = img.closest(".reel")?.querySelector(".modal");
-      openModal(modal);
+      const modal = img.closest(".reel").querySelector(".modal");
+      if (!modal) return;
+      modal.classList.add("active");
+      document.body.style.overflow = "hidden"; // 背景スクロール防止
     });
   });
 
-  // モーダルの背景クリック→閉じる（中身クリックは閉じない）
+  // === ③ モーダル背景クリック → 閉じる ===
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
-      if (e.target === modal) closeModal(modal);
+      if (e.target === modal) {
+        modal.classList.remove("active");
+        document.body.style.overflow = ""; // 背景スクロール解除
+      }
     });
   });
 
-  // ESCキーで閉じる
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      document.querySelectorAll(".modal.active").forEach(closeModal);
-    }
-  });
-
-  // =========================
-  // 3) クレジット開閉（同じ場所クリックで閉じる）
-  // =========================
+  // === ④ CREDITボタン → クレジット展開/閉じる ===
   document.querySelectorAll(".credit-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      e.stopPropagation(); // 背景クリック扱いにしない
-      const modal = btn.closest(".modal");
-      const overlay = modal?.querySelector(".credit-overlay");
-      if (!overlay) return;
-      overlay.classList.toggle("is-open");
+      e.stopPropagation(); // 背景クリック扱い防止
+
+      const modalContent = btn.closest(".modal-content");
+      if (!modalContent) return;
+
+      // 🔹 トグル方式（開く／閉じる）
+      modalContent.classList.toggle("active");
     });
   });
 
-  // クレジット領域クリックで閉じる
-  document.querySelectorAll(".credit-overlay").forEach((ov) => {
-    ov.addEventListener("click", (e) => {
-      // コンテンツ領域クリックは閉じない
+  // === ⑤ CREDIT領域クリック → 閉じる ===
+  document.querySelectorAll(".credit-overlay").forEach((overlay) => {
+    overlay.addEventListener("click", (e) => {
       if (e.target.classList.contains("credit-overlay")) {
-        ov.classList.remove("is-open");
+        const modalContent = overlay.closest(".modal-content");
+        modalContent?.classList.remove("active");
       }
     });
   });
