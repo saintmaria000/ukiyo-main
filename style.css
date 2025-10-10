@@ -1,7 +1,12 @@
+/* =========================================================
+   ukiyo — Portfolio 全体スタイル（統合最適化）
+   ========================================================= */
+
+/* ===== 基本設定 ===== */
 body {
   margin: 0;
-  color: #111;
-  background: #f3f6ff;
+  color: #ffffff;
+  background: #000000;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
                "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN",
                Meiryo, sans-serif;
@@ -9,10 +14,12 @@ body {
   overflow: hidden;
 }
 
-/* ===== Header ===== */
+/* =========================================================
+   Header
+   ========================================================= */
 .header {
   position: fixed;
-  inset: 0 auto auto 0; /* top:0, left:0 ss*/
+  inset: 0 auto auto 0; /* top:0, left:0 */
   height: 80px;
   width: 100%;
   z-index: 20;
@@ -21,6 +28,7 @@ body {
   align-items: center;
   padding-left: 50px;
 }
+
 .brand {
   display: inline-flex;
   flex-direction: column;
@@ -30,7 +38,7 @@ body {
 }
 .logo-main {
   font-size: 28px;
-  letter-spacing: 0.28em; /* 画像の“u k i y o”の空きに寄せる */
+  letter-spacing: 0.28em;
   font-weight: 700;
 }
 .logo-sub {
@@ -40,10 +48,13 @@ body {
   margin-top: 4px;
 }
 
-/* ===== Main（横スクロール舞台） ===== */
-.main{
+/* =========================================================
+   Main（横スクロール）
+   ========================================================= */
+.main {
   height: 100%;
 }
+
 .main-body {
   position: relative;
   display: flex;
@@ -52,67 +63,67 @@ body {
   width: 100vw;
   height: 95vh;
   padding-top: 80px; /* = header */
-  gap: 60vw;          /* カードと映像の間隔（画像2に寄せるため広め） */
+  gap: 60vw;
   border-bottom: 1px solid rgb(0, 0, 0);
   overflow-x: scroll;
   overflow-y: hidden;
 }
-/* 左余白50px ＋ 名刺ブロック */
+
+/* =========================================================
+   About Section（左）
+   ========================================================= */
 #about {
-  flex: 0 0 auto;       
-  transform: translateY(-90px); /* 視覚的な“左中央”に寄せる微調整 */
+  flex: 0 0 auto;
+  transform: translateY(-90px);
   padding-left: 300px;
-  
 }
-.company-name{
+.company-name {
   font-size: 30px;
   font-weight: 600;
   letter-spacing: 0.26em;
   margin: 15px 0 2px;
 }
-.job{
+.job {
   font-size: 20px;
   color: #666;
-  letter-spacing: 0.60em; /* D i r e c t e r の字間再現 */
+  letter-spacing: 0.60em;
   margin-bottom: 100px;
 }
-.message{
+.message {
   font-size: 19px;
   color: #333;
   margin: 24px 0;
 }
-.text{
+.text {
   font-size: 18px;
   color: #333;
   margin: 24px 0;
 }
 
-/* 映像リスト（右に等間隔） */
+/* =========================================================
+   Reels（映像プレビューセクション）
+   ========================================================= */
 .reels {
   display: flex;
   align-items: center;
-  padding-right: 30vw;/* 最後の要素右にも空き */
+  padding-right: 30vw;
+  position: relative;
+  perspective: 1200px; /* 3D対応 */
 }
+
+/* ▼ 通常のreelカード設定 */
 .reel {
   flex: 0 0 auto;
   scroll-snap-align: start;
-}
-.reel iframe {
-  width: min(1400px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
-  height: auto;
-  aspect-ratio: 16/9;      /* 余白のズレ防止 */
-  object-fit: cover;
-  display: block;
-  border: 1px solid #ddd;
-  box-shadow: 0 0 0 0 rgba(0,0,0,0);
   transition: transform .25s ease, box-shadow .25s ease;
   cursor: pointer;
 }
-/* プレビュー画像 */
+
+/* ▼ プレビュー画像 */
 .preview {
-  width: min(2300px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
+  width: min(1300px, 60vw);
   height: auto;
-  aspect-ratio: 16/9;      /* 余白のズレ防止 */
+  aspect-ratio: 16/9;
   object-fit: cover;
   display: block;
   border: 1px solid #ddd;
@@ -125,7 +136,18 @@ body {
   box-shadow: 0 6px 24px rgba(0,0,0,.08);
 }
 
-/* モーダル全体 */
+/* ▼ iframe (モーダル内動画) */
+.reel iframe {
+  width: min(1400px, 60vw);
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+  border: 1px solid #ddd;
+}
+
+/* =========================================================
+   Modal（モーダルウィンドウ）
+   ========================================================= */
 .modal {
   position: fixed;
   inset: 0;
@@ -143,7 +165,6 @@ body {
   pointer-events: all;
 }
 
-/* 中央の動画コンテンツ */
 .modal-content {
   position: relative;
   width: 90vw;
@@ -155,7 +176,7 @@ body {
   justify-content: center;
 }
 
-/* iframe（動画） */
+/* 動画本体 */
 .modal-content iframe {
   width: 100%;
   height: 100%;
@@ -197,16 +218,18 @@ body {
   opacity: 1;
   pointer-events: all;
 }
-
 .credit-content {
   text-align: center;
   font-size: 18px;
   line-height: 1.6;
 }
 
-#contact{
-  flex: 0 0 auto;       
-  transform: translateY(-60px); /* 視覚的な“左中央”に寄せる微調整 */
+/* =========================================================
+   Contact Section（右）
+   ========================================================= */
+#contact {
+  flex: 0 0 auto;
+  transform: translateY(-80px);
   margin-left: 300px;
   margin-right: 10vw;
 }
@@ -219,8 +242,8 @@ body {
 .role {
   font-size: 20px;
   color: #666;
-  letter-spacing: 0.60em; /* D i r e c t e r の字間再現 */
-  margin-bottom: 70px;
+  letter-spacing: 0.60em;
+  margin-bottom: 100px;
 }
 .adress {
   font-size: 16px;
@@ -232,7 +255,9 @@ body {
   text-decoration: none;
   border-bottom: 1px solid transparent;
 }
-.adress a:hover { border-bottom-color: #111; }
+.adress a:hover {
+  border-bottom-color: #111;
+}
 .sns {
   display: grid;
   gap: 2px;
@@ -244,13 +269,11 @@ body {
   text-decoration: none;
 }
 .sns a:hover { opacity: .7; }
-.sc-bar{
-  border: solid 1px rgb(0, 0, 0);
-}
-.jump{
+
+.jump {
   display: grid;
   gap: 2px;
-  margin-top: 60px;
+  margin-top: 50px;
 }
 .jump a {
   font-size: 17px;
@@ -259,40 +282,66 @@ body {
 }
 .jump a:hover { opacity: .7; }
 
-/* ===== Footer（高さは見た目合わせ用） ===== */
+/* =========================================================
+   Footer
+   ========================================================= */
 .footer {
   height: 50px;
-  width: 100px;
+  width: 100%;
 }
-.box{
+.box {
   height: 100px;
 }
-/* スクロールバー全体（横スクロールなので高さで調整） */
+
+/* =========================================================
+   Scrollbar Styling（WebKit用）
+   ========================================================= */
 .main-body::-webkit-scrollbar {
   height: 2px;
 }
-
-/* スクロールバーの背景レーン（トラック） */
 .main-body::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0); /* ← バーの後ろにある溝の部分 */
+  background: rgba(255, 255, 255, 0);
 }
-
-/* スクロールバーのつまみ（ドラッグする部分） */
 .main-body::-webkit-scrollbar-thumb {
-  background: rgb(0, 0, 0); /* ← 実際に動くバー本体 */
-  border-radius: 4px;                 /* ← 丸みをつけて柔らかい印象に */
+  background: rgb(255, 255, 255);
+  border-radius: 4px;
 }
 
+/* =========================================================
+   Carousel（3Dメリーゴーランド対応・追記）
+   ========================================================= */
+.reel-group {
+  position: relative;
+  width: min(80vw, 960px);
+  height: calc(min(80vw, 960px) * 9 / 16);
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 1.0s cubic-bezier(.25,.1,.25,1);
+}
 
-/* Firefox用（WebKit以外のブラウザ） */
-/* ===== Responsive ===== */
+/* .reel の3D回転スタイル（JSで上書きする） */
+.reel {
+  /* transform-origin はJSで設定 */
+  /* transform-origin: 50% 50% 700px; */
+  will-change: transform;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
 @media (max-width: 980px) {
   .name { font-size: 24px; }
-  .card { width: 360px; }
-  .reel video, .reel iframe { width: 80vw; }
+  .reel iframe, .reel video, .preview { width: 80vw; }
 }
 @media (max-width: 640px) {
-  .stage { gap: 6vw; }
-  .card { width: 78vw; margin-left: 24px; }
   .logo-main { font-size: 22px; letter-spacing: .22em; }
+  .preview { width: 90vw; }
 }
+
+/* =========================================================
+   コメントアウトされた未使用または旧要素
+   ========================================================= */
+
+/* .stage { gap: 6vw; }   ← 使用なし */
+/* .card { width: 360px; } ← 使用なし */
+/* scroll-snap-type: x mandatory; ← Snap動作は削除中 */
