@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ukiyo Film</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body, html {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
+  }
+
+  /* Canvasは背景として固定 */
+  #particle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  /* ロゴ（最前面） */
+  .logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    letter-spacing: 0.25em;
+    color: #fff;
+    z-index: 10;
+  }
+
+  .logo-main {
+    font-size: 2.4rem;
+    font-weight: 400;
+  }
+
+  .logo-sub {
+    font-size: 0.9rem;
+    margin-top: 0.4rem;
+  }
+
+  /* 言語選択 */
+  .lang-select {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    z-index: 10;
+    letter-spacing: 0.3em;
+    font-size: 0.8rem;
+    opacity: 0.85;
+  }
+
+  .lang-select a {
+    text-decoration: none;
+    color: #fff;
+    margin: 0 6px;
+  }
+
+  .lang-select a:hover {
+    opacity: 1;
+  }
+</style>
+
+</head>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+
+<!-- ロゴ -->
+<div class="logo">
+  <div class="logo-main">ukiyo</div>
+  <div class="logo-sub">Film</div>
+</div>
+
+<!-- 言語選択 -->
+<div class="lang-select">
+  <a href="ja/index.html">JA</a> / <a href="en/index.html">EN</a>
+</div>
+
+<script>
+/* 粒子パラメータ */
+const canvas = document.getElementById("particle-canvas");
+const ctx = canvas.getContext("2d");
+
+let particles = [];
+const NUM = 80;                // 粒子数（重くしたくないので少なめ）
+const SPEED = 0.3;             // 移動速度（遅いほど“宇宙感”）
+const MAX_SIZE = 2;            // 粒子サイズ
+const COLOR = "rgba(255,255,255,0.6)";  // 白に近い光
+
+/* Canvasリサイズ */
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+/* 粒子生成 */
+function initParticles() {
+  particles = [];
+  for (let i = 0; i < NUM; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * MAX_SIZE + 0.2,
+      vx: (Math.random() - 0.5) * SPEED,
+      vy: (Math.random() - 0.5) * SPEED
+    });
+  }
+}
+initParticles();
+
+/* 描画ループ */
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // 端で反転
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+    ctx.beginPath();
+    ctx.fillStyle = COLOR;
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+</script>
+
+</body>
+</html>

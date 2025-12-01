@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ukiyo Film - Main</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/main.css">
+</head>
+
+<body class="view-center">
+
+<div class="page">
+
+  <div class="space-wrapper" id="top">
+
+    <!-- 外筒：Gallery / Main / Contact -->
+    <div class="outer-space" id="outerSpace">
+      <!-- 左：Gallery 面 -->
+      <section class="view view-left">
+        <div class="view-inner">
+          <header class="view-header">ukiyo Film — Gallery</header>
+
+          <div class="gallery-panel">
+            <div class="gallery-scroll">
+
+              <!-- Work 01 -->
+              <button class="gallery-item"
+                      type="button"
+                      data-title="Circle"
+                      data-video="https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=1&rel=0"
+                      data-credits='[
+                        {"role":"Director","name":"Alex Rivera"},
+                        {"role":"Producer","name":"Emily Chen"},
+                        {"role":"Director of Photography","name":"Noah Williams"},
+                        {"role":"Camera Operator","name":"Sofia Martinez"},
+                        {"role":"Gaffer","name":"Liam Johnson"},
+                        {"role":"Editor","name":"Olivia Brown"},
+                        {"role":"Colorist","name":"Ethan Davis"},
+                        {"role":"Sound Designer","name":"Mia Thompson"},
+                        {"role":"Production Designer","name":"Lucas Garcia"},
+                        {"role":"VFX Supervisor","name":"Harper Wilson"}
+                      ]'>
+                <div class="gallery-item-title">Circle</div>
+                <div class="gallery-item-meta">MUSIC VIDEO / 2024</div>
+              </button>
+
+              <!-- Work 02 -->
+              <button class="gallery-item"
+                      type="button"
+                      data-title="Fragments"
+                      data-video="https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=1&rel=0"
+                      data-credits='[
+                        {"role":"Director","name":"Jamie Foster"},
+                        {"role":"Producer","name":"Chloe Parker"},
+                        {"role":"Director of Photography","name":"Mason Lee"},
+                        {"role":"1st AC","name":"Lily Turner"},
+                        {"role":"Gaffer","name":"Owen Scott"},
+                        {"role":"Editor","name":"Grace Miller"},
+                        {"role":"Colorist","name":"Jacob Allen"},
+                        {"role":"Sound Designer","name":"Ava Collins"},
+                        {"role":"Production Designer","name":"Isaac Reed"},
+                        {"role":"VFX Supervisor","name":"Nora Hughes"}
+                      ]'>
+                <div class="gallery-item-title">Fragments</div>
+                <div class="gallery-item-meta">SHORT FILM / 2023</div>
+              </button>
+
+              <!-- Work 03 -->
+              <button class="gallery-item"
+                      type="button"
+                      data-title="Bloom"
+                      data-video="https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=1&rel=0"
+                      data-credits='[
+                        {"role":"Director","name":"Liam Carter"},
+                        {"role":"Producer","name":"Hannah Price"},
+                        {"role":"Director of Photography","name":"Elijah Brooks"},
+                        {"role":"Camera Operator","name":"Zoe Fisher"},
+                        {"role":"Gaffer","name":"Ryan Cooper"},
+                        {"role":"Editor","name":"Bella Kelly"},
+                        {"role":"Colorist","name":"Nathan Gray"},
+                        {"role":"Sound Designer","name":"Layla Ross"},
+                        {"role":"Production Designer","name":"Henry Ward"},
+                        {"role":"VFX Supervisor","name":"Chase Morgan"}
+                      ]'>
+                <div class="gallery-item-title">Bloom</div>
+                <div class="gallery-item-meta">BRAND FILM / 2022</div>
+              </button>
+
+              <!-- Work 04 -->
+              <button class="gallery-item"
+                      type="button"
+                      data-title="Echoes"
+                      data-video="https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=1&rel=0"
+                      data-credits='[
+                        {"role":"Director","name":"Samuel Wright"},
+                        {"role":"Producer","name":"Amelia Green"},
+                        {"role":"Director of Photography","name":"Logan Rivera"},
+                        {"role":"Camera Operator","name":"Maya Cox"},
+                        {"role":"Gaffer","name":"Dylan Barnes"},
+                        {"role":"Editor","name":"Aria Bell"},
+                        {"role":"Colorist","name":"Evan Cook"},
+                        {"role":"Sound Designer","name":"Stella Hughes"},
+                        {"role":"Production Designer","name":"Jack Morris"},
+                        {"role":"VFX Supervisor","name":"Hazel Rogers"}
+                      ]'>
+                <div class="gallery-item-title">Echoes</div>
+                <div class="gallery-item-meta">COMMERCIAL / 2021</div>
+              </button>
+
+              <!-- Work 05 -->
+              <button class="gallery-item"
+                      type="button"
+                      data-title="Silent City"
+                      data-video="https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=1&rel=0"
+                      data-credits='[
+                        {"role":"Director","name":"Oliver Bennett"},
+                        {"role":"Producer","name":"Sienna Ward"},
+                        {"role":"Director of Photography","name":"Carter Long"},
+                        {"role":"Camera Operator","name":"Ruby Powell"},
+                        {"role":"Gaffer","name":"Hunter Adams"},
+                        {"role":"Editor","name":"Leah Russell"},
+                        {"role":"Colorist","name":"Ian Hayes"},
+                        {"role":"Sound Designer","name":"Piper James"},
+                        {"role":"Production Designer","name":"Miles Patterson"},
+                        {"role":"VFX Supervisor","name":"Quinn Howard"}
+                      ]'>
+                <div class="gallery-item-title">Silent City</div>
+                <div class="gallery-item-meta">DOCUMENTARY / 2020</div>
+              </button>
+
+            </div>
+          </div>
+
+          <!-- 右端に Home（中央ビューへ） -->
+          <button class="edge-btn edge-btn--right"
+                  type="button"
+                  data-view="center">
+            Home
+          </button>
+        </div>
+      </section>
+
+      <!-- 中央：Main 面（背景面、映像は inner-shell 側） -->
+      <section class="view view-center">
+        <div class="view-inner">
+
+          <!-- 左端：Gallery -->
+          <button class="edge-btn edge-btn--left" data-view="left">
+            Gallery
+          </button>
+
+          <!-- 右端：Contact -->
+          <button class="edge-btn edge-btn--right" data-view="right">
+            Contact
+          </button>
+
+          <!-- 下端：About -->
+          <button class="edge-btn edge-btn--bottom"
+                  type="button"
+                  onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'});">
+            About
+          </button>
+        </div>
+      </section>
+
+      <!-- 右：Contact 面 -->
+      <section class="view view-right">
+        <div class="view-inner"  id="contact-right">
+          <header class="view-header">ukiyo Film — Contact</header>
+
+          <div class="contact-block">
+            <div class="contact-label">Mail</div>
+            <div class="contact-value">
+              <a href="mailto:info@example.com">info@example.com</a>
+            </div>
+
+            <div class="contact-label">Director</div>
+            <div class="contact-value">
+              Matias Maehama<br>
+              <a href="mailto:director@example.com">director@example.com</a>
+            </div>
+
+            <div class="contact-label">SNS</div>
+            <div class="contact-value">
+              <a href="#" target="_blank" rel="noopener">Instagram</a><br>
+              <a href="#" target="_blank" rel="noopener">Vimeo</a>
+            </div>
+          </div>
+
+          <!-- 左端に Home（中央ビューへ） -->
+          <button class="edge-btn edge-btn--left" data-view="center">
+            Home
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- 内筒：中央映像（空想映画館のスクリーン） -->
+    <div class="inner-shell" id="innerShell">
+      <div class="video-frame">
+        <!-- とりあえず埋め込みのみ（再生制御なし） -->
+        <iframe id="mainVideo"
+                src="https://www.youtube.com/embed/vOEBTZCBKDM?rel=0"
+                frameborder="0"
+                allow="autoplay; encrypted-media"
+                allowfullscreen></iframe>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- About -->
+  <section id="about">
+
+    <div class="about-block cp-blk">
+      <div class="cp-ab">
+          <h3>Ukiyo</h3>
+          <span>film</span>
+          <img src="" alt="">
+      </div>
+      <div class="cp-ab">
+          <p>
+            Ukiyo とは本来、浮世ではなく、つらい世という意味の”憂き世”でありました。<br>
+            しかし、時代と共に辛い世の中を楽しく生きたいと意味を裏返し、楽しい世 ”浮世”という言葉と意味を持つようになりました。<br>
+            Ukiyo Film はこの 儚くも美しく心に映つる世界を”浮世”のごとく楽しく、”憂き世”のままに
+            美しく、そして浮世離れしたアイデアを映像として現実に起こすことを目指して生まれた
+            監督、撮影、編集、美術を専門とする Creative studio です。
+          </p>
+      </div>
+    </div>
+
+    <div class="about-block" id="staff-block">
+      <div class="staff-box">
+        <div>
+          <h2>Director</h2>
+        </div>
+        <div class="staff-list">
+          <div class="staff-item">
+            <div class="staff-name">Matias Maehama</div>
+            <div class="staff-bio">
+              Ukiyo Film 代表<br>
+              Producer、Direction、Camera...     Art..Fun
+            </div>
+          </div>
+        </div>
+        <div>
+          <a href="#contact-right">Contact</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-back-top">
+      <a href="#top">▲ Back to main</a>
+    </div>
+  </section>
+
+</div>
+
+<!-- Gallery モーダル -->
+<div class="modal" id="galleryModal">
+  <div class="modal__backdrop" data-modal-close></div>
+
+  <div class="modal__content">
+    <!-- ×ボタン -->
+    <!-- <button type="button" class="modal__close" data-modal-close>×</button> -->
+
+    <div class="modal__video">
+      <div class="modal__video-frame">
+        <iframe id="modalVideo"
+                src=""
+                frameborder="0"
+                allow="autoplay; encrypted-media"
+                allowfullscreen></iframe>
+
+        <!-- クレジットの黒いオーバーレイ -->
+        <div class="modal__credit" id="modalCredit">
+          <div class="modal__credit-inner">
+            <div class="modal__credit-title" id="modalCreditTitle">
+              Title
+            </div>
+
+            <!-- ここに JS で行を生成 -->
+            <div class="modal__credit-list" id="modalCreditList">
+              <!-- JSが <div class="credit-row"> を追加していく -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下にトグル式 Credit ボタン -->
+    <div class="modal__footer">
+      <button type="button"
+              class="modal__credit-toggle"
+              id="creditToggleBtn">
+        Credit
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/view.js" defer></script>
+<script src="../assets/js/modal.js" defer></script>
+<script src="../assets/js/background.js" defer></script>
+
+</body>
+</html>
