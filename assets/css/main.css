@@ -27,6 +27,60 @@ body {
 }
 
 /* ============================== */
+/* スクロール        */
+/* ============================== */
+
+:root{
+  --sb-size: 6px;                 /* 見た目の太さ */
+  --sb-hit: 12px;                 /* 当たり判定（掴みやすさ） */
+  --sb-thumb: rgba(255,255,255,.28);
+  --sb-thumb-active: rgba(255,255,255,.55);
+}
+
+/* スクロールバーの“当たり判定”は少し太めに */
+::-webkit-scrollbar{
+  width: var(--sb-hit);
+  height: var(--sb-hit);
+}
+
+/* トラックは透明（浮いてる演出） */
+::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+/* つまみ：普段は透明（=見えない） */
+::-webkit-scrollbar-thumb{
+  background: transparent;
+  border-radius: 999px;
+  border: 3px solid transparent;   /* 細く見せる */
+  background-clip: content-box;
+  box-shadow: none;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+
+/* スクロール中だけ見せる（JSが body に class を付ける） */
+body.is-scrolling::-webkit-scrollbar-thumb{
+  background: var(--sb-thumb);
+  box-shadow: 0 6px 18px rgba(0,0,0,.45); /* 浮遊感 */
+  background-clip: content-box;
+}
+
+/* ホバーやドラッグ中は少し強調 */
+body.is-scrolling::-webkit-scrollbar-thumb:hover,
+body.is-scrolling::-webkit-scrollbar-thumb:active{
+  background: var(--sb-thumb-active);
+  box-shadow: 0 8px 22px rgba(0,0,0,.55);
+  background-clip: content-box;
+}
+
+/* Firefox（完全に“スクロール中だけ”は無理なので薄めに） */
+html{
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.35) transparent;
+}
+
+
+/* ============================== */
 /* 3D 空間（外筒 + 内筒）        */
 /* ============================== */
 .space-wrapper {
@@ -613,4 +667,5 @@ body.bg-about {
   .edge-btn--bottom {
     bottom: 20px;
   }
+
 }
