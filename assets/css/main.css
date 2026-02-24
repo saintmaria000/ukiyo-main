@@ -411,7 +411,7 @@ body.view-right .inner-shell {
 
 /* サブ：メインと釣り合うように */
 .about-logo-sub{
-  font-size: clamp(.9rem, 1.2vw, 1.05rem);
+  font-size: clamp(.9rem, 1.2vw, 1.15rem);
   opacity: .8;
   letter-spacing: .22em;
 }
@@ -428,7 +428,7 @@ body.view-right .inner-shell {
 .about-lead{
   margin-top: 18px;
   max-width: 720px;
-  font-size: .82rem;
+  font-size: .92rem;
   line-height: 1.9;
   letter-spacing: .08em;
   opacity: .9;
@@ -443,7 +443,7 @@ body.view-right .inner-shell {
 
 .about-item h3{
   font-size: 1.55rem;
-  letter-spacing: .18em;
+  letter-spacing: .28em;
   text-transform: none;
   margin-bottom: 12px;
 }
@@ -451,7 +451,7 @@ body.view-right .inner-shell {
 .about-item p{
   font-size: .82rem;
   line-height: 1.9;
-  letter-spacing: .08em;
+  letter-spacing: .09em;
   opacity: .85;
   max-width: 560px;
 }
@@ -466,7 +466,7 @@ body.view-right .inner-shell {
 
 .about-col h4{
   font-size: 1rem;
-  letter-spacing: .22em;
+  letter-spacing: .32em;
   text-transform: uppercase;
   margin-bottom: 14px;
 }
@@ -478,7 +478,7 @@ body.view-right .inner-shell {
 }
 
 .about-col li{
-  font-size: .82rem;
+  font-size: .92rem;
   line-height: 1.9;
   letter-spacing: .08em;
   opacity: .85;
@@ -489,13 +489,13 @@ body.view-right .inner-shell {
   letter-spacing: .22em;
   text-transform: uppercase;
   opacity: .85;
-  font-size: .85rem;
+  font-size: .95rem;
   margin-bottom: 10px;
 }
 
 .about-credit-name{
   font-size: 1.1rem;
-  letter-spacing: .16em;
+  letter-spacing: .26em;
   margin-bottom: 60px;
 }
 
