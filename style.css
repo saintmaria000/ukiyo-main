@@ -88,15 +88,42 @@ body {
 }
 
 /* 映像リスト（右に等間隔） */
-.reels {
+/* 映像リスト（右に等間隔） */
+.reels{
   flex: 0 0 auto;      
-  display: flex;
   align-items: center;
   gap: 30vw;
+  perspective: 1300px;               /* ✅ 3Dの“カメラ”はここ（親にperspective） */
 }
+
+/* ▼▼▼ ここから reel-group は「3Dステージ」にする ▼▼▼ */
+.reel-group{      
+  /* display: flex;                   */  /* ❌ 子をフロー横並びにすると“各子が独立に回る”原因になるため一旦停止 */
+  /* align-items: center;             */  /* ❌ 同上：3D円周ではステージ(親)を回す前提なので不要 */
+  /* gap: 30vw;                       */  /* ❌ 子同士の間隔は“円の半径”で作る。フローのgapは使わない */
+
+  /* ✅ ステージとしての定義（子の3D変換を保持・枠のサイズを明示） */
+  position: relative;                  /* ステージの基準点（左上）を作る */
+  width: min(80vw, 960px);             /* ステージの横幅（プレビューの見え方の箱） */
+  height: calc(min(80vw, 960px) * 9 / 16); /* ステージの縦幅（16:9） */
+  transform-style: preserve-3d;        /* ✅ 子の3Dを生かす（perspectiveとセット） */
+  margin: 0 auto;                      /* 画面中央に置く（見やすさ用） */
+
+  /* outline: 1px dashed rgba(255,255,255,.15); */ /* ← 位置確認したいときだけON */
+}
+/* ▲▲▲ ここまで reel-group を3Dステージ化 ▲▲▲ */
+
+/* ▼▼▼ 子カードは“ステージ中央”に固定。後で円周へ出す ▼▼▼ */
 .reel {
-  flex: 0 0 auto;
+  /* flex: 0 0 auto;                  */  /* ❌ フロー用の指定は一旦停止（円周ロジックと競合） */
+  position: absolute;                   /* ✅ ステージの中で自由配置 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);     /* ✅ 中央基準に固定（後でrotateY/translateZを足す） */
+  transform-style: preserve-3d;         /* 将来の入れ子3Dのための保険 */
+  will-change: transform;               /* 3D変換の負荷を下げるヒント */
 }
+/* ▲▲▲ 子カードの基準を“中央”にする：この後の円周配置の土台 ▲▲▲ */
 .reel iframe {
   width: min(1400px, 60vw); /* 大きめプレビュー（画像2のサイズ感） */
   height: auto;
