@@ -356,6 +356,7 @@ body.view-right .inner-shell {
 /* ============================== */
 
 #about{
+  border-top: solid 2px #fff;
   position: relative;
   overflow: hidden;
   color: #fff;
