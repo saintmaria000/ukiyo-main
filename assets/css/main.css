@@ -370,9 +370,9 @@ body.view-right .inner-shell {
 #about .about-content{
   position: relative;
   z-index: 2;
-  /* ここで縦スクロール量＝セクションの高さが決まる */
-  padding: 110px 90px 140px 140px;
-  max-width: 980px;
+  padding: 140px 8vw 160px;  /* 左固定やめる */
+  max-width: 1200px;         /* 少し広げる */
+  margin: 0 auto;            /* ← 中央寄せの本体 */
 }
 
 /* 左の縦線 */
