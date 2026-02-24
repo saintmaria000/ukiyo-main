@@ -3,8 +3,8 @@
   const modal      = document.getElementById('galleryModal');
   if (!modal) return;
 
-  const modalVideo = document.getElementById('modalVideo'); // iframe (YouTube embed)
-  const mainVideo  = document.getElementById('mainVideo');  // iframe (YouTube embed)
+  const modalVideo = document.getElementById('modalVideo');
+  const mainVideo  = document.getElementById('mainVideo');
   const closeEls   = document.querySelectorAll('[data-modal-close]');
 
   const creditOverlay = document.getElementById('modalCredit');
@@ -15,16 +15,19 @@
   let lastActiveEl = null;
   let lastScrollY = 0;
 
-  // YouTube JS API が効くように embed URLに enablejsapi=1 を補完
+  // =========================
+  // YouTube URL補完
+  // =========================
   function withEnableJsApi(url) {
     if (!url) return '';
     try {
       const u = new URL(url, window.location.href);
       const isYouTube =
-        /(^|\.)youtube\.com$/.test(u.hostname) || /(^|\.)youtube-nocookie\.com$/.test(u.hostname);
+        /(^|\.)youtube\.com$/.test(u.hostname) ||
+        /(^|\.)youtube-nocookie\.com$/.test(u.hostname);
 
-      if (isYouTube) {
-        if (!u.searchParams.has('enablejsapi')) u.searchParams.set('enablejsapi', '1');
+      if (isYouTube && !u.searchParams.has('enablejsapi')) {
+        u.searchParams.set('enablejsapi', '1');
       }
       return u.toString();
     } catch {
@@ -32,7 +35,9 @@
     }
   }
 
-  // YouTube iframeへコマンド
+  // =========================
+  // YouTube制御
+  // =========================
   function ytCommandTo(iframeEl, func) {
     if (!iframeEl) return;
     try {
@@ -40,17 +45,40 @@
         JSON.stringify({ event: "command", func, args: [] }),
         "*"
       );
-    } catch (e) {
-      console.warn("[Modal] YT postMessage failed:", e);
-    }
+    } catch (_) {}
   }
 
-  // srcリセットではなく stop/pause で確実停止（メインが勝手に再ロード再生するのを防ぐ）
   function stopYouTube(iframeEl) {
     ytCommandTo(iframeEl, "stopVideo");
     ytCommandTo(iframeEl, "pauseVideo");
   }
 
+  // 毎回アンミュート保証（前の動画の状態を引き継がない）
+  function forceUnmuteYouTubeSoon(iframeEl) {
+    if (!iframeEl) return;
+
+    const start = Date.now();
+    const timer = setInterval(() => {
+      ytCommandTo(iframeEl, "unMute");
+      if (Date.now() - start > 1200) clearInterval(timer);
+    }, 200);
+  }
+
+  // =========================
+  // 背景動画を常に再生維持
+  // =========================
+  function resumeKeepPlayingVideos() {
+    document.querySelectorAll('video[data-keep-playing]').forEach((v) => {
+      try {
+        const p = v.play();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      } catch (_) {}
+    });
+  }
+
+  // =========================
+  // Scroll Lock
+  // =========================
   function lockScroll() {
     lastScrollY = window.scrollY || 0;
     document.body.classList.add('is-modal-open');
@@ -67,6 +95,9 @@
     window.scrollTo(0, lastScrollY);
   }
 
+  // =========================
+  // Credit描画
+  // =========================
   function renderCredits(title, credits) {
     if (creditTitle) creditTitle.textContent = title || 'Title of Work';
     if (!creditListEl) return;
@@ -89,11 +120,11 @@
 
       const roleSpan = document.createElement('span');
       roleSpan.className = 'credit-role';
-      roleSpan.textContent = (c && c.role) ? c.role : '';
+      roleSpan.textContent = c?.role || '';
 
       const nameSpan = document.createElement('span');
       nameSpan.className = 'credit-name';
-      nameSpan.textContent = (c && c.name) ? c.name : '';
+      nameSpan.textContent = c?.name || '';
 
       row.appendChild(roleSpan);
       row.appendChild(nameSpan);
@@ -101,35 +132,43 @@
     });
   }
 
+  // =========================
+  // OPEN
+  // =========================
   function open({ title, video, credits }) {
     lastActiveEl = document.activeElement;
 
-    // ✅ Gallery再生時：メイン停止（srcを触らない＝勝手にリセット再生しない）
+    // メイン停止
     stopYouTube(mainVideo);
 
-    // ✅ モーダル動画セット（enablejsapi=1 補完）
-    if (modalVideo) modalVideo.src = withEnableJsApi(video || '');
+    // モーダル動画セット
+    if (modalVideo) {
+      modalVideo.src = withEnableJsApi(video || '');
+      forceUnmuteYouTubeSoon(modalVideo); // ← 重要
+    }
 
-    // Credit
     renderCredits(title, credits);
 
-    // 表示
     modal.classList.add('modal--open');
     modal.setAttribute('aria-hidden', 'false');
     lockScroll();
 
-    // Creditは閉じて開始
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
-    // ✅ 矛盾回避：Galleryを開いたら強制アンミュート（ボタン表示と実音を一致させる）
+    // 背景は常に再生維持
+    resumeKeepPlayingVideos();
+
+    // グローバルUIもアンミュートへ
     if (window.GlobalMute) window.GlobalMute.set(false);
 
-    // フォーカス
     const firstClose = modal.querySelector('[data-modal-close]');
     if (firstClose) firstClose.focus();
   }
 
+  // =========================
+  // CLOSE
+  // =========================
   function close() {
     if (!modal.classList.contains('modal--open')) return;
 
@@ -137,30 +176,27 @@
     modal.setAttribute('aria-hidden', 'true');
     unlockScroll();
 
-    // ✅ Gallery閉じたとき：Gallery停止（stop/pause → src空）
     stopYouTube(modalVideo);
     if (modalVideo) modalVideo.src = '';
 
-    // Credit reset
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
-    // フォーカスを元に戻す
+    resumeKeepPlayingVideos(); // 背景復帰保証
+
     if (lastActiveEl && typeof lastActiveEl.focus === 'function') {
       lastActiveEl.focus();
     }
     lastActiveEl = null;
   }
 
-  // 閉じる
+  // イベント
   closeEls.forEach((el) => el.addEventListener('click', close));
 
-  // Escで閉じる
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.classList.contains('modal--open')) close();
   });
 
-  // Creditトグル
   if (creditToggle && creditOverlay) {
     creditToggle.addEventListener('click', () => {
       const isOpen = creditOverlay.classList.contains('modal__credit--open');
@@ -169,6 +205,5 @@
     });
   }
 
-  // 公開
   window.GalleryModal = { open, close };
 })();
