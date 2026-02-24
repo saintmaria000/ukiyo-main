@@ -385,27 +385,8 @@ body.view-right .inner-shell {
   background: rgba(255,255,255,0.45);
 }
 
+
 /* ロゴ（Hero化） */
-#about .about-content::after{
-  content: "";
-  position: absolute;
-  left: 6vw;              /* 線位置 */
-  top: 100vh;             /* ヒーローの下から開始 */
-  bottom: 200px;
-  width: 1px;
-  background: rgba(255,255,255,0.35);
-  pointer-events: none;
-}
-.about-hero::after{
-  content: "";
-  position: absolute;
-  left: 6vw;
-  bottom: 0;
-  height: 60px;                 /* ← これが“見切れ”量 */
-  width: 1px;
-  background: rgba(255,255,255,0.35);
-  pointer-events: none;
-}
 .about-hero{
   min-height: 80vh;
   display: flex;
@@ -430,7 +411,7 @@ body.view-right .inner-shell {
 
 /* サブ：メインと釣り合うように */
 .about-logo-sub{
-  font-size: clamp(.9rem, 1.2vw, 1.25rem);
+  font-size: clamp(.9rem, 1.2vw, 1.05rem);
   opacity: .8;
   letter-spacing: .22em;
 }
@@ -445,11 +426,11 @@ body.view-right .inner-shell {
 
 /* リード文 */
 .about-lead{
-  margin-top: clamp(14px, 2vw, 26px);
-  font-size: clamp(.92rem, 1.1vw, 1.15rem);
-  line-height: 1.95;
+  margin-top: 18px;
+  max-width: 720px;
+  font-size: .82rem;
+  line-height: 1.9;
   letter-spacing: .08em;
-  max-width: 72ch; /* 横が広がっても読みやすい */
   opacity: .9;
 }
 
