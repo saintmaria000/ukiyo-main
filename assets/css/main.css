@@ -412,17 +412,6 @@ body.view-right .inner-shell {
   margin: 0 auto;            /* ← 中央寄せの本体 */
 }
 
-/* 左の縦線 */
-/* #about .about-rail{
-  position: absolute;
-  top: 110px;
-  bottom: 140px;
-  left: 0px;
-  width: 1px;
-  background: rgba(255,255,255,0.45);
-} */
-
-
 /* ロゴ（Hero化） */
 .about-hero{
   min-height: 80vh;
@@ -500,7 +489,7 @@ body.view-right .inner-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
-  padding: 100px 100px 200px 100px;
+  padding: 100px 100px 300px 100px;
   margin-bottom: 80px;
 }
 
