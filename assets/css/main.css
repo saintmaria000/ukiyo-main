@@ -385,12 +385,15 @@ body.view-right .inner-shell {
   background: rgba(255,255,255,0.45);
 }
 
-/* ロゴ */
-.about-hero{  
+/* ロゴ（Hero化） */
+.about-hero{
   min-height: 80vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
+
+  /* 追加：縦の呼吸と読みやすさ */
+  gap: clamp(10px, 1.2vw, 18px);
 }
 
 .about-logo-text{
@@ -398,15 +401,18 @@ body.view-right .inner-shell {
   text-transform: lowercase;
 }
 
+/* メインロゴ：画面に合わせて大きく */
 .about-logo-main{
-  font-size: 2.2rem;
-  line-height: 1;
-  margin-bottom: 6px;
+  font-size: clamp(2.4rem, 4.2vw, 5.2rem);
+  line-height: 0.95;
+  margin-bottom: 0; /* gapで管理するので0に */
 }
 
+/* サブ：メインと釣り合うように */
 .about-logo-sub{
-  font-size: .9rem;
+  font-size: clamp(.9rem, 1.2vw, 1.25rem);
   opacity: .8;
+  letter-spacing: .22em;
 }
 
 /* ロゴ画像にする場合 */
@@ -419,11 +425,11 @@ body.view-right .inner-shell {
 
 /* リード文 */
 .about-lead{
-  margin-top: 18px;
-  max-width: 720px;
-  font-size: .82rem;
-  line-height: 1.9;
+  margin-top: clamp(14px, 2vw, 26px);
+  font-size: clamp(.92rem, 1.1vw, 1.15rem);
+  line-height: 1.95;
   letter-spacing: .08em;
+  max-width: 72ch; /* 横が広がっても読みやすい */
   opacity: .9;
 }
 
