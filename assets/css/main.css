@@ -494,8 +494,8 @@ body.view-right .inner-shell {
 }
 
 .about-credit-name{
-  font-size: 1.1rem;
-  letter-spacing: .26em;
+  font-size: 1.5rem;
+  letter-spacing: .16em;
   margin-bottom: 60px;
 }
 
@@ -504,7 +504,7 @@ body.view-right .inner-shell {
   width: 100%;
   padding: 0px 220px 100px;
   margin-top: 360px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   text-align: center;
