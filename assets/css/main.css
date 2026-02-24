@@ -184,7 +184,6 @@ html{
   margin: 0;
 }
 
-
 /* ============================== */
 /* 3D 視点制御（ビュー切り替え） */
 /* ============================== */
@@ -338,19 +337,6 @@ body.view-right .inner-shell {
   text-decoration: underline;
 }
 
-/* スマホは少し控えめ */
-@media (max-width: 768px){
-  .view.view-right .contact-block{
-    font-size: 0.88rem;
-    line-height: 1.9;
-  }
-  .view.view-right .contact-label{
-    font-size: 0.75rem;
-    margin-top: 16px;
-  }
-}
-
-
 /* ============================== */
 /* About セクション               */
 /* ============================== */
@@ -501,28 +487,6 @@ body.view-right .inner-shell {
   margin-bottom: 60px;
 }
 
-/* 既存の .about-back-top はそのままでもOK */
-
-/* ============================== */
-/* SP調整 */
-/* ============================== */
-@media (max-width: 768px){
-  #about .about-content{
-    padding: 90px 22px 110px 52px;
-  }
-  #about .about-rail{
-    left: 22px;
-    top: 90px;
-    bottom: 110px;
-  }
-  .about-split{
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-  .about-item h3{
-    font-size: 1.25rem;
-  }
-}
 /* Back to main（既存） */
 .about-back-top {
   width: 100%;
@@ -539,50 +503,6 @@ body.view-right .inner-shell {
   text-decoration: none;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   padding-bottom: 2px;
-}
-
-/* ============================== */
-/* レスポンシブ（About関連だけ追記）*/
-/* ============================== */
-@media (max-width: 768px) {
-  /* 既存の #about padding 指定があるなら、動画背景の時は外側padding不要なので最小に */
-  #about {
-    padding: 0; /* ← 既存で padding:60px... があるならこれで上書き */
-  }
-
-  .cp-blk {
-    flex-direction: column;
-    gap: 24px;
-    padding: 120px 24px;
-  }
-
-  #staff-block {
-    padding: 120px 24px;
-    justify-content: flex-start;
-  }
-
-  .about-back-top {
-    padding: 0 24px 80px;
-  }
-}
-
-/* ============================== */
-/* 背景テーマ：メイン / About     */
-/* ============================== */
-body.bg-main {
-  background-color: #000;
-  transition: background-color 0.4s ease;
-}
-
-body.bg-about {
-  background-color: #222;
-  transition: background-color 0.4s ease;
-}
-
-@keyframes bgGradientShift {
-  0% { background-position: 50% 0%; }
-  50% { background-position: 52% 100%; }
-  100% { background-position: 48% 0%; }
 }
 
 /* ============================== */
@@ -765,58 +685,4 @@ body.is-modal-open {
 body.is-modal-open .inner-shell {
   opacity: 0;
   transition: opacity 0.15s ease;
-}
-
-/* ============================== */
-/* レスポンシブ                   */
-/* ============================== */
-@media (max-width: 768px) {
-  .view {
-    padding: 24px;
-  }
-
-  .video-frame {
-    width: 90vw;
-  }
-
-  #about {
-    padding: 60px 24px 100px;
-  }
-
-  .edge-btn--left {
-    left: 16px;
-  }
-
-  .edge-btn--right {
-    right: 16px;
-  }
-
-  .edge-btn--bottom {
-    bottom: 20px;
-  }
-
-  /* Contactヘッダー右上：スマホ位置 */
-  .view.view-right .view-header{
-    top: 24px;
-    right: 24px;
-  }
-
-  /* モーダル：スマホ調整 */
-  .modal__content{
-    width: 92vw;
-    max-width: 92vw;
-    padding: 16px 16px 16px;
-  }
-
-  .modal__video-frame{
-    max-height: 52vh;
-  }
-
-  .modal__credit-inner {
-    padding: 18px 16px 16px;
-  }
-
-  .credit-row {
-    font-size: 0.78rem;
-  }
 }
