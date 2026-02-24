@@ -1,41 +1,39 @@
 let isMuted = false;
-const players = new Map();
+let players = [];
 
-function onYouTubeIframeAPIReady() {
-  document.querySelectorAll('iframe[src*="youtube.com/embed"]').forEach((iframe) => {
-    if (players.has(iframe)) return;
-
-    const p = new YT.Player(iframe, {
+function createPlayer(iframe) {
+  try {
+    const player = new YT.Player(iframe, {
       events: {
         onReady: (e) => {
           if (isMuted) e.target.mute();
         }
       }
     });
+    players.push(player);
+  } catch (e) {
+    console.warn("Player init failed", e);
+  }
+}
 
-    players.set(iframe, p);
+function initPlayers() {
+  document.querySelectorAll('iframe[src*="youtube.com/embed"]').forEach(iframe => {
+    if (!iframe.dataset.ytInit) {
+      iframe.dataset.ytInit = "true";
+      createPlayer(iframe);
+    }
   });
+}
+
+window.onYouTubeIframeAPIReady = () => {
+  initPlayers();
 
   const observer = new MutationObserver(() => {
-    document.querySelectorAll('iframe[src*="youtube.com/embed"]').forEach((iframe) => {
-      if (players.has(iframe)) return;
-
-      const p = new YT.Player(iframe, {
-        events: {
-          onReady: (e) => {
-            if (isMuted) e.target.mute();
-          }
-        }
-      });
-
-      players.set(iframe, p);
-    });
+    initPlayers();
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
-}
-
-window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.querySelector(".global-mute");
@@ -44,9 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
     isMuted = !isMuted;
     btn.classList.toggle("is-muted", isMuted);
 
-    players.forEach(player => {
-      if (isMuted) player.mute();
-      else player.unMute();
+    players.forEach(p => {
+      try {
+        if (isMuted) p.mute();
+        else p.unMute();
+      } catch {}
     });
   });
 });
