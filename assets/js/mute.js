@@ -2,7 +2,7 @@
 (function () {
   let isMuted = false;
 
-  // ===== UI同期 =====
+  // --- UI ---
   function updateUI() {
     const btn = document.querySelector(".global-mute");
     if (!btn) return;
@@ -10,86 +10,142 @@
     btn.setAttribute("aria-pressed", String(isMuted));
   }
 
-  // ===== YouTube iframeへコマンド（YouTube側に届くよう targetOrigin は "*"）=====
-  function sendYTCommand(func) {
-    document
-      .querySelectorAll('iframe[src*="youtube.com/embed"], iframe[src*="youtube-nocookie.com/embed"]')
-      .forEach((iframe) => {
-        try {
-          iframe.contentWindow.postMessage(
-            JSON.stringify({ event: "command", func, args: [] }),
-            "*"
-          );
-        } catch (e) {
-          console.warn("[Mute] postMessage failed:", e);
-        }
-      });
-  }
-
-  // ===== HTML5 <video>/<audio> をミュート同期 =====
+  // --- HTML5 video/audio ---
   function applyHtmlMediaMute() {
     document.querySelectorAll("video, audio").forEach((m) => {
       m.muted = isMuted;
-      if (isMuted) m.volume = 0; // 「絶対に音を出さない」寄り
+      if (isMuted) m.volume = 0;
     });
   }
 
-  function applyMuteState() {
-    applyHtmlMediaMute();
-    sendYTCommand(isMuted ? "mute" : "unMute");
+  // --- YouTube IFrame API 管理 ---
+  const YTPlayers = new Map(); // id -> YT.Player
+  let ytReady = false;
+
+  function loadYouTubeAPI() {
+    if (window.YT && window.YT.Player) {
+      ytReady = true;
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function () {
+        ytReady = true;
+        if (typeof prev === "function") prev();
+        resolve();
+      };
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(s);
+    });
   }
 
-  // ===== 「どこかで音が鳴ったら」→ 自動でミュート解除してUIも同期 =====
-  // ここでは HTMLMediaElement の play / volumechange などを監視して
-  // “音が出る状態で再生された” をトリガーにする
-  function autoUnmuteIfSound(e) {
-    if (!isMuted) return;
+  function ensurePlayer(iframeId) {
+    const el = document.getElementById(iframeId);
+    if (!el) return;
 
-    const el = e.target;
-    if (!(el instanceof HTMLMediaElement)) return;
+    // すでに作ってたらOK
+    if (YTPlayers.has(iframeId)) return;
 
-    // muted=false かつ volume>0 なら “音が出る状態”
-    const vol = typeof el.volume === "number" ? el.volume : 1;
-    if (!el.muted && vol > 0) {
-      // ミュート解除（UI同期→全体へ反映）
-      isMuted = false;
-      updateUI();
-      applyMuteState();
+    // API未準備なら後で
+    if (!ytReady || !(window.YT && window.YT.Player)) return;
 
-      // デバッグしたければここ
-      // console.warn("[Mute] Auto unmuted because sound started:", el);
+    try {
+      const player = new YT.Player(iframeId, {
+        events: {
+          onReady: () => {
+            // グローバル状態を反映
+            if (isMuted) player.mute();
+            else player.unMute();
+          }
+        }
+      });
+      YTPlayers.set(iframeId, player);
+    } catch (e) {
+      console.warn("[Mute] YT.Player init failed:", iframeId, e);
     }
   }
 
-  // DOM監視：後から追加される video/audio にも効くように document で捕まえる
-  function attachAutoUnmuteListeners() {
-    document.addEventListener("play", autoUnmuteIfSound, true);
-    document.addEventListener("volumechange", autoUnmuteIfSound, true);
-    document.addEventListener("playing", autoUnmuteIfSound, true);
+  // グローバル状態をYouTubeへ反映
+  function applyYouTubeMute() {
+    YTPlayers.forEach((player) => {
+      try {
+        if (isMuted) player.mute();
+        else player.unMute();
+      } catch (_) {}
+    });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.querySelector(".global-mute");
-    if (!btn) return;
+  // YouTube内の🔇操作を拾う（イベントが無いのでポーリング）
+  function startYouTubeSyncPoll() {
+    setInterval(() => {
+      // 監視対象：mainVideo / modalVideo（あれば）
+      ensurePlayer("mainVideo");
+      ensurePlayer("modalVideo");
 
-    btn.addEventListener("click", () => {
-      isMuted = !isMuted;
-      updateUI();
-      applyMuteState();
-    });
+      // どれか1つでも「ミュート解除」になってたら、グローバルも解除に寄せる
+      // （逆に全てミュートならグローバルもミュートに寄せる、でもOK）
+      let anyUnmuted = false;
+      let anyKnown = false;
 
+      YTPlayers.forEach((player) => {
+        try {
+          const m = player.isMuted(); // boolean
+          anyKnown = true;
+          if (m === false) anyUnmuted = true;
+        } catch (_) {}
+      });
+
+      if (!anyKnown) return;
+
+      // YouTube側でユーザーが🔇解除した → グローバルも解除（UI矛盾をなくす）
+      if (anyUnmuted && isMuted) {
+        isMuted = false;
+        updateUI();
+        applyHtmlMediaMute(); // サイト側HTML5も合わせる（必要なら）
+      }
+      // 逆同期もしたいなら↓をON（YouTube側が全部ミュートならグローバルもミュート）
+      // else if (!anyUnmuted && !isMuted) {
+      //   isMuted = true;
+      //   updateUI();
+      //   applyHtmlMediaMute();
+      // }
+    }, 250);
+  }
+
+  // --- 状態適用 ---
+  function applyMuteState() {
     updateUI();
-    attachAutoUnmuteListeners();
+    applyHtmlMediaMute();
+    applyYouTubeMute();
+  }
+
+  function setMuted(state) {
+    isMuted = Boolean(state);
+    applyMuteState();
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const btn = document.querySelector(".global-mute");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        setMuted(!isMuted);
+      });
+      updateUI();
+    }
+
+    // YouTube APIロード＆同期開始
+    await loadYouTubeAPI();
+    ytReady = true;
+    ensurePlayer("mainVideo");
+    ensurePlayer("modalVideo");
+    startYouTubeSyncPoll();
   });
 
-  // 外部から適用（モーダル open直後など）
+  // 外部公開（modal.ui.js から呼ぶ用）
   window.GlobalMute = {
     apply: applyMuteState,
-    set(state) {
-      isMuted = Boolean(state);
-      updateUI();      // ★ ここが重要：外部setでもUIが必ず同期される
-      applyMuteState();
-    },
+    set: setMuted,
     get state() {
       return isMuted;
     }
