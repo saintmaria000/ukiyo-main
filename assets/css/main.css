@@ -370,7 +370,7 @@ body.view-right .inner-shell {
 #about .about-content{
   position: relative;
   z-index: 2;
-  max-width: 1600px;               /* ← 横を使う */
+  max-width: 1800px;               /* ← 横を使う */
   padding: 160px 8vw 200px 12vw;          /* 少し広げる */
   margin: 0 auto;            /* ← 中央寄せの本体 */
 }
@@ -380,7 +380,7 @@ body.view-right .inner-shell {
   position: absolute;
   top: 110px;
   bottom: 140px;
-  left: 90px;
+  left: 0px;
   width: 1px;
   background: rgba(255,255,255,0.45);
 }
@@ -478,7 +478,7 @@ body.view-right .inner-shell {
 }
 
 .about-col li{
-  font-size: .92rem;
+  font-size: 1rem;
   line-height: 1.9;
   letter-spacing: .08em;
   opacity: .85;
