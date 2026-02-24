@@ -254,7 +254,7 @@ body.view-right .inner-shell {
   align-items: flex-start;
 }
 
-.gallery-panel {
+.workList {
   margin-top: 32px;
   max-width: 520px;
   height: calc(100% - 72px);
@@ -262,7 +262,7 @@ body.view-right .inner-shell {
   flex-direction: column;
 }
 
-.gallery-scroll {
+.workList-scroll {
   flex: 1;
   overflow-y: auto;
   padding-right: 8px;
