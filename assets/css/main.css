@@ -727,3 +727,43 @@ body.is-modal-open .inner-shell {
   opacity: 0;
   transition: opacity 0.15s ease;
 }
+
+.global-mute{
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  z-index: 30000;
+
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+
+  opacity: .7;
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.global-mute:hover{
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.icon-sound{
+  width: 22px;
+  height: 22px;
+  fill: #fff;
+  stroke: #fff;
+}
+
+/* 初期は音波表示 */
+.icon-cross{
+  display: none;
+}
+
+/* ミュート時 */
+.global-mute.is-muted .icon-wave{
+  display: none;
+}
+.global-mute.is-muted .icon-cross{
+  display: block;
+}
