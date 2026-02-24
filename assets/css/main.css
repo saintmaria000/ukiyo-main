@@ -370,8 +370,8 @@ body.view-right .inner-shell {
 #about .about-content{
   position: relative;
   z-index: 2;
-  padding: 140px 8vw 160px;  /* 左固定やめる */
-  max-width: 1200px;         /* 少し広げる */
+  max-width: 1600px;               /* ← 横を使う */
+  padding: 160px 8vw 200px 12vw;          /* 少し広げる */
   margin: 0 auto;            /* ← 中央寄せの本体 */
 }
 
@@ -386,7 +386,12 @@ body.view-right .inner-shell {
 }
 
 /* ロゴ */
-.about-hero{ margin-bottom: 80px; }
+.about-hero{  
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
 .about-logo-text{
   letter-spacing: .35em;
