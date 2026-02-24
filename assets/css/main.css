@@ -362,7 +362,7 @@ body.view-right .inner-shell {
 
 /* 背景動画（About内だけ） */
 #about .about-bg-video {
-   position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;        /* 横幅だけフィット */
