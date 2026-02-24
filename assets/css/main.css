@@ -264,16 +264,23 @@ body.view-right .inner-shell {
 
 /* プレビュー */
 .gallery-preview{
-  position: sticky;
-  top: 120px;
-  margin-left: auto;
-  width: 320px;
+  position: fixed;      /* スクロール無関係に固定 */
+  top: 50%;
+  right: 8vw;
+  transform: translateY(-50%);
+  
+  width: 52vw;          /* ← でかく */
+  max-width: 1100px;
   aspect-ratio: 16 / 9;
-  border-radius: 8px;
+
+  border-radius: 12px;
   overflow: hidden;
-  background: rgba(255,255,255,.05);
-  opacity: .9;
-  transition: opacity .3s ease, transform .3s ease;
+
+  opacity: 0;
+  transition: opacity .4s ease, transform .6s ease;
+  pointer-events: none; /* 操作不可 */
+
+  z-index: 1;           /* リストより後ろ */
 }
 
 .gallery-preview-img{
