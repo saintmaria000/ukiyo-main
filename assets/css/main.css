@@ -459,9 +459,11 @@ body.view-right .inner-shell {
 
 /* 2カラム */
 .about-split{
+  border-left: solid 1px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
+  padding: 100px;
   margin-bottom: 120px;
 }
 
