@@ -505,7 +505,7 @@ body.view-right .inner-shell {
 /* Back to main（既存） */
 .about-back-top {
   width: 100%;
-  padding: 0px 220px 100px;
+  padding: 0px 220px 0px;
   margin-top: 360px;
   font-size: 0.9rem;
   letter-spacing: 0.18em;
