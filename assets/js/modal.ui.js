@@ -122,8 +122,8 @@
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
-    // ✅ 現在のミュート状態をモーダルにも適用（どの状況でも全音遮断）
-    if (window.GlobalMute) window.GlobalMute.apply();
+    // ✅ 矛盾回避：Galleryを開いたら強制アンミュート（ボタン表示と実音を一致させる）
+    if (window.GlobalMute) window.GlobalMute.set(false);
 
     // フォーカス
     const firstClose = modal.querySelector('[data-modal-close]');

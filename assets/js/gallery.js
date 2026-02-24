@@ -26,16 +26,49 @@ document.addEventListener("DOMContentLoaded", () => {
   const log = (...args) => DEBUG && console.log(...args);
   const warn = (...args) => DEBUG && console.warn(...args);
 
-  // ====== YouTube ID抽出 ======
+  // ====== YouTube ID抽出（embed/shorts/watch/youtu.be まで対応）======
   const getYoutubeId = (url) => {
-    const m = String(url || "").match(/youtube\.com\/embed\/([^?&/]+)/);
-    return m ? m[1] : null;
+    try {
+      const u = new URL(String(url || ""), window.location.href);
+
+      // youtu.be/ID
+      if (u.hostname === "youtu.be") {
+        const id = u.pathname.replace(/^\//, "").split("/")[0];
+        return id || null;
+      }
+
+      // youtube.com
+      if (u.hostname.includes("youtube.com") || u.hostname.includes("youtube-nocookie.com")) {
+        // /embed/ID
+        const mEmbed = u.pathname.match(/^\/embed\/([^/?]+)/);
+        if (mEmbed) return mEmbed[1];
+
+        // /shorts/ID
+        const mShorts = u.pathname.match(/^\/shorts\/([^/?]+)/);
+        if (mShorts) return mShorts[1];
+
+        // /watch?v=ID
+        if (u.pathname === "/watch") return u.searchParams.get("v");
+      }
+
+      // 最後の保険（あなたの元のembed正規表現）
+      const m = String(url || "").match(/youtube\.com\/embed\/([^?&/]+)/);
+      return m ? m[1] : null;
+    } catch {
+      // URLとして解釈できない場合も保険で
+      const m = String(url || "").match(/youtube\.com\/embed\/([^?&/]+)/);
+      return m ? m[1] : null;
+    }
   };
 
   // ====== URLを順番に試して、成功したものを採用 ======
+  // ※ onload でも「小さいプレースホルダ」が返ることがあるので naturalWidth で弾く
   const loadImageSequential = (urls, ctxLabel) => {
     return new Promise((resolve, reject) => {
       let i = 0;
+
+      // これ未満は「まともなサムネじゃない」扱い（maxres無い時の保険）
+      const MIN_W = 320;
 
       const tryNext = () => {
         if (i >= urls.length) {
@@ -46,24 +79,33 @@ document.addEventListener("DOMContentLoaded", () => {
         const src = urls[i++];
         log(`[GalleryThumb] TRY ${ctxLabel}:`, src);
 
-        // 直前のハンドラをクリアしてから設定
         previewImg.onload = () => {
+          const w = previewImg.naturalWidth || 0;
+          const h = previewImg.naturalHeight || 0;
+
           previewImg.onload = null;
           previewImg.onerror = null;
-          log(`[GalleryThumb] OK  ${ctxLabel}:`, src);
+
+          // 「存在しない」系の画像（極小/プレースホルダ）を弾く
+          if (w < MIN_W) {
+            warn(`[GalleryThumb] NG(size) ${ctxLabel}:`, src, `(${w}x${h})`);
+            tryNext();
+            return;
+          }
+
+          log(`[GalleryThumb] OK  ${ctxLabel}:`, src, `(${w}x${h})`);
           resolve(src);
         };
 
-        previewImg.onerror = (e) => {
+        previewImg.onerror = () => {
           previewImg.onload = null;
           previewImg.onerror = null;
           warn(`[GalleryThumb] NG  ${ctxLabel}:`, src);
           tryNext();
         };
 
-        // 同じURLの再設定でイベントが発火しないことがあるので、少し工夫
+        // 同じURLの再設定でイベントが発火しないことがあるので対策
         if (previewImg.src === src) {
-          // キャッシュ等で発火しない場合に備え、一旦空にしてから入れる
           previewImg.src = "";
           requestAnimationFrame(() => (previewImg.src = src));
         } else {
@@ -103,11 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // i.ytimg.com の方が安定しやすい
       const urls = [
-        `https://img.youtube.com/vi/${youtubeID}/maxresdefault.jpg`,
-        `https://img.youtube.com/vi/${youtubeID}/hqdefault.jpg`,
-        `https://img.youtube.com/vi/${youtubeID}/mqdefault.jpg`,
-        `https://img.youtube.com/vi/${youtubeID}/default.jpg`,
+        `https://i.ytimg.com/vi/${youtubeID}/maxresdefault.jpg`,
+        `https://i.ytimg.com/vi/${youtubeID}/sddefault.jpg`,
+        `https://i.ytimg.com/vi/${youtubeID}/hqdefault.jpg`,
+        `https://i.ytimg.com/vi/${youtubeID}/mqdefault.jpg`,
+        `https://i.ytimg.com/vi/${youtubeID}/default.jpg`,
       ];
 
       log(`[GalleryThumb] HOVER id=${id} youtubeID=${youtubeID}`);
