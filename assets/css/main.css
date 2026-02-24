@@ -376,14 +376,14 @@ body.view-right .inner-shell {
 }
 
 /* 左の縦線 */
-#about .about-rail{
+/* #about .about-rail{
   position: absolute;
   top: 110px;
   bottom: 140px;
   left: 0px;
   width: 1px;
   background: rgba(255,255,255,0.45);
-}
+} */
 
 
 /* ロゴ（Hero化） */
@@ -436,9 +436,10 @@ body.view-right .inner-shell {
 
 /* 縦積みサービス */
 .about-stack{
+  border-left: solid 1px;
   display: grid;
   gap: 104px;
-  margin: 0 0 90px;
+  padding: 100px;
 }
 
 .about-item h3{
@@ -461,7 +462,7 @@ body.view-right .inner-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
-  margin-bottom: 90px;
+  margin-bottom: 120px;
 }
 
 .about-col h4{
