@@ -437,7 +437,7 @@ body.view-right .inner-shell {
 /* 縦積みサービス */
 .about-stack{
   display: grid;
-  gap: 54px;
+  gap: 104px;
   margin: 0 0 90px;
 }
 
