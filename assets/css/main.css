@@ -386,6 +386,26 @@ body.view-right .inner-shell {
 }
 
 /* ロゴ（Hero化） */
+#about .about-content::after{
+  content: "";
+  position: absolute;
+  left: 6vw;              /* 線位置 */
+  top: 100vh;             /* ヒーローの下から開始 */
+  bottom: 200px;
+  width: 1px;
+  background: rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+.about-hero::after{
+  content: "";
+  position: absolute;
+  left: 6vw;
+  bottom: 0;
+  height: 60px;                 /* ← これが“見切れ”量 */
+  width: 1px;
+  background: rgba(255,255,255,0.35);
+  pointer-events: none;
+}
 .about-hero{
   min-height: 80vh;
   display: flex;
