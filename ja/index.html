@@ -161,11 +161,7 @@
         <div class="view-inner">
           <button class="edge-btn edge-btn--left" data-view="left">Gallery</button>
           <button class="edge-btn edge-btn--right" data-view="right">Contact</button>
-
-          <button class="edge-btn edge-btn--bottom" type="button"
-            onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'});">
-            About
-          </button>
+          <button class="edge-btn edge-btn--bottom" data-scroll-target="#about">About</button>
         </div>
       </section>
 
@@ -323,7 +319,6 @@
 </div>
 
 <!-- ✅ script順：works.js → modal.js -->
-<script src="../assets/js/scroll.js" defer></script>
 <script src="../assets/js/view.js" defer></script>
 
 <script src="../assets/js/work.js" defer></script>
