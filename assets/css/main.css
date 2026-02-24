@@ -354,118 +354,174 @@ body.view-right .inner-shell {
 /* ============================== */
 /* About セクション               */
 /* ============================== */
-#about {
-  border-top: solid 2px rgb(255, 255, 255);
+
+#about{
   position: relative;
   overflow: hidden;
-  color: #ffffff;
+  color: #fff;
 }
 
-/* 背景動画（About内だけ） */
-#about .about-bg-video {
+/* 背景動画（Aboutだけ） */
+#about .about-bg-video{
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;        /* 横幅だけフィット */
-  height: 100%;       /* セクションの高さに追従 */
-  object-fit: cover;  /* 横幅基準で自然に拡大 */
-  object-position: center top; /* 上基準にしたいなら */
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   z-index: 0;
 }
 
-/* 暗幕（読みやすさ） ※HTMLは .about-overlay なのでそれに合わせる */
-#about .about-overlay {
+#about .about-overlay{
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0,0,0,0.45);
   z-index: 1;
   pointer-events: none;
 }
 
-/* Aboutの中身を前面へ */
-#about .about-content {
+/* 内容ラッパー */
+#about .about-content{
   position: relative;
   z-index: 2;
+  /* ここで縦スクロール量＝セクションの高さが決まる */
+  padding: 110px 90px 140px 140px;
+  max-width: 980px;
 }
 
-#about h2 {
-  font-size: 2.9rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+/* 左の縦線 */
+#about .about-rail{
+  position: absolute;
+  top: 110px;
+  bottom: 140px;
+  left: 90px;
+  width: 1px;
+  background: rgba(255,255,255,0.45);
 }
 
-.about-block {
-  margin-bottom: 56px;
-  font-size: 0.9rem;
-  line-height: 1.8;
+/* ロゴ */
+.about-hero{ margin-bottom: 80px; }
+
+.about-logo-text{
+  letter-spacing: .35em;
+  text-transform: lowercase;
 }
 
-/* 既存レイアウト（そのまま） */
-.cp-blk {
-  display: flex;
-  gap: 50px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 200px 425px;
+.about-logo-main{
+  font-size: 2.2rem;
+  line-height: 1;
+  margin-bottom: 6px;
 }
 
-.cp-ab {
-  margin: 0px 20px 0px 20px;
+.about-logo-sub{
+  font-size: .9rem;
+  opacity: .8;
 }
 
-#staff-block {
-  display: flex;
-  justify-content: flex-end;
-  padding: 200px 425px;
+/* ロゴ画像にする場合 */
+.about-logo{
+  display: block;
+  width: 180px;
+  height: auto;
+  margin-bottom: 18px;
 }
 
-.about-block h3 {
-  color: #ffffff;
-  font-size: 3.8rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
-.about-block span {
-  text-align: right;
-  font-size: 0.8rem;
-  letter-spacing: 0.2em;
-  margin-bottom: 12px;
-  opacity: 0.7;
-}
-
-.staff-box {
-  gap: 100px;
-  margin: 0;
-  width: fit-content;
-}
-
-.staff-list {
-  display: grid;
-  gap: 24px;
+/* リード文 */
+.about-lead{
+  margin-top: 18px;
   max-width: 720px;
+  font-size: .82rem;
+  line-height: 1.9;
+  letter-spacing: .08em;
+  opacity: .9;
 }
 
-.staff-name {
-  font-weight: 500;
-  font-size: 1.9rem;
+/* 縦積みサービス */
+.about-stack{
+  display: grid;
+  gap: 54px;
+  margin: 0 0 90px;
 }
 
-.staff-role {
-  font-size: 0.8rem;
-  opacity: 0.7;
-  margin-top: 4px;
-  letter-spacing: 0.12em;
+.about-item h3{
+  font-size: 1.55rem;
+  letter-spacing: .18em;
+  text-transform: none;
+  margin-bottom: 12px;
+}
+
+.about-item p{
+  font-size: .82rem;
+  line-height: 1.9;
+  letter-spacing: .08em;
+  opacity: .85;
+  max-width: 560px;
+}
+
+/* 2カラム */
+.about-split{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 90px;
+}
+
+.about-col h4{
+  font-size: 1rem;
+  letter-spacing: .22em;
   text-transform: uppercase;
+  margin-bottom: 14px;
 }
 
-.staff-bio {
-  margin-top: 8px;
-  font-size: 0.9rem;
-  opacity: 0.85;
+.about-col ul{
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
+.about-col li{
+  font-size: .82rem;
+  line-height: 1.9;
+  letter-spacing: .08em;
+  opacity: .85;
+}
+
+/* 最下部 */
+.about-credit-title{
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  opacity: .85;
+  font-size: .85rem;
+  margin-bottom: 10px;
+}
+
+.about-credit-name{
+  font-size: 1.1rem;
+  letter-spacing: .16em;
+  margin-bottom: 60px;
+}
+
+/* 既存の .about-back-top はそのままでもOK */
+
+/* ============================== */
+/* SP調整 */
+/* ============================== */
+@media (max-width: 768px){
+  #about .about-content{
+    padding: 90px 22px 110px 52px;
+  }
+  #about .about-rail{
+    left: 22px;
+    top: 90px;
+    bottom: 110px;
+  }
+  .about-split{
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .about-item h3{
+    font-size: 1.25rem;
+  }
+}
 /* Back to main（既存） */
 .about-back-top {
   width: 100%;
