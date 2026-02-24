@@ -355,7 +355,34 @@ body.view-right .inner-shell {
 /* About セクション               */
 /* ============================== */
 #about {
+  position: relative;
+  overflow: hidden;
   color: #ffffff;
+}
+
+/* 背景動画（About内だけ） */
+#about .about-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* 暗幕（読みやすさ） ※HTMLは .about-overlay なのでそれに合わせる */
+#about .about-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Aboutの中身を前面へ */
+#about .about-content {
+  position: relative;
+  z-index: 2;
 }
 
 #about h2 {
@@ -370,6 +397,7 @@ body.view-right .inner-shell {
   line-height: 1.8;
 }
 
+/* 既存レイアウト（そのまま） */
 .cp-blk {
   display: flex;
   gap: 50px;
@@ -378,11 +406,11 @@ body.view-right .inner-shell {
   padding: 200px 425px;
 }
 
-.cp-ab{
+.cp-ab {
   margin: 0px 20px 0px 20px;
 }
 
-#staff-block{
+#staff-block {
   display: flex;
   justify-content: flex-end;
   padding: 200px 425px;
@@ -404,7 +432,7 @@ body.view-right .inner-shell {
   opacity: 0.7;
 }
 
-.staff-box{
+.staff-box {
   gap: 100px;
   margin: 0;
   width: fit-content;
@@ -435,6 +463,7 @@ body.view-right .inner-shell {
   opacity: 0.85;
 }
 
+/* Back to main（既存） */
 .about-back-top {
   width: 100%;
   padding: 0px 220px 100px;
@@ -450,6 +479,31 @@ body.view-right .inner-shell {
   text-decoration: none;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   padding-bottom: 2px;
+}
+
+/* ============================== */
+/* レスポンシブ（About関連だけ追記）*/
+/* ============================== */
+@media (max-width: 768px) {
+  /* 既存の #about padding 指定があるなら、動画背景の時は外側padding不要なので最小に */
+  #about {
+    padding: 0; /* ← 既存で padding:60px... があるならこれで上書き */
+  }
+
+  .cp-blk {
+    flex-direction: column;
+    gap: 24px;
+    padding: 120px 24px;
+  }
+
+  #staff-block {
+    padding: 120px 24px;
+    justify-content: flex-start;
+  }
+
+  .about-back-top {
+    padding: 0 24px 80px;
+  }
 }
 
 /* ============================== */
