@@ -449,7 +449,7 @@ body.view-right .inner-shell {
 }
 
 .about-item p{
-  font-size: .82rem;
+  font-size: 1rem;
   line-height: 1.9;
   letter-spacing: .09em;
   opacity: .85;
@@ -465,7 +465,7 @@ body.view-right .inner-shell {
 }
 
 .about-col h4{
-  font-size: 2rem;
+  font-size: 1.3rem;
   letter-spacing: .22em;
   text-transform: uppercase;
   margin-bottom: 14px;
