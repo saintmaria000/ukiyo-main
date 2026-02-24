@@ -363,10 +363,12 @@ body.view-right .inner-shell {
 /* 背景動画（About内だけ） */
 #about .about-bg-video {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  top: 0;
+  left: 0;
+  width: 100%;        /* 横幅だけフィット */
+  height: 100%;       /* セクションの高さに追従 */
+  object-fit: cover;  /* 横幅基準で自然に拡大 */
+  object-position: center top; /* 上基準にしたいなら */
   z-index: 0;
 }
 
