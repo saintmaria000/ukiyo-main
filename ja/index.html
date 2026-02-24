@@ -211,39 +211,85 @@
 
   </div>
 
-  <!-- About（省略：あなたのままでOK） -->
+  <!-- About -->
 <section id="about">
-  <!-- 背景動画 -->
+  <!-- 背景動画（あなたのままでOK） -->
   <video class="about-bg-video" autoplay muted loop playsinline preload="auto">
     <source src="../images/aboutbackwall.mp4" type="video/mp4">
   </video>
+  <div class="about-overlay"></div>
 
-  <!-- 暗幕（文字を読みやすく） -->
-  <div class="about-bg-overlay"></div>
-
-  <!-- 上に載せるコンテンツ（必ずこのラッパー内に置く） -->
+  <!-- ここから内容 -->
   <div class="about-content">
 
-    <div class="about-block cp-blk">
-      <div class="cp-ab">
-        <h3>Ukiyo</h3>
-        <span>film</span>
-        <img src="" alt="">
-      </div>
-      <div class="cp-ab">
-        <p>
-          Ukiyo とは本来、浮世ではなく、つらい世という意味の”憂き世”でありました。<br>
-          しかし、時代と共に辛い世の中を楽しく生きたいと意味を裏返し、楽しい世 ”浮世”という言葉と意味を持つようになりました。<br>
-          Ukiyo Film はこの 儚くも美しく心に映つる世界を”浮世”のごとく楽しく、”憂き世”のままに
-          美しく、そして浮世離れしたアイデアを映像として現実に起こすことを目指して生まれた
-          監督、撮影、編集、美術を専門とする Creative studio です。
-        </p>
-      </div>
-    </div>
+    <!-- 縦レール（左の線） -->
+    <div class="about-rail" aria-hidden="true"></div>
 
-    <div class="about-back-top">
-      <a href="#top">▲ Back to main</a>
-    </div>
+    <!-- HERO：ロゴ＋コンセプト -->
+    <header class="about-hero">
+      <!-- ロゴを画像にしたい場合は下のimgに差し替え -->
+      <!-- <img class="about-logo" src="../images/ukiyo-logo.svg" alt="ukiyo film"> -->
+      <div class="about-logo-text">
+        <div class="about-logo-main">ukiyo</div>
+        <div class="about-logo-sub">film</div>
+      </div>
+
+      <p class="about-lead">
+        Ukiyo とは本来、浮世ではなく、つらい世という意味の”憂き世”でありました。<br>
+        しかし、時代と共に辛い世の中を楽しく生きたいと意味を裏返し、楽しい世 ”浮世”という言葉と意味を持つようになりました。<br><br>
+        Ukiyo Film はこの 儚くも美しく心に映つる世界を”浮世”のごとく楽しく、”憂き世”のままに美しく、そして浮世離れしたアイデアを映像として現実に起こすことを目指して生まれた
+        Creative studio です。
+      </p>
+    </header>
+
+    <!-- サービス：縦に積む -->
+    <section class="about-stack">
+      <article class="about-item">
+        <h3>Planning and Design</h3>
+        <p>Deciding what the work should be.<br>Concept design / Creative direction / Visual &amp; Graphic</p>
+      </article>
+
+      <article class="about-item">
+        <h3>Direction</h3>
+        <p>Give a life and shape to your vision.</p>
+      </article>
+
+      <article class="about-item">
+        <h3>Editing</h3>
+        <p>Finding the final form through time and rhythm.</p>
+      </article>
+    </section>
+
+    <!-- Film / Visual：2カラム -->
+    <section class="about-split">
+      <div class="about-col">
+        <h4>Film</h4>
+        <ul>
+          <li>Music video, short film</li>
+          <li>Commercial / Brand film</li>
+          <li>Documentary</li>
+        </ul>
+      </div>
+
+      <div class="about-col">
+        <h4>Visual</h4>
+        <ul>
+          <li>Live visuals, projection</li>
+          <li>Photography / Visual design</li>
+          <li>Branding / Creative</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 最下：クレジット -->
+    <footer class="about-credit">
+      <div class="about-credit-title">Director and Producer</div>
+      <div class="about-credit-name">Matias Maehama</div>
+
+      <div class="about-back-top">
+        <a href="#top">▲ Back to main</a>
+      </div>
+    </footer>
 
   </div>
 </section>
