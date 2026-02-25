@@ -12,7 +12,7 @@ html,
 body {
   width: 100%;
   height: 100%;
-  background: #000; /* ベースは黒。bg-main / bg-about で上書き */
+  background: #000;
   color: #fff;
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
                "Segoe UI", sans-serif;
@@ -26,18 +26,23 @@ body {
 }
 
 /* ============================== */
-/* Scrollbar : 2px line / minimal */
+/* SCALE FOUNDATION（超重要）     */
+/* PC縮尺でバランス維持           */
 /* ============================== */
-/* ==============================
-   SCALE FOUNDATION (PC resize friendly)
-   基準: 1440px 幅で今の見た目 = 1.0
-   ============================== */
 :root{
+  /* scrollbar */
+  --sb-line: 2px;
+  --sb-hit: 12px;
+  --sb-base: rgba(255,255,255,.22);
+  --sb-hover: rgba(255,255,255,.90);
+
+  /* 基準幅（あなたの現行バランスの基準） */
   --design-w: 1440;
-  /* 1440px以上は1、縮むほど0.70まで落とす（下限は好みで0.65〜0.8） */
+
+  /* 1440以上=1 / 縮むほど下がる（下限は潰れ防止） */
   --s: clamp(0.70, calc(100vw / (var(--design-w) * 1px)), 1);
 
-  /* よく使う寸法をトークン化 */
+  /* レイアウトトークン */
   --padY: clamp(18px, calc(40px * var(--s)), 40px);
   --padX: clamp(20px, calc(90px * var(--s)), 90px);
 
@@ -46,23 +51,34 @@ body {
   --galleryW: clamp(320px, calc(520px * var(--s)), 520px);
   --contactW: clamp(300px, calc(420px * var(--s)), 420px);
 
-  /* 中央動画：今の 40vw/960px を“雰囲気保ったまま”可変に */
-  --videoW: clamp(420px, calc(960px * var(--s)), 960px);
+  /* 中央動画：雰囲気保ちつつ縮尺追従 */
+  --videoW: clamp(520px, calc(960px * var(--s)), 960px);
 
-  /* Z移動はスケールさせすぎると雰囲気が変わるので、下限だけ設ける */
+  /* 3D深度：雰囲気を壊さない範囲で下限だけ吸収 */
   --zDepth: clamp(260px, 350px, 350px);
+
+  /* Aboutの余白（PC縮尺追従） */
+  --aboutPadT: clamp(90px, calc(160px * var(--s)), 160px);
+  --aboutPadB: clamp(110px, calc(200px * var(--s)), 200px);
+  --aboutStackPad: clamp(28px, calc(100px * var(--s)), 100px);
+  --aboutStackGap: clamp(42px, calc(154px * var(--s)), 154px);
+
+  --aboutSplitPadT: clamp(28px, calc(100px * var(--s)), 100px);
+  --aboutSplitPadB: clamp(90px, calc(300px * var(--s)), 300px);
+  --aboutSplitGap: clamp(22px, calc(48px * var(--s)), 48px);
 }
 
+/* ============================== */
+/* Scrollbar : 2px line / minimal */
+/* ============================== */
 /* WebKit（Chrome/Edge/Safari） */
 ::-webkit-scrollbar{
   width: var(--sb-hit);
   height: var(--sb-hit);
 }
-
 ::-webkit-scrollbar-track{
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb{
   background: var(--sb-base);
   border: calc((var(--sb-hit) - var(--sb-line)) / 2) solid transparent;
@@ -70,12 +86,10 @@ body {
   border-radius: 999px;
   box-shadow: none;
 }
-
 ::-webkit-scrollbar-thumb:hover{
   background: var(--sb-hover);
   background-clip: content-box;
 }
-
 ::-webkit-scrollbar-thumb:active{
   background: #fff;
   background-clip: content-box;
@@ -113,7 +127,7 @@ html{
 .view {
   width: 100vw;
   height: 100%;
-  padding: 40px 90px;
+  padding: var(--padY) var(--padX);
   position: relative;
 }
 
@@ -160,8 +174,8 @@ html{
 }
 
 .video-frame {
-  width: 40vw;
-  max-width: 960px;
+  width: min(40vw, var(--videoW));
+  max-width: var(--videoW);
   aspect-ratio: 16 / 9;
   background: #000;
   display: flex;
@@ -187,17 +201,17 @@ html{
   position: relative;
 }
 
-/* Contact面のヘッダーを右上へ（desktop修正：right追加） */
+/* Contact面のヘッダーを右上へ */
 .view.view-right .view-header{
   position: absolute;
-  top: 20px;      /* padding:40pxと合わせる */
-  right: 0px;    /* ★重要 */
+  top: calc(var(--padY) * 0.5);
+  right: 0px;
   margin: 0;
   text-align: right;
 }
 .view.view-left .view-header{
   position: absolute;
-  top: 20px;
+  top: calc(var(--padY) * 0.5);
   left: 0px;
   margin: 0;
 }
@@ -216,14 +230,20 @@ body.view-left .outer-space {
   transform: translateX(0) rotateY(0deg);
 }
 body.view-left .inner-shell {
-  transform: translate(-50%, -50%) translateZ(-350px) translateX(80vw);
+  transform:
+    translate(-50%, -50%)
+    translateZ(calc(var(--zDepth) * -1))
+    translateX(clamp(52vw, 80vw, 92vw));
 }
 
 body.view-right .outer-space {
   transform: translateX(-200vw) rotateY(0deg);
 }
 body.view-right .inner-shell {
-  transform: translate(-50%, -50%) translateZ(-350px) translateX(-80vw);
+  transform:
+    translate(-50%, -50%)
+    translateZ(calc(var(--zDepth) * -1))
+    translateX(clamp(-92vw, -80vw, -52vw));
 }
 
 /* ============================== */
@@ -247,18 +267,16 @@ body.view-right .inner-shell {
 /* 配置 */
 .edge-btn--left {
   top: 50%;
-  left: 32px;
+  left: var(--edgeInset);
   transform: translateY(-50%);
 }
-
 .edge-btn--right {
   top: 50%;
-  right: 32px;
+  right: var(--edgeInset);
   transform: translateY(-50%);
 }
-
 .edge-btn--bottom {
-  bottom: 32px;
+  bottom: var(--edgeInset);
   left: 50%;
   transform: translateX(-50%);
 }
@@ -274,7 +292,7 @@ body.view-right .inner-shell {
 .gallery-panel {
   position: relative;
   margin-top: 32px;
-  max-width: 520px;
+  max-width: var(--galleryW);
   height: calc(100% - 72px);
   display: flex;
   flex-direction: column;
@@ -284,7 +302,7 @@ body.view-right .inner-shell {
 .view.view-left .gallery-preview{
   position: absolute;
   inset: 0;
-  background: #000;          /* 何もない時は黒 */
+  background: #000;
   z-index: 0;
   pointer-events: none;
 }
@@ -298,13 +316,12 @@ body.view-right .inner-shell {
   transform: scale(1.04);
   transition: opacity .45s ease, transform .8s ease;
 
-  /* 読みやすさ（好みで） */
   filter: brightness(.75);
 }
 
 /* ホバー中だけ出す（JSでクラス付与） */
 .view.view-left .gallery-preview.is-visible .gallery-preview-img{
-  opacity: .35;             /* 0.25〜0.45で調整 */
+  opacity: .35;
   transform: scale(1);
 }
 
@@ -336,21 +353,17 @@ body.view-right .inner-shell {
   color: inherit;
   cursor: pointer;
 }
-
 .gallery-item:first-child {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
-
 .gallery-item-title {
   font-size: 0.9rem;
 }
-
 .gallery-item-meta {
   opacity: 0.6;
   font-size: 0.7rem;
   margin-top: 4px;
 }
-
 .gallery-item:hover {
   background: rgba(255, 255, 255, 0.03);
 }
@@ -360,7 +373,7 @@ body.view-right .inner-shell {
 /* ============================== */
 .contact-block {
   margin-top: 40px;
-  max-width: 420px;
+  max-width: var(--contactW);
   font-size: 0.8rem;
   letter-spacing: 0.12em;
   line-height: 1.8;
@@ -370,23 +383,17 @@ body.view-right .inner-shell {
   justify-content: center;
   align-items: flex-end;
 }
-
 .view-right .contact-block {
   margin-top: 0;
   text-align: right;
 }
-
 .contact-label {
   opacity: 0.5;
   font-size: 1.3rem;
   text-transform: uppercase;
   margin-top: 16px;
 }
-.contact-value p {
-  font-size: 1.1rem;
-  color: inherit;
-  text-decoration: none;
-}
+.contact-value p,
 .contact-value a {
   font-size: 1.1rem;
   color: inherit;
@@ -399,7 +406,6 @@ body.view-right .inner-shell {
 /* ============================== */
 /* About セクション               */
 /* ============================== */
-
 #about{
   border-top: solid 2px #fff;
   position: relative;
@@ -407,7 +413,7 @@ body.view-right .inner-shell {
   color: #fff;
 }
 
-/* 背景動画（Aboutだけ） */
+/* 背景動画 */
 #about .about-bg-video{
   position: absolute;
   inset: 0;
@@ -416,7 +422,6 @@ body.view-right .inner-shell {
   object-fit: cover;
   z-index: 0;
 }
-
 #about .about-overlay{
   position: absolute;
   inset: 0;
@@ -429,9 +434,9 @@ body.view-right .inner-shell {
 #about .about-content{
   position: relative;
   z-index: 2;
-  max-width: 1800px;               /* ← 横を使う */
-  padding: 160px 8vw 200px 12vw;          /* 少し広げる */
-  margin: 0 auto;            /* ← 中央寄せの本体 */
+  max-width: 1800px;
+  padding: var(--aboutPadT) 8vw var(--aboutPadB) 12vw;
+  margin: 0 auto;
 }
 
 /* ロゴ（Hero化） */
@@ -440,36 +445,21 @@ body.view-right .inner-shell {
   display: flex;
   flex-direction: column;
   justify-content: center;
-
-  /* 追加：縦の呼吸と読みやすさ */
   gap: clamp(10px, 1.2vw, 18px);
 }
-
 .about-logo-text{
   letter-spacing: .35em;
   text-transform: lowercase;
 }
-
-/* メインロゴ：画面に合わせて大きく */
 .about-logo-main{
   font-size: clamp(2.4rem, 4.2vw, 5.2rem);
   line-height: 0.95;
-  margin-bottom: 0; /* gapで管理するので0に */
+  margin-bottom: 0;
 }
-
-/* サブ：メインと釣り合うように */
 .about-logo-sub{
   font-size: clamp(.9rem, 1.2vw, 1.15rem);
   opacity: .8;
   letter-spacing: .22em;
-}
-
-/* ロゴ画像にする場合 */
-.about-logo{
-  display: block;
-  width: 180px;
-  height: auto;
-  margin-bottom: 18px;
 }
 
 /* リード文 */
@@ -486,17 +476,15 @@ body.view-right .inner-shell {
 .about-stack{
   border-left: solid 1px;
   display: grid;
-  gap: 154px;
-  padding: 100px;
+  gap: var(--aboutStackGap);
+  padding: var(--aboutStackPad);
 }
-
 .about-item h3{
   font-size: 1.55rem;
   letter-spacing: .28em;
   text-transform: none;
   margin-bottom: 12px;
 }
-
 .about-item p{
   font-size: 1rem;
   line-height: 1.9;
@@ -510,24 +498,21 @@ body.view-right .inner-shell {
   border-left: solid 1px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  padding: 100px 100px 300px 100px;
+  gap: var(--aboutSplitGap);
+  padding: var(--aboutSplitPadT) var(--aboutStackPad) var(--aboutSplitPadB) var(--aboutStackPad);
   margin-bottom: 80px;
 }
-
 .about-col h4{
   font-size: 1.3rem;
   letter-spacing: .22em;
   text-transform: uppercase;
   margin-bottom: 14px;
 }
-
 .about-col ul{
   list-style: none;
   padding: 0;
   margin: 0;
 }
-
 .about-col li{
   font-size: 1rem;
   line-height: 1.9;
@@ -543,24 +528,22 @@ body.view-right .inner-shell {
   font-size: .95rem;
   margin-bottom: 10px;
 }
-
 .about-credit-name{
   font-size: 1.5rem;
   letter-spacing: .16em;
   margin-bottom: 60px;
 }
 
-/* Back to main（既存） */
+/* Back to main */
 .about-back-top {
   width: 100%;
-  padding: 0px 220px 0px;
-  margin-top: 360px;
+  padding: 0px clamp(28px, calc(220px * var(--s)), 220px) 0px;
+  margin-top: clamp(80px, calc(360px * var(--s)), 360px);
   font-size: 0.9rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   text-align: center;
 }
-
 .about-back-top a {
   color: #ffffff;
   text-decoration: none;
@@ -580,29 +563,25 @@ body.view-right .inner-shell {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
-  z-index: 10000; /* inner-shell(9999)より前に */
+  z-index: 10000;
 }
-
 .modal--open {
   opacity: 1;
   pointer-events: auto;
 }
-
 .modal__backdrop {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.65);
 }
-
 .modal__content {
   position: relative;
   z-index: 1;
-  width: min(92vw, 1400px);  /* 統一（重複削除） */
+  width: min(92vw, 1400px);
   max-width: 1400px;
   background: rgba(0, 0, 0, 0.9);
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
 }
-
 .modal__close {
   position: absolute;
   top: 8px;
@@ -616,10 +595,7 @@ body.view-right .inner-shell {
 }
 
 /* 動画エリア */
-.modal__video {
-  width: 100%;
-}
-
+.modal__video { width: 100%; }
 .modal__video-frame {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -627,19 +603,17 @@ body.view-right .inner-shell {
   overflow: hidden;
   max-height: 80vh;
 }
-
 .modal__video-frame iframe {
   width: 100%;
   height: 100%;
 }
 
-/* 下のフッター（Creditボタンだけ） */
+/* フッター */
 .modal__footer {
   margin-top: 10px;
   display: flex;
   justify-content: center;
 }
-
 .modal__credit-toggle {
   background: none;
   border: none;
@@ -651,7 +625,7 @@ body.view-right .inner-shell {
   opacity: 0.8;
 }
 
-/* ===== クレジットオーバーレイ ===== */
+/* クレジット */
 .modal__credit {
   position: absolute;
   inset: 0;
@@ -663,56 +637,32 @@ body.view-right .inner-shell {
   pointer-events: none;
   transition: opacity 0.25s ease;
 }
-
 .modal__credit--open {
   opacity: 1;
   pointer-events: auto;
 }
-
 .modal__credit-inner {
   text-align: center;
   max-width: 520px;
   padding: 24px 32px 20px;
 }
-
 .modal__credit-title {
   font-size: 1rem;
   margin-bottom: 18px;
   letter-spacing: 0.16em;
 }
-
 .modal__credit-list {
   font-size: 0.8rem;
   line-height: 1.8;
   margin-bottom: 18px;
 }
-
 .credit-row {
   display: flex;
   justify-content: space-between;
   gap: 16px;
 }
-
-.credit-role {
-  opacity: 0.7;
-  text-align: left;
-}
-
-.credit-name {
-  font-weight: 500;
-  text-align: right;
-}
-
-.modal__credit-close {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  cursor: pointer;
-  opacity: 0.8;
-}
+.credit-role { opacity: 0.7; text-align: left; }
+.credit-name { font-weight: 500; text-align: right; }
 
 /* ============================== */
 /* インタラクティブ要素共通      */
@@ -720,14 +670,12 @@ body.view-right .inner-shell {
 .edge-btn,
 .gallery-item,
 .modal__credit-toggle,
-.modal__credit-close,
 .modal__close,
 .about-back-top a {
   transition: color 0.2s ease,
               filter 0.2s ease,
               transform 0.1s ease;
 }
-
 .edge-btn:hover,
 .modal__close:hover,
 .about-back-top a:hover {
@@ -738,54 +686,38 @@ body.view-right .inner-shell {
 /* ============================== */
 /* SAFE PATCHES                   */
 /* ============================== */
-/* モーダル表示中：背面スクロール禁止（JSで body.is-modal-open を付与） */
 body.is-modal-open {
   overflow: hidden;
   touch-action: none;
 }
-
-/* 任意：mainVideo停止で一瞬点滅するのが気になる場合に“隠す” */
 body.is-modal-open .inner-shell {
   opacity: 0;
   transition: opacity 0.15s ease;
 }
 
+/* Global mute */
 .global-mute{
   position: fixed;
   top: 24px;
   right: 32px;
   z-index: 30000;
-
   background: none;
   border: none;
   cursor: pointer;
   padding: 8px;
-
   opacity: .7;
   transition: opacity .2s ease, transform .2s ease;
 }
-
 .global-mute:hover{
   opacity: 1;
   transform: scale(1.05);
 }
-
 .icon-sound{
   width: 22px;
   height: 22px;
   fill: #fff;
   stroke: #fff;
 }
-
-/* 初期は音波表示 */
-.icon-cross{
-  display: none;
-}
-
-/* ミュート時 */
-.global-mute.is-muted .icon-wave{
-  display: none;
-}
-.global-mute.is-muted .icon-cross{
-  display: block;
-}
+.icon-cross{ display: none; }
+.global-mute.is-muted .icon-wave{ display: none; }
+.global-mute.is-muted .icon-cross{ display: block; }
