@@ -105,6 +105,24 @@ window.WORKS = {
         { role: "Mixed & Mastered By", name: "Makoto Hoshino" }
     ]
   },
+  hukanzen_make: {
+    title: "KAMIYA - 不完全メイクポーチ",
+    video: "https://www.youtube.com/embed/lSiv72Zn4_c?autoplay=1&rel=0&enablejsapi=1",
+    credits: [
+        { role: "Director", name: "Matías Maehama" },
+        { role: "Director of Photography", name: "Ryosuke Sato" },
+
+        { role: "Stylist", name: "Ko Nakagawara" },
+        { role: "Hair & Make-Up", name: "Kei Kouda" },
+
+        { role: "Title Design", name: "misato 充彗" },
+
+        { role: "Producer / Actor", name: "Yちゃん" },
+
+        { role: "Special Thanks", name: "Yasu" },
+        { role: "Special Thanks", name: "Takaaki Katsumi" }
+      ]
+  },
   all_my_life: {
     title: "清 竜人 - All My Life",
     video: "https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=1&rel=0&enablejsapi=1",
@@ -296,6 +314,135 @@ window.WORKS = {
         { role: "Producer", name: "Shotaro Ito" },
 
         { role: "Production", name: "Skid" }
+    ]
+  },
+  diagram_x: {
+    title: "She Her Her Hers - Diagram X",
+    video: "https://www.youtube.com/embed/A8Gk5FQPW3Q?autoplay=1&rel=0&enablejsapi=1",
+    credits: [
+        { role: "Cast", name: "Takuma Fujie" },
+        { role: "Cast", name: "Bebe" },
+
+        { role: "Director", name: "Matias Maehama (SKID)" },
+        { role: "Director of Photography", name: "Ryosuke Sato (SKID)" },
+
+        { role: "First Assistant Camera", name: "Ryota Kuroki" },
+        { role: "Second Assistant Camera", name: "Arashi Ishikawa" },
+
+        { role: "Hair & Make-Up", name: "Kei Kouda" },
+
+        { role: "Still Photographer", name: "TAIGA (SKID)" },
+
+        { role: "Title Design", name: "mad O (SKID)" },
+
+        { role: "Production Manager", name: "YOICHIRO (SKID)" },
+        { role: "Producer", name: "Shotaro Ito (SKID)" },
+
+        { role: "Production", name: "SKID" }
+    ]
+  },
+  music: {
+    title: "chilldspot - music feat.LINION",
+    video: "https://www.youtube.com/embed/d96_kIpJurM?autoplay=1&rel=0&enablejsapi=1",
+    credits: [
+        { role: "Director", name: "Oudai Kojima" },
+
+        { role: "Director of Photography", name: "Ryosuke Sato (SKID)" },
+        { role: "Gimbal Camera", name: "Gaku" },
+        { role: "Assistant Camera", name: "Jennifer Keruzore" },
+
+        { role: "Gaffer", name: "Wataru Sugimura" },
+        { role: "Lighting Assistant", name: "Nagomi Oosaki" },
+        { role: "Lighting Assistant", name: "Si Kimura" },
+
+        { role: "Art Director", name: "Sui (SKID)" },
+
+        { role: "Hair & Make-Up", name: "Kei Koda (SKID)" },
+
+        { role: "Stylist", name: "Masato Yoshida" },
+        { role: "Stylist Assistant", name: "Miku Takada" },
+        { role: "Stylist Assistant", name: "Sakino Matuda" },
+
+        { role: "Production Manager", name: "Shota Watanabe" },
+        { role: "Production Manager", name: "Shotaro (SKID)" },
+
+        { role: "Production Assistant", name: "Miyu" },
+        { role: "Production Assistant", name: "Rio" },
+        { role: "Production Assistant", name: "Ruri Fukagawa" },
+
+        { role: "Online Editor", name: "UMA" },
+
+        { role: "Producer", name: "Matias Maehama (SKID)" },
+
+        { role: "Production", name: "SKID" },
+
+        { role: "Special Thanks", name: "Kyoichi (SKID)" },
+        { role: "Special Thanks", name: "NOILL" },
+        { role: "Special Thanks", name: "from the mind" },
+        { role: "Special Thanks", name: "SEKBOMB" },
+        { role: "Special Thanks", name: "Focus" },
+
+        { role: "LINION Footage", name: "Foufa Studio" },
+        { role: "Director (LINION)", name: "Chung Lun Wu" },
+        { role: "Cinematographer (LINION)", name: "Ping Hsiao Tsai" },
+        { role: "Cinematographer (LINION)", name: "Zong Yu Hsieh" },
+        { role: "Project Manager (LINION)", name: "Chien Chuan" },
+        { role: "Hair (LINION)", name: "Min Zhong" },
+        { role: "Make-Up (LINION)", name: "ChunHua Huang" },
+        { role: "Stylist (LINION)", name: "yee1yee" }
+    ]
+  },
+  abnormality: {
+    title: "泣き虫☔︎ - アブノーマリティー。feat. yama",
+    video: "https://www.youtube.com/embed/M71yiXPjL9k?autoplay=1&rel=0&enablejsapi=1",
+    credits: [
+        { role: "Lyrics", name: "泣き虫☔︎" },
+        { role: "Music", name: "泣き虫☔︎" },
+        { role: "Music", name: "小林樹音 (JitteryJackal)" },
+        { role: "Arrangement", name: "小林樹音 (JitteryJackal)" },
+
+        { role: "Guitar", name: "三島想平 (cinema staff / peelingwards)" },
+        { role: "Bass", name: "小林樹音 (JitteryJackal)" },
+
+        { role: "Mixing", name: "Fumiaki Unehara" },
+        { role: "Mastering", name: "Tsubasa Yamazaki (Flugel Mastering)" },
+
+        { role: "Courtesy Appearance", name: "yama (Sony Music Labels Inc.)" }
+    ]
+  },
+  groovynight: {
+    title: "chilldspot - Groovynight",
+    video: "https://www.youtube.com/embed/41BTikGAVZk?autoplay=1&rel=0&enablejsapi=1",
+    credits: [
+        { role: "Director", name: "Oudai Kojima" },
+
+        { role: "Cast", name: "Aki Kigoshi" },
+
+        { role: "Director of Photography", name: "Ryosuke Sato (SKID)" },
+        { role: "First Assistant Camera", name: "Shuho Teramura" },
+        { role: "Second Assistant Camera", name: "Sei Shimura" },
+
+        { role: "Gaffer", name: "Wataru Sugimura" },
+        { role: "Lighting Assistant", name: "Hazine Ogura" },
+        { role: "Lighting Assistant", name: "Shunsuke Hiroi" },
+
+        { role: "Stylist", name: "Masato Yoshida" },
+        { role: "Stylist Assistant", name: "Miku Takada" },
+
+        { role: "Hair & Make-Up", name: "Mizuki Akai" },
+        { role: "Hair Assistant", name: "Mirei Yamada" },
+
+        { role: "Choreographer", name: "Dr.Pay (ASILIS.SKID)" },
+
+        { role: "Production Manager", name: "YOICHIRO (SKID)" },
+        { role: "Production Assistant", name: "Kazuma Asami (SKID)" },
+
+        { role: "Producer", name: "Matias Maehama (SKID)" },
+
+        { role: "Special Thanks", name: "Taro Shimoda" },
+        { role: "Special Thanks", name: "Lui Hirano" },
+        { role: "Special Thanks", name: "Koto Mizusawa" },
+        { role: "Special Thanks", name: "Rio Kuroda" }
     ]
   },
   zion: {
