@@ -721,3 +721,93 @@ body.is-modal-open .inner-shell {
 .icon-cross{ display: none; }
 .global-mute.is-muted .icon-wave{ display: none; }
 .global-mute.is-muted .icon-cross{ display: block; }
+
+/* ==============================
+   Mobile Landscape (works well)
+   No forced rotation
+   ============================== */
+
+/* dvh対応端末は高さ揺れを減らす */
+@supports (height: 100dvh){
+  .space-wrapper{ height: 100dvh; }
+  .outer-space{ height: 100dvh; }
+  .view{ height: 100dvh; }
+}
+
+/* safe-area（ノッチ） */
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* スマホ横向き */
+@media (pointer: coarse) and (orientation: landscape){
+
+  /* 1) 余白圧縮（雰囲気を保ったまま詰める） */
+  :root{
+    --padY: clamp(10px, 1.6vh, 14px);
+    --padX: clamp(12px, 2.2vw, 18px);
+    --edgeInset: clamp(10px, 2vw, 16px);
+  }
+
+  .view{
+    padding:
+      calc(var(--padY) + var(--safe-top))
+      calc(var(--padX) + var(--safe-right))
+      calc(var(--padY) + var(--safe-bottom))
+      calc(var(--padX) + var(--safe-left));
+  }
+
+  /* 2) 中央動画：高さに必ず収める（ここが最重要） */
+  .video-frame{
+    /* 高さが少ないので max-height で縛る */
+    max-height: calc(100dvh - (var(--padY) * 2) - 44px);
+    /* 幅は“高さから算出した16:9”と“vw”の小さい方 */
+    width: min(68vw, calc((100dvh - (var(--padY) * 2) - 44px) * 16 / 9));
+    max-width: 860px; /* スマホ横での上限（雰囲気のまま） */
+    box-shadow: 0 0 26px rgba(255,255,255,.22);
+  }
+
+  /* 3) inner-shell の左右移動を弱めてはみ出し回避 */
+  body.view-left .inner-shell{
+    transform: translate(-50%, -50%) translateZ(calc(var(--zDepth) * -1)) translateX(58vw);
+  }
+  body.view-right .inner-shell{
+    transform: translate(-50%, -50%) translateZ(calc(var(--zDepth) * -1)) translateX(-58vw);
+  }
+
+  /* 4) Gallery：パネルの高さを保証（作品リストを操作できるように） */
+  .gallery-panel{
+    max-width: min(56vw, 520px);
+    height: calc(100dvh - (var(--padY) * 2) - 36px);
+    margin-top: 18px;
+  }
+  .gallery-scroll{
+    max-height: calc(100dvh - (var(--padY) * 2) - 120px);
+    padding-right: 6px;
+  }
+
+  /* 5) Contact：情報が潰れないように */
+  .contact-block{
+    max-width: min(56vw, 420px);
+    font-size: 0.78rem;
+    line-height: 1.75;
+  }
+  .contact-label{ font-size: 1.05rem; }
+  .contact-value p,
+  .contact-value a{ font-size: 0.98rem; }
+
+  /* 6) 上部アイコンが端末UIと被るのを防ぐ */
+  .global-mute{
+    top: calc(10px + var(--safe-top));
+    right: calc(10px + var(--safe-right));
+    transform: scale(.92);
+  }
+
+  /* 7) edgeボタンの当たり判定を少し太らせる（スマホは押しやすさ優先） */
+  .edge-btn{
+    padding: 10px 6px;
+  }
+}
