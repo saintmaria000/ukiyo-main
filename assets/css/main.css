@@ -28,11 +28,29 @@ body {
 /* ============================== */
 /* Scrollbar : 2px line / minimal */
 /* ============================== */
+/* ==============================
+   SCALE FOUNDATION (PC resize friendly)
+   基準: 1440px 幅で今の見た目 = 1.0
+   ============================== */
 :root{
-  --sb-line: 2px;
-  --sb-hit: 12px;
-  --sb-base: rgba(255,255,255,.22);
-  --sb-hover: rgba(255,255,255,.90);
+  --design-w: 1440;
+  /* 1440px以上は1、縮むほど0.70まで落とす（下限は好みで0.65〜0.8） */
+  --s: clamp(0.70, calc(100vw / (var(--design-w) * 1px)), 1);
+
+  /* よく使う寸法をトークン化 */
+  --padY: clamp(18px, calc(40px * var(--s)), 40px);
+  --padX: clamp(20px, calc(90px * var(--s)), 90px);
+
+  --edgeInset: clamp(14px, calc(32px * var(--s)), 32px);
+
+  --galleryW: clamp(320px, calc(520px * var(--s)), 520px);
+  --contactW: clamp(300px, calc(420px * var(--s)), 420px);
+
+  /* 中央動画：今の 40vw/960px を“雰囲気保ったまま”可変に */
+  --videoW: clamp(420px, calc(960px * var(--s)), 960px);
+
+  /* Z移動はスケールさせすぎると雰囲気が変わるので、下限だけ設ける */
+  --zDepth: clamp(260px, 350px, 350px);
 }
 
 /* WebKit（Chrome/Edge/Safari） */
