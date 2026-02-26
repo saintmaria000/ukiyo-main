@@ -341,6 +341,36 @@ window.WORKS = {
         { role: "Production", name: "SKID" }
     ]
   },
+  mitei: {
+    title: "chilldspot - 未定",
+    video: "https://www.youtube.com/embed/FjutuTw4BRY?autoplay=1&rel=0&enablejsapi=1",
+    credits: [
+        { role: "Director", name: "Oudai Kojima" },
+
+        { role: "Cast", name: "momoka" },
+
+        { role: "Director of Photography", name: "Ryosuke Sato" },
+        { role: "1st AC", name: "Sei Shimura" },
+
+        { role: "Lighting Director", name: "Haruka Harazawa" },
+        { role: "Lighting Assistant", name: "Sota Sugiyama" },
+        { role: "Lighting Assistant", name: "Yuto Fujita" },
+        { role: "Lighting Assistant", name: "Yuto Koizumi" },
+
+        { role: "Art Director", name: "sui" },
+
+        { role: "Stylist", name: "Masato Yoshida" },
+
+        { role: "Hair & Make-Up", name: "Kei Kouda" },
+
+        { role: "Production Manager", name: "Yuma Takeda" },
+        { role: "Production Manager", name: "Shota Watanabe" },
+
+        { role: "Producer", name: "Matias Maehama" },
+
+        { role: "Production", name: "SKID" }
+    ]
+  },
   music: {
     title: "chilldspot - music feat.LINION",
     video: "https://www.youtube.com/embed/d96_kIpJurM?autoplay=1&rel=0&enablejsapi=1",
