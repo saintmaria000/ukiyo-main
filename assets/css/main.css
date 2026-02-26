@@ -772,86 +772,132 @@ body.is-modal-open .inner-shell {
   display: block;
 }
 
-/* ============================== */
-/* Mobile only: About huge values */
-/* ============================== */
-@media (max-width: 768px){
+/* =========================================================
+   MOBILE LANDSCAPE FIRST (PCベースを崩さず縮小する上書き)
+   ========================================================= */
+@media (max-width: 932px) and (orientation: landscape) {
 
-  /* About本体：巨大な上下paddingを可変にして縮める */
+  /* ---------- 全体の呼吸（まず padding が効きすぎる） ---------- */
+  .view{
+    padding: 24px 28px; /* PC: 40px 90px */
+  }
+
+  /* Headerの絶対配置も詰める */
+  .view.view-right .view-header,
+  .view.view-left  .view-header{
+    top: 12px;
+  }
+  .view.view-right .view-header{ right: 0; }
+  .view.view-left  .view-header{ left: 0; }
+
+  /* ---------- edge-btn：体験の要、最優先で当たり判定を残す ---------- */
+  .edge-btn{
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    padding: 6px 0; /* タップしやすく少し増やす */
+  }
+  .edge-btn--left{  left: 14px; }   /* PC: 32px */
+  .edge-btn--right{ right: 14px; }  /* PC: 32px */
+  .edge-btn--bottom{ bottom: 14px; }/* PC: 32px */
+
+  /* ---------- inner-shell（中央動画）：横画面では “見た目維持” 優先 ---------- */
+  .video-frame{
+    width: clamp(320px, 72vw, 720px); /* PC: 40vw / max 960px */
+    box-shadow: 0 0 28px rgba(255, 255, 255, 0.28);
+  }
+
+  /* 左右ビュー時の inner-shell 移動量がデカすぎて破綻しやすいので縮める */
+  body.view-left  .inner-shell{
+    transform: translate(-50%, -50%) translateZ(-280px) translateX(65vw); /* PC: -350px / 80vw */
+  }
+  body.view-right .inner-shell{
+    transform: translate(-50%, -50%) translateZ(-280px) translateX(-65vw);
+  }
+
+  /* ---------- Gallery：高さが厳しくなるので panel の余白を詰める ---------- */
+  .gallery-panel{
+    margin-top: 18px; /* PC: 32px */
+    max-width: 460px; /* PC: 520px */
+    height: calc(100% - 56px); /* PC: 72px */
+  }
+  .gallery-item{
+    padding: 8px 0;
+    font-size: 0.88rem;
+  }
+  .gallery-item-meta{
+    font-size: 0.68rem;
+  }
+
+  /* ---------- Contact：文字量が多いと縦が詰むので少し圧縮 ---------- */
+  .contact-block{
+    max-width: 360px; /* PC: 420px */
+    font-size: 0.78rem;
+    line-height: 1.7;
+  }
+  .contact-label{
+    font-size: 1.05rem; /* PC: 1.3rem */
+  }
+  .contact-value p,
+  .contact-value a{
+    font-size: 1.0rem; /* PC: 1.1rem */
+  }
+
+  /* ---------- About：巨大固定値を「縮小」する（作り替えない） ---------- */
   #about .about-content{
-    padding:
-      clamp(56px, 10vw, 96px)   /* top   (元 160px) */
-      clamp(16px, 4vw, 24px)    /* right (元 8vw)   */
-      clamp(72px, 12vw, 120px)  /* bottom(元 200px) */
-      clamp(16px, 5vw, 28px);   /* left  (元 12vw)  */
-    max-width: 100%;
-    margin: 0 auto;
+    max-width: 1200px; /* PC: 1800px */
+    padding: 96px 6vw 120px 8vw; /* PC: 160px 8vw 200px 12vw */
   }
 
-  /* Hero：80vh固定は長すぎる場合があるので上限を作る */
   .about-hero{
-    min-height: min(72vh, 520px);
-    gap: clamp(10px, 2.6vw, 16px);
+    min-height: 64vh; /* PC: 80vh */
   }
 
-  /* ロゴ画像：180px固定→可変 */
-  .about-logo{
-    width: clamp(120px, 34vw, 160px);
-    margin-bottom: clamp(10px, 3vw, 16px);
-  }
-
-  /* リード：幅固定を解除してスマホ幅にフィット */
   .about-lead{
-    max-width: 100%;
-    margin-top: clamp(12px, 3vw, 16px);
+    max-width: 640px;
     font-size: 0.95rem;
-    line-height: 1.85;
   }
 
-  /* 縦積み：gap154/padding100が巨大→可変 */
   .about-stack{
-    gap: clamp(28px, 8vw, 56px);
-    padding: clamp(18px, 4.5vw, 28px);
+    gap: 96px;     /* PC: 154px */
+    padding: 56px; /* PC: 100px */
   }
 
-  /* 本文の幅制限を解除 */
+  .about-item h3{
+    font-size: 1.35rem; /* PC: 1.55rem */
+  }
   .about-item p{
-    max-width: 100%;
+    font-size: 0.95rem;
   }
 
-  /* 2カラムはスマホで1カラムに */
   .about-split{
-    grid-template-columns: 1fr;
-    gap: clamp(18px, 6vw, 32px);
-
-    /* padding: 100 100 300 100 → 可変 */
-    padding:
-      clamp(18px, 4.5vw, 28px)  /* top */
-      clamp(18px, 4.5vw, 28px)  /* right */
-      clamp(56px, 10vw, 96px)   /* bottom */
-      clamp(18px, 4.5vw, 28px); /* left */
-
-    margin-bottom: clamp(24px, 6vw, 48px);
+    gap: 28px; /* PC: 48px */
+    padding: 56px 56px 160px 56px; /* PC: 100px 100px 300px 100px */
+    margin-bottom: 40px; /* PC: 80px */
   }
 
   .about-col h4{
-    font-size: 1.1rem;
-    margin-bottom: clamp(10px, 3vw, 14px);
+    font-size: 1.1rem; /* PC: 1.3rem */
   }
   .about-col li{
     font-size: 0.95rem;
   }
 
-  /* クレジットの下余白：60px→可変 */
   .about-credit-name{
-    margin-bottom: clamp(24px, 6vw, 40px);
-    font-size: 1.25rem;
+    font-size: 1.25rem; /* PC: 1.5rem */
+    margin-bottom: 36px; /* PC: 60px */
   }
 
-  /* Back to main：margin-top 360 / padding 0 220 が致命的→可変 */
   .about-back-top{
-    margin-top: clamp(56px, 12vw, 120px);
-    padding: 0 clamp(12px, 4vw, 20px);
+    padding: 0 24px;  /* PC: 0 220px */
+    margin-top: 160px;/* PC: 360px */
     font-size: 0.85rem;
+  }
+
+  /* ---------- モーダル：横画面は高さが足りないことが多いので少しだけ守る ---------- */
+  .modal__content{
+    width: min(94vw, 1100px); /* PC: min(92vw,1400px) */
+  }
+  .modal__video-frame{
+    max-height: 74vh; /* PC: 80vh */
   }
 }
