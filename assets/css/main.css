@@ -808,10 +808,10 @@ body.is-modal-open .inner-shell {
 
   /* 左右ビュー時の inner-shell 移動量がデカすぎて破綻しやすいので縮める */
   body.view-left  .inner-shell{
-    transform: translate(-50%, -50%) translateZ(-280px) translateX(65vw); /* PC: -350px / 80vw */
+    transform: translate(-50%, -50%) translateZ(-280px) translateX(75vw); /* PC: -350px / 80vw */
   }
   body.view-right .inner-shell{
-    transform: translate(-50%, -50%) translateZ(-280px) translateX(-65vw);
+    transform: translate(-50%, -50%) translateZ(-280px) translateX(-75vw);
   }
 
   /* ---------- Gallery：高さが厳しくなるので panel の余白を詰める ---------- */
