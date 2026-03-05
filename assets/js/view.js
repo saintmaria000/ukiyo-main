@@ -30,16 +30,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // ✅ iOS対策：hashと横スクロールを強制リセット
   // ===============================
   function hardResetScroll() {
-    // 縦横どっちでも、iOSは横scrollLeftを持つことがある
-    // なので document/body 両方を叩く
     const el = document.scrollingElement || document.documentElement;
     el.scrollLeft = 0;
     document.documentElement.scrollLeft = 0;
     document.body.scrollLeft = 0;
-    // 縦スクロールも念のため
     window.scrollTo(0, 0);
   }
 
+  // ===============================
+  // ✅ mobile-landscape クラス同期
+  // （スマホ横：スクロール優先 → 動画タップで操作モード）
+  // ===============================
+  function syncMobileLandscapeClass() {
+    body.classList.toggle('mobile-landscape', isMobileLandscape());
+
+    // 横じゃなくなったら動画操作モード解除（シールド復帰不要）
+    if (!isMobileLandscape()) body.classList.remove('video-enabled');
+  }
+
+  // ===============================
+  // 初期状態の正規化
+  // ===============================
   function normalizeInitialState() {
     // ① hash(#contact-right等) は3Dサイトでは不要なので消す
     if (location.hash) {
@@ -51,6 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ③ さらに横scrollを強制リセット（これが “右面から始まる” を止める）
     hardResetScroll();
+
+    // ④ stage scale 更新（あれば）
+    if (typeof window.updateStageScale === 'function') window.updateStageScale();
+
+    // ⑤ 横判定クラス更新
+    syncMobileLandscapeClass();
   }
 
   // ===============================
@@ -64,11 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn.tagName.toLowerCase() === 'a') e.preventDefault();
 
       const noCenterScroll = btn.dataset.noCenterScroll === 'true';
-
       setView(v, { scrollToTop: !noCenterScroll });
 
-      // スマホはクリック後も横scrollが混ざることがあるのでリセット
-      if (isMobile()) hardResetScroll();
+      // ✅ スクロールは殺さない（hardResetScrollしない）
+      if (typeof window.updateStageScale === 'function') window.updateStageScale();
+      syncMobileLandscapeClass();
     });
   });
 
@@ -88,10 +105,46 @@ document.addEventListener('DOMContentLoaded', () => {
       // スマホ横は “centerに戻してから” の方が安定
       if (isMobileLandscape()) {
         setView('center', { scrollToTop: false });
-        hardResetScroll();
+
+        // ✅ スクロール開始を確実に（動画操作モード解除）
+        body.classList.remove('video-enabled');
       }
 
       targetEl.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // ===============================
+  // ① 動画タップで「操作モード」（video-shield 方式）
+  // ===============================
+  const shield = document.querySelector('.video-shield');
+  if (shield) {
+    shield.addEventListener('click', () => {
+      if (isMobileLandscape()) {
+        body.classList.add('video-enabled');
+      }
+    });
+  }
+
+  // ===============================
+  // ② 動画の外をタップしたら「スクロール優先」に戻す
+  // ===============================
+  document.addEventListener('click', (e) => {
+    if (!isMobileLandscape()) return;
+    if (!body.classList.contains('video-enabled')) return;
+
+    const videoFrame = document.querySelector('.video-frame');
+    if (videoFrame && !videoFrame.contains(e.target)) {
+      body.classList.remove('video-enabled');
+    }
+  }, true);
+
+  // ===============================
+  // ③ Aboutへ行くボタンを押したら必ず戻す（保険）
+  // ===============================
+  document.querySelectorAll('[data-scroll-target]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (isMobileLandscape()) body.classList.remove('video-enabled');
     });
   });
 
@@ -101,37 +154,23 @@ document.addEventListener('DOMContentLoaded', () => {
   normalizeInitialState();
 
   // iOSは描画後に復元が走ることがあるので“追い打ち”
-  setTimeout(normalizeInitialState, 0);
+  // ※多すぎると操作中に当たるので最小限に抑える
   setTimeout(normalizeInitialState, 80);
-  setTimeout(normalizeInitialState, 180);
 
   // 回転直後も復元が混ざるので遅延してリセット
   window.addEventListener('orientationchange', () => {
     setTimeout(() => {
       normalizeInitialState();
+
       // 回転後はcenter固定が一番自然（必要ならここは変更可）
       setView('center', { scrollToTop: false });
       hardResetScroll();
     }, 120);
   });
 
+  // ✅ 重要：resizeで hardResetScroll はしない（スクロール不能の原因になりやすい）
   window.addEventListener('resize', () => {
-    if (isMobile()) hardResetScroll();
-  });
-
-  // ===============================
-  // iPhone横：iframeタッチ吸収対策
-  // ===============================
-
-  function syncMobileLandscapeClass(){
-    document.body.classList.toggle('mobile-landscape', isMobileLandscape());
-  }
-
-  syncMobileLandscapeClass();
-
-  window.addEventListener('resize', syncMobileLandscapeClass);
-  window.addEventListener('orientationchange', () => {
-    setTimeout(syncMobileLandscapeClass, 120);
-  });
-  
+    if (typeof window.updateStageScale === 'function') window.updateStageScale();
+    syncMobileLandscapeClass();
+  }, { passive: true });
 });

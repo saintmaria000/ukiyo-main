@@ -779,12 +779,28 @@ body.is-modal-open .inner-shell {
 .global-mute.is-muted .icon-cross{
   display: block;
 }
-/* スマホ横のときだけ、まずはスクロール優先にする */
-body.mobile-landscape .inner-shell{
-  pointer-events: none;
+
+/* 動画の上に透明シールド（タッチ吸収対策） */
+.video-frame{ position: relative; }
+
+.video-shield{
+  position:absolute;
+  inset:0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display:none;            /* 通常は出さない */
+  z-index: 5;              /* iframeより上 */
+  cursor: pointer;
 }
 
-/* ただし、ユーザーが「動画を触る」モードに入ったら解除 */
-body.mobile-landscape.video-enabled .inner-shell{
-  pointer-events: auto;
+/* スマホ横だけ：まずスクロール優先（＝シールドON） */
+body.mobile-landscape .video-shield{
+  display:block;
+}
+
+/* スマホ横でも「動画操作モード」の時はシールドOFF */
+body.mobile-landscape.video-enabled .video-shield{
+  display:none;
 }
