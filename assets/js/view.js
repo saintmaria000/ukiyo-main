@@ -2,177 +2,69 @@
 document.addEventListener('DOMContentLoaded', () => {
   const body = document.body;
 
-  // iOS Safari のスクロール復元を止める（横位置が勝手に戻るのを防ぐ）
-  if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
-  }
+  // iOS: ブラウザが勝手にスクロール位置を復元しない
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
   const mqCoarse = window.matchMedia('(pointer: coarse)');
   const mqLandscape = window.matchMedia('(orientation: landscape)');
-  const isMobile = () => mqCoarse.matches;
   const isMobileLandscape = () => mqCoarse.matches && mqLandscape.matches;
 
-  // ===============================
-  // view切替
-  // ===============================
-  function setView(view, options = {}) {
-    const { scrollToTop = true } = options;
-
-    body.classList.remove('view-left', 'view-center', 'view-right');
-    body.classList.add('view-' + view);
-
-    if (view === 'center' && scrollToTop) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  // ===============================
-  // ✅ iOS対策：hashと横スクロールを強制リセット
-  // ===============================
-  function hardResetScroll() {
-    const el = document.scrollingElement || document.documentElement;
-    el.scrollLeft = 0;
-    document.documentElement.scrollLeft = 0;
-    document.body.scrollLeft = 0;
-    window.scrollTo(0, 0);
-  }
-
-  // ===============================
-  // ✅ mobile-landscape クラス同期
-  // （スマホ横：スクロール優先 → 動画タップで操作モード）
-  // ===============================
-  function syncMobileLandscapeClass() {
-    body.classList.toggle('mobile-landscape', isMobileLandscape());
-
-    // 横じゃなくなったら動画操作モード解除（シールド復帰不要）
-    if (!isMobileLandscape()) body.classList.remove('video-enabled');
-  }
-
-  // ===============================
-  // 初期状態の正規化
-  // ===============================
-  function normalizeInitialState() {
-    // ① hash(#contact-right等) は3Dサイトでは不要なので消す
-    if (location.hash) {
-      history.replaceState(null, '', location.pathname + location.search);
-    }
-
-    // ② viewは必ず center から開始（スマホは特に）
-    setView('center', { scrollToTop: false });
-
-    // ③ さらに横scrollを強制リセット（これが “右面から始まる” を止める）
-    hardResetScroll();
-
-    // ④ stage scale 更新（あれば）
+  const updateScale = () => {
     if (typeof window.updateStageScale === 'function') window.updateStageScale();
+  };
 
-    // ⑤ 横判定クラス更新
-    syncMobileLandscapeClass();
-    // ✅ 何があってもスクロールロックを残さない
-    document.body.classList.remove('is-modal-open');
-  }
+  const setView = (view) => {
+    body.classList.remove('view-left', 'view-center', 'view-right');
+    body.classList.add(`view-${view}`);
+  };
 
-  // ===============================
-  // data-view ボタン
-  // ===============================
-  document.querySelectorAll('[data-view]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const v = btn.dataset.view;
-      if (!v) return;
+  const init = () => {
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    setView('center');
+    updateScale();
+  };
 
-      if (btn.tagName.toLowerCase() === 'a') e.preventDefault();
+  // view 切替
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-view]');
+    if (!btn) return;
 
-      const noCenterScroll = btn.dataset.noCenterScroll === 'true';
-      setView(v, { scrollToTop: !noCenterScroll });
+    const v = btn.dataset.view;
+    if (!v) return;
 
-      // ✅ スクロールは殺さない（hardResetScrollしない）
-      if (typeof window.updateStageScale === 'function') window.updateStageScale();
-      syncMobileLandscapeClass();
-    });
-  });
+    if (btn.tagName.toLowerCase() === 'a') e.preventDefault();
 
-  // ===============================
-  // data-scroll-target ボタン
-  // ===============================
-  document.querySelectorAll('[data-scroll-target]').forEach((btn) => {
+    setView(v);
+
+    // centerに戻るときだけトップへ（任意：不要なら消してOK）
+    if (v === 'center') window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    updateScale();
+  }, { passive: false });
+
+  // About などへスクロール
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-scroll-target]');
+    if (!btn) return;
+
     const selector = btn.dataset.scrollTarget;
     if (!selector) return;
 
-    btn.addEventListener('click', (e) => {
-      const targetEl = document.querySelector(selector);
-      if (!targetEl) return;
+    const target = document.querySelector(selector);
+    if (!target) return;
 
-      if (btn.tagName.toLowerCase() === 'a') e.preventDefault();
+    if (btn.tagName.toLowerCase() === 'a') e.preventDefault();
 
-      // スマホ横は “centerに戻してから” の方が安定
-      if (isMobileLandscape()) {
-        setView('center', { scrollToTop: false });
+    // 横のときはcenterに戻してから（視覚的にも自然）
+    if (isMobileLandscape()) setView('center');
 
-        // ✅ スクロール開始を確実に（動画操作モード解除）
-        body.classList.remove('video-enabled');
-      }
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, { passive: false });
 
-      targetEl.scrollIntoView({ behavior: 'smooth' });
-    });
-  });
+  // 回転/リサイズ：スケール更新だけ（スクロールは触らない）
+  window.addEventListener('orientationchange', () => setTimeout(updateScale, 120), { passive: true });
+  window.addEventListener('resize', updateScale, { passive: true });
 
-  // ===============================
-  // ① 動画タップで「操作モード」（video-shield 方式）
-  // ===============================
-  const shield = document.querySelector('.video-shield');
-  if (shield) {
-    shield.addEventListener('click', () => {
-      if (isMobileLandscape()) {
-        body.classList.add('video-enabled');
-      }
-    });
-  }
-
-  // ===============================
-  // ② 動画の外をタップしたら「スクロール優先」に戻す
-  // ===============================
-  document.addEventListener('click', (e) => {
-    if (!isMobileLandscape()) return;
-    if (!body.classList.contains('video-enabled')) return;
-
-    const videoFrame = document.querySelector('.video-frame');
-    if (videoFrame && !videoFrame.contains(e.target)) {
-      body.classList.remove('video-enabled');
-    }
-  }, true);
-
-  // ===============================
-  // ③ Aboutへ行くボタンを押したら必ず戻す（保険）
-  // ===============================
-  document.querySelectorAll('[data-scroll-target]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      if (isMobileLandscape()) body.classList.remove('video-enabled');
-    });
-  });
-
-  // ===============================
-  // 初期化（順序が超重要）
-  // ===============================
-  normalizeInitialState();
-
-  // iOSは描画後に復元が走ることがあるので“追い打ち”
-  // ※多すぎると操作中に当たるので最小限に抑える
-  setTimeout(normalizeInitialState, 80);
-
-  // 回転直後も復元が混ざるので遅延してリセット
-  window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
-      normalizeInitialState();
-
-      // 回転後はcenter固定が一番自然（必要ならここは変更可）
-      setView('center', { scrollToTop: false });
-      hardResetScroll();
-    }, 120);
-  });
-
-  // ✅ 重要：resizeで hardResetScroll はしない（スクロール不能の原因になりやすい）
-  window.addEventListener('resize', () => {
-    if (typeof window.updateStageScale === 'function') window.updateStageScale();
-    syncMobileLandscapeClass();
-  }, { passive: true });
+  init();
+  setTimeout(init, 80); // iOS描画直後のズレを1回だけ補正
 });
