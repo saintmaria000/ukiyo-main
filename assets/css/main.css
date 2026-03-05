@@ -804,3 +804,6 @@ body.mobile-landscape .video-shield{
 body.mobile-landscape.video-enabled .video-shield{
   display:none;
 }
+body:not(.is-modal-open){
+  touch-action: pan-y;
+}

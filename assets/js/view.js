@@ -68,6 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ⑤ 横判定クラス更新
     syncMobileLandscapeClass();
+    // ✅ 何があってもスクロールロックを残さない
+    document.body.classList.remove('is-modal-open');
   }
 
   // ===============================
