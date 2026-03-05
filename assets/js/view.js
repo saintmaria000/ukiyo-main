@@ -118,4 +118,20 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', () => {
     if (isMobile()) hardResetScroll();
   });
+
+  // ===============================
+  // iPhone横：iframeタッチ吸収対策
+  // ===============================
+
+  function syncMobileLandscapeClass(){
+    document.body.classList.toggle('mobile-landscape', isMobileLandscape());
+  }
+
+  syncMobileLandscapeClass();
+
+  window.addEventListener('resize', syncMobileLandscapeClass);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(syncMobileLandscapeClass, 120);
+  });
+  
 });

@@ -3,52 +3,60 @@
   const STAGE_W = 2400;
   const STAGE_H = 1080;
 
-  // iOS Safari のアドレスバー伸縮で innerHeight が揺れるので
-  // visualViewport があれば優先して使う
-  function getViewportSize() {
+  function readVV() {
     const vv = window.visualViewport;
-    if (vv) return { w: vv.width, h: vv.height };
-    return { w: window.innerWidth, h: window.innerHeight };
+    if (vv) {
+      return {
+        w: vv.width,
+        h: vv.height,
+        top: vv.offsetTop || 0,
+        left: vv.offsetLeft || 0,
+      };
+    }
+    return {
+      w: window.innerWidth,
+      h: window.innerHeight,
+      top: 0,
+      left: 0,
+    };
   }
 
-  function updateStageScale() {
-    const { w, h } = getViewportSize();
+  function updateStageMetrics() {
+    const { w, h, top, left } = readVV();
 
     // scale = min(viewportW/2400, viewportH/1080)
     let scale = Math.min(w / STAGE_W, h / STAGE_H);
-
-    // 念のため0以下を防ぐ
     if (!Number.isFinite(scale) || scale <= 0) scale = 1;
 
-    document.documentElement.style.setProperty("--stage-scale", String(scale));
+    const root = document.documentElement.style;
+    root.setProperty("--stage-scale", String(scale));
 
-    // もしステージにwidth/heightを変数で持たせたい場合のために公開
+    // ✅ “見えてる領域” をCSSへ渡す（pxで渡す）
+    root.setProperty("--vvw", `${w}px`);
+    root.setProperty("--vvh", `${h}px`);
+    root.setProperty("--vv-top", `${top}px`);
+    root.setProperty("--vv-left", `${left}px`);
+
     return scale;
   }
 
-  // view.js から呼べるように公開（任意）
-  window.updateStageScale = updateStageScale;
+  window.updateStageScale = updateStageMetrics;
 
   // 初回
-  updateStageScale();
+  updateStageMetrics();
 
-  // resize/回転の追従
-  window.addEventListener("resize", updateStageScale, { passive: true });
+  // 追従
+  const onLater = () => {
+    updateStageMetrics();
+    setTimeout(updateStageMetrics, 60);
+    setTimeout(updateStageMetrics, 160);
+  };
 
-  window.addEventListener(
-    "orientationchange",
-    () => {
-      // 回転直後は値が安定しないので追い打ち
-      updateStageScale();
-      setTimeout(updateStageScale, 60);
-      setTimeout(updateStageScale, 160);
-    },
-    { passive: true }
-  );
+  window.addEventListener("resize", updateStageMetrics, { passive: true });
+  window.addEventListener("orientationchange", onLater, { passive: true });
 
-  // アドレスバー伸縮やピンチでも変わる（iOSで有効）
   if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", updateStageScale, { passive: true });
-    window.visualViewport.addEventListener("scroll", updateStageScale, { passive: true });
+    window.visualViewport.addEventListener("resize", updateStageMetrics, { passive: true });
+    window.visualViewport.addEventListener("scroll", updateStageMetrics, { passive: true });
   }
 })();

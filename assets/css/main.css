@@ -38,6 +38,12 @@ body {
   --stage-w: 2400px;
   --stage-h: 1080px;
   --stage-scale: 1; /* JSで更新する（あなたが最後に入れる） */
+
+  --vvw: 100vw;
+  --vvh: 100vh;
+  --vv-top: 0px;
+  --vv-left: 0px;
+
 }
 
 /* WebKit（Chrome/Edge/Safari） */
@@ -73,12 +79,14 @@ html{
 /* ============================== */
 /* TOP Stage wrapper + stage       */
 /* ============================== */
-.space-wrapper {
+.space-wrapper{
   position: relative;
   width: 100%;
-  height: 100vh;
+
+  /* ✅ 100vhではなく“見えてる高さ”を基準にする */
+  height: var(--vvh);
+
   overflow: hidden;
-  /* ✅ perspectiveはstageに持たせる */
   perspective: none;
 }
 
@@ -87,10 +95,14 @@ html{
   position: absolute;
   width: var(--stage-w);
   height: var(--stage-h);
-  left: 50%;
-  top: 50%;
+
+  /* 見えてる領域の左上からのオフセットも考慮 */
+  left: calc(var(--vv-left) + (var(--vvw) / 2));
+  top:  calc(var(--vv-top)  + (var(--vvh) / 2));
+
   transform-origin: center;
   transform: translate(-50%, -50%) scale(var(--stage-scale));
+
   overflow: hidden;
   perspective: 1600px;
 }
@@ -766,4 +778,13 @@ body.is-modal-open .inner-shell {
 }
 .global-mute.is-muted .icon-cross{
   display: block;
+}
+/* スマホ横のときだけ、まずはスクロール優先にする */
+body.mobile-landscape .inner-shell{
+  pointer-events: none;
+}
+
+/* ただし、ユーザーが「動画を触る」モードに入ったら解除 */
+body.mobile-landscape.video-enabled .inner-shell{
+  pointer-events: auto;
 }
