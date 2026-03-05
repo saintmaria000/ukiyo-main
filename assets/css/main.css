@@ -1,809 +1,339 @@
-/* ============================== */
-/* 基本設定                       */
-/* ============================== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  color: #fff;
+/* =========================================
+   Base
+========================================= */
+*{ margin:0; padding:0; box-sizing:border-box; color:#fff; }
+
+html{
+  background:#000;
+  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue","Segoe UI", sans-serif;
+  scroll-behavior:smooth;
+  scrollbar-width:thin;
+  scrollbar-color: rgba(255,255,255,.22) transparent;
 }
 
-html,
-body {
-  width: 100%;
-  height: 100%;
-  background: #000; /* ベースは黒。bg-main / bg-about で上書き */
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
-               "Segoe UI", sans-serif;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  transition: background 0.6s ease, color 0.6s ease;
+/* ✅ iOS安定：bodyは height:100% をやめて “普通に縦スクロールできる” 状態にする */
+body{
+  width:100%;
+  min-height:100%;
+  height:auto;
+  background:#000;
+  overflow-x:hidden;
+  overflow-y:auto;
+  transition: background .6s ease, color .6s ease;
+  -webkit-overflow-scrolling: touch;
 }
 
-.page {
-  min-height: 100vh;
-}
+/* 全体ラッパ（About以降の縦スクロールの土台） */
+.page{ min-height:100vh; }
 
-/* ============================== */
-/* Scrollbar : 2px line / minimal */
-/* ============================== */
+/* =========================================
+   Scrollbar (WebKit)
+========================================= */
+::-webkit-scrollbar{ width:12px; height:12px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.22);
+  border:5px solid transparent;
+  background-clip: content-box;
+  border-radius:999px;
+}
+::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,.90); background-clip: content-box; }
+::-webkit-scrollbar-thumb:active{ background:#fff; background-clip: content-box; }
+
+/* =========================================
+   Stage Vars
+========================================= */
 :root{
-  --sb-line: 2px;
-  --sb-hit: 12px;
-  --sb-base: rgba(255,255,255,.22);
-  --sb-hover: rgba(255,255,255,.90);
-
-  /* ✅ TOP stage base */
   --stage-w: 2400px;
   --stage-h: 1080px;
-  --stage-scale: 1; /* JSで更新する（あなたが最後に入れる） */
+  --stage-scale: 1;
 
+  /* visualViewport metrics (JSで更新 / fallback) */
   --vvw: 100vw;
   --vvh: 100vh;
   --vv-top: 0px;
   --vv-left: 0px;
-
 }
 
-/* WebKit（Chrome/Edge/Safari） */
-::-webkit-scrollbar{
-  width: var(--sb-hit);
-  height: var(--sb-hit);
-}
-::-webkit-scrollbar-track{
-  background: transparent;
-}
-::-webkit-scrollbar-thumb{
-  background: var(--sb-base);
-  border: calc((var(--sb-hit) - var(--sb-line)) / 2) solid transparent;
-  background-clip: content-box;
-  border-radius: 999px;
-  box-shadow: none;
-}
-::-webkit-scrollbar-thumb:hover{
-  background: var(--sb-hover);
-  background-clip: content-box;
-}
-::-webkit-scrollbar-thumb:active{
-  background: #fff;
-  background-clip: content-box;
-}
-
-/* Firefox */
-html{
-  scrollbar-width: thin;
-  scrollbar-color: var(--sb-base) transparent;
-}
-
-/* ============================== */
-/* TOP Stage wrapper + stage       */
-/* ============================== */
+/* =========================================
+   TOP Stage (2400x1080 scaled)
+========================================= */
 .space-wrapper{
-  position: relative;
-  width: 100%;
-
-  /* ✅ 100vhではなく“見えてる高さ”を基準にする */
+  position:relative;
+  width:100%;
   height: var(--vvh);
-
-  overflow: hidden;
-  perspective: none;
+  overflow:hidden;         /* ステージをクリップ */
 }
 
-/* ✅ 2400×1080固定キャンバス（全体をscaleで縮小） */
+/* 2400×1080固定キャンバス */
 .stage{
-  position: absolute;
+  position:absolute;
   width: var(--stage-w);
   height: var(--stage-h);
 
-  /* 見えてる領域の左上からのオフセットも考慮 */
   left: calc(var(--vv-left) + (var(--vvw) / 2));
   top:  calc(var(--vv-top)  + (var(--vvh) / 2));
 
-  transform-origin: center;
+  transform-origin:center;
   transform: translate(-50%, -50%) scale(var(--stage-scale));
-
-  overflow: hidden;
-  perspective: 1600px;
-}
-
-/* ============================== */
-/* 3D 空間（外筒 + 内筒）          */
-/* ============================== */
-/* 外筒：横に3面並んだリング */
-.outer-space {
-  position: absolute;
-  inset: 0;
-  display: flex;
-
-  /* ✅ 300vw → 2400*3 = 7200px */
-  width: 7200px;
-
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.8s ease;
-  z-index: 2;
-}
-
-.view {
-  /* ✅ 100vw → 2400px */
-  width: 2400px;
-
-  height: 100%;
-  padding: 40px 90px;
-  position: relative;
-}
-
-.view::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: none;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.view-inner {
-  position: relative;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* ヘッダー */
-.view-header {
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-
-/* ============================== */
-/* 中央映像（inner-shell）          */
-/* ============================== */
-.inner-shell {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-style: preserve-3d;
-  transition: transform 0.8s ease;
-  z-index: 9999;
-  pointer-events: auto;
-}
-
-.inner-shell iframe { pointer-events: auto; }
-
-/* ✅ 40vw(@2400)=960px なので固定 */
-.video-frame {
-  width: 960px;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
-  position: relative;
-}
-
-.video-frame iframe {
-  width: 100%;
-  height: 100%;
-}
-
-/* iframe枠線/謎の余白事故防止（統合） */
-.video-frame iframe, .modal__video-frame iframe {
-  border: 0;
-  display: block;
-}
-
-.view.view-right{
-  position: relative;
-}
-
-/* Contact面のヘッダーを右上へ（desktop修正：right追加） */
-.view.view-right .view-header{
-  position: absolute;
-  top: 20px; /* padding:40pxと合わせる */
-  right: 0px; /* ★重要 */
-  margin: 0;
-  text-align: right;
-}
-
-.view.view-left .view-header{
-  position: absolute;
-  top: 20px;
-  left: 0px;
-  margin: 0;
-}
-
-/* ============================== */
-/* 3D 視点制御（ビュー切り替え）    */
-/* ============================== */
-/* ✅ outer-space の移動：vw撤去（2400基準px） */
-body.view-center .outer-space {
-  transform: translateX(-2400px) rotateY(0deg);
-}
-body.view-left .outer-space {
-  transform: translateX(0px) rotateY(0deg);
-}
-body.view-right .outer-space {
-  transform: translateX(-4800px) rotateY(0deg);
-}
-
-/* ✅ inner-shell の移動：vw撤去（±80vw → ±1920px） */
-body.view-center .inner-shell {
-  transform: translate(-50%, -50%) translateZ(0px) translateX(0px);
-}
-body.view-left .inner-shell {
-  transform: translate(-50%, -50%) translateZ(-350px) translateX(1920px);
-}
-body.view-right .inner-shell {
-  transform: translate(-50%, -50%) translateZ(-350px) translateX(-1920px);
-}
-
-/* ============================== */
-/* 端ナビ（各面共通）               */
-/* ============================== */
-.edge-btn {
-  color: #fff;
-  position: absolute;
-  background: none;
-  border: none;
-  font-size: 0.75rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  opacity: 0.8;
-  cursor: pointer;
-  padding: 4px 0;
-  z-index: 20;
-  pointer-events: auto;
-}
-
-/* 配置 */
-.edge-btn--left {
-  top: 50%;
-  left: 32px;
-  transform: translateY(-50%);
-}
-.edge-btn--right {
-  top: 50%;
-  right: 32px;
-  transform: translateY(-50%);
-}
-.edge-btn--bottom {
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* ============================== */
-/* Gallery 面                       */
-/* ============================== */
-.view-left .view-inner {
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.gallery-panel {
-  position: relative;
-  margin-top: 32px;
-  max-width: 520px;
-  height: calc(100% - 72px);
-  display: flex;
-  flex-direction: column;
-}
-
-/* プレビュー */
-.view.view-left .gallery-preview{
-  position: absolute;
-  inset: 0;
-  background: #000; /* 何もない時は黒 */
-  z-index: 0;
-  pointer-events: none;
-}
-
-.view.view-left .gallery-preview-img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  opacity: 0;
-  transform: scale(1.04);
-  transition: opacity .45s ease, transform .8s ease;
-  filter: brightness(.75);
-}
-
-/* ホバー中だけ出す（JSでクラス付与） */
-.view.view-left .gallery-preview.is-visible .gallery-preview-img{
-  opacity: .35;
-  transform: scale(1);
-}
-
-/* リストや文字は前面へ */
-.view.view-left .view-inner,
-.view.view-left .gallery-panel,
-.view.view-left .gallery-scroll{
-  position: relative;
-  z-index: 2;
-}
-
-.gallery-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,.16) transparent;
-}
-
-.gallery-item {
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: none;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
-  color: inherit;
-  cursor: pointer;
-}
-
-.gallery-item:first-child {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.gallery-item-title { font-size: 0.9rem; }
-.gallery-item-meta {
-  opacity: 0.6;
-  font-size: 0.7rem;
-  margin-top: 4px;
-}
-
-.gallery-item:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* ============================== */
-/* Contact 面                       */
-/* ============================== */
-.contact-block {
-  margin-top: 40px;
-  max-width: 420px;
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
-  line-height: 1.8;
-}
-
-.view-right .view-inner {
-  justify-content: center;
-  align-items: flex-end;
-}
-
-.view-right .contact-block {
-  margin-top: 0;
-  text-align: right;
-}
-
-.contact-label {
-  opacity: 0.5;
-  font-size: 1.3rem;
-  text-transform: uppercase;
-  margin-top: 16px;
-}
-
-.contact-value p {
-  font-size: 1.1rem;
-  color: inherit;
-  text-decoration: none;
-}
-
-.contact-value a {
-  font-size: 1.1rem;
-  color: inherit;
-  text-decoration: none;
-}
-
-.contact-value a:hover { text-decoration: underline; }
-
-/* ============================== */
-/* About セクション                 */
-/* ============================== */
-#about{
-  border-top: solid 2px #fff;
-  position: relative;
-  overflow: hidden;
-  color: #fff;
-}
-
-/* 背景動画（Aboutだけ） */
-#about .about-bg-video{
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-}
-
-#about .about-overlay{
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* 内容ラッパー */
-#about .about-content{
-  position: relative;
-  z-index: 2;
-  max-width: 1800px;
-  padding: 160px 8vw 200px 12vw;
-  margin: 0 auto;
-}
-
-/* ロゴ（Hero化） */
-.about-hero{
-  min-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(10px, 1.2vw, 18px);
+  overflow:hidden;
+  perspective:1600px;
 }
-
-.about-logo-text{
-  letter-spacing: .35em;
-  text-transform: lowercase;
-}
-
-.about-logo-main{
-  font-size: clamp(2.4rem, 4.2vw, 5.2rem);
-  line-height: 0.95;
-  margin-bottom: 0;
-}
-
-.about-logo-sub{
-  font-size: clamp(.9rem, 1.2vw, 1.15rem);
-  opacity: .8;
-  letter-spacing: .22em;
-}
-
-.about-logo{
-  display: block;
-  width: 180px;
-  height: auto;
-  margin-bottom: 18px;
-}
-
-.about-lead{
-  margin-top: 18px;
-  max-width: 720px;
-  font-size: 1rem;
-  line-height: 1.9;
-  letter-spacing: .08em;
-  opacity: .9;
-}
-
-/* 縦積みサービス */
-.about-stack{
-  border-left: solid 1px;
-  display: grid;
-  gap: 154px;
-  padding: 100px;
-}
-
-.about-item h3{
-  font-size: 1.55rem;
-  letter-spacing: .28em;
-  text-transform: none;
-  margin-bottom: 12px;
-}
-
-.about-item p{
-  font-size: 1rem;
-  line-height: 1.9;
-  letter-spacing: .09em;
-  opacity: .85;
-  max-width: 560px;
-}
-
-/* 2カラム */
-.about-split{
-  border-left: solid 1px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  padding: 100px 100px 300px 100px;
-  margin-bottom: 80px;
-}
-
-.about-col h4{
-  font-size: 1.3rem;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  margin-bottom: 14px;
-}
-
-.about-col ul{
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.about-col li{
-  font-size: 1rem;
-  line-height: 1.9;
-  letter-spacing: .08em;
-  opacity: .85;
-}
-
-/* 最下部 */
-.about-credit-title{
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  opacity: .85;
-  font-size: .95rem;
-  margin-bottom: 10px;
-}
-
-.about-credit-name{
-  font-size: 1.5rem;
-  letter-spacing: .16em;
-  margin-bottom: 60px;
-}
-
-/* Back to main（既存） */
-.about-back-top {
-  width: 100%;
-  padding: 0px 220px 0px;
-  margin-top: 360px;
-  font-size: 0.9rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-.about-back-top a {
-  color: #ffffff;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-  padding-bottom: 2px;
-}
-
-/* ============================== */
-/* Gallery モーダル                */
-/* ============================== */
-.modal {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-  z-index: 10000; /* inner-shell(9999)より前に */
-}
-
-.modal--open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-}
-
-.modal__content {
-  position: relative;
-  z-index: 1;
-  width: min(92vw, 1400px);
-  max-width: 1400px;
-  background: rgba(0, 0, 0, 0.9);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
-}
-
-.modal__close {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 1.2rem;
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-/* 動画エリア */
-.modal__video { width: 100%; }
-
-.modal__video-frame {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  position: relative;
-  overflow: hidden;
-  max-height: 80vh;
-}
-
-.modal__video-frame iframe {
-  width: 100%;
-  height: 100%;
-}
-
-/* 下のフッター（Creditボタンだけ） */
-.modal__footer {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-}
-
-.modal__credit-toggle {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 0.8rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-/* ===== クレジットオーバーレイ ===== */
-.modal__credit {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-
-.modal__credit--open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.modal__credit-inner {
-  text-align: center;
-  max-width: 520px;
-  padding: 24px 32px 20px;
-}
-
-.modal__credit-title {
-  font-size: 1rem;
-  margin-bottom: 18px;
-  letter-spacing: 0.16em;
-}
-
-.modal__credit-list {
-  font-size: 0.8rem;
-  line-height: 1.8;
-  margin-bottom: 18px;
-}
-
-.credit-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.credit-role {
-  opacity: 0.7;
-  text-align: left;
-}
-
-.credit-name {
-  font-weight: 500;
-  text-align: right;
-}
-
-.modal__credit-close {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-/* ============================== */
-/* インタラクティブ要素共通         */
-/* ============================== */
-.edge-btn, .gallery-item, .modal__credit-toggle, .modal__credit-close, .modal__close, .about-back-top a {
-  transition: color 0.2s ease, filter 0.2s ease, transform 0.1s ease;
-}
-
-.edge-btn:hover, .modal__close:hover, .about-back-top a:hover {
-  color: #fff;
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
-}
-
-/* ============================== */
-/* SAFE PATCHES                    */
-/* ============================== */
-/* モーダル表示中：背面スクロール禁止（JSで body.is-modal-open を付与） */
-body.is-modal-open {
-  overflow: hidden;
-  touch-action: none;
-}
-
-/* 任意：mainVideo停止で一瞬点滅するのが気になる場合に“隠す” */
-body.is-modal-open .inner-shell {
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.global-mute{
-  position: fixed;
-  top: 24px;
-  right: 32px;
-  z-index: 30000;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  opacity: .7;
-  transition: opacity .2s ease, transform .2s ease;
-}
-
-.global-mute:hover{
-  opacity: 1;
-  transform: scale(1.05);
-}
-
-.icon-sound{
-  width: 22px;
-  height: 22px;
-  fill: #fff;
-  stroke: #fff;
-}
-
-/* 初期は音波表示 */
-.icon-cross{
-  display: none;
-}
-
-/* ミュート時 */
-.global-mute.is-muted .icon-wave{
-  display: none;
-}
-.global-mute.is-muted .icon-cross{
-  display: block;
-}
-
-/* 動画の上に透明シールド（タッチ吸収対策） */
-.video-frame{ position: relative; }
 
-.video-shield{
+/* --- 3 panels --- */
+.outer-space{
   position:absolute;
   inset:0;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  display:none;            /* 通常は出さない */
-  z-index: 5;              /* iframeより上 */
-  cursor: pointer;
+  display:flex;
+  width: 7200px;          /* 2400 * 3 */
+  height:100%;
+  transition: transform .8s ease;
+  z-index:2;
 }
 
-/* スマホ横だけ：まずスクロール優先（＝シールドON） */
-body.mobile-landscape .video-shield{
+.view{
+  width:2400px;
+  height:100%;
+  padding:40px 90px;
+  position:relative;
+}
+
+.view-inner{
+  position:relative;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.view-header{
+  letter-spacing:.25em;
+  text-transform:uppercase;
+  opacity:.8;
+}
+
+/* --- center video --- */
+.inner-shell{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transition: transform .8s ease;
+  z-index:9999;
+}
+
+.video-frame{
+  width:960px;
+  aspect-ratio:16/9;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 40px rgba(255,255,255,.3);
+  position:relative;
+}
+
+.video-frame iframe{
+  width:100%;
+  height:100%;
+  border:0;
   display:block;
 }
 
-/* スマホ横でも「動画操作モード」の時はシールドOFF */
-body.mobile-landscape.video-enabled .video-shield{
-  display:none;
+/* Contact header positioning */
+.view.view-right .view-header{
+  position:absolute; top:20px; right:0; margin:0; text-align:right;
 }
-body:not(.is-modal-open){
-  touch-action: pan-y;
+.view.view-left .view-header{
+  position:absolute; top:20px; left:0; margin:0;
 }
+
+/* --- view transforms (2400px基準) --- */
+body.view-center .outer-space{ transform: translateX(-2400px); }
+body.view-left   .outer-space{ transform: translateX(0px); }
+body.view-right  .outer-space{ transform: translateX(-4800px); }
+
+body.view-center .inner-shell{ transform: translate(-50%,-50%) translateX(0px); }
+body.view-left   .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px) translateX(1920px); }
+body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px) translateX(-1920px); }
+
+/* =========================================
+   Edge Buttons
+========================================= */
+.edge-btn{
+  position:absolute;
+  background:none;
+  border:none;
+  font-size:.75rem;
+  letter-spacing:.25em;
+  text-transform:uppercase;
+  opacity:.8;
+  cursor:pointer;
+  padding:4px 0;
+  z-index:20;
+}
+
+.edge-btn--left{ top:50%; left:32px;  transform:translateY(-50%); }
+.edge-btn--right{ top:50%; right:32px; transform:translateY(-50%); }
+.edge-btn--bottom{ bottom:32px; left:50%; transform:translateX(-50%); }
+
+/* =========================================
+   Gallery (Left)
+========================================= */
+.view-left .view-inner{ justify-content:center; align-items:flex-start; }
+
+.gallery-panel{
+  position:relative;
+  margin-top:32px;
+  max-width:520px;
+  height: calc(100% - 72px);
+  display:flex;
+  flex-direction:column;
+}
+
+.gallery-preview{ position:absolute; inset:0; background:#000; z-index:0; pointer-events:none; }
+.gallery-preview-img{
+  width:100%; height:100%;
+  object-fit:cover;
+  display:block;
+  opacity:0;
+  transform:scale(1.04);
+  transition: opacity .45s ease, transform .8s ease;
+  filter:brightness(.75);
+}
+.gallery-preview.is-visible .gallery-preview-img{ opacity:.35; transform:scale(1); }
+
+.gallery-scroll{
+  flex:1;
+  overflow-y:auto;
+  padding-right:8px;
+  scrollbar-width:thin;
+  scrollbar-color: rgba(255,255,255,.16) transparent;
+}
+
+.gallery-item{
+  width:100%;
+  text-align:left;
+  background:transparent;
+  border:none;
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  font-size:.9rem;
+  letter-spacing:.08em;
+  cursor:pointer;
+}
+.gallery-item:first-child{ border-top:1px solid rgba(255,255,255,.08); }
+.gallery-item-meta{ opacity:.6; font-size:.7rem; margin-top:4px; }
+.gallery-item:hover{ background: rgba(255,255,255,.03); }
+
+/* =========================================
+   Contact (Right)
+========================================= */
+.view-right .view-inner{ justify-content:center; align-items:flex-end; }
+
+.contact-block{
+  margin-top:40px;
+  max-width:420px;
+  font-size:.8rem;
+  letter-spacing:.12em;
+  line-height:1.8;
+}
+.view-right .contact-block{ margin-top:0; text-align:right; }
+
+.contact-label{ opacity:.5; font-size:1.3rem; text-transform:uppercase; margin-top:16px; }
+.contact-value p, .contact-value a{ font-size:1.1rem; color:inherit; text-decoration:none; }
+.contact-value a:hover{ text-decoration:underline; }
+
+/* =========================================
+   About (Normal vertical section)
+========================================= */
+#about{
+  border-top:2px solid #fff;
+  position:relative;
+  overflow:hidden;
+}
+
+#about .about-bg-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+#about .about-overlay{ position:absolute; inset:0; background: rgba(0,0,0,.45); z-index:1; pointer-events:none; }
+
+#about .about-content{
+  position:relative;
+  z-index:2;
+  max-width:1800px;
+  padding:160px 8vw 200px 12vw;
+  margin:0 auto;
+}
+
+.about-hero{
+  min-height:80vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap: clamp(10px, 1.2vw, 18px);
+}
+
+.about-logo-text{ letter-spacing:.35em; text-transform:lowercase; }
+.about-logo-main{ font-size: clamp(2.4rem, 4.2vw, 5.2rem); line-height:.95; }
+.about-logo-sub{ font-size: clamp(.9rem, 1.2vw, 1.15rem); opacity:.8; letter-spacing:.22em; }
+.about-lead{ margin-top:18px; max-width:720px; font-size:1rem; line-height:1.9; letter-spacing:.08em; opacity:.9; }
+
+.about-stack{ border-left:1px solid #fff; display:grid; gap:154px; padding:100px; }
+.about-item h3{ font-size:1.55rem; letter-spacing:.28em; margin-bottom:12px; }
+.about-item p{ font-size:1rem; line-height:1.9; letter-spacing:.09em; opacity:.85; max-width:560px; }
+
+.about-split{
+  border-left:1px solid #fff;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:48px;
+  padding:100px 100px 300px;
+  margin-bottom:80px;
+}
+.about-col h4{ font-size:1.3rem; letter-spacing:.22em; text-transform:uppercase; margin-bottom:14px; }
+.about-col ul{ list-style:none; padding:0; margin:0; }
+.about-col li{ font-size:1rem; line-height:1.9; letter-spacing:.08em; opacity:.85; }
+
+.about-credit-title{ letter-spacing:.22em; text-transform:uppercase; opacity:.85; font-size:.95rem; margin-bottom:10px; }
+.about-credit-name{ font-size:1.5rem; letter-spacing:.16em; margin-bottom:60px; }
+
+.about-back-top{
+  width:100%;
+  padding:0 220px;
+  margin-top:360px;
+  font-size:.9rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  text-align:center;
+}
+.about-back-top a{ color:#fff; text-decoration:none; border-bottom:1px solid rgba(255,255,255,.2); padding-bottom:2px; }
+
+/* =========================================
+   Modal (visual only - lock is JS side later)
+========================================= */
+.modal{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .25s ease;
+  z-index:10000;
+}
+.modal--open{ opacity:1; pointer-events:auto; }
+
+.modal__backdrop{ position:absolute; inset:0; background: rgba(0,0,0,.65); }
+.modal__content{ position:relative; z-index:1; width:min(92vw,1400px); background: rgba(0,0,0,.9); box-shadow: 0 0 40px rgba(0,0,0,.7); }
+.modal__video-frame{ width:100%; aspect-ratio:16/9; position:relative; overflow:hidden; max-height:80vh; }
+.modal__video-frame iframe{ width:100%; height:100%; border:0; display:block; }
+
+/* =========================================
+   iOS / touch (keep last)
+========================================= */
+/* ✅ 基本は縦スクロールを許可（モーダルロックは後で安全に戻す） */
+body{ touch-action: pan-y; }
+
+/* video shield (必要なら別JSで制御) */
+.video-shield{ display:none; }
+body.mobile-landscape .video-shield{ display:block; }
+body.mobile-landscape.video-enabled .video-shield{ display:none; }
