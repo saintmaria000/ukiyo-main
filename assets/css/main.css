@@ -33,6 +33,11 @@ body {
   --sb-hit: 12px;
   --sb-base: rgba(255,255,255,.22);
   --sb-hover: rgba(255,255,255,.90);
+
+  /* ✅ TOP stage base */
+  --stage-w: 2400px;
+  --stage-h: 1080px;
+  --stage-scale: 1; /* JSで更新する（あなたが最後に入れる） */
 }
 
 /* WebKit（Chrome/Edge/Safari） */
@@ -40,11 +45,9 @@ body {
   width: var(--sb-hit);
   height: var(--sb-hit);
 }
-
 ::-webkit-scrollbar-track{
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb{
   background: var(--sb-base);
   border: calc((var(--sb-hit) - var(--sb-line)) / 2) solid transparent;
@@ -52,12 +55,10 @@ body {
   border-radius: 999px;
   box-shadow: none;
 }
-
 ::-webkit-scrollbar-thumb:hover{
   background: var(--sb-hover);
   background-clip: content-box;
 }
-
 ::-webkit-scrollbar-thumb:active{
   background: #fff;
   background-clip: content-box;
@@ -70,22 +71,42 @@ html{
 }
 
 /* ============================== */
-/* 3D 空間（外筒 + 内筒）        */
+/* TOP Stage wrapper + stage       */
 /* ============================== */
 .space-wrapper {
   position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  /* ✅ perspectiveはstageに持たせる */
+  perspective: none;
+}
+
+/* ✅ 2400×1080固定キャンバス（全体をscaleで縮小） */
+.stage{
+  position: absolute;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  left: 50%;
+  top: 50%;
+  transform-origin: center;
+  transform: translate(-50%, -50%) scale(var(--stage-scale));
+  overflow: hidden;
   perspective: 1600px;
 }
 
+/* ============================== */
+/* 3D 空間（外筒 + 内筒）          */
+/* ============================== */
 /* 外筒：横に3面並んだリング */
 .outer-space {
   position: absolute;
   inset: 0;
   display: flex;
-  width: 300vw;
+
+  /* ✅ 300vw → 2400*3 = 7200px */
+  width: 7200px;
+
   height: 100%;
   transform-style: preserve-3d;
   transition: transform 0.8s ease;
@@ -93,7 +114,9 @@ html{
 }
 
 .view {
-  width: 100vw;
+  /* ✅ 100vw → 2400px */
+  width: 2400px;
+
   height: 100%;
   padding: 40px 90px;
   position: relative;
@@ -125,7 +148,7 @@ html{
 }
 
 /* ============================== */
-/* 中央映像（inner-shell）       */
+/* 中央映像（inner-shell）          */
 /* ============================== */
 .inner-shell {
   position: absolute;
@@ -137,13 +160,11 @@ html{
   pointer-events: auto;
 }
 
-.inner-shell iframe {
-  pointer-events: auto;
-}
+.inner-shell iframe { pointer-events: auto; }
 
+/* ✅ 40vw(@2400)=960px なので固定 */
 .video-frame {
-  width: 40vw;
-  max-width: 960px;
+  width: 960px;
   aspect-ratio: 16 / 9;
   background: #000;
   display: flex;
@@ -159,8 +180,7 @@ html{
 }
 
 /* iframe枠線/謎の余白事故防止（統合） */
-.video-frame iframe,
-.modal__video-frame iframe {
+.video-frame iframe, .modal__video-frame iframe {
   border: 0;
   display: block;
 }
@@ -172,11 +192,12 @@ html{
 /* Contact面のヘッダーを右上へ（desktop修正：right追加） */
 .view.view-right .view-header{
   position: absolute;
-  top: 20px;      /* padding:40pxと合わせる */
-  right: 0px;    /* ★重要 */
+  top: 20px; /* padding:40pxと合わせる */
+  right: 0px; /* ★重要 */
   margin: 0;
   text-align: right;
 }
+
 .view.view-left .view-header{
   position: absolute;
   top: 20px;
@@ -185,31 +206,32 @@ html{
 }
 
 /* ============================== */
-/* 3D 視点制御（ビュー切り替え） */
+/* 3D 視点制御（ビュー切り替え）    */
 /* ============================== */
+/* ✅ outer-space の移動：vw撤去（2400基準px） */
 body.view-center .outer-space {
-  transform: translateX(-100vw) rotateY(0deg);
+  transform: translateX(-2400px) rotateY(0deg);
 }
-body.view-center .inner-shell {
-  transform: translate(-50%, -50%) translateZ(0px) translateX(0);
+body.view-left .outer-space {
+  transform: translateX(0px) rotateY(0deg);
+}
+body.view-right .outer-space {
+  transform: translateX(-4800px) rotateY(0deg);
 }
 
-body.view-left .outer-space {
-  transform: translateX(0) rotateY(0deg);
+/* ✅ inner-shell の移動：vw撤去（±80vw → ±1920px） */
+body.view-center .inner-shell {
+  transform: translate(-50%, -50%) translateZ(0px) translateX(0px);
 }
 body.view-left .inner-shell {
-  transform: translate(-50%, -50%) translateZ(-350px) translateX(80vw);
-}
-
-body.view-right .outer-space {
-  transform: translateX(-200vw) rotateY(0deg);
+  transform: translate(-50%, -50%) translateZ(-350px) translateX(1920px);
 }
 body.view-right .inner-shell {
-  transform: translate(-50%, -50%) translateZ(-350px) translateX(-80vw);
+  transform: translate(-50%, -50%) translateZ(-350px) translateX(-1920px);
 }
 
 /* ============================== */
-/* 端ナビ（各面共通）            */
+/* 端ナビ（各面共通）               */
 /* ============================== */
 .edge-btn {
   color: #fff;
@@ -232,13 +254,11 @@ body.view-right .inner-shell {
   left: 32px;
   transform: translateY(-50%);
 }
-
 .edge-btn--right {
   top: 50%;
   right: 32px;
   transform: translateY(-50%);
 }
-
 .edge-btn--bottom {
   bottom: 32px;
   left: 50%;
@@ -246,7 +266,7 @@ body.view-right .inner-shell {
 }
 
 /* ============================== */
-/* Gallery 面                     */
+/* Gallery 面                       */
 /* ============================== */
 .view-left .view-inner {
   justify-content: center;
@@ -266,27 +286,25 @@ body.view-right .inner-shell {
 .view.view-left .gallery-preview{
   position: absolute;
   inset: 0;
-  background: #000;          /* 何もない時は黒 */
+  background: #000; /* 何もない時は黒 */
   z-index: 0;
   pointer-events: none;
 }
+
 .view.view-left .gallery-preview-img{
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-
   opacity: 0;
   transform: scale(1.04);
   transition: opacity .45s ease, transform .8s ease;
-
-  /* 読みやすさ（好みで） */
   filter: brightness(.75);
 }
 
 /* ホバー中だけ出す（JSでクラス付与） */
 .view.view-left .gallery-preview.is-visible .gallery-preview-img{
-  opacity: .35;             /* 0.25〜0.45で調整 */
+  opacity: .35;
   transform: scale(1);
 }
 
@@ -323,10 +341,7 @@ body.view-right .inner-shell {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.gallery-item-title {
-  font-size: 0.9rem;
-}
-
+.gallery-item-title { font-size: 0.9rem; }
 .gallery-item-meta {
   opacity: 0.6;
   font-size: 0.7rem;
@@ -338,7 +353,7 @@ body.view-right .inner-shell {
 }
 
 /* ============================== */
-/* Contact 面                     */
+/* Contact 面                       */
 /* ============================== */
 .contact-block {
   margin-top: 40px;
@@ -364,24 +379,24 @@ body.view-right .inner-shell {
   text-transform: uppercase;
   margin-top: 16px;
 }
+
 .contact-value p {
   font-size: 1.1rem;
   color: inherit;
   text-decoration: none;
 }
+
 .contact-value a {
   font-size: 1.1rem;
   color: inherit;
   text-decoration: none;
 }
-.contact-value a:hover {
-  text-decoration: underline;
-}
+
+.contact-value a:hover { text-decoration: underline; }
 
 /* ============================== */
-/* About セクション               */
+/* About セクション                 */
 /* ============================== */
-
 #about{
   border-top: solid 2px #fff;
   position: relative;
@@ -411,9 +426,9 @@ body.view-right .inner-shell {
 #about .about-content{
   position: relative;
   z-index: 2;
-  max-width: 1800px;               /* ← 横を使う */
-  padding: 160px 8vw 200px 12vw;          /* 少し広げる */
-  margin: 0 auto;            /* ← 中央寄せの本体 */
+  max-width: 1800px;
+  padding: 160px 8vw 200px 12vw;
+  margin: 0 auto;
 }
 
 /* ロゴ（Hero化） */
@@ -422,8 +437,6 @@ body.view-right .inner-shell {
   display: flex;
   flex-direction: column;
   justify-content: center;
-
-  /* 追加：縦の呼吸と読みやすさ */
   gap: clamp(10px, 1.2vw, 18px);
 }
 
@@ -432,21 +445,18 @@ body.view-right .inner-shell {
   text-transform: lowercase;
 }
 
-/* メインロゴ：画面に合わせて大きく */
 .about-logo-main{
   font-size: clamp(2.4rem, 4.2vw, 5.2rem);
   line-height: 0.95;
-  margin-bottom: 0; /* gapで管理するので0に */
+  margin-bottom: 0;
 }
 
-/* サブ：メインと釣り合うように */
 .about-logo-sub{
   font-size: clamp(.9rem, 1.2vw, 1.15rem);
   opacity: .8;
   letter-spacing: .22em;
 }
 
-/* ロゴ画像にする場合 */
 .about-logo{
   display: block;
   width: 180px;
@@ -454,7 +464,6 @@ body.view-right .inner-shell {
   margin-bottom: 18px;
 }
 
-/* リード文 */
 .about-lead{
   margin-top: 18px;
   max-width: 720px;
@@ -551,7 +560,7 @@ body.view-right .inner-shell {
 }
 
 /* ============================== */
-/* Gallery モーダル               */
+/* Gallery モーダル                */
 /* ============================== */
 .modal {
   position: fixed;
@@ -579,7 +588,7 @@ body.view-right .inner-shell {
 .modal__content {
   position: relative;
   z-index: 1;
-  width: min(92vw, 1400px);  /* 統一（重複削除） */
+  width: min(92vw, 1400px);
   max-width: 1400px;
   background: rgba(0, 0, 0, 0.9);
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
@@ -598,9 +607,7 @@ body.view-right .inner-shell {
 }
 
 /* 動画エリア */
-.modal__video {
-  width: 100%;
-}
+.modal__video { width: 100%; }
 
 .modal__video-frame {
   width: 100%;
@@ -697,28 +704,19 @@ body.view-right .inner-shell {
 }
 
 /* ============================== */
-/* インタラクティブ要素共通      */
+/* インタラクティブ要素共通         */
 /* ============================== */
-.edge-btn,
-.gallery-item,
-.modal__credit-toggle,
-.modal__credit-close,
-.modal__close,
-.about-back-top a {
-  transition: color 0.2s ease,
-              filter 0.2s ease,
-              transform 0.1s ease;
+.edge-btn, .gallery-item, .modal__credit-toggle, .modal__credit-close, .modal__close, .about-back-top a {
+  transition: color 0.2s ease, filter 0.2s ease, transform 0.1s ease;
 }
 
-.edge-btn:hover,
-.modal__close:hover,
-.about-back-top a:hover {
+.edge-btn:hover, .modal__close:hover, .about-back-top a:hover {
   color: #fff;
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
 }
 
 /* ============================== */
-/* SAFE PATCHES                   */
+/* SAFE PATCHES                    */
 /* ============================== */
 /* モーダル表示中：背面スクロール禁止（JSで body.is-modal-open を付与） */
 body.is-modal-open {
@@ -737,12 +735,10 @@ body.is-modal-open .inner-shell {
   top: 24px;
   right: 32px;
   z-index: 30000;
-
   background: none;
   border: none;
   cursor: pointer;
   padding: 8px;
-
   opacity: .7;
   transition: opacity .2s ease, transform .2s ease;
 }
@@ -770,134 +766,4 @@ body.is-modal-open .inner-shell {
 }
 .global-mute.is-muted .icon-cross{
   display: block;
-}
-
-/* =========================================================
-   MOBILE LANDSCAPE FIRST (PCベースを崩さず縮小する上書き)
-   ========================================================= */
-@media (max-width: 932px) and (orientation: landscape) {
-
-  /* ---------- 全体の呼吸（まず padding が効きすぎる） ---------- */
-  .view{
-    padding: 24px 28px; /* PC: 40px 90px */
-  }
-
-  /* Headerの絶対配置も詰める */
-  .view.view-right .view-header,
-  .view.view-left  .view-header{
-    top: 12px;
-  }
-  .view.view-right .view-header{ right: 0; }
-  .view.view-left  .view-header{ left: 0; }
-
-  /* ---------- edge-btn：体験の要、最優先で当たり判定を残す ---------- */
-  .edge-btn{
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
-    padding: 6px 0; /* タップしやすく少し増やす */
-  }
-  .edge-btn--left{  left: 14px; }   /* PC: 32px */
-  .edge-btn--right{ right: 14px; }  /* PC: 32px */
-  .edge-btn--bottom{ bottom: 14px; }/* PC: 32px */
-
-  /* ---------- inner-shell（中央動画）：横画面では “見た目維持” 優先 ---------- */
-  .video-frame{
-    width: clamp(320px, 72vw, 720px); /* PC: 40vw / max 960px */
-    box-shadow: 0 0 28px rgba(255, 255, 255, 0.28);
-  }
-
-  /* 左右ビュー時の inner-shell 移動量がデカすぎて破綻しやすいので縮める */
-  body.view-left  .inner-shell{
-    transform: translate(-50%, -50%) translateZ(-280px) translateX(75vw); /* PC: -350px / 80vw */
-  }
-  body.view-right .inner-shell{
-    transform: translate(-50%, -50%) translateZ(-280px) translateX(-75vw);
-  }
-
-  /* ---------- Gallery：高さが厳しくなるので panel の余白を詰める ---------- */
-  .gallery-panel{
-    margin-top: 18px; /* PC: 32px */
-    max-width: 460px; /* PC: 520px */
-    height: calc(100% - 56px); /* PC: 72px */
-  }
-  .gallery-item{
-    padding: 8px 0;
-    font-size: 0.88rem;
-  }
-  .gallery-item-meta{
-    font-size: 0.68rem;
-  }
-
-  /* ---------- Contact：文字量が多いと縦が詰むので少し圧縮 ---------- */
-  .contact-block{
-    max-width: 360px; /* PC: 420px */
-    font-size: 0.78rem;
-    line-height: 1.7;
-  }
-  .contact-label{
-    font-size: 1.05rem; /* PC: 1.3rem */
-  }
-  .contact-value p,
-  .contact-value a{
-    font-size: 1.0rem; /* PC: 1.1rem */
-  }
-
-  /* ---------- About：巨大固定値を「縮小」する（作り替えない） ---------- */
-  #about .about-content{
-    max-width: 1200px; /* PC: 1800px */
-    padding: 96px 6vw 120px 8vw; /* PC: 160px 8vw 200px 12vw */
-  }
-
-  .about-hero{
-    min-height: 64vh; /* PC: 80vh */
-  }
-
-  .about-lead{
-    max-width: 640px;
-    font-size: 0.95rem;
-  }
-
-  .about-stack{
-    gap: 96px;     /* PC: 154px */
-    padding: 56px; /* PC: 100px */
-  }
-
-  .about-item h3{
-    font-size: 1.35rem; /* PC: 1.55rem */
-  }
-  .about-item p{
-    font-size: 0.95rem;
-  }
-
-  .about-split{
-    gap: 28px; /* PC: 48px */
-    padding: 56px 56px 160px 56px; /* PC: 100px 100px 300px 100px */
-    margin-bottom: 40px; /* PC: 80px */
-  }
-
-  .about-col h4{
-    font-size: 1.1rem; /* PC: 1.3rem */
-  }
-  .about-col li{
-    font-size: 0.95rem;
-  }
-
-  .about-credit-name{
-    font-size: 1.25rem; /* PC: 1.5rem */
-    margin-bottom: 36px; /* PC: 60px */
-  }
-
-  .about-back-top{
-    padding: 0 24px;  /* PC: 0 220px */
-    margin-top: 160px;/* PC: 360px */
-    font-size: 0.85rem;
-  }
-
-  /* ---------- モーダル：横画面は高さが足りないことが多いので少しだけ守る ---------- */
-  .modal__content{
-    width: min(94vw, 1100px); /* PC: min(92vw,1400px) */
-  }
-  .modal__video-frame{
-    max-height: 74vh; /* PC: 80vh */
-  }
 }
