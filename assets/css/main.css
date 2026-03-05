@@ -337,3 +337,33 @@ body{ touch-action: pan-y; }
 .video-shield{ display:none; }
 body.mobile-landscape .video-shield{ display:block; }
 body.mobile-landscape.video-enabled .video-shield{ display:none; }
+
+/* =========================================
+   iOS Safari 横スクロール不能の根治パッチ
+   画面全域を覆うレイヤーがタッチを奪わないようにする
+========================================= */
+@media (pointer: coarse) {
+
+  /* 大面積レイヤーは“触れない”＝スクロールに返す */
+  .stage,
+  .outer-space,
+  .view,
+  .view-inner,
+  .inner-shell{
+    pointer-events: none;
+  }
+
+  /* 触れる必要があるUIだけ戻す */
+  .edge-btn,
+  .gallery-item,
+  .gallery-scroll,
+  .contact-block,
+  .contact-block a,
+  .global-mute,
+  .video-frame,
+  .video-frame iframe,
+  .modal,
+  .modal *{
+    pointer-events: auto;
+  }
+}
