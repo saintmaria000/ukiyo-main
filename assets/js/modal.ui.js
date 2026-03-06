@@ -1,16 +1,16 @@
 // assets/js/modal.ui.js
 (function () {
-  const modal      = document.getElementById('galleryModal');
+  const modal = document.getElementById('galleryModal');
   if (!modal) return;
 
   const modalVideo = document.getElementById('modalVideo');
-  const mainVideo  = document.getElementById('mainVideo');
-  const closeEls   = document.querySelectorAll('[data-modal-close]');
+  const mainVideo = document.getElementById('mainVideo');
+  const closeEls = document.querySelectorAll('[data-modal-close]');
 
   const creditOverlay = document.getElementById('modalCredit');
-  const creditToggle  = document.getElementById('creditToggleBtn');
-  const creditTitle   = document.getElementById('modalCreditTitle');
-  const creditListEl  = document.getElementById('modalCreditList');
+  const creditToggle = document.getElementById('creditToggleBtn');
+  const creditTitle = document.getElementById('modalCreditTitle');
+  const creditListEl = document.getElementById('modalCreditList');
 
   let lastActiveEl = null;
   let lastScrollY = 0;
@@ -42,26 +42,15 @@
     if (!iframeEl) return;
     try {
       iframeEl.contentWindow.postMessage(
-        JSON.stringify({ event: "command", func, args: [] }),
-        "*"
+        JSON.stringify({ event: 'command', func, args: [] }),
+        '*'
       );
     } catch (_) {}
   }
 
   function stopYouTube(iframeEl) {
-    ytCommandTo(iframeEl, "stopVideo");
-    ytCommandTo(iframeEl, "pauseVideo");
-  }
-
-  // 毎回アンミュート保証（前の動画の状態を引き継がない）
-  function forceUnmuteYouTubeSoon(iframeEl) {
-    if (!iframeEl) return;
-
-    const start = Date.now();
-    const timer = setInterval(() => {
-      ytCommandTo(iframeEl, "unMute");
-      if (Date.now() - start > 1200) clearInterval(timer);
-    }, 200);
+    ytCommandTo(iframeEl, 'stopVideo');
+    ytCommandTo(iframeEl, 'pauseVideo');
   }
 
   // =========================
@@ -71,7 +60,7 @@
     document.querySelectorAll('video[data-keep-playing]').forEach((v) => {
       try {
         const p = v.play();
-        if (p && typeof p.catch === "function") p.catch(() => {});
+        if (p && typeof p.catch === 'function') p.catch(() => {});
       } catch (_) {}
     });
   }
@@ -144,7 +133,12 @@
     // モーダル動画セット
     if (modalVideo) {
       modalVideo.src = withEnableJsApi(video || '');
-      forceUnmuteYouTubeSoon(modalVideo); // ← 重要
+
+      // ✅ mute.js 側に modalVideo を登録
+      if (window.GlobalMute) {
+        window.GlobalMute.registerYT('modalVideo');
+        window.GlobalMute.apply();
+      }
     }
 
     renderCredits(title, credits);
@@ -156,11 +150,7 @@
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
-    // 背景は常に再生維持
     resumeKeepPlayingVideos();
-
-    // グローバルUIもアンミュートへ
-    if (window.GlobalMute) window.GlobalMute.set(false);
 
     const firstClose = modal.querySelector('[data-modal-close]');
     if (firstClose) firstClose.focus();
@@ -177,12 +167,18 @@
     unlockScroll();
 
     stopYouTube(modalVideo);
+
+    // ✅ srcを消す前に unregister
+    if (window.GlobalMute) {
+      window.GlobalMute.unregisterYT('modalVideo');
+    }
+
     if (modalVideo) modalVideo.src = '';
 
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
-    resumeKeepPlayingVideos(); // 背景復帰保証
+    resumeKeepPlayingVideos();
 
     if (lastActiveEl && typeof lastActiveEl.focus === 'function') {
       lastActiveEl.focus();

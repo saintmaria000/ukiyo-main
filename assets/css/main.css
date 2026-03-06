@@ -1,7 +1,12 @@
 /* =========================================
    Base
 ========================================= */
-*{ margin:0; padding:0; box-sizing:border-box; color:#fff; }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  color:#fff;
+}
 
 html{
   background:#000;
@@ -11,7 +16,6 @@ html{
   scrollbar-color: rgba(255,255,255,.22) transparent;
 }
 
-/* ✅ iOS安定：bodyは height:100% をやめて “普通に縦スクロールできる” 状態にする */
 body{
   width:100%;
   min-height:100%;
@@ -21,24 +25,50 @@ body{
   overflow-y:auto;
   transition: background .6s ease, color .6s ease;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
-/* 全体ラッパ（About以降の縦スクロールの土台） */
-.page{ min-height:100vh; }
+button,
+a{
+  -webkit-tap-highlight-color: transparent;
+}
+
+button{
+  appearance:none;
+  -webkit-appearance:none;
+  background:none;
+  border:none;
+  font:inherit;
+}
+
+.page{
+  min-height:100vh;
+}
 
 /* =========================================
    Scrollbar (WebKit)
 ========================================= */
-::-webkit-scrollbar{ width:12px; height:12px; }
-::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar{
+  width:12px;
+  height:12px;
+}
+::-webkit-scrollbar-track{
+  background:transparent;
+}
 ::-webkit-scrollbar-thumb{
   background: rgba(255,255,255,.22);
   border:5px solid transparent;
   background-clip: content-box;
   border-radius:999px;
 }
-::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,.90); background-clip: content-box; }
-::-webkit-scrollbar-thumb:active{ background:#fff; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover{
+  background: rgba(255,255,255,.90);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:active{
+  background:#fff;
+  background-clip: content-box;
+}
 
 /* =========================================
    Stage Vars
@@ -48,11 +78,54 @@ body{
   --stage-h: 1080px;
   --stage-scale: 1;
 
-  /* visualViewport metrics (JSで更新 / fallback) */
   --vvw: 100vw;
   --vvh: 100vh;
   --vv-top: 0px;
   --vv-left: 0px;
+}
+
+/* =========================================
+   Global Mute
+   → これが無いと左上の「|」みたいに壊れる
+========================================= */
+.global-mute{
+  position:fixed;
+  top:24px;
+  right:32px;
+  left:auto;
+  bottom:auto;
+  z-index:30000;
+  padding:8px;
+  opacity:.7;
+  cursor:pointer;
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events:auto;
+  transform:none;
+}
+
+.global-mute:hover{
+  opacity:1;
+  transform:scale(1.05);
+}
+
+.icon-sound{
+  width:22px;
+  height:22px;
+  display:block;
+  fill:#fff;
+  stroke:#fff;
+}
+
+.icon-cross{
+  display:none;
+}
+
+.global-mute.is-muted .icon-wave{
+  display:none;
+}
+
+.global-mute.is-muted .icon-cross{
+  display:block;
 }
 
 /* =========================================
@@ -62,10 +135,9 @@ body{
   position:relative;
   width:100%;
   height: var(--vvh);
-  overflow:hidden;         /* ステージをクリップ */
+  overflow:hidden;
 }
 
-/* 2400×1080固定キャンバス */
 .stage{
   position:absolute;
   width: var(--stage-w);
@@ -85,7 +157,7 @@ body{
   position:absolute;
   inset:0;
   display:flex;
-  width: 7200px;          /* 2400 * 3 */
+  width:7200px;
   height:100%;
   transition: transform .8s ease;
   z-index:2;
@@ -139,12 +211,33 @@ body{
   display:block;
 }
 
+/* 動画シールド */
+.video-shield{
+  position:absolute;
+  inset:0;
+  background:transparent;
+  border:0;
+  padding:0;
+  margin:0;
+  display:none;
+  z-index:5;
+  cursor:pointer;
+}
+
 /* Contact header positioning */
 .view.view-right .view-header{
-  position:absolute; top:20px; right:0; margin:0; text-align:right;
+  position:absolute;
+  top:20px;
+  right:0;
+  margin:0;
+  text-align:right;
 }
+
 .view.view-left .view-header{
-  position:absolute; top:20px; left:0; margin:0;
+  position:absolute;
+  top:20px;
+  left:0;
+  margin:0;
 }
 
 /* --- view transforms (2400px基準) --- */
@@ -170,16 +263,39 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   cursor:pointer;
   padding:4px 0;
   z-index:20;
+  transition: color .2s ease, filter .2s ease, transform .1s ease;
 }
 
-.edge-btn--left{ top:50%; left:32px;  transform:translateY(-50%); }
-.edge-btn--right{ top:50%; right:32px; transform:translateY(-50%); }
-.edge-btn--bottom{ bottom:32px; left:50%; transform:translateX(-50%); }
+.edge-btn:hover{
+  color:#fff;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
+}
+
+.edge-btn--left{
+  top:50%;
+  left:32px;
+  transform:translateY(-50%);
+}
+
+.edge-btn--right{
+  top:50%;
+  right:32px;
+  transform:translateY(-50%);
+}
+
+.edge-btn--bottom{
+  bottom:32px;
+  left:50%;
+  transform:translateX(-50%);
+}
 
 /* =========================================
    Gallery (Left)
 ========================================= */
-.view-left .view-inner{ justify-content:center; align-items:flex-start; }
+.view-left .view-inner{
+  justify-content:center;
+  align-items:flex-start;
+}
 
 .gallery-panel{
   position:relative;
@@ -190,9 +306,17 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   flex-direction:column;
 }
 
-.gallery-preview{ position:absolute; inset:0; background:#000; z-index:0; pointer-events:none; }
+.gallery-preview{
+  position:absolute;
+  inset:0;
+  background:#000;
+  z-index:0;
+  pointer-events:none;
+}
+
 .gallery-preview-img{
-  width:100%; height:100%;
+  width:100%;
+  height:100%;
   object-fit:cover;
   display:block;
   opacity:0;
@@ -200,7 +324,11 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   transition: opacity .45s ease, transform .8s ease;
   filter:brightness(.75);
 }
-.gallery-preview.is-visible .gallery-preview-img{ opacity:.35; transform:scale(1); }
+
+.gallery-preview.is-visible .gallery-preview-img{
+  opacity:.35;
+  transform:scale(1);
+}
 
 .gallery-scroll{
   flex:1;
@@ -208,6 +336,10 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   padding-right:8px;
   scrollbar-width:thin;
   scrollbar-color: rgba(255,255,255,.16) transparent;
+
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .gallery-item{
@@ -220,15 +352,30 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   font-size:.9rem;
   letter-spacing:.08em;
   cursor:pointer;
+  transition: color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
 }
-.gallery-item:first-child{ border-top:1px solid rgba(255,255,255,.08); }
-.gallery-item-meta{ opacity:.6; font-size:.7rem; margin-top:4px; }
-.gallery-item:hover{ background: rgba(255,255,255,.03); }
+
+.gallery-item:first-child{
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.gallery-item-meta{
+  opacity:.6;
+  font-size:.7rem;
+  margin-top:4px;
+}
+
+.gallery-item:hover{
+  background: rgba(255,255,255,.03);
+}
 
 /* =========================================
    Contact (Right)
 ========================================= */
-.view-right .view-inner{ justify-content:center; align-items:flex-end; }
+.view-right .view-inner{
+  justify-content:center;
+  align-items:flex-end;
+}
 
 .contact-block{
   margin-top:40px;
@@ -237,14 +384,32 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   letter-spacing:.12em;
   line-height:1.8;
 }
-.view-right .contact-block{ margin-top:0; text-align:right; }
 
-.contact-label{ opacity:.5; font-size:1.3rem; text-transform:uppercase; margin-top:16px; }
-.contact-value p, .contact-value a{ font-size:1.1rem; color:inherit; text-decoration:none; }
-.contact-value a:hover{ text-decoration:underline; }
+.view-right .contact-block{
+  margin-top:0;
+  text-align:right;
+}
+
+.contact-label{
+  opacity:.5;
+  font-size:1.3rem;
+  text-transform:uppercase;
+  margin-top:16px;
+}
+
+.contact-value p,
+.contact-value a{
+  font-size:1.1rem;
+  color:inherit;
+  text-decoration:none;
+}
+
+.contact-value a:hover{
+  text-decoration:underline;
+}
 
 /* =========================================
-   About (Normal vertical section)
+   About
 ========================================= */
 #about{
   border-top:2px solid #fff;
@@ -252,8 +417,22 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   overflow:hidden;
 }
 
-#about .about-bg-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
-#about .about-overlay{ position:absolute; inset:0; background: rgba(0,0,0,.45); z-index:1; pointer-events:none; }
+#about .about-bg-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:0;
+}
+
+#about .about-overlay{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.45);
+  z-index:1;
+  pointer-events:none;
+}
 
 #about .about-content{
   position:relative;
@@ -271,14 +450,51 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   gap: clamp(10px, 1.2vw, 18px);
 }
 
-.about-logo-text{ letter-spacing:.35em; text-transform:lowercase; }
-.about-logo-main{ font-size: clamp(2.4rem, 4.2vw, 5.2rem); line-height:.95; }
-.about-logo-sub{ font-size: clamp(.9rem, 1.2vw, 1.15rem); opacity:.8; letter-spacing:.22em; }
-.about-lead{ margin-top:18px; max-width:720px; font-size:1rem; line-height:1.9; letter-spacing:.08em; opacity:.9; }
+.about-logo-text{
+  letter-spacing:.35em;
+  text-transform:lowercase;
+}
 
-.about-stack{ border-left:1px solid #fff; display:grid; gap:154px; padding:100px; }
-.about-item h3{ font-size:1.55rem; letter-spacing:.28em; margin-bottom:12px; }
-.about-item p{ font-size:1rem; line-height:1.9; letter-spacing:.09em; opacity:.85; max-width:560px; }
+.about-logo-main{
+  font-size: clamp(2.4rem, 4.2vw, 5.2rem);
+  line-height:.95;
+}
+
+.about-logo-sub{
+  font-size: clamp(.9rem, 1.2vw, 1.15rem);
+  opacity:.8;
+  letter-spacing:.22em;
+}
+
+.about-lead{
+  margin-top:18px;
+  max-width:720px;
+  font-size:1rem;
+  line-height:1.9;
+  letter-spacing:.08em;
+  opacity:.9;
+}
+
+.about-stack{
+  border-left:1px solid #fff;
+  display:grid;
+  gap:154px;
+  padding:100px;
+}
+
+.about-item h3{
+  font-size:1.55rem;
+  letter-spacing:.28em;
+  margin-bottom:12px;
+}
+
+.about-item p{
+  font-size:1rem;
+  line-height:1.9;
+  letter-spacing:.09em;
+  opacity:.85;
+  max-width:560px;
+}
 
 .about-split{
   border-left:1px solid #fff;
@@ -288,12 +504,40 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   padding:100px 100px 300px;
   margin-bottom:80px;
 }
-.about-col h4{ font-size:1.3rem; letter-spacing:.22em; text-transform:uppercase; margin-bottom:14px; }
-.about-col ul{ list-style:none; padding:0; margin:0; }
-.about-col li{ font-size:1rem; line-height:1.9; letter-spacing:.08em; opacity:.85; }
 
-.about-credit-title{ letter-spacing:.22em; text-transform:uppercase; opacity:.85; font-size:.95rem; margin-bottom:10px; }
-.about-credit-name{ font-size:1.5rem; letter-spacing:.16em; margin-bottom:60px; }
+.about-col h4{
+  font-size:1.3rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  margin-bottom:14px;
+}
+
+.about-col ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.about-col li{
+  font-size:1rem;
+  line-height:1.9;
+  letter-spacing:.08em;
+  opacity:.85;
+}
+
+.about-credit-title{
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  opacity:.85;
+  font-size:.95rem;
+  margin-bottom:10px;
+}
+
+.about-credit-name{
+  font-size:1.5rem;
+  letter-spacing:.16em;
+  margin-bottom:60px;
+}
 
 .about-back-top{
   width:100%;
@@ -304,10 +548,22 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   text-transform:uppercase;
   text-align:center;
 }
-.about-back-top a{ color:#fff; text-decoration:none; border-bottom:1px solid rgba(255,255,255,.2); padding-bottom:2px; }
+
+.about-back-top a{
+  color:#fff;
+  text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.2);
+  padding-bottom:2px;
+  transition: color .2s ease, filter .2s ease, transform .1s ease;
+}
+
+.about-back-top a:hover{
+  color:#fff;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
+}
 
 /* =========================================
-   Modal (visual only - lock is JS side later)
+   Modal
 ========================================= */
 .modal{
   position:fixed;
@@ -320,50 +576,162 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   transition: opacity .25s ease;
   z-index:10000;
 }
-.modal--open{ opacity:1; pointer-events:auto; }
 
-.modal__backdrop{ position:absolute; inset:0; background: rgba(0,0,0,.65); }
-.modal__content{ position:relative; z-index:1; width:min(92vw,1400px); background: rgba(0,0,0,.9); box-shadow: 0 0 40px rgba(0,0,0,.7); }
-.modal__video-frame{ width:100%; aspect-ratio:16/9; position:relative; overflow:hidden; max-height:80vh; }
-.modal__video-frame iframe{ width:100%; height:100%; border:0; display:block; }
+.modal--open{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.modal__backdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.65);
+}
+
+.modal__content{
+  position:relative;
+  z-index:1;
+  width:min(92vw, 1400px);
+  max-width:1400px;
+  background: rgba(0,0,0,.9);
+  box-shadow: 0 0 40px rgba(0,0,0,.7);
+}
+
+.modal__close{
+  position:absolute;
+  top:8px;
+  right:12px;
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:1.2rem;
+  cursor:pointer;
+  opacity:.85;
+  z-index:2;
+}
+
+.modal__video{
+  width:100%;
+}
+
+.modal__video-frame{
+  width:100%;
+  aspect-ratio:16/9;
+  position:relative;
+  overflow:hidden;
+  max-height:80vh;
+}
+
+.modal__video-frame iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+.modal__footer{
+  margin-top:10px;
+  display:flex;
+  justify-content:center;
+  padding-bottom:10px;
+}
+
+.modal__credit-toggle{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:.8rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  cursor:pointer;
+  opacity:.85;
+}
+
+.modal__credit{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.75);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .25s ease;
+}
+
+.modal__credit--open{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.modal__credit-inner{
+  text-align:center;
+  max-width:520px;
+  padding:24px 32px 20px;
+}
+
+.modal__credit-title{
+  font-size:1rem;
+  margin-bottom:18px;
+  letter-spacing:.16em;
+}
+
+.modal__credit-list{
+  font-size:.8rem;
+  line-height:1.8;
+  margin-bottom:18px;
+}
+
+.credit-row{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.credit-role{
+  opacity:.7;
+  text-align:left;
+}
+
+.credit-name{
+  font-weight:500;
+  text-align:right;
+}
+
+.modal__credit-close{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:.75rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  cursor:pointer;
+  opacity:.85;
+}
 
 /* =========================================
-   iOS / touch (keep last)
+   iPhone landscape:
+   scroll-first → tap to enable video
+   （広域 pointer-events:none は入れない）
 ========================================= */
-/* ✅ 基本は縦スクロールを許可（モーダルロックは後で安全に戻す） */
-body{ touch-action: pan-y; }
-
-/* video shield (必要なら別JSで制御) */
-.video-shield{ display:none; }
-body.mobile-landscape .video-shield{ display:block; }
-body.mobile-landscape.video-enabled .video-shield{ display:none; }
-
-/* =========================================
-   iOS Safari 横スクロール不能の根治パッチ
-   画面全域を覆うレイヤーがタッチを奪わないようにする
-========================================= */
-@media (pointer: coarse) {
-
-  /* 大面積レイヤーは“触れない”＝スクロールに返す */
-  .stage,
-  .outer-space,
-  .view,
-  .view-inner,
-  .inner-shell{
-    pointer-events: none;
+@media (pointer: coarse) and (orientation: landscape){
+  .video-frame iframe{
+    pointer-events:none;
   }
 
-  /* 触れる必要があるUIだけ戻す */
-  .edge-btn,
-  .gallery-item,
-  .gallery-scroll,
-  .contact-block,
-  .contact-block a,
-  .global-mute,
-  .video-frame,
-  .video-frame iframe,
-  .modal,
-  .modal *{
-    pointer-events: auto;
+  .video-shield{
+    display:block;
+  }
+
+  body.video-enabled .video-frame iframe{
+    pointer-events:auto;
+  }
+
+  body.video-enabled .video-shield{
+    display:none;
+  }
+
+  .gallery-scroll{
+    overflow-y:scroll;
   }
 }
