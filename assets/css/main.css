@@ -1,11 +1,10 @@
 /* =========================================
-   Base
+   1. Reset / Base
 ========================================= */
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-  color:#fff;
 }
 
 html{
@@ -21,6 +20,7 @@ body{
   min-height:100%;
   height:auto;
   background:#000;
+  color:#fff;
   overflow-x:hidden;
   overflow-y:auto;
   transition: background .6s ease, color .6s ease;
@@ -39,6 +39,11 @@ button{
   background:none;
   border:none;
   font:inherit;
+  color:inherit;
+}
+
+a{
+  color:inherit;
 }
 
 .page{
@@ -46,7 +51,7 @@ button{
 }
 
 /* =========================================
-   Scrollbar (WebKit)
+   2. Scrollbar
 ========================================= */
 ::-webkit-scrollbar{
   width:12px;
@@ -71,7 +76,7 @@ button{
 }
 
 /* =========================================
-   Stage Vars
+   3. Root Variables
 ========================================= */
 :root{
   --stage-w: 2400px;
@@ -82,11 +87,37 @@ button{
   --vvh: 100vh;
   --vv-top: 0px;
   --vv-left: 0px;
+
+  --stage-pad-y: 40px;
+  --stage-pad-x: 90px;
+  --edge-offset: 32px;
+
+  --video-w: 960px;
+  --gallery-w: 520px;
+  --contact-w: 420px;
+
+  --text-main: #fff;
+  --text-soft: rgba(255,255,255,.85);
+  --text-muted: rgba(255,255,255,.6);
+
+  --line-soft: rgba(255,255,255,.08);
+  --line-mid: rgba(255,255,255,.22);
+
+  --overlay-dark: rgba(0,0,0,.45);
+  --overlay-modal: rgba(0,0,0,.65);
+  --overlay-credit: rgba(0,0,0,.75);
+
+  --shadow-video: 0 0 40px rgba(255,255,255,.3);
+  --shadow-modal: 0 0 40px rgba(0,0,0,.7);
+
+  --z-stage: 2;
+  --z-ui: 9000;
+  --z-video: 9999;
+  --z-modal: 10000;
 }
 
 /* =========================================
-   Global Mute
-   → これが無いと左上の「|」みたいに壊れる
+   4. Global UI
 ========================================= */
 .global-mute{
   position:fixed;
@@ -94,7 +125,7 @@ button{
   right:32px;
   left:auto;
   bottom:auto;
-  z-index:30000;
+  z-index:var(--z-ui);
   padding:8px;
   opacity:.7;
   cursor:pointer;
@@ -129,44 +160,41 @@ button{
 }
 
 /* =========================================
-   TOP Stage (2400x1080 scaled)
+   5. Stage Layout
 ========================================= */
 .space-wrapper{
   position:relative;
   width:100%;
-  height: var(--vvh);
+  height:var(--vvh);
   overflow:hidden;
 }
 
 .stage{
   position:absolute;
-  width: var(--stage-w);
-  height: var(--stage-h);
-
-  left: calc(var(--vv-left) + (var(--vvw) / 2));
-  top:  calc(var(--vv-top)  + (var(--vvh) / 2));
-
+  width:var(--stage-w);
+  height:var(--stage-h);
+  left:calc(var(--vv-left) + (var(--vvw) / 2));
+  top:calc(var(--vv-top) + (var(--vvh) / 2));
   transform-origin:center;
-  transform: translate(-50%, -50%) scale(var(--stage-scale));
+  transform:translate(-50%, -50%) scale(var(--stage-scale));
   overflow:hidden;
   perspective:1600px;
 }
 
-/* --- 3 panels --- */
 .outer-space{
   position:absolute;
   inset:0;
   display:flex;
   width:7200px;
   height:100%;
-  transition: transform .8s ease;
-  z-index:2;
+  transition:transform .8s ease;
+  z-index:var(--z-stage);
 }
 
 .view{
   width:2400px;
   height:100%;
-  padding:40px 90px;
+  padding:var(--stage-pad-y) var(--stage-pad-x);
   position:relative;
 }
 
@@ -184,23 +212,22 @@ button{
   opacity:.8;
 }
 
-/* --- center video --- */
 .inner-shell{
   position:absolute;
   top:50%;
   left:50%;
-  transition: transform .8s ease;
-  z-index:9999;
+  transition:transform .8s ease;
+  z-index:var(--z-video);
 }
 
 .video-frame{
-  width:960px;
+  width:var(--video-w);
   aspect-ratio:16/9;
   background:#000;
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 0 40px rgba(255,255,255,.3);
+  box-shadow:var(--shadow-video);
   position:relative;
 }
 
@@ -211,7 +238,6 @@ button{
   display:block;
 }
 
-/* 動画シールド */
 .video-shield{
   position:absolute;
   inset:0;
@@ -224,7 +250,16 @@ button{
   cursor:pointer;
 }
 
-/* Contact header positioning */
+/* =========================================
+   6. Stage Views
+========================================= */
+.view.view-left .view-header{
+  position:absolute;
+  top:20px;
+  left:0;
+  margin:0;
+}
+
 .view.view-right .view-header{
   position:absolute;
   top:20px;
@@ -233,25 +268,41 @@ button{
   text-align:right;
 }
 
-.view.view-left .view-header{
-  position:absolute;
-  top:20px;
-  left:0;
-  margin:0;
+.view-left .view-inner{
+  justify-content:center;
+  align-items:flex-start;
 }
 
-/* --- view transforms (2400px基準) --- */
-body.view-center .outer-space{ transform: translateX(-2400px); }
-body.view-left   .outer-space{ transform: translateX(0px); }
-body.view-right  .outer-space{ transform: translateX(-4800px); }
+.view-right .view-inner{
+  justify-content:center;
+  align-items:flex-end;
+}
 
-body.view-center .inner-shell{ transform: translate(-50%,-50%) translateX(0px); }
-body.view-left   .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px) translateX(1920px); }
-body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px) translateX(-1920px); }
+body.view-center .outer-space{
+  transform:translateX(-2400px);
+}
+body.view-left .outer-space{
+  transform:translateX(0px);
+}
+body.view-right .outer-space{
+  transform:translateX(-4800px);
+}
+
+body.view-center .inner-shell{
+  transform:translate(-50%, -50%) translateX(0px);
+}
+body.view-left .inner-shell{
+  transform:translate(-50%, -50%) translateZ(-350px) translateX(1920px);
+}
+body.view-right .inner-shell{
+  transform:translate(-50%, -50%) translateZ(-350px) translateX(-1920px);
+}
 
 /* =========================================
-   Edge Buttons
+   7. Stage Components
 ========================================= */
+
+/* --- Edge Buttons --- */
 .edge-btn{
   position:absolute;
   background:none;
@@ -273,35 +324,28 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 
 .edge-btn--left{
   top:50%;
-  left:32px;
+  left:var(--edge-offset);
   transform:translateY(-50%);
 }
 
 .edge-btn--right{
   top:50%;
-  right:32px;
+  right:var(--edge-offset);
   transform:translateY(-50%);
 }
 
 .edge-btn--bottom{
-  bottom:32px;
+  bottom:var(--edge-offset);
   left:50%;
   transform:translateX(-50%);
 }
 
-/* =========================================
-   Gallery (Left)
-========================================= */
-.view-left .view-inner{
-  justify-content:center;
-  align-items:flex-start;
-}
-
+/* --- Gallery --- */
 .gallery-panel{
   position:relative;
   margin-top:32px;
-  max-width:520px;
-  height: calc(100% - 72px);
+  max-width:var(--gallery-w);
+  height:calc(100% - 72px);
   display:flex;
   flex-direction:column;
 }
@@ -336,7 +380,6 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   padding-right:8px;
   scrollbar-width:thin;
   scrollbar-color: rgba(255,255,255,.16) transparent;
-
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
@@ -348,7 +391,7 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   background:transparent;
   border:none;
   padding:10px 0;
-  border-bottom:1px solid rgba(255,255,255,.08);
+  border-bottom:1px solid var(--line-soft);
   font-size:.9rem;
   letter-spacing:.08em;
   cursor:pointer;
@@ -356,7 +399,7 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 }
 
 .gallery-item:first-child{
-  border-top:1px solid rgba(255,255,255,.08);
+  border-top:1px solid var(--line-soft);
 }
 
 .gallery-item-meta{
@@ -366,20 +409,13 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 }
 
 .gallery-item:hover{
-  background: rgba(255,255,255,.03);
+  background:rgba(255,255,255,.03);
 }
 
-/* =========================================
-   Contact (Right)
-========================================= */
-.view-right .view-inner{
-  justify-content:center;
-  align-items:flex-end;
-}
-
+/* --- Contact --- */
 .contact-block{
   margin-top:40px;
-  max-width:420px;
+  max-width:var(--contact-w);
   font-size:.8rem;
   letter-spacing:.12em;
   line-height:1.8;
@@ -400,7 +436,6 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 .contact-value p,
 .contact-value a{
   font-size:1.1rem;
-  color:inherit;
   text-decoration:none;
 }
 
@@ -409,7 +444,7 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 }
 
 /* =========================================
-   About
+   8. About Section
 ========================================= */
 #about{
   border-top:2px solid #fff;
@@ -429,7 +464,7 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 #about .about-overlay{
   position:absolute;
   inset:0;
-  background: rgba(0,0,0,.45);
+  background:var(--overlay-dark);
   z-index:1;
   pointer-events:none;
 }
@@ -447,7 +482,7 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   display:flex;
   flex-direction:column;
   justify-content:center;
-  gap: clamp(10px, 1.2vw, 18px);
+  gap:clamp(10px, 1.2vw, 18px);
 }
 
 .about-logo-text{
@@ -456,12 +491,12 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 }
 
 .about-logo-main{
-  font-size: clamp(2.4rem, 4.2vw, 5.2rem);
+  font-size:clamp(2.4rem, 4.2vw, 5.2rem);
   line-height:.95;
 }
 
 .about-logo-sub{
-  font-size: clamp(.9rem, 1.2vw, 1.15rem);
+  font-size:clamp(.9rem, 1.2vw, 1.15rem);
   opacity:.8;
   letter-spacing:.22em;
 }
@@ -478,8 +513,8 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 .about-stack{
   border-left:1px solid #fff;
   display:grid;
-  gap:154px;
-  padding:100px;
+  gap:clamp(56px, 8vw, 154px);
+  padding:clamp(36px, 6vw, 100px);
 }
 
 .about-item h3{
@@ -500,9 +535,12 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   border-left:1px solid #fff;
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:48px;
-  padding:100px 100px 300px;
-  margin-bottom:80px;
+  gap:clamp(24px, 4vw, 48px);
+  padding:
+    clamp(36px, 6vw, 100px)
+    clamp(36px, 6vw, 100px)
+    clamp(80px, 14vw, 300px);
+  margin-bottom:clamp(40px, 6vw, 80px);
 }
 
 .about-col h4{
@@ -541,8 +579,8 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 
 .about-back-top{
   width:100%;
-  padding:0 220px;
-  margin-top:360px;
+  padding:0 clamp(24px, 10vw, 220px);
+  margin-top:clamp(80px, 16vw, 360px);
   font-size:.9rem;
   letter-spacing:.18em;
   text-transform:uppercase;
@@ -550,7 +588,6 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 }
 
 .about-back-top a{
-  color:#fff;
   text-decoration:none;
   border-bottom:1px solid rgba(255,255,255,.2);
   padding-bottom:2px;
@@ -558,12 +595,11 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 }
 
 .about-back-top a:hover{
-  color:#fff;
   filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
 
 /* =========================================
-   Modal
+   9. Modal
 ========================================= */
 .modal{
   position:fixed;
@@ -573,8 +609,8 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   justify-content:center;
   opacity:0;
   pointer-events:none;
-  transition: opacity .25s ease;
-  z-index:10000;
+  transition:opacity .25s ease;
+  z-index:var(--z-modal);
 }
 
 .modal--open{
@@ -585,7 +621,7 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 .modal__backdrop{
   position:absolute;
   inset:0;
-  background: rgba(0,0,0,.65);
+  background:var(--overlay-modal);
 }
 
 .modal__content{
@@ -593,8 +629,8 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
   z-index:1;
   width:min(92vw, 1400px);
   max-width:1400px;
-  background: rgba(0,0,0,.9);
-  box-shadow: 0 0 40px rgba(0,0,0,.7);
+  background:rgba(0,0,0,.9);
+  box-shadow:var(--shadow-modal);
 }
 
 .modal__close{
@@ -650,13 +686,13 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 .modal__credit{
   position:absolute;
   inset:0;
-  background: rgba(0,0,0,.75);
+  background:var(--overlay-credit);
   display:flex;
   align-items:center;
   justify-content:center;
   opacity:0;
   pointer-events:none;
-  transition: opacity .25s ease;
+  transition:opacity .25s ease;
 }
 
 .modal__credit--open{
@@ -710,9 +746,28 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 }
 
 /* =========================================
-   iPhone landscape:
-   scroll-first → tap to enable video
-   （広域 pointer-events:none は入れない）
+   10. Tablet / Narrow Width
+========================================= */
+@media (max-width: 900px){
+  .about-split{
+    grid-template-columns:1fr;
+  }
+
+  #about .about-content{
+    padding:100px 7vw 120px;
+  }
+
+  .about-lead,
+  .about-item p,
+  .about-col li{
+    font-size:.95rem;
+    line-height:1.8;
+  }
+}
+
+/* =========================================
+   11. Mobile Landscape
+   映画館的世界観は維持しつつ、操作性だけ補正
 ========================================= */
 @media (pointer: coarse) and (orientation: landscape){
   .video-frame iframe{
@@ -733,5 +788,39 @@ body.view-right  .inner-shell{ transform: translate(-50%,-50%) translateZ(-350px
 
   .gallery-scroll{
     overflow-y:scroll;
+  }
+
+  .view-inner{
+    z-index:15000;
+  }
+
+  .edge-btn{
+    font-size:1rem;
+    padding:12px 14px;
+    min-width:88px;
+    min-height:48px;
+    z-index:20000;
+  }
+
+  .gallery-item{
+    padding:16px 0;
+  }
+
+  .gallery-item-title{
+    font-size:1rem;
+    line-height:1.4;
+  }
+
+  .gallery-item-meta{
+    font-size:.8rem;
+  }
+
+  .contact-label{
+    font-size:1rem;
+  }
+
+  .contact-value p,
+  .contact-value a{
+    font-size:.95rem;
   }
 }
