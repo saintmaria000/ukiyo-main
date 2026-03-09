@@ -25,7 +25,6 @@ body{
   overflow-y:auto;
   transition: background .6s ease, color .6s ease;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
 }
 
 button,
@@ -218,6 +217,7 @@ a{
   left:50%;
   transition:transform .8s ease;
   z-index:var(--z-video);
+  pointer-events:none;
 }
 
 .video-frame{
@@ -229,6 +229,7 @@ a{
   justify-content:center;
   box-shadow:var(--shadow-video);
   position:relative;
+  pointer-events:auto;
 }
 
 .video-frame iframe{
@@ -246,8 +247,9 @@ a{
   padding:0;
   margin:0;
   display:none;
-  z-index:5;
+  z-index:10;
   cursor:pointer;
+  pointer-events:auto;
 }
 
 /* =========================================
@@ -305,6 +307,9 @@ body.view-right .inner-shell{
 /* --- Edge Buttons --- */
 .edge-btn{
   position:absolute;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   background:none;
   border:none;
   font-size:.75rem;
@@ -314,6 +319,7 @@ body.view-right .inner-shell{
   cursor:pointer;
   padding:4px 0;
   z-index:20;
+  pointer-events:auto;
   transition: color .2s ease, filter .2s ease, transform .1s ease;
 }
 
@@ -383,6 +389,7 @@ body.view-right .inner-shell{
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
+  pointer-events:auto;
 }
 
 .gallery-item{
@@ -767,7 +774,7 @@ body.view-right .inner-shell{
 
 /* =========================================
    11. Mobile Landscape
-   映画館的世界観は維持しつつ、操作性だけ補正
+   余白はスクロール、要素の上だけ反応
 ========================================= */
 @media (pointer: coarse) and (orientation: landscape){
   .video-frame iframe{
@@ -788,10 +795,7 @@ body.view-right .inner-shell{
 
   .gallery-scroll{
     overflow-y:scroll;
-  }
-
-  .view-inner{
-    z-index:15000;
+    touch-action:pan-y;
   }
 
   .edge-btn{
@@ -800,6 +804,7 @@ body.view-right .inner-shell{
     min-width:88px;
     min-height:48px;
     z-index:20000;
+    pointer-events:auto;
   }
 
   .gallery-item{
