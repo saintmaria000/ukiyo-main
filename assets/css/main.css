@@ -79,8 +79,7 @@ a{
 /* =========================================
    3. Root Design Tokens
    3. ルート設計変数 / 全体トークン
-   - 全体管理
-   - セクター別サイズ管理
+   - まずここを触る
 ========================================= */
 :root{
   /* ===== Stage base / ステージ基本設定 ===== */
@@ -145,8 +144,10 @@ a{
   --ls-body: .08em;
   --ls-body-tight: .05em;
 
-  /* ===== Sector: Stage / Global UI
-           セクター: ステージ / 全体UI ===== */
+  /* =====================================
+     Sector: Stage / Global UI
+     セクター: ステージ / 全体UI
+  ===================================== */
   --view-header-size: var(--font-ui-sm);
   --view-header-spacing: var(--ls-ui);
 
@@ -157,8 +158,10 @@ a{
   --edge-btn-min-w: auto;
   --edge-btn-min-h: auto;
 
-  /* ===== Sector: Gallery
-           セクター: ギャラリー ===== */
+  /* =====================================
+     Sector: Gallery
+     セクター: ギャラリー
+  ===================================== */
   --gallery-item-size: .9rem;
   --gallery-item-spacing: .08em;
   --gallery-item-pad-y: 10px;
@@ -167,16 +170,20 @@ a{
   --gallery-meta-spacing: .08em;
   --gallery-panel-gap-top: 32px;
 
-  /* ===== Sector: Contact
-           セクター: コンタクト ===== */
+  /* =====================================
+     Sector: Contact
+     セクター: コンタクト
+  ===================================== */
   --contact-block-size: .8rem;
   --contact-block-spacing: .12em;
   --contact-label-size: 1.3rem;
   --contact-label-spacing: .12em;
   --contact-value-size: 1.1rem;
 
-  /* ===== Sector: About
-           セクター: About ===== */
+  /* =====================================
+     Sector: About
+     セクター: About
+  ===================================== */
   --about-content-pad-top: 160px;
   --about-content-pad-right: 8vw;
   --about-content-pad-bottom: 200px;
@@ -221,8 +228,10 @@ a{
   --about-back-pad-x: clamp(24px, 10vw, 220px);
   --about-back-margin-top: clamp(80px, 16vw, 360px);
 
-  /* ===== Sector: Modal
-           セクター: モーダル ===== */
+  /* =====================================
+     Sector: Modal
+     セクター: モーダル
+  ===================================== */
   --modal-width: min(92vw, 1400px);
   --modal-credit-toggle-size: .8rem;
   --modal-credit-toggle-spacing: .18em;
@@ -237,7 +246,6 @@ a{
 /* =========================================
    4. Global UI
    4. 全体UI / 共通操作UI
-   - グローバルミュートなど
 ========================================= */
 .global-mute{
   position:fixed;
@@ -282,7 +290,6 @@ a{
 /* =========================================
    5. Stage Layout
    5. ステージ全体レイアウト
-   - 2400x1080基準の舞台構造
 ========================================= */
 .space-wrapper{
   position:relative;
@@ -379,7 +386,6 @@ a{
 /* =========================================
    6. Stage Views
    6. ステージ各ビュー
-   - Left / Center / Right の面切り替え
 ========================================= */
 .view.view-left .view-header{
   position:absolute;
@@ -429,14 +435,9 @@ body.view-right .inner-shell{
 /* =========================================
    7. Stage Components
    7. ステージ内コンポーネント
-   - ボタン
-   - Gallery
-   - Contact
 ========================================= */
 
-/* --- Edge Buttons ---
-   エッジボタン / ナビゲーションボタン
------------------------------------------ */
+/* --- Edge Buttons / エッジボタン --- */
 .edge-btn{
   position:absolute;
   display:inline-flex;
@@ -480,9 +481,7 @@ body.view-right .inner-shell{
   transform:translateX(-50%);
 }
 
-/* --- Gallery ---
-   ギャラリー一覧 / 作品リスト
------------------------------------------ */
+/* --- Gallery / ギャラリー一覧 --- */
 .gallery-panel{
   position:relative;
   margin-top:var(--gallery-panel-gap-top);
@@ -556,9 +555,7 @@ body.view-right .inner-shell{
   background:rgba(255,255,255,.03);
 }
 
-/* --- Contact ---
-   コンタクト情報
------------------------------------------ */
+/* --- Contact / コンタクト情報 --- */
 .contact-block{
   margin-top:40px;
   max-width:var(--contact-w);
@@ -901,6 +898,7 @@ body.view-right .inner-shell{
 /* =========================================
    10. Narrow Width / Tablet
    10. 狭幅画面 / タブレット調整
+   - ここはタブレット / 狭幅用の上書きだけ置く
 ========================================= */
 @media (max-width: 900px){
   :root{
@@ -928,48 +926,9 @@ body.view-right .inner-shell{
    11. スマホ横向き調整
    - 映画館体験は維持
    - 操作性と視認性を補正
+   - ここはスマホ横向き用の上書きだけ置く
 ========================================= */
 @media (pointer: coarse) and (orientation: landscape){
-  :root{
-    /* ===== Stage UI / ステージUI ===== */
-    --edge-btn-size: .92rem;
-
-    /* ===== Gallery / ギャラリー ===== */
-    --gallery-item-size: .92rem;
-    --gallery-meta-size: .76rem;
-
-    /* ===== Contact / コンタクト ===== */
-    --contact-label-size: .95rem;
-    --contact-value-size: .9rem;
-    --contact-block-size: .78rem;
-
-    /* ===== About / About ===== */
-    --about-logo-main-size: clamp(2.1rem, 3.8vw, 4.2rem);
-    --about-logo-sub-size: .88rem;
-    --about-lead-size: .9rem;
-    --about-body-size: .9rem;
-    --about-col-title-size: 1.02rem;
-    --about-col-item-size: .9rem;
-    --about-credit-title-size: .88rem;
-    --about-credit-name-size: 1.15rem;
-    --about-back-size: .82rem;
-
-    /* ===== Modal / モーダル ===== */
-    --modal-credit-toggle-size: .8rem;
-    --modal-credit-title-size: .92rem;
-    --modal-credit-list-size: .78rem;
-    --modal-credit-close-size: .72rem;
-
-    /* ===== spacing / 文字間隔も少しだけ詰める ===== */
-    --about-logo-spacing: .22em;
-    --about-heading-spacing: .16em;
-    --about-col-title-spacing: .14em;
-    --about-lead-spacing: .04em;
-    --about-body-spacing: .04em;
-    --about-col-item-spacing: .04em;
-    --contact-block-spacing: .06em;
-  }
-
   .video-frame iframe{
     pointer-events:none;
   }
@@ -997,5 +956,49 @@ body.view-right .inner-shell{
 
   .gallery-item-title{
     line-height:1.4;
+  }
+
+  :root{
+    /* ===== Stage UI / ステージUI ===== */
+    --edge-btn-size: .92rem;
+
+    /* ===== Gallery / ギャラリー ===== */
+    --gallery-item-size: .92rem;
+    --gallery-meta-size: .76rem;
+
+    /* ===== Contact / コンタクト ===== */
+    --contact-label-size: .95rem;
+    --contact-value-size: .9rem;
+    --contact-block-size: .78rem;
+    --contact-block-spacing: .06em;
+
+    /* ===== About / About ===== */
+    --about-logo-main-size: clamp(2.1rem, 3.8vw, 4.2rem);
+    --about-logo-sub-size: .88rem;
+    --about-logo-spacing: .22em;
+
+    --about-lead-size: .9rem;
+    --about-lead-spacing: .04em;
+
+    --about-body-size: .9rem;
+    --about-body-spacing: .04em;
+
+    --about-col-title-size: 1.02rem;
+    --about-col-title-spacing: .14em;
+
+    --about-col-item-size: .9rem;
+    --about-col-item-spacing: .04em;
+
+    --about-credit-title-size: .88rem;
+    --about-credit-name-size: 1.15rem;
+    --about-back-size: .82rem;
+
+    --about-heading-spacing: .16em;
+
+    /* ===== Modal / モーダル ===== */
+    --modal-credit-toggle-size: .8rem;
+    --modal-credit-title-size: .92rem;
+    --modal-credit-list-size: .78rem;
+    --modal-credit-close-size: .72rem;
   }
 }
