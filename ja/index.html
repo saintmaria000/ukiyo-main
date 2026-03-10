@@ -32,6 +32,10 @@
   </button>
 
   <div class="page">
+    <div class="pull-return">
+      <a href="../index.html" class="pull-return-link">← Entrance</a>
+    </div>
+
     <div class="space-wrapper" id="top">
 
       <!-- ✅ 追加：TOPステージ（2400×1080固定） -->
@@ -348,8 +352,13 @@
           <div class="about-credit-title">Director and Producer</div>
           <div class="about-credit-name">Matias Maehama</div>
 
-          <div class="about-back-top">
-            <a href="#top">▲ Back to main</a>
+          <div class="about-actions">
+            <a href="#top" class="about-action-link" data-show-pull="true" data-view-jump="center">
+              Back to Main
+            </a>
+            <a href="#top" class="about-action-link" data-show-pull="true" data-view-jump="right">
+              Contact
+            </a>
           </div>
         </footer>
 
@@ -390,6 +399,7 @@
   <script src="../assets/js/mute.js" defer></script>
   <script src="../assets/js/bg.keepalive.js" defer></script>
   <script src="../assets/js/gallery.scrolllock.js" defer></script>
+  <script src="../assets/js/pull.hint.js" defer></script>
   <script src="../assets/js/view.js" defer></script>
   <script src="../assets/js/video.enable.js" defer></script>
   <script src="../assets/js/gallery.js" defer></script>
