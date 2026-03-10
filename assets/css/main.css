@@ -100,6 +100,16 @@ a{
   --gallery-w:520px;
   --contact-w:420px;
 
+  /* ===== Inner shell motion / 中央映像の演出移動量 =====
+     Stageの3面幅そのものではなく、
+     Gallery / Contact view 時に中央映像を左右へ逃がすための値 */
+  --inner-shell-side-shift:1920px;
+
+  /* ===== Inner shell depth / 中央映像の奥行き演出 =====
+     左右view時に中央映像を少し奥へ引いて、
+     空間の奥行きを見せるための値 */
+  --inner-shell-depth:-350px;
+
   --text-main:#fff;
   --text-soft:rgba(255,255,255,.85);
   --text-muted:rgba(255,255,255,.6);
@@ -157,6 +167,13 @@ a{
   --gallery-meta-spacing:.08em;
 
   --gallery-panel-gap-top:32px;
+
+  /* ===== Gallery panel height / Gallery表示領域の高さ制御 =====
+     大画面では最大高さを抑えつつ、
+     低い画面では viewport から一定量を引いて収める */
+  --gallery-panel-max-h:760px;
+  --gallery-panel-min-h:320px;
+  --gallery-panel-vh-offset:180px;
 
   --contact-block-size:.86rem;
   --contact-block-spacing:.12em;
@@ -410,10 +427,10 @@ body.view-center .inner-shell{
   transform:translate(-50%, -50%) translateX(0);
 }
 body.view-left .inner-shell{
-  transform:translate(-50%, -50%) translateZ(-350px) translateX(1920px);
+  transform:translate(-50%, -50%) translateZ(var(--inner-shell-depth)) translateX(var(--inner-shell-side-shift));
 }
 body.view-right .inner-shell{
-  transform:translate(-50%, -50%) translateZ(-350px) translateX(-1920px);
+  transform:translate(-50%, -50%) translateZ(var(--inner-shell-depth)) translateX(calc(var(--inner-shell-side-shift) * -1));
 }
 
 /* =========================================
@@ -467,8 +484,8 @@ body.view-right .inner-shell{
   margin-top:var(--gallery-panel-gap-top);
   max-width:var(--gallery-w);
   width:100%;
-  height:min(760px, calc(100vh - 180px));
-  min-height:320px;
+  height:min(var(--gallery-panel-max-h), calc(100vh - var(--gallery-panel-vh-offset)));
+  min-height:var(--gallery-panel-min-h);
   display:flex;
   flex-direction:column;
   min-width:0;
@@ -710,6 +727,7 @@ body.view-right .inner-shell{
   justify-content:space-between;
   align-items:center;
   width:100%;
+  gap:24px;
 }
 
 .about-credit-name a{
@@ -1115,7 +1133,6 @@ body.is-pull-hint-visible .pull-return{
 
   .about-credit-name a{
     font-size:0.76rem;
-    margin-left:100px;
   }
 
   .about-col li{
