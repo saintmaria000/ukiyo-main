@@ -1,118 +1,154 @@
 // assets/js/pull.hint.js
-
 (() => {
-
   const body = document.body;
-  const stage = document.getElementById("top");
 
-  if (!stage) return;
-
-  let timer = null;
+  let hideTimer = null;
   let startY = 0;
-  let tracking = false;
+  let startX = 0;
+  let trackingPull = false;
+  let pullFired = false;
 
   function isCenterView() {
-    return body.classList.contains("view-center");
+    return body.classList.contains('view-center');
   }
 
-  function isTop() {
-    return window.scrollY <= 4;
+  function isAtTop() {
+    return (window.scrollY || window.pageYOffset || 0) <= 6;
   }
 
   function showPull(duration = 3000) {
+    body.classList.add('is-pull-hint-visible');
 
-    body.classList.add("is-pull-hint-visible");
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+    }
 
-    if (timer) clearTimeout(timer);
-
-    timer = setTimeout(() => {
-      body.classList.remove("is-pull-hint-visible");
-      timer = null;
+    hideTimer = setTimeout(() => {
+      body.classList.remove('is-pull-hint-visible');
+      hideTimer = null;
     }, duration);
   }
 
   function hidePull() {
-
-    if (timer) clearTimeout(timer);
-
-    timer = null;
-
-    body.classList.remove("is-pull-hint-visible");
-  }
-
-  /* ---------------------------------
-     About → Back to Main
-  --------------------------------- */
-
-  document.addEventListener("click", (e) => {
-
-    const btn = e.target.closest('[data-show-pull="true"]');
-
-    if (!btn) return;
-
-    // view.js が scrollTo するので少し待つ
-    setTimeout(() => {
-
-      if (isCenterView() && isTop()) {
-        showPull(3000);
-      }
-
-    }, 500);
-
-  });
-
-
-  /* ---------------------------------
-     TOPでのPull検知
-  --------------------------------- */
-
-  document.addEventListener("touchstart", (e) => {
-
-    if (!stage.contains(e.target)) return;
-    if (!isCenterView()) return;
-    if (!isTop()) return;
-
-    startY = e.touches[0].clientY;
-    tracking = true;
-
-  }, { passive: true });
-
-
-  document.addEventListener("touchmove", (e) => {
-
-    if (!tracking) return;
-
-    const currentY = e.touches[0].clientY;
-    const delta = currentY - startY;
-
-    if (delta > 28) {
-
-      showPull(1200);
-      tracking = false;
-
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+      hideTimer = null;
     }
 
-  }, { passive: true });
+    body.classList.remove('is-pull-hint-visible');
+  }
 
+  // ----------------------------------------
+  // 1) About の Back to Main から戻った時
+  // ----------------------------------------
+  function showPullAfterReturn(retries = 14, delay = 120) {
+    let count = 0;
 
-  document.addEventListener("touchend", () => {
-    tracking = false;
-  }, { passive: true });
+    const tick = () => {
+      count += 1;
 
+      if (isCenterView() && isAtTop()) {
+        showPull(3000);
+        return;
+      }
 
-  document.addEventListener("touchcancel", () => {
-    tracking = false;
-  }, { passive: true });
+      if (count < retries) {
+        setTimeout(tick, delay);
+      }
+    };
 
+    setTimeout(tick, 420);
+  }
 
-  /* ---------------------------------
-     下にスクロールしたら消す
-  --------------------------------- */
+  document.addEventListener(
+    'click',
+    (e) => {
+      const trigger = e.target.closest('[data-show-pull="true"]');
+      if (!trigger) return;
 
-  window.addEventListener("scroll", () => {
+      showPullAfterReturn();
+    },
+    { passive: true }
+  );
 
-    if (!isTop()) hidePull();
+  // ----------------------------------------
+  // 2) Center view の TOP での「下方向スワイプ開始」を拾う
+  // 実機での overscroll/bounce そのものではなく、
+  // “上に何かあると探る意図” をトリガーにする
+  // ----------------------------------------
+  document.addEventListener(
+    'touchstart',
+    (e) => {
+      if (!isCenterView() || !isAtTop()) {
+        trackingPull = false;
+        pullFired = false;
+        return;
+      }
 
-  }, { passive: true });
+      const t = e.touches[0];
+      startY = t.clientY;
+      startX = t.clientX;
+      trackingPull = true;
+      pullFired = false;
+    },
+    { passive: true }
+  );
 
+  document.addEventListener(
+    'touchmove',
+    (e) => {
+      if (!trackingPull || pullFired) return;
+      if (!isCenterView() || !isAtTop()) {
+        trackingPull = false;
+        return;
+      }
+
+      const t = e.touches[0];
+      const dy = t.clientY - startY;
+      const dx = Math.abs(t.clientX - startX);
+
+      // 縦方向の下スワイプで、横ブレが少ないときだけ発火
+      if (dy > 18 && dx < 24) {
+        showPull(1200);
+        pullFired = true;
+      }
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    'touchend',
+    () => {
+      trackingPull = false;
+      pullFired = false;
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    'touchcancel',
+    () => {
+      trackingPull = false;
+      pullFired = false;
+    },
+    { passive: true }
+  );
+
+  // ----------------------------------------
+  // 3) TOPから離れたら消す
+  // ----------------------------------------
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!isAtTop()) {
+        hidePull();
+      }
+    },
+    { passive: true }
+  );
+
+  window.PullHint = {
+    show: showPull,
+    hide: hidePull
+  };
 })();
