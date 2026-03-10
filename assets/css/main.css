@@ -159,7 +159,7 @@ a{
   --view-header-size: var(--font-ui-sm);
   --view-header-spacing: var(--ls-ui);
 
-  --edge-btn-size: .92rem;
+  --edge-btn-size: .86rem;
   --edge-btn-spacing: .25em;
   --edge-btn-pad-y: 4px;
   --edge-btn-pad-x: 0px;
