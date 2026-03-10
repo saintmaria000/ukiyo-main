@@ -947,13 +947,16 @@ body.view-right .inner-shell{
 }
 
 /* =========================================
-   11. Mobile Landscape
-   11. スマホ横向き調整
-   - 映画館体験は維持
-   - 操作性と視認性を補正
-   - ここはスマホ横向き用の上書きだけ置く
+11. Mobile Landscape
+11. スマホ横向き調整
+- 映画館体験は維持
+- 操作性と視認性を補正
+- ここはスマホ横向き用の上書きだけ置く
 ========================================= */
 @media (pointer: coarse) and (orientation: landscape){
+  .edge-btn{
+    z-index:20000;
+  }
   .video-frame iframe{
     pointer-events:none;
   }
@@ -962,32 +965,6 @@ body.view-right .inner-shell{
     display:block;
   }
 
-  /* ここは削除
-  body.video-enabled .video-frame iframe{
-    pointer-events:auto;
-  }
-
-  body.video-enabled .video-shield{
-    display:none;
-  }
-  */
- .gallery-panel{
-    height:min(68vh, 520px);
-    min-height:260px;
-  }
-
-  .gallery-scroll{
-    overflow-y:auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .edge-btn{
-    z-index:20000;
-  }
-
-  .gallery-item-title{
-    line-height:1.4;
-  }
   .video-unlock-flash{
     position:absolute;
     inset:0;
@@ -1031,6 +1008,32 @@ body.view-right .inner-shell{
   .about-lead{
     margin-top:22px;
     max-width:34em;
+  }
+
+ .gallery-panel{
+    height:min(68vh, 520px);
+    min-height:260px;
+  }
+
+  .gallery-scroll{
+    overflow-y:auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .gallery-item-title{
+    line-height:1.4;
+  }
+  .modal__content{
+    width:min(86vw, 1100px);
+  }
+
+  .modal__video-frame{
+    max-height:58vh;
+  }
+
+  .modal__footer{
+    margin-top:6px;
+    padding-bottom:8px;
   }
 
   :root{
