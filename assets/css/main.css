@@ -235,69 +235,69 @@ a{
   --contact-value-size:1.14rem;
 
   /* -----------------------------------------
-     3-9. About Section Tokens
-     About責務 / About構造責務
+    3-9. About Section Tokens
+    About責務 / About構造責務
   ----------------------------------------- */
-  --about-content-max-w:1800px;
-  --about-content-pad-top:160px;
-  --about-content-pad-right:8vw;
-  --about-content-pad-bottom:200px;
-  --about-content-pad-left:12vw;
+  --about-content-max-w:2000px;
+  --about-content-pad-top:120px;
+  --about-content-pad-right:4vw;
+  --about-content-pad-bottom:180px;
+  --about-content-pad-left:6vw;
 
-  --about-hero-min-h:80vh;
-  --about-hero-gap:clamp(10px, 1.2vw, 18px);
+  --about-hero-min-h:86vh;
+  --about-hero-gap:clamp(14px, 1.6vw, 24px);
 
-  --about-logo-main-size:var(--font-display-xl);
-  --about-logo-sub-size:clamp(.95rem, 1.25vw, 1.2rem);
-  --about-logo-spacing:.35em;
-  --about-logo-sub-spacing:.22em;
+  --about-logo-main-size:clamp(3.2rem, 5vw, 6.2rem);
+  --about-logo-sub-size:clamp(1rem, 1.3vw, 1.24rem);
+  --about-logo-spacing:.28em;
+  --about-logo-sub-spacing:.18em;
 
-  --about-lead-max-w:720px;
-  --about-lead-size:1.08rem;
-  --about-lead-line:1.9;
-  --about-lead-spacing:.07em;
-  --about-lead-margin-top:18px;
+  --about-lead-max-w:860px;
+  --about-lead-size:1.18rem;
+  --about-lead-line:1.95;
+  --about-lead-spacing:.05em;
+  --about-lead-margin-top:20px;
 
-  --about-stack-gap:clamp(56px, 8vw, 154px);
-  --about-stack-pad:clamp(36px, 6vw, 100px);
+  --about-stack-gap:clamp(72px, 8vw, 170px);
+  --about-stack-pad:clamp(22px, 3vw, 54px);
 
-  --about-heading-size:1.65rem;
-  --about-heading-spacing:.26em;
-  --about-item-heading-gap:12px;
+  --about-heading-size:1.7rem;
+  --about-heading-spacing:.20em;
+  --about-item-heading-gap:18px;
 
-  --about-body-size:1.05rem;
-  --about-body-line:1.9;
-  --about-body-spacing:.07em;
-  --about-body-max-w:560px;
+  --about-body-size:1.12rem;
+  --about-body-line:1.95;
+  --about-body-spacing:.05em;
+  --about-body-max-w:700px;
 
-  --about-split-gap:clamp(24px, 4vw, 48px);
-  --about-split-pad-top:clamp(36px, 6vw, 100px);
-  --about-split-pad-x:clamp(36px, 6vw, 100px);
-  --about-split-pad-bottom:clamp(80px, 14vw, 300px);
-  --about-split-margin-bottom:clamp(40px, 6vw, 80px);
+  --about-split-gap:clamp(28px, 4vw, 56px);
+  --about-split-pad-top:clamp(28px, 3vw, 56px);
+  --about-split-pad-x:clamp(22px, 3vw, 54px);
+  --about-split-pad-bottom:clamp(72px, 10vw, 180px);
+  --about-split-margin-bottom:clamp(56px, 7vw, 96px);
 
-  --about-col-title-size:1.36rem;
-  --about-col-title-spacing:.20em;
-  --about-col-heading-gap:14px;
+  --about-col-title-size:1.42rem;
+  --about-col-title-spacing:.16em;
+  --about-col-heading-gap:18px;
 
-  --about-col-item-size:1.02rem;
-  --about-col-item-line:1.9;
-  --about-col-item-spacing:.07em;
+  --about-col-item-size:1.08rem;
+  --about-col-item-line:2;
+  --about-col-item-spacing:.05em;
 
   --about-credit-title-size:1rem;
-  --about-credit-title-spacing:.20em;
-  --about-credit-title-gap:10px;
+  --about-credit-title-spacing:.18em;
+  --about-credit-title-gap:12px;
 
-  --about-credit-name-size:1.6rem;
-  --about-credit-name-spacing:.16em;
+  --about-credit-name-size:1.7rem;
+  --about-credit-name-spacing:.12em;
   --about-credit-name-gap:24px;
-  --about-credit-block-gap:60px;
-  --about-credit-link-size:1.4rem;
+  --about-credit-block-gap:72px;
+  --about-credit-link-size:1rem;
 
   --about-back-size:.95rem;
-  --about-back-spacing:.18em;
-  --about-back-pad-x:clamp(24px, 10vw, 220px);
-  --about-back-margin-top:clamp(80px, 16vw, 360px);
+  --about-back-spacing:.16em;
+  --about-back-pad-x:clamp(12px, 3vw, 48px);
+  --about-back-margin-top:clamp(64px, 10vw, 180px);
 
   /* -----------------------------------------
      3-10. Modal Tokens
@@ -815,6 +815,7 @@ body.view-right .inner-shell{
   flex-direction:column;
   justify-content:center;
   gap:var(--about-hero-gap);
+  width:min(58vw, 980px);
 }
 
 .about-logo-text{
@@ -824,7 +825,7 @@ body.view-right .inner-shell{
 
 .about-logo-main{
   font-size:var(--about-logo-main-size);
-  line-height:.95;
+  line-height:.92;
 }
 
 .about-logo-sub{
@@ -848,6 +849,7 @@ body.view-right .inner-shell{
   display:grid;
   gap:var(--about-stack-gap);
   padding:var(--about-stack-pad);
+  width:min(62vw, 1080px);
 }
 
 .about-item h3{
@@ -868,13 +870,14 @@ body.view-right .inner-shell{
 .about-split{
   border-left:1px solid #fff;
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
   gap:var(--about-split-gap);
   padding:
     var(--about-split-pad-top)
     var(--about-split-pad-x)
     var(--about-split-pad-bottom);
   margin-bottom:var(--about-split-margin-bottom);
+  width:min(68vw, 1240px);
 }
 
 .about-col h4{
@@ -895,6 +898,7 @@ body.view-right .inner-shell{
   line-height:var(--about-col-item-line);
   letter-spacing:var(--about-col-item-spacing);
   opacity:.85;
+  max-width:34ch;
 }
 
 /* About Credit / Aboutクレジット責務 */
@@ -913,7 +917,7 @@ body.view-right .inner-shell{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  width:100%;
+  width:min(68vw, 1240px);
   gap:var(--about-credit-name-gap);
 }
 
@@ -923,8 +927,8 @@ body.view-right .inner-shell{
 
 /* About Actions / About戻り導線責務 */
 .about-actions{
-  width:100%;
-  padding:0 var(--about-back-pad-x);
+  width:min(68vw, 1240px);
+  padding:0;
   margin-top:var(--about-back-margin-top);
   font-size:var(--about-back-size);
   letter-spacing:var(--about-back-spacing);
