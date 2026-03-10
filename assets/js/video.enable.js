@@ -57,15 +57,6 @@
     toggleMainVideo();
   });
 
-  // ナビ押下時は自動で止めて戻す
-  document.addEventListener('click', (e) => {
-    const target = e.target;
-
-    if (target.closest('.edge-btn') && isEnabled()) {
-      lockAndStop();
-    }
-  });
-
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isEnabled()) {
       lockAndStop();
