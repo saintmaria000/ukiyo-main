@@ -4,6 +4,7 @@
   const mq = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
   let scrollYBeforeLock = 0;
+  let isTouchingGallery = false;
 
   function isGalleryView() {
     return body.classList.contains('view-left');
@@ -17,7 +18,6 @@
     if (body.classList.contains('is-gallery-scroll-lock')) return;
 
     scrollYBeforeLock = window.scrollY || window.pageYOffset || 0;
-
     body.classList.add('is-gallery-scroll-lock');
     body.style.top = `-${scrollYBeforeLock}px`;
   }
@@ -55,13 +55,48 @@
 
   if (galleryScroll) {
     galleryScroll.addEventListener(
-      'touchmove',
-      (e) => {
-        e.stopPropagation();
+      'touchstart',
+      () => {
+        if (!shouldLockPageScroll()) return;
+        isTouchingGallery = true;
+      },
+      { passive: true }
+    );
+
+    galleryScroll.addEventListener(
+      'touchend',
+      () => {
+        isTouchingGallery = false;
+      },
+      { passive: true }
+    );
+
+    galleryScroll.addEventListener(
+      'touchcancel',
+      () => {
+        isTouchingGallery = false;
       },
       { passive: true }
     );
   }
+
+  // Gallery外の touchmove は止める
+  document.addEventListener(
+    'touchmove',
+    (e) => {
+      if (!shouldLockPageScroll()) return;
+
+      const insideGallery = e.target.closest('.gallery-scroll');
+
+      if (!insideGallery) {
+        e.preventDefault();
+        return;
+      }
+
+      // Gallery内なら通す
+    },
+    { passive: false }
+  );
 
   updateGalleryScrollLock();
 })();
