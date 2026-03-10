@@ -82,6 +82,7 @@ a{
    - まずここを触る
 ========================================= */
 :root{
+
   /* ===== Stage base / ステージ基本設定 ===== */
   --stage-w: 2400px;
   --stage-h: 1080px;
@@ -103,7 +104,7 @@ a{
   --gallery-w: 520px;
   --contact-w: 420px;
 
-  /* ===== Colors / lines / 色・線 ===== */
+  /* ===== Colors / lines ===== */
   --text-main: #fff;
   --text-soft: rgba(255,255,255,.85);
   --text-muted: rgba(255,255,255,.6);
@@ -111,33 +112,40 @@ a{
   --line-soft: rgba(255,255,255,.08);
   --line-mid: rgba(255,255,255,.22);
 
-  /* ===== Overlay colors / オーバーレイ色 ===== */
+  /* ===== Overlay ===== */
   --overlay-dark: rgba(0,0,0,.45);
   --overlay-modal: rgba(0,0,0,.65);
   --overlay-credit: rgba(0,0,0,.75);
 
-  /* ===== Shadows / 影 ===== */
+  /* ===== Shadow ===== */
   --shadow-video: 0 0 40px rgba(255,255,255,.3);
   --shadow-modal: 0 0 40px rgba(0,0,0,.7);
 
-  /* ===== Layer order / 重なり順 ===== */
+  /* ===== Z ===== */
   --z-stage: 2;
   --z-ui: 9000;
   --z-video: 9999;
   --z-modal: 10000;
 
-  /* ===== Typography System / 文字サイズ基準 ===== */
-  --font-display-xl: clamp(2.4rem, 4.2vw, 5.2rem);
-  --font-display-lg: clamp(1.6rem, 2.4vw, 2.2rem);
-  --font-title-lg: clamp(1.25rem, 1.8vw, 1.55rem);
-  --font-title-md: clamp(1.05rem, 1.4vw, 1.3rem);
-  --font-body-md: clamp(.95rem, 1.05vw, 1rem);
-  --font-body-sm: clamp(.85rem, .95vw, .95rem);
-  --font-body-xs: clamp(.72rem, .8vw, .8rem);
-  --font-ui-xs: clamp(.72rem, .75vw, .8rem);
-  --font-ui-sm: clamp(.8rem, .9vw, .95rem);
+  /* =========================================
+     Typography System（PCサイズ少しUP）
+  ========================================= */
 
-  /* ===== Letter spacing / 文字間隔 ===== */
+  --font-display-xl: clamp(2.6rem, 4.4vw, 5.6rem);
+  --font-display-lg: clamp(1.7rem, 2.5vw, 2.3rem);
+
+  --font-title-lg: clamp(1.32rem, 1.9vw, 1.65rem);
+  --font-title-md: clamp(1.12rem, 1.45vw, 1.36rem);
+
+  --font-body-md: clamp(1rem, 1.1vw, 1.06rem);
+  --font-body-sm: clamp(.9rem, 1vw, .98rem);
+  --font-body-xs: clamp(.78rem, .85vw, .86rem);
+
+  --font-ui-xs: clamp(.78rem, .8vw, .86rem);
+  --font-ui-sm: clamp(.9rem, .98vw, 1rem);
+
+  /* ===== Letter spacing ===== */
+
   --ls-wide: .35em;
   --ls-title: .28em;
   --ls-ui: .25em;
@@ -146,12 +154,12 @@ a{
 
   /* =====================================
      Sector: Stage / Global UI
-     セクター: ステージ / 全体UI
   ===================================== */
+
   --view-header-size: var(--font-ui-sm);
   --view-header-spacing: var(--ls-ui);
 
-  --edge-btn-size: .75rem;
+  --edge-btn-size: .82rem;
   --edge-btn-spacing: .25em;
   --edge-btn-pad-y: 4px;
   --edge-btn-pad-x: 0px;
@@ -160,86 +168,99 @@ a{
 
   /* =====================================
      Sector: Gallery
-     セクター: ギャラリー
   ===================================== */
-  --gallery-item-size: .9rem;
+
+  --gallery-item-size: .96rem;
   --gallery-item-spacing: .08em;
   --gallery-item-pad-y: 10px;
   --gallery-item-pad-x: 0px;
-  --gallery-meta-size: .7rem;
+
+  --gallery-meta-size: .78rem;
   --gallery-meta-spacing: .08em;
+
   --gallery-panel-gap-top: 32px;
 
   /* =====================================
      Sector: Contact
-     セクター: コンタクト
   ===================================== */
-  --contact-block-size: .8rem;
+
+  --contact-block-size: .86rem;
   --contact-block-spacing: .12em;
+
   --contact-label-size: 1.3rem;
   --contact-label-spacing: .12em;
-  --contact-value-size: 1.1rem;
+
+  --contact-value-size: 1.14rem;
 
   /* =====================================
      Sector: About
-     セクター: About
   ===================================== */
+
   --about-content-pad-top: 160px;
   --about-content-pad-right: 8vw;
   --about-content-pad-bottom: 200px;
   --about-content-pad-left: 12vw;
 
   --about-logo-main-size: var(--font-display-xl);
-  --about-logo-sub-size: clamp(.9rem, 1.2vw, 1.15rem);
+  --about-logo-sub-size: clamp(.95rem, 1.25vw, 1.2rem);
+
   --about-logo-spacing: .35em;
   --about-logo-sub-spacing: .22em;
 
-  --about-lead-size: 1rem;
+  --about-lead-size: 1.08rem;
   --about-lead-line: 1.9;
-  --about-lead-spacing: .08em;
+  --about-lead-spacing: .07em;
 
   --about-stack-gap: clamp(56px, 8vw, 154px);
   --about-stack-pad: clamp(36px, 6vw, 100px);
 
-  --about-heading-size: 1.55rem;
-  --about-heading-spacing: .28em;
-  --about-body-size: 1rem;
+  --about-heading-size: 1.65rem;
+  --about-heading-spacing: .26em;
+
+  --about-body-size: 1.05rem;
   --about-body-line: 1.9;
-  --about-body-spacing: .09em;
+  --about-body-spacing: .07em;
 
   --about-split-gap: clamp(24px, 4vw, 48px);
   --about-split-pad-top: clamp(36px, 6vw, 100px);
   --about-split-pad-x: clamp(36px, 6vw, 100px);
   --about-split-pad-bottom: clamp(80px, 14vw, 300px);
 
-  --about-col-title-size: 1.3rem;
-  --about-col-title-spacing: .22em;
-  --about-col-item-size: 1rem;
-  --about-col-item-line: 1.9;
-  --about-col-item-spacing: .08em;
+  --about-col-title-size: 1.36rem;
+  --about-col-title-spacing: .20em;
 
-  --about-credit-title-size: .95rem;
-  --about-credit-title-spacing: .22em;
-  --about-credit-name-size: 1.5rem;
+  --about-col-item-size: 1.02rem;
+  --about-col-item-line: 1.9;
+  --about-col-item-spacing: .07em;
+
+  --about-credit-title-size: 1rem;
+  --about-credit-title-spacing: .20em;
+
+  --about-credit-name-size: 1.6rem;
   --about-credit-name-spacing: .16em;
 
-  --about-back-size: .9rem;
+  --about-back-size: .95rem;
   --about-back-spacing: .18em;
+
   --about-back-pad-x: clamp(24px, 10vw, 220px);
   --about-back-margin-top: clamp(80px, 16vw, 360px);
 
   /* =====================================
      Sector: Modal
-     セクター: モーダル
   ===================================== */
+
   --modal-width: min(92vw, 1400px);
-  --modal-credit-toggle-size: .8rem;
+
+  --modal-credit-toggle-size: .86rem;
   --modal-credit-toggle-spacing: .18em;
-  --modal-credit-title-size: 1rem;
+
+  --modal-credit-title-size: 1.05rem;
   --modal-credit-title-spacing: .16em;
-  --modal-credit-list-size: .8rem;
+
+  --modal-credit-list-size: .86rem;
   --modal-credit-list-line: 1.8;
-  --modal-credit-close-size: .75rem;
+
+  --modal-credit-close-size: .78rem;
   --modal-credit-close-spacing: .18em;
 }
 
