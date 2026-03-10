@@ -1019,7 +1019,6 @@ body.view-right .inner-shell{
   }
 
   .about-lead{
-    margin-top:26px;
     width:100%;
     max-width:none;
   }
@@ -1039,7 +1038,9 @@ body.view-right .inner-shell{
   .about-split{
     margin-top:18px;
   }
-
+  .about-credit{
+    margin-top:18px;
+  }
   .about-col li{
     max-width:44ch;
   }
