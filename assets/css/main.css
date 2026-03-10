@@ -13,9 +13,9 @@ html{
   font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue","Segoe UI", sans-serif;
   scroll-behavior:smooth;
   scrollbar-width:thin;
-  scrollbar-color: rgba(255,255,255,.22) transparent;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+  scrollbar-color:rgba(255,255,255,.22) transparent;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
 }
 
 body{
@@ -26,13 +26,13 @@ body{
   color:#fff;
   overflow-x:hidden;
   overflow-y:auto;
-  transition: background .6s ease, color .6s ease;
-  -webkit-overflow-scrolling: touch;
+  transition:background .6s ease, color .6s ease;
+  -webkit-overflow-scrolling:touch;
 }
 
 button,
 a{
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color:transparent;
 }
 
 button{
@@ -64,211 +64,174 @@ a{
   background:transparent;
 }
 ::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.22);
+  background:rgba(255,255,255,.22);
   border:5px solid transparent;
-  background-clip: content-box;
+  background-clip:content-box;
   border-radius:999px;
 }
 ::-webkit-scrollbar-thumb:hover{
-  background: rgba(255,255,255,.90);
-  background-clip: content-box;
+  background:rgba(255,255,255,.90);
+  background-clip:content-box;
 }
 ::-webkit-scrollbar-thumb:active{
   background:#fff;
-  background-clip: content-box;
+  background-clip:content-box;
 }
 
 /* =========================================
    3. Root Design Tokens
    3. ルート設計変数 / 全体トークン
-   - まずここを触る
 ========================================= */
 :root{
+  --stage-w:2400px;
+  --stage-h:1080px;
+  --stage-scale:1;
 
-  /* ===== Stage base / ステージ基本設定 ===== */
-  --stage-w: 2400px;
-  --stage-h: 1080px;
-  --stage-scale: 1;
+  --vvw:100vw;
+  --vvh:100vh;
+  --vv-top:0px;
+  --vv-left:0px;
 
-  /* ===== Viewport helper / 画面サイズ補助変数 ===== */
-  --vvw: 100vw;
-  --vvh: 100vh;
-  --vv-top: 0px;
-  --vv-left: 0px;
+  --stage-pad-y:40px;
+  --stage-pad-x:90px;
+  --edge-offset:32px;
 
-  /* ===== Stage spacing / ステージ余白・配置 ===== */
-  --stage-pad-y: 40px;
-  --stage-pad-x: 90px;
-  --edge-offset: 32px;
+  --video-w:960px;
+  --gallery-w:520px;
+  --contact-w:420px;
 
-  /* ===== Stage object sizes / ステージ内要素サイズ ===== */
-  --video-w: 960px;
-  --gallery-w: 520px;
-  --contact-w: 420px;
+  --text-main:#fff;
+  --text-soft:rgba(255,255,255,.85);
+  --text-muted:rgba(255,255,255,.6);
 
-  /* ===== Colors / lines ===== */
-  --text-main: #fff;
-  --text-soft: rgba(255,255,255,.85);
-  --text-muted: rgba(255,255,255,.6);
+  --line-soft:rgba(255,255,255,.08);
+  --line-mid:rgba(255,255,255,.22);
 
-  --line-soft: rgba(255,255,255,.08);
-  --line-mid: rgba(255,255,255,.22);
+  --overlay-dark:rgba(0,0,0,.45);
+  --overlay-modal:rgba(0,0,0,.65);
+  --overlay-credit:rgba(0,0,0,.75);
 
-  /* ===== Overlay ===== */
-  --overlay-dark: rgba(0,0,0,.45);
-  --overlay-modal: rgba(0,0,0,.65);
-  --overlay-credit: rgba(0,0,0,.75);
+  --shadow-video:0 0 40px rgba(255,255,255,.3);
+  --shadow-modal:0 0 40px rgba(0,0,0,.7);
 
-  /* ===== Shadow ===== */
-  --shadow-video: 0 0 40px rgba(255,255,255,.3);
-  --shadow-modal: 0 0 40px rgba(0,0,0,.7);
+  --z-stage:2;
+  --z-ui:9000;
+  --z-video:9999;
+  --z-modal:10000;
 
-  /* ===== Z ===== */
-  --z-stage: 2;
-  --z-ui: 9000;
-  --z-video: 9999;
-  --z-modal: 10000;
+  --font-display-xl:clamp(2.6rem, 4.4vw, 5.6rem);
+  --font-display-lg:clamp(1.7rem, 2.5vw, 2.3rem);
 
-  /* =========================================
-     Typography System（PCサイズ少しUP）
-  ========================================= */
+  --font-title-lg:clamp(1.32rem, 1.9vw, 1.65rem);
+  --font-title-md:clamp(1.12rem, 1.45vw, 1.36rem);
 
-  --font-display-xl: clamp(2.6rem, 4.4vw, 5.6rem);
-  --font-display-lg: clamp(1.7rem, 2.5vw, 2.3rem);
+  --font-body-md:clamp(1rem, 1.1vw, 1.06rem);
+  --font-body-sm:clamp(.9rem, 1vw, .98rem);
+  --font-body-xs:clamp(.78rem, .85vw, .86rem);
 
-  --font-title-lg: clamp(1.32rem, 1.9vw, 1.65rem);
-  --font-title-md: clamp(1.12rem, 1.45vw, 1.36rem);
+  --font-ui-xs:clamp(.78rem, .8vw, .86rem);
+  --font-ui-sm:clamp(.9rem, .98vw, 1rem);
 
-  --font-body-md: clamp(1rem, 1.1vw, 1.06rem);
-  --font-body-sm: clamp(.9rem, 1vw, .98rem);
-  --font-body-xs: clamp(.78rem, .85vw, .86rem);
+  --ls-wide:.35em;
+  --ls-title:.28em;
+  --ls-ui:.25em;
+  --ls-body:.08em;
+  --ls-body-tight:.05em;
 
-  --font-ui-xs: clamp(.78rem, .8vw, .86rem);
-  --font-ui-sm: clamp(.9rem, .98vw, 1rem);
+  --view-header-size:var(--font-ui-sm);
+  --view-header-spacing:var(--ls-ui);
 
-  /* ===== Letter spacing ===== */
+  --edge-btn-size:.86rem;
+  --edge-btn-spacing:.25em;
+  --edge-btn-pad-y:4px;
+  --edge-btn-pad-x:0;
+  --edge-btn-min-w:auto;
+  --edge-btn-min-h:auto;
 
-  --ls-wide: .35em;
-  --ls-title: .28em;
-  --ls-ui: .25em;
-  --ls-body: .08em;
-  --ls-body-tight: .05em;
+  --gallery-item-size:.96rem;
+  --gallery-item-spacing:.08em;
+  --gallery-item-pad-y:10px;
+  --gallery-item-pad-x:0;
 
-  /* =====================================
-     Sector: Stage / Global UI
-  ===================================== */
+  --gallery-meta-size:.78rem;
+  --gallery-meta-spacing:.08em;
 
-  --view-header-size: var(--font-ui-sm);
-  --view-header-spacing: var(--ls-ui);
+  --gallery-panel-gap-top:32px;
 
-  --edge-btn-size: .86rem;
-  --edge-btn-spacing: .25em;
-  --edge-btn-pad-y: 4px;
-  --edge-btn-pad-x: 0px;
-  --edge-btn-min-w: auto;
-  --edge-btn-min-h: auto;
+  --contact-block-size:.86rem;
+  --contact-block-spacing:.12em;
 
-  /* =====================================
-     Sector: Gallery
-  ===================================== */
+  --contact-label-size:1.3rem;
+  --contact-label-spacing:.12em;
 
-  --gallery-item-size: .96rem;
-  --gallery-item-spacing: .08em;
-  --gallery-item-pad-y: 10px;
-  --gallery-item-pad-x: 0px;
+  --contact-value-size:1.14rem;
 
-  --gallery-meta-size: .78rem;
-  --gallery-meta-spacing: .08em;
+  --about-content-pad-top:160px;
+  --about-content-pad-right:8vw;
+  --about-content-pad-bottom:200px;
+  --about-content-pad-left:12vw;
 
-  --gallery-panel-gap-top: 32px;
+  --about-logo-main-size:var(--font-display-xl);
+  --about-logo-sub-size:clamp(.95rem, 1.25vw, 1.2rem);
 
-  /* =====================================
-     Sector: Contact
-  ===================================== */
+  --about-logo-spacing:.35em;
+  --about-logo-sub-spacing:.22em;
 
-  --contact-block-size: .86rem;
-  --contact-block-spacing: .12em;
+  --about-lead-size:1.08rem;
+  --about-lead-line:1.9;
+  --about-lead-spacing:.07em;
 
-  --contact-label-size: 1.3rem;
-  --contact-label-spacing: .12em;
+  --about-stack-gap:clamp(56px, 8vw, 154px);
+  --about-stack-pad:clamp(36px, 6vw, 100px);
 
-  --contact-value-size: 1.14rem;
+  --about-heading-size:1.65rem;
+  --about-heading-spacing:.26em;
 
-  /* =====================================
-     Sector: About
-  ===================================== */
+  --about-body-size:1.05rem;
+  --about-body-line:1.9;
+  --about-body-spacing:.07em;
 
-  --about-content-pad-top: 160px;
-  --about-content-pad-right: 8vw;
-  --about-content-pad-bottom: 200px;
-  --about-content-pad-left: 12vw;
+  --about-split-gap:clamp(24px, 4vw, 48px);
+  --about-split-pad-top:clamp(36px, 6vw, 100px);
+  --about-split-pad-x:clamp(36px, 6vw, 100px);
+  --about-split-pad-bottom:clamp(80px, 14vw, 300px);
 
-  --about-logo-main-size: var(--font-display-xl);
-  --about-logo-sub-size: clamp(.95rem, 1.25vw, 1.2rem);
+  --about-col-title-size:1.36rem;
+  --about-col-title-spacing:.20em;
 
-  --about-logo-spacing: .35em;
-  --about-logo-sub-spacing: .22em;
+  --about-col-item-size:1.02rem;
+  --about-col-item-line:1.9;
+  --about-col-item-spacing:.07em;
 
-  --about-lead-size: 1.08rem;
-  --about-lead-line: 1.9;
-  --about-lead-spacing: .07em;
+  --about-credit-title-size:1rem;
+  --about-credit-title-spacing:.20em;
 
-  --about-stack-gap: clamp(56px, 8vw, 154px);
-  --about-stack-pad: clamp(36px, 6vw, 100px);
+  --about-credit-name-size:1.6rem;
+  --about-credit-name-spacing:.16em;
 
-  --about-heading-size: 1.65rem;
-  --about-heading-spacing: .26em;
+  --about-back-size:.95rem;
+  --about-back-spacing:.18em;
 
-  --about-body-size: 1.05rem;
-  --about-body-line: 1.9;
-  --about-body-spacing: .07em;
+  --about-back-pad-x:clamp(24px, 10vw, 220px);
+  --about-back-margin-top:clamp(80px, 16vw, 360px);
 
-  --about-split-gap: clamp(24px, 4vw, 48px);
-  --about-split-pad-top: clamp(36px, 6vw, 100px);
-  --about-split-pad-x: clamp(36px, 6vw, 100px);
-  --about-split-pad-bottom: clamp(80px, 14vw, 300px);
+  --modal-width:min(92vw, 1400px);
 
-  --about-col-title-size: 1.36rem;
-  --about-col-title-spacing: .20em;
+  --modal-credit-toggle-size:.86rem;
+  --modal-credit-toggle-spacing:.18em;
 
-  --about-col-item-size: 1.02rem;
-  --about-col-item-line: 1.9;
-  --about-col-item-spacing: .07em;
+  --modal-credit-title-size:1.05rem;
+  --modal-credit-title-spacing:.16em;
 
-  --about-credit-title-size: 1rem;
-  --about-credit-title-spacing: .20em;
+  --modal-credit-list-size:.86rem;
+  --modal-credit-list-line:1.8;
 
-  --about-credit-name-size: 1.6rem;
-  --about-credit-name-spacing: .16em;
-
-  --about-back-size: .95rem;
-  --about-back-spacing: .18em;
-
-  --about-back-pad-x: clamp(24px, 10vw, 220px);
-  --about-back-margin-top: clamp(80px, 16vw, 360px);
-
-  /* =====================================
-     Sector: Modal
-  ===================================== */
-
-  --modal-width: min(92vw, 1400px);
-
-  --modal-credit-toggle-size: .86rem;
-  --modal-credit-toggle-spacing: .18em;
-
-  --modal-credit-title-size: 1.05rem;
-  --modal-credit-title-spacing: .16em;
-
-  --modal-credit-list-size: .86rem;
-  --modal-credit-list-line: 1.8;
-
-  --modal-credit-close-size: .78rem;
-  --modal-credit-close-spacing: .18em;
+  --modal-credit-close-size:.78rem;
+  --modal-credit-close-spacing:.18em;
 }
 
 /* =========================================
    4. Global UI
-   4. 全体UI / 共通操作UI
 ========================================= */
 .global-mute{
   position:fixed;
@@ -280,7 +243,7 @@ a{
   padding:8px;
   opacity:.7;
   cursor:pointer;
-  transition: opacity .2s ease, transform .2s ease;
+  transition:opacity .2s ease, transform .2s ease;
   pointer-events:auto;
   transform:none;
 }
@@ -312,7 +275,6 @@ a{
 
 /* =========================================
    5. Stage Layout
-   5. ステージ全体レイアウト
 ========================================= */
 .space-wrapper{
   position:relative;
@@ -337,14 +299,14 @@ a{
   position:absolute;
   inset:0;
   display:flex;
-  width:7200px;
+  width:calc(var(--stage-w) * 3);
   height:100%;
   transition:transform .8s ease;
   z-index:var(--z-stage);
 }
 
 .view{
-  width:2400px;
+  width:var(--stage-w);
   height:100%;
   padding:var(--stage-pad-y) var(--stage-pad-x);
   position:relative;
@@ -376,7 +338,7 @@ a{
 
 .video-frame{
   width:var(--video-w);
-  aspect-ratio:16/9;
+  aspect-ratio:16 / 9;
   background:#000;
   display:flex;
   align-items:center;
@@ -408,7 +370,6 @@ a{
 
 /* =========================================
    6. Stage Views
-   6. ステージ各ビュー
 ========================================= */
 .view.view-left .view-header{
   position:absolute;
@@ -436,17 +397,17 @@ a{
 }
 
 body.view-center .outer-space{
-  transform:translateX(-2400px);
+  transform:translateX(calc(var(--stage-w) * -1));
 }
 body.view-left .outer-space{
-  transform:translateX(0px);
+  transform:translateX(0);
 }
 body.view-right .outer-space{
-  transform:translateX(-4800px);
+  transform:translateX(calc(var(--stage-w) * -2));
 }
 
 body.view-center .inner-shell{
-  transform:translate(-50%, -50%) translateX(0px);
+  transform:translate(-50%, -50%) translateX(0);
 }
 body.view-left .inner-shell{
   transform:translate(-50%, -50%) translateZ(-350px) translateX(1920px);
@@ -457,10 +418,7 @@ body.view-right .inner-shell{
 
 /* =========================================
    7. Stage Components
-   7. ステージ内コンポーネント
 ========================================= */
-
-/* --- Edge Buttons / エッジボタン --- */
 .edge-btn{
   position:absolute;
   display:inline-flex;
@@ -478,7 +436,7 @@ body.view-right .inner-shell{
   min-height:var(--edge-btn-min-h);
   z-index:20;
   pointer-events:auto;
-  transition: color .2s ease, filter .2s ease, transform .1s ease;
+  transition:color .2s ease, filter .2s ease, transform .1s ease;
 }
 
 .edge-btn:hover{
@@ -504,7 +462,6 @@ body.view-right .inner-shell{
   transform:translateX(-50%);
 }
 
-/* --- Gallery / ギャラリー一覧 --- */
 .gallery-panel{
   position:relative;
   margin-top:var(--gallery-panel-gap-top);
@@ -532,7 +489,7 @@ body.view-right .inner-shell{
   display:block;
   opacity:0;
   transform:scale(1.04);
-  transition: opacity .45s ease, transform .8s ease;
+  transition:opacity .45s ease, transform .8s ease;
   filter:brightness(.75);
 }
 
@@ -547,10 +504,10 @@ body.view-right .inner-shell{
   overflow-y:auto;
   padding-right:8px;
   scrollbar-width:thin;
-  scrollbar-color: rgba(255,255,255,.16) transparent;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
+  scrollbar-color:rgba(255,255,255,.16) transparent;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
   pointer-events:auto;
 }
 
@@ -564,7 +521,7 @@ body.view-right .inner-shell{
   font-size:var(--gallery-item-size);
   letter-spacing:var(--gallery-item-spacing);
   cursor:pointer;
-  transition: color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
+  transition:color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
 }
 
 .gallery-item:first-child{
@@ -582,7 +539,6 @@ body.view-right .inner-shell{
   background:rgba(255,255,255,.03);
 }
 
-/* --- Contact / コンタクト情報 --- */
 .contact-block{
   margin-top:40px;
   max-width:var(--contact-w);
@@ -616,7 +572,6 @@ body.view-right .inner-shell{
 
 /* =========================================
    8. About Section
-   8. Aboutセクション / 説明コンテンツ
 ========================================= */
 #about{
   border-top:2px solid #fff;
@@ -756,9 +711,11 @@ body.view-right .inner-shell{
   align-items:center;
   width:100%;
 }
+
 .about-credit-name a{
-font-size: o.64rem;
+  font-size:0.64rem;
 }
+
 .about-actions{
   width:100%;
   padding:0 var(--about-back-pad-x);
@@ -773,7 +730,7 @@ font-size: o.64rem;
   text-decoration:none;
   border-bottom:1px solid rgba(255,255,255,.2);
   padding-bottom:2px;
-  transition: color .2s ease, filter .2s ease, transform .1s ease;
+  transition:color .2s ease, filter .2s ease, transform .1s ease;
 }
 
 .about-actions a:hover{
@@ -782,7 +739,6 @@ font-size: o.64rem;
 
 /* =========================================
    9. Modal
-   9. モーダル / 作品再生オーバーレイ
 ========================================= */
 .modal{
   position:fixed;
@@ -835,7 +791,7 @@ font-size: o.64rem;
 
 .modal__video-frame{
   width:100%;
-  aspect-ratio:16/9;
+  aspect-ratio:16 / 9;
   position:relative;
   overflow:hidden;
   max-height:80vh;
@@ -930,35 +886,34 @@ font-size: o.64rem;
 
 /* =========================================
    Pull Entrance Hint
-   通常は完全に隠し、必要時だけ見せる
 ========================================= */
 .pull-return{
-  position: fixed;
-  top: 28px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-14px);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 21000;
-  transition: opacity .28s ease, transform .28s ease;
+  position:fixed;
+  top:28px;
+  left:50%;
+  transform:translateX(-50%) translateY(-14px);
+  opacity:0;
+  pointer-events:none;
+  z-index:21000;
+  transition:opacity .28s ease, transform .28s ease;
 }
 
 body.is-pull-hint-visible .pull-return{
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
 }
 
 .pull-return-link{
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  font-size: clamp(.55rem, 1vw, 1.05rem);
-  font-weight: 300;
-  letter-spacing: .12em;
-  text-transform: none;
-  color: rgba(255,255,255,.75);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255,255,255,.22);
-  padding-bottom: 3px;
-  opacity: .75;
+  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size:clamp(.55rem, 1vw, 1.05rem);
+  font-weight:300;
+  letter-spacing:.12em;
+  text-transform:none;
+  color:rgba(255,255,255,.75);
+  text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.22);
+  padding-bottom:3px;
+  opacity:.75;
   transition:
     opacity .22s ease,
     border-color .22s ease,
@@ -973,23 +928,21 @@ body.is-pull-hint-visible .pull-return{
 
 /* =========================================
    10. Narrow Width / Tablet
-   10. 狭幅画面 / タブレット調整
-   - ここはタブレット / 狭幅用の上書きだけ置く
 ========================================= */
-@media (max-width: 900px){
+@media (max-width:900px){
   :root{
-    --about-content-pad-top: 100px;
-    --about-content-pad-right: 7vw;
-    --about-content-pad-bottom: 120px;
-    --about-content-pad-left: 7vw;
+    --about-content-pad-top:100px;
+    --about-content-pad-right:7vw;
+    --about-content-pad-bottom:120px;
+    --about-content-pad-left:7vw;
 
-    --about-lead-size: .95rem;
-    --about-body-size: .95rem;
-    --about-col-item-size: .95rem;
+    --about-lead-size:.95rem;
+    --about-body-size:.95rem;
+    --about-col-item-size:.95rem;
 
-    --about-heading-size: 1.3rem;
-    --about-col-title-size: 1.15rem;
-    --about-credit-name-size: 1.25rem;
+    --about-heading-size:1.3rem;
+    --about-col-title-size:1.15rem;
+    --about-credit-name-size:1.25rem;
   }
 
   .about-split{
@@ -998,91 +951,81 @@ body.is-pull-hint-visible .pull-return{
 }
 
 /* =========================================
-11. Mobile Landscape
-11. スマホ横向き調整
-- Gallery表示中はページスクロール停止
-- Galleryリストのみスクロール可能
-- Gallery / Contact を大型化
+   11. Mobile Landscape
 ========================================= */
-@media (pointer: coarse) and (orientation: landscape){
-
+@media (pointer:coarse) and (orientation:landscape){
   :root{
-    /* ===== Stage UI ===== */
-    --edge-btn-size: 1.4rem;
+    --edge-btn-size:1.4rem;
 
-    /* ===== Gallery ===== */
-    --gallery-w: clamp(560px, 68vw, 860px);
-    --gallery-item-size: 1.5rem;
-    --gallery-meta-size: 1.08rem;
-    --gallery-item-pad-y: 18px;
-    --gallery-item-pad-x: 0px;
-    --gallery-panel-gap-top: 28px;
+    --gallery-w:clamp(560px, 68vw, 860px);
+    --gallery-item-size:1.5rem;
+    --gallery-meta-size:1.08rem;
+    --gallery-item-pad-y:18px;
+    --gallery-item-pad-x:0;
+    --gallery-panel-gap-top:28px;
 
-    /* ===== Contact ===== */
-    --contact-w: clamp(520px, 62vw, 760px);
-    --contact-block-size: 1.18rem;
-    --contact-block-spacing: .08em;
-    --contact-label-size: 1.42rem;
-    --contact-label-spacing: .12em;
-    --contact-value-size: 1.34rem;
+    --contact-w:clamp(520px, 62vw, 760px);
+    --contact-block-size:1.18rem;
+    --contact-block-spacing:.08em;
+    --contact-label-size:1.42rem;
+    --contact-label-spacing:.12em;
+    --contact-value-size:1.34rem;
 
-    /* ===== About ===== */
-    --about-logo-main-size: clamp(1.7rem, 3vw, 3.2rem);
-    --about-logo-sub-size: .74rem;
-    --about-logo-spacing: .14em;
-    --about-logo-sub-spacing: .08em;
+    --about-logo-main-size:clamp(1.7rem, 3vw, 3.2rem);
+    --about-logo-sub-size:.74rem;
+    --about-logo-spacing:.14em;
+    --about-logo-sub-spacing:.08em;
 
-    --about-lead-size: .68rem;
-    --about-lead-line: 1.78;
-    --about-lead-spacing: .02em;
+    --about-lead-size:.68rem;
+    --about-lead-line:1.78;
+    --about-lead-spacing:.02em;
 
-    --about-heading-size: .96rem;
-    --about-heading-spacing: .10em;
+    --about-heading-size:.96rem;
+    --about-heading-spacing:.10em;
 
-    --about-body-size: .8rem;
-    --about-body-line: 1.74;
-    --about-body-spacing: .02em;
+    --about-body-size:.8rem;
+    --about-body-line:1.74;
+    --about-body-spacing:.02em;
 
-    --about-col-title-size: .88rem;
-    --about-col-title-spacing: .08em;
+    --about-col-title-size:.88rem;
+    --about-col-title-spacing:.08em;
 
-    --about-col-item-size: .8rem;
-    --about-col-item-line: 1.74;
-    --about-col-item-spacing: .02em;
+    --about-col-item-size:.8rem;
+    --about-col-item-line:1.74;
+    --about-col-item-spacing:.02em;
 
-    --about-credit-title-size: .78rem;
-    --about-credit-title-spacing: .10em;
-    --about-credit-name-size: .96rem;
-    --about-credit-name-spacing: .06em;
+    --about-credit-title-size:.78rem;
+    --about-credit-title-spacing:.10em;
+    --about-credit-name-size:.96rem;
+    --about-credit-name-spacing:.06em;
 
-    --about-back-size: .74rem;
-    --about-back-spacing: .08em;
+    --about-back-size:.74rem;
+    --about-back-spacing:.08em;
 
-    --about-content-pad-top: 64px;
-    --about-content-pad-right: 7.5vw;
-    --about-content-pad-bottom: 96px;
-    --about-content-pad-left: 7.5vw;
+    --about-content-pad-top:64px;
+    --about-content-pad-right:7.5vw;
+    --about-content-pad-bottom:96px;
+    --about-content-pad-left:7.5vw;
 
-    --about-stack-gap: clamp(34px, 4vw, 58px);
-    --about-stack-pad: clamp(20px, 3vw, 34px);
+    --about-stack-gap:clamp(34px, 4vw, 58px);
+    --about-stack-pad:clamp(20px, 3vw, 34px);
 
-    --about-split-gap: clamp(20px, 2.4vw, 28px);
-    --about-split-pad-top: clamp(20px, 3vw, 30px);
-    --about-split-pad-x: clamp(20px, 3vw, 30px);
-    --about-split-pad-bottom: clamp(40px, 6vw, 68px);
+    --about-split-gap:clamp(20px, 2.4vw, 28px);
+    --about-split-pad-top:clamp(20px, 3vw, 30px);
+    --about-split-pad-x:clamp(20px, 3vw, 30px);
+    --about-split-pad-bottom:clamp(40px, 6vw, 68px);
 
-    --about-back-pad-x: clamp(6px, 2vw, 14px);
-    --about-back-margin-top: clamp(30px, 4vw, 54px);
+    --about-back-pad-x:clamp(6px, 2vw, 14px);
+    --about-back-margin-top:clamp(30px, 4vw, 54px);
 
-    /* ===== Modal ===== */
-    --modal-credit-toggle-size: .8rem;
-    --modal-credit-title-size: .92rem;
-    --modal-credit-list-size: .78rem;
-    --modal-credit-close-size: .72rem;
+    --modal-credit-toggle-size:.8rem;
+    --modal-credit-title-size:.92rem;
+    --modal-credit-list-size:.78rem;
+    --modal-credit-close-size:.72rem;
   }
 
   .edge-btn{
-    z-index: 20000;
+    z-index:20000;
   }
 
   .video-frame iframe{
@@ -1113,7 +1056,7 @@ body.is-pull-hint-visible .pull-return{
   }
 
   .video-unlock-flash.is-active{
-    animation: videoUnlockFlash .72s ease-out forwards;
+    animation:videoUnlockFlash .72s ease-out forwards;
   }
 
   @keyframes videoUnlockFlash{
@@ -1134,7 +1077,6 @@ body.is-pull-hint-visible .pull-return{
     }
   }
 
-  /* ===== About ===== */
   #about .about-content{
     max-width:none;
   }
@@ -1170,30 +1112,31 @@ body.is-pull-hint-visible .pull-return{
   .about-credit{
     margin-top:18px;
   }
+
   .about-credit-name a{
-    font-size: 0.76rem;
-    margin-left: 100px;
+    font-size:0.76rem;
+    margin-left:100px;
   }
+
   .about-col li{
     max-width:44ch;
   }
 
-  /* ===== Gallery表示中だけページスクロール停止 ===== */
   body.is-gallery-scroll-lock{
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    overflow: hidden;
+    position:fixed;
+    inset:0;
+    width:100%;
+    overflow:hidden;
   }
 
   body.is-gallery-scroll-lock .gallery-scroll{
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
   }
-  /* ===== Left / Gallery ===== */
+
   .view-left .view-inner{
     justify-content:center;
     align-items:flex-start;
@@ -1240,7 +1183,6 @@ body.is-pull-hint-visible .pull-return{
     line-height:1.35;
   }
 
-  /* ===== Right / Contact ===== */
   .view-right .view-inner{
     justify-content:center;
     align-items:flex-end;
@@ -1261,7 +1203,6 @@ body.is-pull-hint-visible .pull-return{
     line-height:1.65;
   }
 
-  /* ===== Modal ===== */
   .modal__content{
     width:min(86vw, 1100px);
   }
