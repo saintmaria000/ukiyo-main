@@ -1194,6 +1194,8 @@ body.view-right .inner-shell{
     --contact-value-size:1.34rem;
 
     /* About / About上書き */
+    --about-stack-overlap:80px;
+
     --about-logo-main-size:clamp(1.7rem, 3vw, 3.2rem);
     --about-logo-sub-size:.74rem;
     --about-logo-spacing:.14em;
@@ -1221,7 +1223,7 @@ body.view-right .inner-shell{
     --about-credit-title-spacing:.10em;
     --about-credit-name-size:.96rem;
     --about-credit-name-spacing:.06em;
-    --about-credit-link-size:var(--about-credit-link-size-landscape);
+    --about-credit-link-size:0.76rem;
 
     --about-back-size:.74rem;
     --about-back-spacing:.08em;
@@ -1267,10 +1269,14 @@ body.view-right .inner-shell{
     max-width:none;
   }
 
+  /* About Hero / About導入構造責務 */
   .about-hero{
-    min-height:auto;
+    min-height:calc(100vh - var(--about-stack-overlap));
     width:min(82vw, 720px);
-    gap:var(--about-hero-gap-landscape);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:30px;
     padding-bottom:10px;
   }
 
@@ -1279,8 +1285,18 @@ body.view-right .inner-shell{
     max-width:none;
   }
 
+  /* About Stack / About本文スタック責務 */
   .about-stack{
-    margin-top:var(--about-stack-margin-top-landscape);
+    border-left:1px solid #fff;
+    display:grid;
+    gap:var(--about-stack-gap);
+    padding:var(--about-stack-pad);
+    margin-top:calc(var(--about-stack-overlap) * -1);
+  }
+
+  /* Stack first block offset / 縦ラインのみ侵入させる調整 */
+  .about-stack > :first-child{
+    margin-top:var(--about-stack-overlap);
   }
 
   .about-item h3{
@@ -1291,16 +1307,22 @@ body.view-right .inner-shell{
     max-width:44ch;
   }
 
+  /* About Split / About分割構造責務 */
   .about-split{
     margin-top:var(--about-split-margin-top-landscape);
   }
 
+  .about-col li{
+    max-width:44ch;
+  }
+
+  /* About Credit / Aboutクレジット責務 */
   .about-credit{
     margin-top:var(--about-credit-margin-top-landscape);
   }
 
-  .about-col li{
-    max-width:44ch;
+  .about-credit-name a{
+    font-size:var(--about-credit-link-size);
   }
 
   body.is-gallery-scroll-lock{
