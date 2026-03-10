@@ -3,7 +3,7 @@
   const galleryScroll = document.querySelector('.gallery-scroll');
   const mq = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
-  let scrollYBeforeLock = 0;
+  if (!galleryScroll) return;
 
   function isGalleryView() {
     return body.classList.contains('view-left');
@@ -13,37 +13,26 @@
     return mq.matches && isGalleryView();
   }
 
-  function lockBodyScroll() {
-    if (body.classList.contains('is-gallery-scroll-lock')) return;
-
-    scrollYBeforeLock = window.scrollY || window.pageYOffset || 0;
-
-    body.classList.add('is-gallery-scroll-lock');
-    body.style.top = `-${scrollYBeforeLock}px`;
-  }
-
-  function unlockBodyScroll() {
-    if (!body.classList.contains('is-gallery-scroll-lock')) return;
-
-    body.classList.remove('is-gallery-scroll-lock');
-    body.style.top = '';
-    window.scrollTo(0, scrollYBeforeLock);
-  }
-
   function updateGalleryScrollLock() {
-    if (shouldLockPageScroll()) {
-      lockBodyScroll();
-    } else {
-      unlockBodyScroll();
-    }
+    body.classList.toggle('is-gallery-scroll-lock', shouldLockPageScroll());
   }
 
-  const observer = new MutationObserver(updateGalleryScrollLock);
+  // ----------------------------------------
+  // body class の変化を監視
+  // view-left / view-center / view-right の切替に追従
+  // ----------------------------------------
+  const observer = new MutationObserver(() => {
+    updateGalleryScrollLock();
+  });
+
   observer.observe(body, {
     attributes: true,
     attributeFilter: ['class']
   });
 
+  // ----------------------------------------
+  // リサイズ・回転対応
+  // ----------------------------------------
   window.addEventListener('resize', updateGalleryScrollLock);
   window.addEventListener('orientationchange', updateGalleryScrollLock);
 
@@ -53,15 +42,26 @@
     mq.addListener(updateGalleryScrollLock);
   }
 
-  if (galleryScroll) {
-    galleryScroll.addEventListener(
-      'touchmove',
-      (e) => {
-        e.stopPropagation();
-      },
-      { passive: true }
-    );
-  }
+  // ----------------------------------------
+  // Gallery外のタッチ移動を止める
+  // Gallery中だけリストスクロール許可
+  // ----------------------------------------
+  document.addEventListener(
+    'touchmove',
+    (e) => {
+      if (!shouldLockPageScroll()) return;
 
+      const insideGalleryScroll = e.target.closest('.gallery-scroll');
+
+      if (!insideGalleryScroll) {
+        e.preventDefault();
+      }
+    },
+    { passive: false }
+  );
+
+  // ----------------------------------------
+  // 初期実行
+  // ----------------------------------------
   updateGalleryScrollLock();
 })();
