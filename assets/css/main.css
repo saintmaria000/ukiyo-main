@@ -1194,7 +1194,7 @@ body.view-right .inner-shell{
     --contact-value-size:1.34rem;
 
     /* About / About上書き */
-    --about-stack-overlap:80px;
+    --about-stack-overlap:48px;
 
     --about-logo-main-size:clamp(1.7rem, 3vw, 3.2rem);
     --about-logo-sub-size:.74rem;
@@ -1271,13 +1271,13 @@ body.view-right .inner-shell{
 
   /* About Hero / About導入構造責務 */
   .about-hero{
-    min-height:calc(100vh - var(--about-stack-overlap));
+    min-height:calc(100dvh - var(--about-stack-overlap));
     width:min(82vw, 720px);
     display:flex;
     flex-direction:column;
     justify-content:center;
     gap:30px;
-    padding-bottom:10px;
+    padding-bottom:22px;
   }
 
   .about-lead{
