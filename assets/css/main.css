@@ -1159,7 +1159,9 @@ body.is-pull-hint-visible .pull-return{
   .about-credit{
     margin-top:18px;
   }
-
+  .about-credit-name a{
+    font-size: 0.76rem;
+  }
   .about-col li{
     max-width:44ch;
   }
