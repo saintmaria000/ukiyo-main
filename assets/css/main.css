@@ -1130,7 +1130,6 @@ body.view-right .inner-shell{
   body.is-gallery-scroll-lock{
     overflow:hidden;
     height:100vh;
-    touch-action:none;
   }
 
   body.is-gallery-scroll-lock .gallery-scroll{
