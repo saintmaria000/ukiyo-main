@@ -2,7 +2,6 @@
   const body = document.body;
   const topStage = document.getElementById('top');
   let pullHintTimer = null;
-  let waitForTopTimer = null;
 
   function showPullHint(duration = 3000) {
     body.classList.add('is-pull-hint-visible');
@@ -24,45 +23,28 @@
     body.classList.remove('is-pull-hint-visible');
   }
 
-  function waitUntilTopThenShowPull(duration = 3000) {
-    if (waitForTopTimer) {
-      clearInterval(waitForTopTimer);
-    }
-
-    let tries = 0;
-    waitForTopTimer = setInterval(() => {
-      tries += 1;
-
-      const y = window.scrollY || window.pageYOffset || 0;
-      if (y <= 4) {
-        clearInterval(waitForTopTimer);
-        waitForTopTimer = null;
-        showPullHint(duration);
-      }
-
-      if (tries > 60) {
-        clearInterval(waitForTopTimer);
-        waitForTopTimer = null;
-      }
-    }, 50);
-  }
-
-  // About下部のボタンから戻った時だけ、TOP到達後に pull を出す
+  // ----------------------------------------
+  // About下部のボタンから戻った時に3秒表示
+  // ----------------------------------------
   document.addEventListener('click', (e) => {
     const trigger = e.target.closest('[data-show-pull="true"]');
     if (!trigger) return;
 
-    waitUntilTopThenShowPull(3000);
+    setTimeout(() => {
+      showPullHint(3000);
+    }, 500);
   });
 
+  // ----------------------------------------
   // Stage最上部で下方向に引っぱった時だけ一時表示
+  // ----------------------------------------
   let startY = 0;
   let trackingPull = false;
 
   document.addEventListener(
     'touchstart',
     (e) => {
-      const isAtTop = (window.scrollY || window.pageYOffset || 0) <= 0;
+      const isAtTop = window.scrollY <= 0;
       const isStageArea = topStage && topStage.contains(e.target);
 
       if (!isAtTop || !isStageArea) {
@@ -84,6 +66,7 @@
       const currentY = e.touches[0].clientY;
       const deltaY = currentY - startY;
 
+      // 下方向に軽く引いたら表示
       if (deltaY > 26) {
         body.classList.add('is-pull-hint-visible');
       }
@@ -102,10 +85,11 @@
     { passive: true }
   );
 
+  // スクロールしたら消す
   window.addEventListener(
     'scroll',
     () => {
-      if ((window.scrollY || window.pageYOffset || 0) > 8) {
+      if (window.scrollY > 8) {
         hidePullHint();
       }
     },
