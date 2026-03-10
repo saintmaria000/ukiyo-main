@@ -5,16 +5,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // WORKSが空＝works.jsが読めてない（パス/ファイル名/キャッシュ）
   if (!Object.keys(WORKS).length) {
-    console.warn('[modal.bind] WORKS is empty. Check ../assets/js/works.js path & filename.');
+    console.warn('[modal.bind] WORKS is empty. Check ../assets/js/works.data.js path & filename.');
   }
 
   items.forEach((item) => {
     item.addEventListener('click', () => {
-      const id = (item.dataset.id || '').trim();
+      const id = (item.dataset.workId || '').trim();
       const work = WORKS[id];
 
       if (!id) {
-        console.warn('[modal.bind] data-id missing:', item);
+        console.warn('[modal.bind] data-work-id missing:', item);
         return;
       }
 
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (!window.GalleryModal?.open) {
-        console.warn('[modal.bind] GalleryModal.open not ready. Check modal.ui.js load.');
+        console.warn('[modal.bind] GalleryModal.open not ready. Check modal.js load.');
         return;
       }
 

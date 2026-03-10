@@ -124,10 +124,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ====== ホバー処理 ======
   items.forEach((item) => {
     item.addEventListener("mouseenter", async () => {
-      const id = item.dataset.id;
+      const id = item.dataset.workId;
 
       if (!id) {
-        warn("[GalleryThumb] data-id が無い要素がある:", item);
+        warn("[GalleryThumb] data-work-id が無い要素がある:", item);
         return;
       }
 

@@ -11,18 +11,15 @@
 
   <button class="global-mute" aria-label="Toggle sound">
     <svg class="icon-sound" viewBox="0 0 24 24">
-      <!-- スピーカー -->
       <path class="icon-speaker"
         d="M3 9v6h4l5 4V5L7 9H3z"/>
 
-      <!-- 音波 -->
       <path class="icon-wave"
         d="M16 8c1.5 1.5 1.5 6.5 0 8"
         fill="none"
         stroke-width="2"
         stroke-linecap="round"/>
 
-      <!-- ミュート時のバツ -->
       <path class="icon-cross"
         d="M15 9l6 6M21 9l-6 6"
         fill="none"
@@ -37,184 +34,153 @@
     </div>
 
     <div class="space-wrapper" id="top">
-
-      <!-- ✅ 追加：TOPステージ（2400×1080固定） -->
       <div class="stage" id="topStage">
-
         <div class="outer-space" id="outerSpace">
 
-          <!-- 左：Gallery 面 -->
+          <!-- Left : Gallery -->
           <section class="view view-left">
             <div class="view-inner">
 
               <div class="gallery-preview" aria-hidden="true">
-                  <img class="gallery-preview-img" src="" alt="">
+                <img class="gallery-preview-img" src="" alt="">
               </div>
 
               <header class="view-header">ukiyo Film — Gallery</header>
 
               <div class="gallery-panel">
-
                 <div class="gallery-scroll">
 
-                  <!-- Work 27 -->
-                  <button class="gallery-item" type="button" data-id="kanzo">
+                  <button class="gallery-item" type="button" data-work-id="kanzo">
                     <div class="gallery-item-title">She Her Her Hers - KANZO</div>
                     <div class="gallery-item-meta">SHORT FILM / 2025</div>
                   </button>
 
-                  <!-- Work 26 -->
-                  <button class="gallery-item" type="button" data-id="misfits">
+                  <button class="gallery-item" type="button" data-work-id="misfits">
                     <div class="gallery-item-title">ドレスコーズ 「ミスフィッツ」</div>
                     <div class="gallery-item-meta">SHORT FILM / 2025</div>
                   </button>
 
-                  <!-- Work 25 -->
-                  <button class="gallery-item" type="button" data-id="dokuhaku">
+                  <button class="gallery-item" type="button" data-work-id="dokuhaku">
                     <div class="gallery-item-title">山本大斗 - 独白</div>
                     <div class="gallery-item-meta">SHORT FILM / 2025</div>
                   </button>
 
-                  <!-- Work 24 -->
-                  <button class="gallery-item" type="button" data-id="thirsty">
+                  <button class="gallery-item" type="button" data-work-id="thirsty">
                     <div class="gallery-item-title">She Her Her Hers - Thirsty</div>
                     <div class="gallery-item-meta">SHORT FILM / 2024</div>
                   </button>
 
-                  <!-- Work 23 -->
-                  <button class="gallery-item" type="button" data-id="higher">
+                  <button class="gallery-item" type="button" data-work-id="higher">
                     <div class="gallery-item-title">luvis - Higher</div>
                     <div class="gallery-item-meta">SHORT FILM / 2024</div>
                   </button>
 
-                  <!-- Work 22 -->
-                  <button class="gallery-item" type="button" data-id="hukanzen_make">
+                  <button class="gallery-item" type="button" data-work-id="hukanzen_make">
                     <div class="gallery-item-title">KAMIYA - 不完全メイクポーチ</div>
                     <div class="gallery-item-meta">SHORT FILM / 2024</div>
                   </button>
 
-                  <!-- Work 21 -->
-                  <button class="gallery-item" type="button" data-id="all_my_life">
+                  <button class="gallery-item" type="button" data-work-id="all_my_life">
                     <div class="gallery-item-title">清 竜人 - All My Life</div>
                     <div class="gallery-item-meta">SHORT FILM / 2024</div>
                   </button>
 
-                  <!-- Work 20 -->
-                  <button class="gallery-item" type="button" data-id="tokyo_mushuku">
+                  <button class="gallery-item" type="button" data-work-id="tokyo_mushuku">
                     <div class="gallery-item-title">BLYY - 東京無宿</div>
                     <div class="gallery-item-meta">SHORT FILM / 2024</div>
                   </button>
 
-                  <!-- Work 19 -->
-                  <button class="gallery-item" type="button" data-id="revenge">
+                  <button class="gallery-item" type="button" data-work-id="revenge">
                     <div class="gallery-item-title">ShowyVICTOR - REVENGE</div>
                     <div class="gallery-item-meta">SHORT FILM / 2023</div>
                   </button>
 
-                  <!-- Work 18 -->
-                  <button class="gallery-item" type="button" data-id="too_high">
+                  <button class="gallery-item" type="button" data-work-id="too_high">
                     <div class="gallery-item-title">ゆるふわギャング - Too High</div>
                     <div class="gallery-item-meta">SHORT FILM / 2022</div>
                   </button>
 
-                  <!-- Work 17 -->
-                  <button class="gallery-item" type="button" data-id="new_world_believer">
+                  <button class="gallery-item" type="button" data-work-id="new_world_believer">
                     <div class="gallery-item-title">鯱 - New World Believer</div>
                     <div class="gallery-item-meta">SHORT FILM / 2022</div>
                   </button>
 
-                  <!-- Work 16 -->
-                  <button class="gallery-item" type="button" data-id="money_from_the_dirt">
+                  <button class="gallery-item" type="button" data-work-id="money_from_the_dirt">
                     <div class="gallery-item-title">MEZZ - Money From The Dirt</div>
                     <div class="gallery-item-meta">SHORT FILM / 2022</div>
                   </button>
 
-                  <!-- Work 15 -->
-                  <button class="gallery-item" type="button" data-id="supersonic">
+                  <button class="gallery-item" type="button" data-work-id="supersonic">
                     <div class="gallery-item-title">鋭児 - $uper$onic</div>
                     <div class="gallery-item-meta">SHORT FILM / 2022</div>
                   </button>
 
-                  <!-- Work 14 -->
-                  <button class="gallery-item" type="button" data-id="imaginary_line">
+                  <button class="gallery-item" type="button" data-work-id="imaginary_line">
                     <div class="gallery-item-title">She Her Her Hers - Imaginary line</div>
                     <div class="gallery-item-meta">SHORT FILM / 2022</div>
                   </button>
 
-                  <!-- Work 13 -->
-                  <button class="gallery-item" type="button" data-id="diagram_x">
+                  <button class="gallery-item" type="button" data-work-id="diagram_x">
                     <div class="gallery-item-title">She Her Her Hers - Diagram X</div>
                     <div class="gallery-item-meta">SHORT FILM / 2022</div>
                   </button>
 
-                  <!-- Work 12 -->
-                  <button class="gallery-item" type="button" data-id="music">
+                  <button class="gallery-item" type="button" data-work-id="music">
                     <div class="gallery-item-title">chilldspot - music feat.LINION</div>
                     <div class="gallery-item-meta">SHORT FILM / 2021</div>
                   </button>
 
-                  <!-- Work 11 -->
-                  <button class="gallery-item" type="button" data-id="abnormality">
-                    <div class="gallery-item-title">泣き虫☔︎ - アブノーマリティー。feat. yama </div>
+                  <button class="gallery-item" type="button" data-work-id="abnormality">
+                    <div class="gallery-item-title">泣き虫☔︎ - アブノーマリティー。feat. yama</div>
                     <div class="gallery-item-meta">SHORT FILM / 2021</div>
                   </button>
 
-                  <!-- Work 10 -->
-                  <button class="gallery-item" type="button" data-id="mitei">
+                  <button class="gallery-item" type="button" data-work-id="mitei">
                     <div class="gallery-item-title">chilldspot - 未定</div>
                     <div class="gallery-item-meta">SHORT FILM / 2021</div>
                   </button>
 
-                  <!-- Work 09 -->
-                  <button class="gallery-item" type="button" data-id="groovynight">
+                  <button class="gallery-item" type="button" data-work-id="groovynight">
                     <div class="gallery-item-title">chilldspot - Groovynight</div>
                     <div class="gallery-item-meta">SHORT FILM / 2021</div>
                   </button>
 
-                  <!-- Work 08 -->
-                  <button class="gallery-item" type="button" data-id="zion">
+                  <button class="gallery-item" type="button" data-work-id="zion">
                     <div class="gallery-item-title">鋭児 - Zion</div>
                     <div class="gallery-item-meta">SHORT FILM / 2021</div>
                   </button>
 
-                  <!-- Work 07 -->
-                  <button class="gallery-item" type="button" data-id="ignite">
+                  <button class="gallery-item" type="button" data-work-id="ignite">
                     <div class="gallery-item-title">鋭児 - IGNITE</div>
                     <div class="gallery-item-meta">SHORT FILM / 2021</div>
                   </button>
 
-                  <!-- Work 06 -->
-                  <button class="gallery-item" type="button" data-id="sophnet_end_martens">
+                  <button class="gallery-item" type="button" data-work-id="sophnet_end_martens">
                     <div class="gallery-item-title">SOPHNET. END. Dr. Martens</div>
                     <div class="gallery-item-meta">SHORT FILM / 2023</div>
                   </button>
 
-                  <!-- Work 05 -->
-                  <button class="gallery-item" type="button" data-id="silent_madness">
+                  <button class="gallery-item" type="button" data-work-id="silent_madness">
                     <div class="gallery-item-title">NAGAN SERVER 「SILENT MADNESS」</div>
                     <div class="gallery-item-meta">SHORT FILM / 2023</div>
                   </button>
 
-                  <!-- Work 04 -->
-                  <button class="gallery-item" type="button" data-id="kaizodo">
+                  <button class="gallery-item" type="button" data-work-id="kaizodo">
                     <div class="gallery-item-title">amazarashi『世界の解像度』</div>
                     <div class="gallery-item-meta">SHORT FILM / 2023</div>
                   </button>
 
-                  <!-- Work 03 -->
-                  <button class="gallery-item" type="button" data-id="shisoukaseki">
+                  <button class="gallery-item" type="button" data-work-id="shisoukaseki">
                     <div class="gallery-item-title">saccharin - Shisoukaseki</div>
                     <div class="gallery-item-meta">SHORT FILM / 2021</div>
                   </button>
 
-                  <!-- Work 02 -->
-                  <button class="gallery-item" type="button" data-id="madras_night_part2">
+                  <button class="gallery-item" type="button" data-work-id="madras_night_part2">
                     <div class="gallery-item-title">MADRAS NIGHT PART 2</div>
                     <div class="gallery-item-meta">SHORT FILM / 2021</div>
                   </button>
 
-                  <!-- Work 01 -->
-                  <button class="gallery-item" type="button" data-id="ginga">
+                  <button class="gallery-item" type="button" data-work-id="ginga">
                     <div class="gallery-item-title">銀河</div>
                     <div class="gallery-item-meta">MUSIC VIDEO / 2020</div>
                   </button>
@@ -222,22 +188,22 @@
                 </div>
               </div>
 
-              <button class="edge-btn edge-btn--right" type="button" data-view="center">
+              <button class="edge-btn edge-btn--right" type="button" data-stage-view="center">
                 Home
               </button>
             </div>
           </section>
 
-          <!-- 中央：Main 面 -->
+          <!-- Center : Main -->
           <section class="view view-center">
             <div class="view-inner">
-              <button class="edge-btn edge-btn--left" data-view="left">Gallery</button>
-              <button class="edge-btn edge-btn--right" data-view="right">Contact</button>
-              <button class="edge-btn edge-btn--bottom" data-scroll-target="#about">About</button>
+              <button class="edge-btn edge-btn--left" type="button" data-stage-view="left">Gallery</button>
+              <button class="edge-btn edge-btn--right" type="button" data-stage-view="right">Contact</button>
+              <button class="edge-btn edge-btn--bottom" type="button" data-scroll-to="#about">About</button>
             </div>
           </section>
 
-          <!-- 右：Contact 面 -->
+          <!-- Right : Contact -->
           <section class="view view-right">
             <div class="view-inner" id="contact-right">
               <header class="view-header">ukiyo Film — Contact</header>
@@ -245,7 +211,7 @@
               <div class="contact-block">
                 <div class="contact-label">Mail</div>
                 <div class="contact-value">
-                  <a href="mailto:info@example.com">ukiyo@gmail.com</a>
+                  <a href="mailto:ukiyo@gmail.com">ukiyo@gmail.com</a>
                 </div>
 
                 <div class="contact-label">Director</div>
@@ -253,7 +219,7 @@
                   <p>Matias Maehama</p>
                 </div>
                 <div class="contact-value">
-                  <a href="mailto:director@example.com">matiasmaehama@gmail.com</a>
+                  <a href="mailto:matiasmaehama@gmail.com">matiasmaehama@gmail.com</a>
                 </div>
 
                 <div class="contact-label">SNS</div>
@@ -263,37 +229,37 @@
                 </div>
               </div>
 
-              <button class="edge-btn edge-btn--left" data-view="center">Home</button>
+              <button class="edge-btn edge-btn--left" type="button" data-stage-view="center">Home</button>
             </div>
           </section>
         </div>
 
-        <!-- 内筒：中央映像 -->
         <div class="inner-shell" id="innerShell">
           <div class="video-frame">
             <button class="video-shield" type="button" aria-label="Enable video controls"></button>
             <div class="video-unlock-flash" aria-hidden="true"></div>
-            <iframe id="mainVideo"
-                    src="https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=0&rel=0&enablejsapi=1"
-                    frameborder="0"
-                    allow="autoplay; encrypted-media"
-                    allowfullscreen></iframe>
+            <iframe
+              id="mainVideo"
+              src="https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=0&rel=0&enablejsapi=1"
+              frameborder="0"
+              allow="autoplay; encrypted-media"
+              allowfullscreen>
+            </iframe>
           </div>
         </div>
 
-      </div> <!-- ✅ stage end -->
-
+      </div>
     </div>
 
     <!-- About -->
     <section id="about">
-      <video class="about-bg-video"data-keep-playing autoplay muted loop playsinline preload="auto">
+      <video class="about-bg-video" data-keep-playing autoplay muted loop playsinline preload="auto">
         <source src="../images/aboutbackwall.mp4" type="video/mp4">
       </video>
+
       <div class="about-overlay"></div>
 
       <div class="about-content">
-
         <header class="about-hero">
 
           <div class="about-logo-text">
@@ -319,12 +285,12 @@
 
           <article class="about-item">
             <h3>Direction</h3>
-            <p>Give a life and shape to your vision.<br>Direction / Art Direction / Photograph / Cinemagraph. </p>
+            <p>Give a life and shape to your vision.<br>Direction / Art Direction / Photograph / Cinemagraph.</p>
           </article>
 
           <article class="about-item">
             <h3>Editing</h3>
-            <p>Finding the final form through time and rhythm.<br>Video editing /  Retouch /  Design / Artwork.</p>
+            <p>Finding the final form through time and rhythm.<br>Video editing / Retouch / Design / Artwork.</p>
           </article>
         </section>
 
@@ -334,7 +300,7 @@
             <ul>
               <li>Music video, short film</li>
               <li>Commercial Film, Brand Film</li>
-              <li>Motion Graphics,  Documentary Film</li>
+              <li>Motion Graphics, Documentary Film</li>
             </ul>
           </div>
 
@@ -350,32 +316,37 @@
 
         <footer class="about-credit">
           <div class="about-credit-title">Director and Producer</div>
-          <div class="about-credit-name">Matias Maehama
-            <a href="#top" class="about-action-link" data-view-jump="right">
+          <div class="about-credit-name">
+            Matias Maehama
+            <a href="#top" class="about-action-link" data-stage-jump="right">
               Contact
             </a>
           </div>
 
           <div class="about-actions">
-            <a href="#top" class="about-action-link" data-show-pull="true" data-view-jump="center">
+            <a href="#top" class="about-action-link" data-pull-hint="return" data-stage-jump="center">
               ▲ Back to Main
             </a><br>
           </div>
         </footer>
-
       </div>
     </section>
-
   </div>
 
-  <!-- Gallery モーダル -->
+  <!-- Gallery Modal -->
   <div class="modal" id="galleryModal">
     <div class="modal__backdrop" data-modal-close></div>
+
     <div class="modal__content">
       <div class="modal__video">
         <div class="modal__video-frame">
-          <iframe id="modalVideo" src="" frameborder="0"
-                  allow="autoplay; encrypted-media" allowfullscreen></iframe>
+          <iframe
+            id="modalVideo"
+            src=""
+            frameborder="0"
+            allow="autoplay; encrypted-media"
+            allowfullscreen>
+          </iframe>
 
           <div class="modal__credit" id="modalCredit">
             <div class="modal__credit-inner">
@@ -394,7 +365,7 @@
     </div>
   </div>
 
-  <!-- ✅ script順：works.js → modal.js（あなたのまま） -->
+  <!-- script order: data → stage → gallery → modal → media → background -->
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="../assets/js/works.data.js" defer></script>
 

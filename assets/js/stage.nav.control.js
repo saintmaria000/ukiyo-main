@@ -70,15 +70,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ----------------------------------------
   // 1) 通常の左右ビュー切替
-  // data-view="left|center|right"
+  // data-stage-view="left|center|right"
   // ----------------------------------------
   document.addEventListener(
     'click',
     (e) => {
-      const btn = e.target.closest('[data-view]');
+      const btn = e.target.closest('[data-stage-view]');
       if (!btn) return;
 
-      const targetView = btn.dataset.view;
+      const targetView = btn.dataset.stageView;
       if (!targetView) return;
 
       e.preventDefault();
@@ -89,15 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ----------------------------------------
   // 2) Aboutなどへの縦移動
-  // data-scroll-target="#about"
+  // data-scroll-to="#about"
   // ----------------------------------------
   document.addEventListener(
     'click',
     (e) => {
-      const btn = e.target.closest('[data-scroll-target]');
+      const btn = e.target.closest('[data-scroll-to]');
       if (!btn) return;
 
-      const selector = btn.dataset.scrollTarget;
+      const selector = btn.dataset.scrollTo;
       if (!selector) return;
 
       const target = document.querySelector(selector);
@@ -120,15 +120,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ----------------------------------------
   // 3) About下部から TOP へ戻って view を切り替える
-  // data-view-jump="center|right"
+  // data-stage-jump="center|right"
   // ----------------------------------------
   document.addEventListener(
     'click',
     (e) => {
-      const btn = e.target.closest('[data-view-jump]');
+      const btn = e.target.closest('[data-stage-jump]');
       if (!btn) return;
 
-      const targetView = btn.dataset.viewJump;
+      const targetView = btn.dataset.stageJump;
       if (!targetView) return;
 
       e.preventDefault();

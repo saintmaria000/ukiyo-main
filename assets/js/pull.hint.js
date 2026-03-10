@@ -63,7 +63,7 @@
   document.addEventListener(
     'click',
     (e) => {
-      const trigger = e.target.closest('[data-show-pull="true"]');
+      const trigger = e.target.closest('[data-pull-hint]');
       if (!trigger) return;
 
       showPullAfterReturn();
