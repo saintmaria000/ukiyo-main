@@ -1,6 +1,7 @@
 (function () {
   const body = document.body;
   const topStage = document.getElementById('top');
+
   let pullHintTimer = null;
   let waitForTopTimer = null;
 
@@ -21,7 +22,21 @@
       clearTimeout(pullHintTimer);
       pullHintTimer = null;
     }
+
+    if (waitForTopTimer) {
+      clearInterval(waitForTopTimer);
+      waitForTopTimer = null;
+    }
+
     body.classList.remove('is-pull-hint-visible');
+  }
+
+  function isTopReached() {
+    return (window.scrollY || window.pageYOffset || 0) <= 4;
+  }
+
+  function isCenterView() {
+    return body.classList.contains('view-center');
   }
 
   function waitUntilTopThenShowPull(duration = 3000) {
@@ -33,21 +48,24 @@
     waitForTopTimer = setInterval(() => {
       tries += 1;
 
-      const y = window.scrollY || window.pageYOffset || 0;
-      if (y <= 4) {
+      if (isTopReached()) {
         clearInterval(waitForTopTimer);
         waitForTopTimer = null;
         showPullHint(duration);
+        return;
       }
 
-      if (tries > 60) {
+      if (tries > 80) {
         clearInterval(waitForTopTimer);
         waitForTopTimer = null;
       }
     }, 50);
   }
 
-  // About下部のボタンから戻った時だけ、TOP到達後に pull を出す
+  // ----------------------------------------
+  // Aboutの「Back to Main」など
+  // 明示的に data-show-pull="true" が付いた時だけ Pull を出す
+  // ----------------------------------------
   document.addEventListener('click', (e) => {
     const trigger = e.target.closest('[data-show-pull="true"]');
     if (!trigger) return;
@@ -55,17 +73,21 @@
     waitUntilTopThenShowPull(3000);
   });
 
-  // Stage最上部で下方向に引っぱった時だけ一時表示
+  // ----------------------------------------
+  // Center view のTOP画面で、上方向に引っぱった時だけ Pull を出す
+  // Gallery / Contact では出さない
+  // ----------------------------------------
   let startY = 0;
   let trackingPull = false;
 
   document.addEventListener(
     'touchstart',
     (e) => {
-      const isAtTop = (window.scrollY || window.pageYOffset || 0) <= 0;
+      const isAtTop = isTopReached();
       const isStageArea = topStage && topStage.contains(e.target);
 
-      if (!isAtTop || !isStageArea) {
+      // Center view 以外では pull tracking しない
+      if (!isAtTop || !isStageArea || !isCenterView()) {
         trackingPull = false;
         return;
       }
@@ -84,6 +106,7 @@
       const currentY = e.touches[0].clientY;
       const deltaY = currentY - startY;
 
+      // 下方向に引っぱった時だけ表示
       if (deltaY > 26) {
         body.classList.add('is-pull-hint-visible');
       }
@@ -95,22 +118,39 @@
     'touchend',
     () => {
       if (!trackingPull) return;
-      trackingPull = false;
 
+      trackingPull = false;
       showPullHint(1200);
     },
     { passive: true }
   );
 
+  // ----------------------------------------
+  // スクロールしたら消す
+  // ただし「TOPに着いただけ」で勝手には出さない
+  // ----------------------------------------
   window.addEventListener(
     'scroll',
     () => {
-      if ((window.scrollY || window.pageYOffset || 0) > 8) {
+      const y = window.scrollY || window.pageYOffset || 0;
+
+      if (y > 8) {
         hidePullHint();
       }
     },
     { passive: true }
   );
 
+  // Viewが変わったらPullは消す
+  const observer = new MutationObserver(() => {
+    hidePullHint();
+  });
+
+  observer.observe(body, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+
   window.showPullHint = showPullHint;
+  window.hidePullHint = hidePullHint;
 })();
