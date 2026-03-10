@@ -921,45 +921,45 @@ body.view-right .inner-shell{
   cursor:pointer;
   opacity:.85;
 }
+
 /* =========================================
-   Pull Entrance Area
+   Pull Entrance Hint
+   通常は完全に隠し、必要時だけ見せる
 ========================================= */
 .pull-return{
-  position:relative;
-  width:100%;
-  height:80px;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  pointer-events:none;
-  opacity:.0;
-  transform:translateY(-12px);
-  transition:opacity .35s ease, transform .35s ease;
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-16px);
+  z-index: 21000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .28s ease, transform .28s ease;
 }
 
 .pull-return-link{
-  pointer-events:auto;
-  font-size:.9rem;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  opacity:.55;
-  text-decoration:none;
-  border-bottom:1px solid rgba(255,255,255,.25);
-  padding-bottom:2px;
-  transition:opacity .2s ease, filter .2s ease;
+  display: inline-block;
+  pointer-events: auto;
+  font-size: .9rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #fff;
+  opacity: .72;
+  border-bottom: 1px solid rgba(255,255,255,.25);
+  padding-bottom: 2px;
+  transition: opacity .2s ease, filter .2s ease;
 }
 
 .pull-return-link:hover{
-  opacity:.95;
-  filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
+  opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
 
-/* ページ最上部に来た時や、JSで一時表示したい時 */
 body.is-pull-hint-visible .pull-return{
-  opacity:1;
-  transform:translateY(0);
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
-
 /* =========================================
    10. Narrow Width / Tablet
    10. 狭幅画面 / タブレット調整
@@ -1166,16 +1166,19 @@ body.is-pull-hint-visible .pull-return{
 
   /* ===== Gallery表示中だけページスクロール停止 ===== */
   body.is-gallery-scroll-lock{
-    overflow:hidden;
-    height:100vh;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    overflow: hidden;
   }
 
   body.is-gallery-scroll-lock .gallery-scroll{
-    touch-action:pan-y;
-    overscroll-behavior:contain;
-    -webkit-overflow-scrolling:touch;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
   }
-
   /* ===== Left / Gallery ===== */
   .view-left .view-inner{
     justify-content:center;
