@@ -1,5 +1,6 @@
 /* =========================================
    1. Reset / Base
+   1. リセット / 基本設定
 ========================================= */
 *{
   margin:0;
@@ -51,6 +52,7 @@ a{
 
 /* =========================================
    2. Scrollbar
+   2. スクロールバー
 ========================================= */
 ::-webkit-scrollbar{
   width:12px;
@@ -75,26 +77,34 @@ a{
 }
 
 /* =========================================
-   3. Root Variables
+   3. Root Design Tokens
+   3. ルート設計変数 / 全体トークン
+   - 全体管理
+   - セクター別サイズ管理
 ========================================= */
 :root{
+  /* ===== Stage base / ステージ基本設定 ===== */
   --stage-w: 2400px;
   --stage-h: 1080px;
   --stage-scale: 1;
 
+  /* ===== Viewport helper / 画面サイズ補助変数 ===== */
   --vvw: 100vw;
   --vvh: 100vh;
   --vv-top: 0px;
   --vv-left: 0px;
 
+  /* ===== Stage spacing / ステージ余白・配置 ===== */
   --stage-pad-y: 40px;
   --stage-pad-x: 90px;
   --edge-offset: 32px;
 
+  /* ===== Stage object sizes / ステージ内要素サイズ ===== */
   --video-w: 960px;
   --gallery-w: 520px;
   --contact-w: 420px;
 
+  /* ===== Colors / lines / 色・線 ===== */
   --text-main: #fff;
   --text-soft: rgba(255,255,255,.85);
   --text-muted: rgba(255,255,255,.6);
@@ -102,21 +112,132 @@ a{
   --line-soft: rgba(255,255,255,.08);
   --line-mid: rgba(255,255,255,.22);
 
+  /* ===== Overlay colors / オーバーレイ色 ===== */
   --overlay-dark: rgba(0,0,0,.45);
   --overlay-modal: rgba(0,0,0,.65);
   --overlay-credit: rgba(0,0,0,.75);
 
+  /* ===== Shadows / 影 ===== */
   --shadow-video: 0 0 40px rgba(255,255,255,.3);
   --shadow-modal: 0 0 40px rgba(0,0,0,.7);
 
+  /* ===== Layer order / 重なり順 ===== */
   --z-stage: 2;
   --z-ui: 9000;
   --z-video: 9999;
   --z-modal: 10000;
+
+  /* ===== Typography System / 文字サイズ基準 ===== */
+  --font-display-xl: clamp(2.4rem, 4.2vw, 5.2rem);
+  --font-display-lg: clamp(1.6rem, 2.4vw, 2.2rem);
+  --font-title-lg: clamp(1.25rem, 1.8vw, 1.55rem);
+  --font-title-md: clamp(1.05rem, 1.4vw, 1.3rem);
+  --font-body-md: clamp(.95rem, 1.05vw, 1rem);
+  --font-body-sm: clamp(.85rem, .95vw, .95rem);
+  --font-body-xs: clamp(.72rem, .8vw, .8rem);
+  --font-ui-xs: clamp(.72rem, .75vw, .8rem);
+  --font-ui-sm: clamp(.8rem, .9vw, .95rem);
+
+  /* ===== Letter spacing / 文字間隔 ===== */
+  --ls-wide: .35em;
+  --ls-title: .28em;
+  --ls-ui: .25em;
+  --ls-body: .08em;
+  --ls-body-tight: .05em;
+
+  /* ===== Sector: Stage / Global UI
+           セクター: ステージ / 全体UI ===== */
+  --view-header-size: var(--font-ui-sm);
+  --view-header-spacing: var(--ls-ui);
+
+  --edge-btn-size: .75rem;
+  --edge-btn-spacing: .25em;
+  --edge-btn-pad-y: 4px;
+  --edge-btn-pad-x: 0px;
+  --edge-btn-min-w: auto;
+  --edge-btn-min-h: auto;
+
+  /* ===== Sector: Gallery
+           セクター: ギャラリー ===== */
+  --gallery-item-size: .9rem;
+  --gallery-item-spacing: .08em;
+  --gallery-item-pad-y: 10px;
+  --gallery-item-pad-x: 0px;
+  --gallery-meta-size: .7rem;
+  --gallery-meta-spacing: .08em;
+  --gallery-panel-gap-top: 32px;
+
+  /* ===== Sector: Contact
+           セクター: コンタクト ===== */
+  --contact-block-size: .8rem;
+  --contact-block-spacing: .12em;
+  --contact-label-size: 1.3rem;
+  --contact-label-spacing: .12em;
+  --contact-value-size: 1.1rem;
+
+  /* ===== Sector: About
+           セクター: About ===== */
+  --about-content-pad-top: 160px;
+  --about-content-pad-right: 8vw;
+  --about-content-pad-bottom: 200px;
+  --about-content-pad-left: 12vw;
+
+  --about-logo-main-size: var(--font-display-xl);
+  --about-logo-sub-size: clamp(.9rem, 1.2vw, 1.15rem);
+  --about-logo-spacing: .35em;
+  --about-logo-sub-spacing: .22em;
+
+  --about-lead-size: 1rem;
+  --about-lead-line: 1.9;
+  --about-lead-spacing: .08em;
+
+  --about-stack-gap: clamp(56px, 8vw, 154px);
+  --about-stack-pad: clamp(36px, 6vw, 100px);
+
+  --about-heading-size: 1.55rem;
+  --about-heading-spacing: .28em;
+  --about-body-size: 1rem;
+  --about-body-line: 1.9;
+  --about-body-spacing: .09em;
+
+  --about-split-gap: clamp(24px, 4vw, 48px);
+  --about-split-pad-top: clamp(36px, 6vw, 100px);
+  --about-split-pad-x: clamp(36px, 6vw, 100px);
+  --about-split-pad-bottom: clamp(80px, 14vw, 300px);
+
+  --about-col-title-size: 1.3rem;
+  --about-col-title-spacing: .22em;
+  --about-col-item-size: 1rem;
+  --about-col-item-line: 1.9;
+  --about-col-item-spacing: .08em;
+
+  --about-credit-title-size: .95rem;
+  --about-credit-title-spacing: .22em;
+  --about-credit-name-size: 1.5rem;
+  --about-credit-name-spacing: .16em;
+
+  --about-back-size: .9rem;
+  --about-back-spacing: .18em;
+  --about-back-pad-x: clamp(24px, 10vw, 220px);
+  --about-back-margin-top: clamp(80px, 16vw, 360px);
+
+  /* ===== Sector: Modal
+           セクター: モーダル ===== */
+  --modal-width: min(92vw, 1400px);
+  --modal-credit-toggle-size: .8rem;
+  --modal-credit-toggle-spacing: .18em;
+  --modal-credit-title-size: 1rem;
+  --modal-credit-title-spacing: .16em;
+  --modal-credit-list-size: .8rem;
+  --modal-credit-list-line: 1.8;
+  --modal-credit-close-size: .75rem;
+  --modal-credit-close-spacing: .18em;
 }
 
 /* =========================================
    4. Global UI
+   4. 全体UI / 共通操作UI
+   - グローバルミュートなど
 ========================================= */
 .global-mute{
   position:fixed;
@@ -160,6 +281,8 @@ a{
 
 /* =========================================
    5. Stage Layout
+   5. ステージ全体レイアウト
+   - 2400x1080基準の舞台構造
 ========================================= */
 .space-wrapper{
   position:relative;
@@ -206,7 +329,8 @@ a{
 }
 
 .view-header{
-  letter-spacing:.25em;
+  font-size:var(--view-header-size);
+  letter-spacing:var(--view-header-spacing);
   text-transform:uppercase;
   opacity:.8;
 }
@@ -254,6 +378,8 @@ a{
 
 /* =========================================
    6. Stage Views
+   6. ステージ各ビュー
+   - Left / Center / Right の面切り替え
 ========================================= */
 .view.view-left .view-header{
   position:absolute;
@@ -302,9 +428,15 @@ body.view-right .inner-shell{
 
 /* =========================================
    7. Stage Components
+   7. ステージ内コンポーネント
+   - ボタン
+   - Gallery
+   - Contact
 ========================================= */
 
-/* --- Edge Buttons --- */
+/* --- Edge Buttons ---
+   エッジボタン / ナビゲーションボタン
+----------------------------------------- */
 .edge-btn{
   position:absolute;
   display:inline-flex;
@@ -312,12 +444,14 @@ body.view-right .inner-shell{
   justify-content:center;
   background:none;
   border:none;
-  font-size:.75rem;
-  letter-spacing:.25em;
+  font-size:var(--edge-btn-size);
+  letter-spacing:var(--edge-btn-spacing);
   text-transform:uppercase;
   opacity:.8;
   cursor:pointer;
-  padding:4px 0;
+  padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
+  min-width:var(--edge-btn-min-w);
+  min-height:var(--edge-btn-min-h);
   z-index:20;
   pointer-events:auto;
   transition: color .2s ease, filter .2s ease, transform .1s ease;
@@ -346,10 +480,12 @@ body.view-right .inner-shell{
   transform:translateX(-50%);
 }
 
-/* --- Gallery --- */
+/* --- Gallery ---
+   ギャラリー一覧 / 作品リスト
+----------------------------------------- */
 .gallery-panel{
   position:relative;
-  margin-top:32px;
+  margin-top:var(--gallery-panel-gap-top);
   max-width:var(--gallery-w);
   height:calc(100% - 72px);
   display:flex;
@@ -397,10 +533,10 @@ body.view-right .inner-shell{
   text-align:left;
   background:transparent;
   border:none;
-  padding:10px 0;
+  padding:var(--gallery-item-pad-y) var(--gallery-item-pad-x);
   border-bottom:1px solid var(--line-soft);
-  font-size:.9rem;
-  letter-spacing:.08em;
+  font-size:var(--gallery-item-size);
+  letter-spacing:var(--gallery-item-spacing);
   cursor:pointer;
   transition: color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
 }
@@ -411,7 +547,8 @@ body.view-right .inner-shell{
 
 .gallery-item-meta{
   opacity:.6;
-  font-size:.7rem;
+  font-size:var(--gallery-meta-size);
+  letter-spacing:var(--gallery-meta-spacing);
   margin-top:4px;
 }
 
@@ -419,12 +556,14 @@ body.view-right .inner-shell{
   background:rgba(255,255,255,.03);
 }
 
-/* --- Contact --- */
+/* --- Contact ---
+   コンタクト情報
+----------------------------------------- */
 .contact-block{
   margin-top:40px;
   max-width:var(--contact-w);
-  font-size:.8rem;
-  letter-spacing:.12em;
+  font-size:var(--contact-block-size);
+  letter-spacing:var(--contact-block-spacing);
   line-height:1.8;
 }
 
@@ -435,14 +574,15 @@ body.view-right .inner-shell{
 
 .contact-label{
   opacity:.5;
-  font-size:1.3rem;
+  font-size:var(--contact-label-size);
+  letter-spacing:var(--contact-label-spacing);
   text-transform:uppercase;
   margin-top:16px;
 }
 
 .contact-value p,
 .contact-value a{
-  font-size:1.1rem;
+  font-size:var(--contact-value-size);
   text-decoration:none;
 }
 
@@ -452,6 +592,7 @@ body.view-right .inner-shell{
 
 /* =========================================
    8. About Section
+   8. Aboutセクション / 説明コンテンツ
 ========================================= */
 #about{
   border-top:2px solid #fff;
@@ -480,7 +621,11 @@ body.view-right .inner-shell{
   position:relative;
   z-index:2;
   max-width:1800px;
-  padding:160px 8vw 200px 12vw;
+  padding:
+    var(--about-content-pad-top)
+    var(--about-content-pad-right)
+    var(--about-content-pad-bottom)
+    var(--about-content-pad-left);
   margin:0 auto;
 }
 
@@ -493,47 +638,47 @@ body.view-right .inner-shell{
 }
 
 .about-logo-text{
-  letter-spacing:.35em;
+  letter-spacing:var(--about-logo-spacing);
   text-transform:lowercase;
 }
 
 .about-logo-main{
-  font-size:clamp(2.4rem, 4.2vw, 5.2rem);
+  font-size:var(--about-logo-main-size);
   line-height:.95;
 }
 
 .about-logo-sub{
-  font-size:clamp(.9rem, 1.2vw, 1.15rem);
+  font-size:var(--about-logo-sub-size);
   opacity:.8;
-  letter-spacing:.22em;
+  letter-spacing:var(--about-logo-sub-spacing);
 }
 
 .about-lead{
   margin-top:18px;
   max-width:720px;
-  font-size:1rem;
-  line-height:1.9;
-  letter-spacing:.08em;
+  font-size:var(--about-lead-size);
+  line-height:var(--about-lead-line);
+  letter-spacing:var(--about-lead-spacing);
   opacity:.9;
 }
 
 .about-stack{
   border-left:1px solid #fff;
   display:grid;
-  gap:clamp(56px, 8vw, 154px);
-  padding:clamp(36px, 6vw, 100px);
+  gap:var(--about-stack-gap);
+  padding:var(--about-stack-pad);
 }
 
 .about-item h3{
-  font-size:1.55rem;
-  letter-spacing:.28em;
+  font-size:var(--about-heading-size);
+  letter-spacing:var(--about-heading-spacing);
   margin-bottom:12px;
 }
 
 .about-item p{
-  font-size:1rem;
-  line-height:1.9;
-  letter-spacing:.09em;
+  font-size:var(--about-body-size);
+  line-height:var(--about-body-line);
+  letter-spacing:var(--about-body-spacing);
   opacity:.85;
   max-width:560px;
 }
@@ -542,17 +687,17 @@ body.view-right .inner-shell{
   border-left:1px solid #fff;
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:clamp(24px, 4vw, 48px);
+  gap:var(--about-split-gap);
   padding:
-    clamp(36px, 6vw, 100px)
-    clamp(36px, 6vw, 100px)
-    clamp(80px, 14vw, 300px);
+    var(--about-split-pad-top)
+    var(--about-split-pad-x)
+    var(--about-split-pad-bottom);
   margin-bottom:clamp(40px, 6vw, 80px);
 }
 
 .about-col h4{
-  font-size:1.3rem;
-  letter-spacing:.22em;
+  font-size:var(--about-col-title-size);
+  letter-spacing:var(--about-col-title-spacing);
   text-transform:uppercase;
   margin-bottom:14px;
 }
@@ -564,32 +709,32 @@ body.view-right .inner-shell{
 }
 
 .about-col li{
-  font-size:1rem;
-  line-height:1.9;
-  letter-spacing:.08em;
+  font-size:var(--about-col-item-size);
+  line-height:var(--about-col-item-line);
+  letter-spacing:var(--about-col-item-spacing);
   opacity:.85;
 }
 
 .about-credit-title{
-  letter-spacing:.22em;
+  letter-spacing:var(--about-credit-title-spacing);
   text-transform:uppercase;
   opacity:.85;
-  font-size:.95rem;
+  font-size:var(--about-credit-title-size);
   margin-bottom:10px;
 }
 
 .about-credit-name{
-  font-size:1.5rem;
-  letter-spacing:.16em;
+  font-size:var(--about-credit-name-size);
+  letter-spacing:var(--about-credit-name-spacing);
   margin-bottom:60px;
 }
 
 .about-back-top{
   width:100%;
-  padding:0 clamp(24px, 10vw, 220px);
-  margin-top:clamp(80px, 16vw, 360px);
-  font-size:.9rem;
-  letter-spacing:.18em;
+  padding:0 var(--about-back-pad-x);
+  margin-top:var(--about-back-margin-top);
+  font-size:var(--about-back-size);
+  letter-spacing:var(--about-back-spacing);
   text-transform:uppercase;
   text-align:center;
 }
@@ -607,6 +752,7 @@ body.view-right .inner-shell{
 
 /* =========================================
    9. Modal
+   9. モーダル / 作品再生オーバーレイ
 ========================================= */
 .modal{
   position:fixed;
@@ -634,7 +780,7 @@ body.view-right .inner-shell{
 .modal__content{
   position:relative;
   z-index:1;
-  width:min(92vw, 1400px);
+  width:var(--modal-width);
   max-width:1400px;
   background:rgba(0,0,0,.9);
   box-shadow:var(--shadow-modal);
@@ -683,8 +829,8 @@ body.view-right .inner-shell{
   background:none;
   border:none;
   color:#fff;
-  font-size:.8rem;
-  letter-spacing:.18em;
+  font-size:var(--modal-credit-toggle-size);
+  letter-spacing:var(--modal-credit-toggle-spacing);
   text-transform:uppercase;
   cursor:pointer;
   opacity:.85;
@@ -714,14 +860,14 @@ body.view-right .inner-shell{
 }
 
 .modal__credit-title{
-  font-size:1rem;
+  font-size:var(--modal-credit-title-size);
   margin-bottom:18px;
-  letter-spacing:.16em;
+  letter-spacing:var(--modal-credit-title-spacing);
 }
 
 .modal__credit-list{
-  font-size:.8rem;
-  line-height:1.8;
+  font-size:var(--modal-credit-list-size);
+  line-height:var(--modal-credit-list-line);
   margin-bottom:18px;
 }
 
@@ -745,38 +891,85 @@ body.view-right .inner-shell{
   background:none;
   border:none;
   color:#fff;
-  font-size:.75rem;
-  letter-spacing:.18em;
+  font-size:var(--modal-credit-close-size);
+  letter-spacing:var(--modal-credit-close-spacing);
   text-transform:uppercase;
   cursor:pointer;
   opacity:.85;
 }
 
 /* =========================================
-   10. Tablet / Narrow Width
+   10. Narrow Width / Tablet
+   10. 狭幅画面 / タブレット調整
 ========================================= */
 @media (max-width: 900px){
+  :root{
+    --about-content-pad-top: 100px;
+    --about-content-pad-right: 7vw;
+    --about-content-pad-bottom: 120px;
+    --about-content-pad-left: 7vw;
+
+    --about-lead-size: .95rem;
+    --about-body-size: .95rem;
+    --about-col-item-size: .95rem;
+
+    --about-heading-size: 1.3rem;
+    --about-col-title-size: 1.15rem;
+    --about-credit-name-size: 1.25rem;
+  }
+
   .about-split{
     grid-template-columns:1fr;
-  }
-
-  #about .about-content{
-    padding:100px 7vw 120px;
-  }
-
-  .about-lead,
-  .about-item p,
-  .about-col li{
-    font-size:.95rem;
-    line-height:1.8;
   }
 }
 
 /* =========================================
    11. Mobile Landscape
-   余白はスクロール、要素の上だけ反応
+   11. スマホ横向き調整
+   - 映画館体験は維持
+   - 操作性と視認性を補正
 ========================================= */
 @media (pointer: coarse) and (orientation: landscape){
+  :root{
+    /* ===== Stage UI / ステージUI ===== */
+    --edge-btn-size: .92rem;
+
+    /* ===== Gallery / ギャラリー ===== */
+    --gallery-item-size: .92rem;
+    --gallery-meta-size: .76rem;
+
+    /* ===== Contact / コンタクト ===== */
+    --contact-label-size: .95rem;
+    --contact-value-size: .9rem;
+    --contact-block-size: .78rem;
+
+    /* ===== About / About ===== */
+    --about-logo-main-size: clamp(2.1rem, 3.8vw, 4.2rem);
+    --about-logo-sub-size: .88rem;
+    --about-lead-size: .9rem;
+    --about-body-size: .9rem;
+    --about-col-title-size: 1.02rem;
+    --about-col-item-size: .9rem;
+    --about-credit-title-size: .88rem;
+    --about-credit-name-size: 1.15rem;
+    --about-back-size: .82rem;
+
+    /* ===== Modal / モーダル ===== */
+    --modal-credit-toggle-size: .8rem;
+    --modal-credit-title-size: .92rem;
+    --modal-credit-list-size: .78rem;
+    --modal-credit-close-size: .72rem;
+
+    /* ===== spacing / 文字間隔も少しだけ詰める ===== */
+    --about-logo-spacing: .22em;
+    --about-heading-spacing: .16em;
+    --about-col-title-spacing: .14em;
+    --about-lead-spacing: .04em;
+    --about-body-spacing: .04em;
+    --about-col-item-spacing: .04em;
+    --contact-block-spacing: .06em;
+  }
+
   .video-frame iframe{
     pointer-events:none;
   }
@@ -799,33 +992,10 @@ body.view-right .inner-shell{
   }
 
   .edge-btn{
-    font-size:1rem;
-    padding:12px 14px;
-    min-width:88px;
-    min-height:48px;
     z-index:20000;
-    pointer-events:auto;
-  }
-
-  .gallery-item{
-    padding:16px 0;
   }
 
   .gallery-item-title{
-    font-size:1rem;
     line-height:1.4;
-  }
-
-  .gallery-item-meta{
-    font-size:.8rem;
-  }
-
-  .contact-label{
-    font-size:1rem;
-  }
-
-  .contact-value p,
-  .contact-value a{
-    font-size:.95rem;
   }
 }
