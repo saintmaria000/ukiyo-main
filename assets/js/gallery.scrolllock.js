@@ -4,9 +4,7 @@
   const mq = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
   let scrollYBeforeLock = 0;
-  let startY = 0;
-
-  if (!galleryScroll) return;
+  let isTouchingGallery = false;
 
   function isGalleryView() {
     return body.classList.contains('view-left');
@@ -55,53 +53,47 @@
     mq.addListener(updateGalleryScrollLock);
   }
 
-  galleryScroll.addEventListener(
-    'touchstart',
-    (e) => {
-      if (!shouldLockPageScroll()) return;
-      startY = e.touches[0].clientY;
-    },
-    { passive: true }
-  );
+  if (galleryScroll) {
+    galleryScroll.addEventListener(
+      'touchstart',
+      () => {
+        if (!shouldLockPageScroll()) return;
+        isTouchingGallery = true;
+      },
+      { passive: true }
+    );
 
-  galleryScroll.addEventListener(
-    'touchmove',
-    (e) => {
-      if (!shouldLockPageScroll()) return;
+    galleryScroll.addEventListener(
+      'touchend',
+      () => {
+        isTouchingGallery = false;
+      },
+      { passive: true }
+    );
 
-      const currentY = e.touches[0].clientY;
-      const deltaY = currentY - startY;
+    galleryScroll.addEventListener(
+      'touchcancel',
+      () => {
+        isTouchingGallery = false;
+      },
+      { passive: true }
+    );
+  }
 
-      const scrollTop = galleryScroll.scrollTop;
-      const maxScrollTop = galleryScroll.scrollHeight - galleryScroll.clientHeight;
-
-      const isAtTop = scrollTop <= 0;
-      const isAtBottom = scrollTop >= maxScrollTop - 1;
-
-      // 指を下に引く = deltaY > 0
-      // 指を上に押す = deltaY < 0
-      //
-      // Galleryの端で外側へ逃げる動きだけ止める
-      if ((isAtTop && deltaY > 0) || (isAtBottom && deltaY < 0)) {
-        e.preventDefault();
-      }
-
-      // startY を毎回更新して、慣性中の判定を安定させる
-      startY = currentY;
-    },
-    { passive: false }
-  );
-
-  // Gallery外の touchmove は完全に止める
+  // Gallery外の touchmove は止める
   document.addEventListener(
     'touchmove',
     (e) => {
       if (!shouldLockPageScroll()) return;
 
       const insideGallery = e.target.closest('.gallery-scroll');
+
       if (!insideGallery) {
         e.preventDefault();
+        return;
       }
+
+      // Gallery内なら通す
     },
     { passive: false }
   );
