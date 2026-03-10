@@ -84,6 +84,30 @@ window.WORKS = {
         { role: "Production", name: "Ukiyo Film" }
     ]
   },
+thirsty: {
+    title: "She Her Her Hers - Thirsty",
+    video: "https://www.youtube.com/embed/St2KKTCAmqk?autoplay=1&rel=0&enablejsapi=1",
+    credits: [
+      { role: "Cast", name: "JOEY IWANAGA" },
+      { role: "Cast", name: "YUUMIKO" },
+      { role: "Cast", name: "Rikuto Ishizuka" },
+      { role: "Cast", name: "Sayuri Namikoshi" },
+      { role: "Director", name: "Matías Maehama" },
+
+      { role: "Director of Photography", name: "Ryosuke Sato" },
+      { role: "Camera Assistant", name: "Sho Shimooka" },
+      { role: "Gaffer", name: "Sota Sugiyama" },
+
+      { role: "Stylist", name: "Ko Nakagawara" },
+      { role: "Hair & Make-up", name: "Kei Kouda" },
+      { role: "Online Edit", name: "Kosuke Nakajima" },
+      { role: "Offline Edit", name: "Matias Maehama" },
+      { role: "Offline Edit", name: "nave" },
+
+      { role: "Production Manager", name: "Shota Watanabe" },
+      { role: "Production Assistant", name: "Kei Sawada" }
+    ]
+},
   higher: {
     title: "luvis - Higher",
     video: "https://www.youtube.com/embed/s7zyqdo12S4?autoplay=1&rel=0&enablejsapi=1",
