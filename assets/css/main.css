@@ -507,9 +507,12 @@ body.view-right .inner-shell{
   position:relative;
   margin-top:var(--gallery-panel-gap-top);
   max-width:var(--gallery-w);
-  height:calc(100% - 72px);
+  width:100%;
+  height:min(760px, calc(100vh - 180px));
+  min-height:320px;
   display:flex;
   flex-direction:column;
+  min-width:0;
 }
 
 .gallery-preview{
@@ -538,6 +541,7 @@ body.view-right .inner-shell{
 
 .gallery-scroll{
   flex:1;
+  min-height:0;
   overflow-y:auto;
   padding-right:8px;
   scrollbar-width:thin;
@@ -967,10 +971,14 @@ body.view-right .inner-shell{
     display:none;
   }
   */
+ .gallery-panel{
+    height:min(68vh, 520px);
+    min-height:260px;
+  }
 
   .gallery-scroll{
-    overflow-y:scroll;
-    touch-action:pan-y;
+    overflow-y:auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .edge-btn{
@@ -982,48 +990,47 @@ body.view-right .inner-shell{
   }
   .video-unlock-flash{
   position:absolute;
-  left:50%;
-  top:50%;
-  width:140px;
-  height:140px;
-  transform:translate(-50%, -50%) scale(.4);
-  border-radius:999px;
+  inset:0;
   pointer-events:none;
   opacity:0;
   z-index:9;
+  border-radius:0;
   background:
-    radial-gradient(circle,
-      rgba(255,255,255,.32) 0%,
-      rgba(255,255,255,.18) 28%,
-      rgba(255,255,255,.08) 52%,
-      rgba(255,255,255,0) 72%);
-  filter:blur(6px);
+    radial-gradient(
+      ellipse at center,
+      rgba(255,255,255,.16) 0%,
+      rgba(255,255,255,.10) 38%,
+      rgba(255,255,255,.05) 62%,
+      rgba(255,255,255,0) 100%
+    );
+  filter:blur(14px);
+  transform:scale(.96);
 }
 
 .video-unlock-flash.is-active{
-  animation: videoUnlockFlash .6s ease-out forwards;
+  animation: videoUnlockFlash .72s ease-out forwards;
 }
 
 @keyframes videoUnlockFlash{
   0%{
     opacity:0;
-    transform:translate(-50%, -50%) scale(.35);
-    filter:blur(10px);
+    transform:scale(.96);
+    filter:blur(18px);
   }
-  30%{
-    opacity:.9;
-    transform:translate(-50%, -50%) scale(.9);
-    filter:blur(8px);
+  22%{
+    opacity:.95;
+    transform:scale(1.01);
+    filter:blur(12px);
   }
   100%{
     opacity:0;
-    transform:translate(-50%, -50%) scale(1.45);
-    filter:blur(16px);
+    transform:scale(1.08);
+    filter:blur(24px);
   }
 }
 
   :root{
-    /* ===== Stage UI / ステージUI ===== */
+     /* ===== Stage UI / ステージUI ===== */
     --edge-btn-size: .92rem;
 
     /* ===== Gallery / ギャラリー ===== */
@@ -1037,27 +1044,52 @@ body.view-right .inner-shell{
     --contact-block-spacing: .06em;
 
     /* ===== About / About ===== */
-    --about-logo-main-size: clamp(2.1rem, 3.8vw, 4.2rem);
-    --about-logo-sub-size: .88rem;
-    --about-logo-spacing: .22em;
+    --about-logo-main-size: clamp(1.95rem, 3.4vw, 3.8rem);
+    --about-logo-sub-size: .82rem;
+    --about-logo-spacing: .18em;
+    --about-logo-sub-spacing: .12em;
 
-    --about-lead-size: .9rem;
-    --about-lead-spacing: .04em;
+    --about-lead-size: .84rem;
+    --about-lead-line: 1.7;
+    --about-lead-spacing: .03em;
 
-    --about-body-size: .9rem;
-    --about-body-spacing: .04em;
+    --about-heading-size: 1.02rem;
+    --about-heading-spacing: .13em;
 
-    --about-col-title-size: 1.02rem;
-    --about-col-title-spacing: .14em;
+    --about-body-size: .84rem;
+    --about-body-line: 1.72;
+    --about-body-spacing: .03em;
 
-    --about-col-item-size: .9rem;
-    --about-col-item-spacing: .04em;
+    --about-col-title-size: .94rem;
+    --about-col-title-spacing: .11em;
 
-    --about-credit-title-size: .88rem;
-    --about-credit-name-size: 1.15rem;
-    --about-back-size: .82rem;
+    --about-col-item-size: .84rem;
+    --about-col-item-line: 1.72;
+    --about-col-item-spacing: .03em;
 
-    --about-heading-spacing: .16em;
+    --about-credit-title-size: .82rem;
+    --about-credit-title-spacing: .14em;
+    --about-credit-name-size: 1.02rem;
+    --about-credit-name-spacing: .10em;
+
+    --about-back-size: .78rem;
+    --about-back-spacing: .10em;
+
+    --about-content-pad-top: 72px;
+    --about-content-pad-right: 5vw;
+    --about-content-pad-bottom: 88px;
+    --about-content-pad-left: 5vw;
+
+    --about-stack-gap: clamp(28px, 4vw, 56px);
+    --about-stack-pad: clamp(18px, 3vw, 36px);
+
+    --about-split-gap: clamp(18px, 2.6vw, 28px);
+    --about-split-pad-top: clamp(18px, 3vw, 32px);
+    --about-split-pad-x: clamp(18px, 3vw, 32px);
+    --about-split-pad-bottom: clamp(36px, 6vw, 72px);
+
+    --about-back-pad-x: clamp(8px, 3vw, 20px);
+    --about-back-margin-top: clamp(28px, 5vw, 64px);
 
     /* ===== Modal / モーダル ===== */
     --modal-credit-toggle-size: .8rem;
