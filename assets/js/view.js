@@ -3,68 +3,157 @@ document.addEventListener('DOMContentLoaded', () => {
   const body = document.body;
 
   // iOS: ブラウザが勝手にスクロール位置を復元しない
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
 
   const mqCoarse = window.matchMedia('(pointer: coarse)');
   const mqLandscape = window.matchMedia('(orientation: landscape)');
-  const isMobileLandscape = () => mqCoarse.matches && mqLandscape.matches;
+
+  const isMobileLandscape = () => {
+    return mqCoarse.matches && mqLandscape.matches;
+  };
 
   const updateScale = () => {
-    if (typeof window.updateStageScale === 'function') window.updateStageScale();
+    if (typeof window.updateStageScale === 'function') {
+      window.updateStageScale();
+    }
   };
 
   const setView = (view) => {
+    if (!view) return;
+
     body.classList.remove('view-left', 'view-center', 'view-right');
     body.classList.add(`view-${view}`);
+    updateScale();
+  };
+
+  // 他JSから使えるように公開
+  window.setStageView = setView;
+
+  const scrollToTop = (behavior = 'smooth') => {
+    window.scrollTo({
+      top: 0,
+      behavior
+    });
+  };
+
+  const waitUntilTop = (callback, maxTries = 80, interval = 50) => {
+    let tries = 0;
+
+    const timer = setInterval(() => {
+      tries += 1;
+
+      const y = window.scrollY || window.pageYOffset || 0;
+
+      if (y <= 4) {
+        clearInterval(timer);
+        callback();
+        return;
+      }
+
+      if (tries >= maxTries) {
+        clearInterval(timer);
+        callback();
+      }
+    }, interval);
   };
 
   const init = () => {
-    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    // 初回だけ hash を消して、必ず center で開始
+    if (location.hash) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+
     setView('center');
-    updateScale();
   };
 
-  // view 切替
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-view]');
-    if (!btn) return;
+  // ----------------------------------------
+  // 1) 通常の左右ビュー切替
+  // data-view="left|center|right"
+  // ----------------------------------------
+  document.addEventListener(
+    'click',
+    (e) => {
+      const btn = e.target.closest('[data-view]');
+      if (!btn) return;
 
-    const v = btn.dataset.view;
-    if (!v) return;
+      const targetView = btn.dataset.view;
+      if (!targetView) return;
 
-    if (btn.tagName.toLowerCase() === 'a') e.preventDefault();
+      e.preventDefault();
+      setView(targetView);
+    },
+    { passive: false }
+  );
 
-    setView(v);
+  // ----------------------------------------
+  // 2) Aboutなどへの縦移動
+  // data-scroll-target="#about"
+  // ----------------------------------------
+  document.addEventListener(
+    'click',
+    (e) => {
+      const btn = e.target.closest('[data-scroll-target]');
+      if (!btn) return;
 
-    // centerに戻るときだけトップへ（任意：不要なら消してOK）
-    if (v === 'center') window.scrollTo({ top: 0, behavior: 'smooth' });
+      const selector = btn.dataset.scrollTarget;
+      if (!selector) return;
 
-    updateScale();
-  }, { passive: false });
+      const target = document.querySelector(selector);
+      if (!target) return;
 
-  // About などへスクロール
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-scroll-target]');
-    if (!btn) return;
+      e.preventDefault();
 
-    const selector = btn.dataset.scrollTarget;
-    if (!selector) return;
+      // 横画面では一度 center に戻してから About へ行く
+      if (isMobileLandscape()) {
+        setView('center');
+      }
 
-    const target = document.querySelector(selector);
-    if (!target) return;
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    },
+    { passive: false }
+  );
 
-    if (btn.tagName.toLowerCase() === 'a') e.preventDefault();
+  // ----------------------------------------
+  // 3) About下部から TOP へ戻って view を切り替える
+  // data-view-jump="center|right"
+  // ----------------------------------------
+  document.addEventListener(
+    'click',
+    (e) => {
+      const btn = e.target.closest('[data-view-jump]');
+      if (!btn) return;
 
-    // 横のときはcenterに戻してから（視覚的にも自然）
-    if (isMobileLandscape()) setView('center');
+      const targetView = btn.dataset.viewJump;
+      if (!targetView) return;
 
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, { passive: false });
+      e.preventDefault();
 
-  // 回転/リサイズ：スケール更新だけ（スクロールは触らない）
-  window.addEventListener('orientationchange', () => setTimeout(updateScale, 120), { passive: true });
+      scrollToTop('smooth');
+
+      waitUntilTop(() => {
+        setView(targetView);
+      });
+    },
+    { passive: false }
+  );
+
+  // ----------------------------------------
+  // 回転・リサイズ
+  // ----------------------------------------
+  window.addEventListener(
+    'orientationchange',
+    () => {
+      setTimeout(updateScale, 120);
+    },
+    { passive: true }
+  );
+
   window.addEventListener('resize', updateScale, { passive: true });
 
   init();
-  setTimeout(init, 80); // iOS描画直後のズレを1回だけ補正
 });
