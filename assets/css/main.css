@@ -818,7 +818,8 @@ body.view-right .inner-shell{
   flex-direction:column;
   justify-content:center;
   gap:var(--about-hero-gap);
-  width:min(68vw, 1200px);
+  width:100%;
+  max-width:1280px;
 }
 
 .about-logo-text{
@@ -852,8 +853,11 @@ body.view-right .inner-shell{
   display:grid;
   gap:var(--about-stack-gap);
   padding:var(--about-stack-pad);
-  width:min(68vw, 1240px);
+  width:100%;
+  max-width:1320px;
   margin-top:calc(var(--about-stack-overlap-pc) * -1);
+  margin-left:0;
+  margin-right:auto;
 }
 
 .about-stack > :first-child{
@@ -885,7 +889,10 @@ body.view-right .inner-shell{
     var(--about-split-pad-x)
     var(--about-split-pad-bottom);
   margin-bottom:var(--about-split-margin-bottom);
-  width:min(68vw, 1240px);
+  width:100%;
+  max-width:1380px;
+  margin-left:0;
+  margin-right:auto;
 }
 
 .about-col h4{
@@ -925,8 +932,11 @@ body.view-right .inner-shell{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  width:min(68vw, 1240px);
+  width:100%;
+  max-width:1380px;
   gap:var(--about-credit-name-gap);
+  margin-left:0;
+  margin-right:auto;
 }
 
 .about-credit-name a{
@@ -935,7 +945,8 @@ body.view-right .inner-shell{
 
 /* About Actions / About戻り導線責務 */
 .about-actions{
-  width:min(68vw, 1240px);
+  width:100%;
+  max-width:none;
   padding:0;
   margin-top:var(--about-back-margin-top);
   font-size:var(--about-back-size);
