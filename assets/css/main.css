@@ -958,6 +958,7 @@ body.view-right .inner-shell{
     display:block;
   }
 
+  /* ここは削除
   body.video-enabled .video-frame iframe{
     pointer-events:auto;
   }
@@ -965,6 +966,7 @@ body.view-right .inner-shell{
   body.video-enabled .video-shield{
     display:none;
   }
+  */
 
   .gallery-scroll{
     overflow-y:scroll;
@@ -978,6 +980,47 @@ body.view-right .inner-shell{
   .gallery-item-title{
     line-height:1.4;
   }
+  .video-unlock-flash{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:140px;
+  height:140px;
+  transform:translate(-50%, -50%) scale(.4);
+  border-radius:999px;
+  pointer-events:none;
+  opacity:0;
+  z-index:9;
+  background:
+    radial-gradient(circle,
+      rgba(255,255,255,.32) 0%,
+      rgba(255,255,255,.18) 28%,
+      rgba(255,255,255,.08) 52%,
+      rgba(255,255,255,0) 72%);
+  filter:blur(6px);
+}
+
+.video-unlock-flash.is-active{
+  animation: videoUnlockFlash .6s ease-out forwards;
+}
+
+@keyframes videoUnlockFlash{
+  0%{
+    opacity:0;
+    transform:translate(-50%, -50%) scale(.35);
+    filter:blur(10px);
+  }
+  30%{
+    opacity:.9;
+    transform:translate(-50%, -50%) scale(.9);
+    filter:blur(8px);
+  }
+  100%{
+    opacity:0;
+    transform:translate(-50%, -50%) scale(1.45);
+    filter:blur(16px);
+  }
+}
 
   :root{
     /* ===== Stage UI / ステージUI ===== */
