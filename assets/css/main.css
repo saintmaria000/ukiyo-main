@@ -1276,7 +1276,6 @@ body.view-right .inner-shell{
     display:flex;
     flex-direction:column;
     justify-content:center;
-    gap:30px;
     padding-bottom:22px;
   }
 
