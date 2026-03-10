@@ -751,6 +751,10 @@ body.view-right .inner-shell{
   font-size:var(--about-credit-name-size);
   letter-spacing:var(--about-credit-name-spacing);
   margin-bottom:60px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
 }
 
 .about-actions{
@@ -943,33 +947,22 @@ body.is-pull-hint-visible .pull-return{
 }
 
 .pull-return-link{
-  display:inline-block;
-  pointer-events:auto;
-  font-family: "Helvetica Neue", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(.72rem, .78vw, .84rem);
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size: clamp(.62rem, .7vw, .72rem);
   font-weight: 300;
-  letter-spacing: .24em;
-  line-height: 1;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.82);
+  letter-spacing: .12em;
+  text-transform: none;
+  color: rgba(255,255,255,.65);
   text-decoration: none;
-  padding: 0 0 3px;
   border-bottom: 1px solid rgba(255,255,255,.18);
-  opacity: .68;
-  transition:
-    opacity .22s ease,
-    color .22s ease,
-    border-color .22s ease,
-    filter .22s ease,
-    transform .22s ease;
+  padding-bottom: 2px;
+  opacity: .6;
+  transition: opacity .2s ease, filter .2s ease;
 }
 
 .pull-return-link:hover{
-  opacity: 1;
-  color: #fff;
-  border-color: rgba(255,255,255,.42);
-  filter: drop-shadow(0 0 6px rgba(255,255,255,.18));
-  transform: translateY(-1px);
+  opacity: .95;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.2));
 }
 
 /* =========================================
