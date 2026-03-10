@@ -252,15 +252,18 @@ a{
   --about-logo-spacing:.28em;
   --about-logo-sub-spacing:.18em;
 
-  --about-lead-max-w:860px;
+  --about-lead-max-w:980px;
   --about-lead-size:1.18rem;
   --about-lead-line:1.95;
   --about-lead-spacing:.05em;
   --about-lead-margin-top:20px;
 
-  --about-stack-gap:clamp(72px, 8vw, 170px);
+
+  --about-stack-gap:clamp(96px, 10vw, 210px);
   --about-stack-pad:clamp(22px, 3vw, 54px);
 
+/* PCだけで stack を少し上に寄せる量 */
+--about-stack-overlap-pc:42px;
   --about-heading-size:1.7rem;
   --about-heading-spacing:.20em;
   --about-item-heading-gap:18px;
@@ -850,6 +853,11 @@ body.view-right .inner-shell{
   gap:var(--about-stack-gap);
   padding:var(--about-stack-pad);
   width:min(62vw, 1080px);
+  margin-top:calc(var(--about-stack-overlap-pc) * -1);
+}
+
+.about-stack > :first-child{
+  margin-top:var(--about-stack-overlap-pc);
 }
 
 .about-item h3{
