@@ -1005,9 +1005,26 @@ body.view-right .inner-shell{
       filter:blur(24px);
     }
   }
+  #about .about-content{
+    max-width:none;
+  }
+
+  .about-hero{
+    gap:28px;
+    min-height:auto;
+  }
+
   .about-lead{
-    margin-top:22px;
-    max-width:34em;
+    margin-top:26px;
+    max-width:46em;
+  }
+
+  .about-stack{
+    margin-top:28px;
+  }
+
+  .about-split{
+    margin-top:8px;
   }
 
  .gallery-panel{
