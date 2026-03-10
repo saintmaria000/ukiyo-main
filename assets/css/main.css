@@ -252,7 +252,7 @@ a{
   --about-logo-spacing:.28em;
   --about-logo-sub-spacing:.18em;
 
-  --about-lead-max-w:980px;
+  --about-lead-max-w:1040px;
   --about-lead-size:1.18rem;
   --about-lead-line:1.95;
   --about-lead-spacing:.05em;
@@ -263,7 +263,7 @@ a{
   --about-stack-pad:clamp(22px, 3vw, 54px);
 
 /* PCだけで stack を少し上に寄せる量 */
---about-stack-overlap-pc:42px;
+  --about-stack-overlap-pc:56px;
   --about-heading-size:1.7rem;
   --about-heading-spacing:.20em;
   --about-item-heading-gap:18px;
@@ -818,7 +818,7 @@ body.view-right .inner-shell{
   flex-direction:column;
   justify-content:center;
   gap:var(--about-hero-gap);
-  width:min(58vw, 980px);
+  width:min(68vw, 1200px);
 }
 
 .about-logo-text{
@@ -852,7 +852,7 @@ body.view-right .inner-shell{
   display:grid;
   gap:var(--about-stack-gap);
   padding:var(--about-stack-pad);
-  width:min(62vw, 1080px);
+  width:min(68vw, 1240px);
   margin-top:calc(var(--about-stack-overlap-pc) * -1);
 }
 
