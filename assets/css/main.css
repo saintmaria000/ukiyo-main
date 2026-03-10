@@ -950,7 +950,7 @@ body.is-pull-hint-visible .pull-return{
 
 .pull-return-link{
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  font-size: clamp(.85rem, 1vw, 1.05rem);
+  font-size: clamp(.55rem, 1vw, 1.05rem);
   font-weight: 300;
   letter-spacing: .12em;
   text-transform: none;
