@@ -72,9 +72,7 @@
   );
 
   // ----------------------------------------
-  // 2) Center view の TOP での「下方向スワイプ開始」を拾う
-  // 実機での overscroll/bounce そのものではなく、
-  // “上に何かあると探る意図” をトリガーにする
+  // 2) スマホ実機: TOPでの下方向スワイプ意図を拾う
   // ----------------------------------------
   document.addEventListener(
     'touchstart',
@@ -107,7 +105,6 @@
       const dy = t.clientY - startY;
       const dx = Math.abs(t.clientX - startX);
 
-      // 縦方向の下スワイプで、横ブレが少ないときだけ発火
       if (dy > 18 && dx < 24) {
         showPull(1200);
         pullFired = true;
@@ -135,7 +132,32 @@
   );
 
   // ----------------------------------------
-  // 3) TOPから離れたら消す
+  // 3) PC: TOPでさらに上へスクロールしようとした意図を拾う
+  // deltaY < 0 = 上へ行こうとしている
+  // ----------------------------------------
+  let lastWheelTriggerAt = 0;
+
+  window.addEventListener(
+    'wheel',
+    (e) => {
+      if (!isCenterView() || !isAtTop()) return;
+
+      const now = Date.now();
+      const isUpIntent = e.deltaY < -6;
+
+      if (!isUpIntent) return;
+
+      // 連続発火しすぎないように少し間引く
+      if (now - lastWheelTriggerAt < 700) return;
+
+      lastWheelTriggerAt = now;
+      showPull(1200);
+    },
+    { passive: true }
+  );
+
+  // ----------------------------------------
+  // 4) TOPから離れたら消す
   // ----------------------------------------
   window.addEventListener(
     'scroll',

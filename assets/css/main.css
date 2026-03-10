@@ -930,36 +930,48 @@ body.view-right .inner-shell{
   position: fixed;
   top: 18px;
   left: 50%;
-  transform: translateX(-50%) translateY(-16px);
-  z-index: 21000;
-  pointer-events: none;
+  transform: translateX(-50%) translateY(-14px);
   opacity: 0;
+  pointer-events: none;
+  z-index: 21000;
   transition: opacity .28s ease, transform .28s ease;
-}
-
-.pull-return-link{
-  display: inline-block;
-  pointer-events: auto;
-  font-size: .74rem;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: #fff;
-  opacity: .72;
-  border-bottom: 1px solid rgba(255,255,255,.25);
-  padding-bottom: 2px;
-  transition: opacity .2s ease, filter .2s ease;
-}
-
-.pull-return-link:hover{
-  opacity: 1;
-  filter: drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
 
 body.is-pull-hint-visible .pull-return{
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+.pull-return-link{
+  display:inline-block;
+  pointer-events:auto;
+  font-family: "Helvetica Neue", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(.72rem, .78vw, .84rem);
+  font-weight: 300;
+  letter-spacing: .24em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.82);
+  text-decoration: none;
+  padding: 0 0 3px;
+  border-bottom: 1px solid rgba(255,255,255,.18);
+  opacity: .68;
+  transition:
+    opacity .22s ease,
+    color .22s ease,
+    border-color .22s ease,
+    filter .22s ease,
+    transform .22s ease;
+}
+
+.pull-return-link:hover{
+  opacity: 1;
+  color: #fff;
+  border-color: rgba(255,255,255,.42);
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.18));
+  transform: translateY(-1px);
+}
+
 /* =========================================
    10. Narrow Width / Tablet
    10. 狭幅画面 / タブレット調整
@@ -1161,6 +1173,7 @@ body.is-pull-hint-visible .pull-return{
   }
   .about-credit-name a{
     font-size: 0.76rem;
+    margin-left: 100px;
   }
   .about-col li{
     max-width:44ch;
