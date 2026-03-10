@@ -1059,9 +1059,9 @@ body.is-pull-hint-visible .pull-return{
     --about-back-spacing: .08em;
 
     --about-content-pad-top: 64px;
-    --about-content-pad-right: 3.5vw;
+    --about-content-pad-right: 7.5vw;
     --about-content-pad-bottom: 96px;
-    --about-content-pad-left: 16.5vw;
+    --about-content-pad-left: 7.5vw;
 
     --about-stack-gap: clamp(34px, 4vw, 58px);
     --about-stack-pad: clamp(20px, 3vw, 34px);
