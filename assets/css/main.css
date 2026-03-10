@@ -1,7 +1,7 @@
-/* =========================================
-   1. Reset / Base
-   1. リセット / 基本設定
-========================================= */
+/* =========================================================
+   1. Base / Reset
+   基本リセット責務 / ブラウザ差異吸収責務
+========================================================= */
 *{
   margin:0;
   padding:0;
@@ -52,64 +52,79 @@ a{
   min-height:100vh;
 }
 
-/* =========================================
-   2. Scrollbar
-   2. スクロールバー
-========================================= */
+/* =========================================================
+   2. Native Scrollbar
+   ネイティブスクロールバー責務
+========================================================= */
 ::-webkit-scrollbar{
   width:12px;
   height:12px;
 }
+
 ::-webkit-scrollbar-track{
   background:transparent;
 }
+
 ::-webkit-scrollbar-thumb{
   background:rgba(255,255,255,.22);
   border:5px solid transparent;
   background-clip:content-box;
   border-radius:999px;
 }
+
 ::-webkit-scrollbar-thumb:hover{
   background:rgba(255,255,255,.90);
   background-clip:content-box;
 }
+
 ::-webkit-scrollbar-thumb:active{
   background:#fff;
   background-clip:content-box;
 }
 
-/* =========================================
-   3. Root Design Tokens
-   3. ルート設計変数 / 全体トークン
-========================================= */
+/* =========================================================
+   3. Design Tokens
+   設計変数責務 / 全体の値定義責務
+========================================================= */
 :root{
-  --stage-w:2400px;
-  --stage-h:1080px;
-  --stage-scale:1;
-
+  /* -----------------------------------------
+     3-1. Viewport / Environment
+     ビューポート環境責務
+  ----------------------------------------- */
   --vvw:100vw;
   --vvh:100vh;
   --vv-top:0px;
   --vv-left:0px;
 
+  /* -----------------------------------------
+     3-2. Stage Layout
+     ステージ構造責務 / 3面空間サイズ責務
+  ----------------------------------------- */
+  --stage-w:2400px;
+  --stage-h:1080px;
+  --stage-scale:1;
   --stage-pad-y:40px;
   --stage-pad-x:90px;
   --edge-offset:32px;
+  --stage-perspective:1600px;
+  --stage-header-top:20px;
 
-  --video-w:960px;
-  --gallery-w:520px;
-  --contact-w:420px;
-
-  /* ===== Inner shell motion / 中央映像の演出移動量 =====
-     Stageの3面幅そのものではなく、
+  /* -----------------------------------------
+     3-3. Camera / Depth
+     空間演出責務 / 奥行き演出責務
+  ----------------------------------------- */
+  /* Stageの3面幅そのものではなく、
      Gallery / Contact view 時に中央映像を左右へ逃がすための値 */
   --inner-shell-side-shift:1920px;
 
-  /* ===== Inner shell depth / 中央映像の奥行き演出 =====
-     左右view時に中央映像を少し奥へ引いて、
+  /* 左右view時に中央映像を少し奥へ引いて、
      空間の奥行きを見せるための値 */
   --inner-shell-depth:-350px;
 
+  /* -----------------------------------------
+     3-4. Color / Surface
+     色責務 / 面の見え方責務
+  ----------------------------------------- */
   --text-main:#fff;
   --text-soft:rgba(255,255,255,.85);
   --text-muted:rgba(255,255,255,.6);
@@ -124,11 +139,23 @@ a{
   --shadow-video:0 0 40px rgba(255,255,255,.3);
   --shadow-modal:0 0 40px rgba(0,0,0,.7);
 
+  /* -----------------------------------------
+     3-5. Layer System
+     レイヤー責務 / z-index責務
+  ----------------------------------------- */
   --z-stage:2;
+  --z-stage-component:20;
+  --z-video-flash:9;
+  --z-video-shield:10;
   --z-ui:9000;
   --z-video:9999;
   --z-modal:10000;
+  --z-pull-return:21000;
 
+  /* -----------------------------------------
+     3-6. Typography
+     文字設計責務 / タイポ設計責務
+  ----------------------------------------- */
   --font-display-xl:clamp(2.6rem, 4.4vw, 5.6rem);
   --font-display-lg:clamp(1.7rem, 2.5vw, 2.3rem);
 
@@ -148,8 +175,31 @@ a{
   --ls-body:.08em;
   --ls-body-tight:.05em;
 
+  /* -----------------------------------------
+     3-7. Global Fixed UI Tokens
+     固定UI責務 / 常時表示UI責務
+  ----------------------------------------- */
+  --global-mute-top:24px;
+  --global-mute-right:32px;
+  --global-mute-pad:8px;
+  --global-mute-icon-size:22px;
+  --global-mute-hover-scale:1.05;
+
+  --pull-return-top:28px;
+  --pull-return-offset-y:-14px;
+  --pull-return-link-size:clamp(.55rem, 1vw, 1.05rem);
+  --pull-return-link-letter-spacing:.12em;
+  --pull-return-link-pad-bottom:3px;
+  --pull-return-link-opacity:.75;
+
+  /* -----------------------------------------
+     3-8. Stage Component Tokens
+     ステージ上UI責務 / 3面空間部品責務
+  ----------------------------------------- */
   --view-header-size:var(--font-ui-sm);
   --view-header-spacing:var(--ls-ui);
+
+  --video-w:960px;
 
   --edge-btn-size:.86rem;
   --edge-btn-spacing:.25em;
@@ -158,63 +208,77 @@ a{
   --edge-btn-min-w:auto;
   --edge-btn-min-h:auto;
 
-  --gallery-item-size:.96rem;
-  --gallery-item-spacing:.08em;
-  --gallery-item-pad-y:10px;
-  --gallery-item-pad-x:0;
-
-  --gallery-meta-size:.78rem;
-  --gallery-meta-spacing:.08em;
-
+  --gallery-w:520px;
   --gallery-panel-gap-top:32px;
 
-  /* ===== Gallery panel height / Gallery表示領域の高さ制御 =====
-     大画面では最大高さを抑えつつ、
+  /* 大画面では最大高さを抑えつつ、
      低い画面では viewport から一定量を引いて収める */
   --gallery-panel-max-h:760px;
   --gallery-panel-min-h:320px;
   --gallery-panel-vh-offset:180px;
+  --gallery-scroll-pad-right:8px;
+  --gallery-item-size:.96rem;
+  --gallery-item-spacing:.08em;
+  --gallery-item-pad-y:10px;
+  --gallery-item-pad-x:0;
+  --gallery-meta-size:.78rem;
+  --gallery-meta-spacing:.08em;
+  --gallery-meta-gap-top:4px;
 
+  --contact-w:420px;
   --contact-block-size:.86rem;
   --contact-block-spacing:.12em;
-
+  --contact-block-margin-top:40px;
   --contact-label-size:1.3rem;
   --contact-label-spacing:.12em;
-
+  --contact-label-margin-top:16px;
   --contact-value-size:1.14rem;
 
+  /* -----------------------------------------
+     3-9. About Section Tokens
+     About責務 / About構造責務
+  ----------------------------------------- */
+  --about-content-max-w:1800px;
   --about-content-pad-top:160px;
   --about-content-pad-right:8vw;
   --about-content-pad-bottom:200px;
   --about-content-pad-left:12vw;
 
+  --about-hero-min-h:80vh;
+  --about-hero-gap:clamp(10px, 1.2vw, 18px);
+
   --about-logo-main-size:var(--font-display-xl);
   --about-logo-sub-size:clamp(.95rem, 1.25vw, 1.2rem);
-
   --about-logo-spacing:.35em;
   --about-logo-sub-spacing:.22em;
 
+  --about-lead-max-w:720px;
   --about-lead-size:1.08rem;
   --about-lead-line:1.9;
   --about-lead-spacing:.07em;
+  --about-lead-margin-top:18px;
 
   --about-stack-gap:clamp(56px, 8vw, 154px);
   --about-stack-pad:clamp(36px, 6vw, 100px);
 
   --about-heading-size:1.65rem;
   --about-heading-spacing:.26em;
+  --about-item-heading-gap:12px;
 
   --about-body-size:1.05rem;
   --about-body-line:1.9;
   --about-body-spacing:.07em;
+  --about-body-max-w:560px;
 
   --about-split-gap:clamp(24px, 4vw, 48px);
   --about-split-pad-top:clamp(36px, 6vw, 100px);
   --about-split-pad-x:clamp(36px, 6vw, 100px);
   --about-split-pad-bottom:clamp(80px, 14vw, 300px);
+  --about-split-margin-bottom:clamp(40px, 6vw, 80px);
 
   --about-col-title-size:1.36rem;
   --about-col-title-spacing:.20em;
+  --about-col-heading-gap:14px;
 
   --about-col-item-size:1.02rem;
   --about-col-item-line:1.9;
@@ -222,42 +286,103 @@ a{
 
   --about-credit-title-size:1rem;
   --about-credit-title-spacing:.20em;
+  --about-credit-title-gap:10px;
 
   --about-credit-name-size:1.6rem;
   --about-credit-name-spacing:.16em;
+  --about-credit-name-gap:24px;
+  --about-credit-block-gap:60px;
+  --about-credit-link-size:0.64rem;
 
   --about-back-size:.95rem;
   --about-back-spacing:.18em;
-
   --about-back-pad-x:clamp(24px, 10vw, 220px);
   --about-back-margin-top:clamp(80px, 16vw, 360px);
 
+  /* -----------------------------------------
+     3-10. Modal Tokens
+     モーダル責務 / 動画詳細表示責務
+  ----------------------------------------- */
   --modal-width:min(92vw, 1400px);
+  --modal-max-w:1400px;
+  --modal-close-top:8px;
+  --modal-close-right:12px;
+  --modal-close-size:1.2rem;
+  --modal-video-max-h:80vh;
+
+  --modal-footer-gap-top:10px;
+  --modal-footer-pad-bottom:10px;
 
   --modal-credit-toggle-size:.86rem;
   --modal-credit-toggle-spacing:.18em;
 
+  --modal-credit-inner-max-w:520px;
+  --modal-credit-inner-pad-top:24px;
+  --modal-credit-inner-pad-x:32px;
+  --modal-credit-inner-pad-bottom:20px;
+
   --modal-credit-title-size:1.05rem;
   --modal-credit-title-spacing:.16em;
+  --modal-credit-title-gap:18px;
 
   --modal-credit-list-size:.86rem;
   --modal-credit-list-line:1.8;
+  --modal-credit-list-gap:18px;
+
+  --modal-credit-row-gap:16px;
 
   --modal-credit-close-size:.78rem;
   --modal-credit-close-spacing:.18em;
+
+  /* -----------------------------------------
+     3-11. Interaction Overlay Tokens
+     操作補助責務 / 補助演出責務
+  ----------------------------------------- */
+  --video-unlock-flash-blur:14px;
+  --video-unlock-flash-scale:.96;
+  --video-unlock-flash-opacity-peak:.95;
+  --video-unlock-flash-duration:.72s;
+
+  /* -----------------------------------------
+     3-12. Device Override Tokens
+     デバイス上書き責務 / スマホ横向き調整責務
+  ----------------------------------------- */
+  --about-hero-gap-landscape:30px;
+  --about-stack-margin-top-landscape:34px;
+  --about-item-heading-gap-landscape:16px;
+  --about-split-margin-top-landscape:18px;
+  --about-credit-margin-top-landscape:18px;
+  --about-credit-link-size-landscape:0.76rem;
+
+  --contact-block-margin-top-landscape:28px;
+  --contact-label-margin-top-landscape:22px;
+
+  --gallery-panel-fixed-h-landscape:470px;
+  --gallery-scroll-pad-right-landscape:10px;
+  --gallery-meta-gap-top-landscape:8px;
+
+  --modal-width-landscape:min(82vw, 1100px);
+  --modal-video-max-h-landscape:58vh;
+  --modal-footer-gap-top-landscape:6px;
+  --modal-footer-pad-bottom-landscape:8px;
+  --modal-credit-inner-width-landscape:min(88%, 520px);
+  --modal-credit-inner-pad-top-landscape:20px;
+  --modal-credit-inner-pad-x-landscape:24px;
+  --modal-credit-inner-pad-bottom-landscape:18px;
 }
 
-/* =========================================
-   4. Global UI
-========================================= */
+/* =========================================================
+   4. Global Fixed UI
+   固定UI責務 / 常時表示UI責務
+========================================================= */
 .global-mute{
   position:fixed;
-  top:24px;
-  right:32px;
+  top:var(--global-mute-top);
+  right:var(--global-mute-right);
   left:auto;
   bottom:auto;
   z-index:var(--z-ui);
-  padding:8px;
+  padding:var(--global-mute-pad);
   opacity:.7;
   cursor:pointer;
   transition:opacity .2s ease, transform .2s ease;
@@ -267,12 +392,12 @@ a{
 
 .global-mute:hover{
   opacity:1;
-  transform:scale(1.05);
+  transform:scale(var(--global-mute-hover-scale));
 }
 
 .icon-sound{
-  width:22px;
-  height:22px;
+  width:var(--global-mute-icon-size);
+  height:var(--global-mute-icon-size);
   display:block;
   fill:#fff;
   stroke:#fff;
@@ -290,9 +415,54 @@ a{
   display:block;
 }
 
-/* =========================================
-   5. Stage Layout
-========================================= */
+.pull-return{
+  position:fixed;
+  top:var(--pull-return-top);
+  left:50%;
+  transform:translateX(-50%) translateY(var(--pull-return-offset-y));
+  opacity:0;
+  pointer-events:none;
+  z-index:var(--z-pull-return);
+  transition:opacity .28s ease, transform .28s ease;
+}
+
+body.is-pull-hint-visible .pull-return{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.pull-return-link{
+  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size:var(--pull-return-link-size);
+  font-weight:300;
+  letter-spacing:var(--pull-return-link-letter-spacing);
+  text-transform:none;
+  color:rgba(255,255,255,.75);
+  text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.22);
+  padding-bottom:var(--pull-return-link-pad-bottom);
+  opacity:var(--pull-return-link-opacity);
+  transition:
+    opacity .22s ease,
+    border-color .22s ease,
+    transform .22s ease;
+}
+
+.pull-return-link:hover{
+  opacity:1;
+  border-color:rgba(255,255,255,.45);
+  transform:translateY(-1px);
+}
+
+/* =========================================================
+   5. Stage System
+   ステージ責務 / 3面空間そのものの責務
+========================================================= */
+
+/* -----------------------------------------
+   5-1. Stage Layout
+   ステージ骨格責務 / 3面空間レイアウト責務
+----------------------------------------- */
 .space-wrapper{
   position:relative;
   width:100%;
@@ -309,7 +479,7 @@ a{
   transform-origin:center;
   transform:translate(-50%, -50%) scale(var(--stage-scale));
   overflow:hidden;
-  perspective:1600px;
+  perspective:var(--stage-perspective);
 }
 
 .outer-space{
@@ -344,6 +514,25 @@ a{
   opacity:.8;
 }
 
+.view.view-left .view-header{
+  position:absolute;
+  top:var(--stage-header-top);
+  left:0;
+  margin:0;
+}
+
+.view.view-right .view-header{
+  position:absolute;
+  top:var(--stage-header-top);
+  right:0;
+  margin:0;
+  text-align:right;
+}
+
+/* -----------------------------------------
+   5-2. Stage Camera Motion
+   視点移動責務 / カメラ演出責務
+----------------------------------------- */
 .inner-shell{
   position:absolute;
   top:50%;
@@ -351,6 +540,50 @@ a{
   transition:transform .8s ease;
   z-index:var(--z-video);
   pointer-events:none;
+}
+
+body.view-center .outer-space{
+  transform:translateX(calc(var(--stage-w) * -1));
+}
+
+body.view-left .outer-space{
+  transform:translateX(0);
+}
+
+body.view-right .outer-space{
+  transform:translateX(calc(var(--stage-w) * -2));
+}
+
+body.view-center .inner-shell{
+  transform:translate(-50%, -50%) translateX(0);
+}
+
+body.view-left .inner-shell{
+  transform:
+    translate(-50%, -50%)
+    translateZ(var(--inner-shell-depth))
+    translateX(var(--inner-shell-side-shift));
+}
+
+body.view-right .inner-shell{
+  transform:
+    translate(-50%, -50%)
+    translateZ(var(--inner-shell-depth))
+    translateX(calc(var(--inner-shell-side-shift) * -1));
+}
+
+/* -----------------------------------------
+   5-3. Stage Components
+   ステージ上UI責務 / 3面空間内の部品責務
+----------------------------------------- */
+.view-left .view-inner{
+  justify-content:center;
+  align-items:flex-start;
+}
+
+.view-right .view-inner{
+  justify-content:center;
+  align-items:flex-end;
 }
 
 .video-frame{
@@ -380,62 +613,11 @@ a{
   padding:0;
   margin:0;
   display:none;
-  z-index:10;
+  z-index:var(--z-video-shield);
   cursor:pointer;
   pointer-events:auto;
 }
 
-/* =========================================
-   6. Stage Views
-========================================= */
-.view.view-left .view-header{
-  position:absolute;
-  top:20px;
-  left:0;
-  margin:0;
-}
-
-.view.view-right .view-header{
-  position:absolute;
-  top:20px;
-  right:0;
-  margin:0;
-  text-align:right;
-}
-
-.view-left .view-inner{
-  justify-content:center;
-  align-items:flex-start;
-}
-
-.view-right .view-inner{
-  justify-content:center;
-  align-items:flex-end;
-}
-
-body.view-center .outer-space{
-  transform:translateX(calc(var(--stage-w) * -1));
-}
-body.view-left .outer-space{
-  transform:translateX(0);
-}
-body.view-right .outer-space{
-  transform:translateX(calc(var(--stage-w) * -2));
-}
-
-body.view-center .inner-shell{
-  transform:translate(-50%, -50%) translateX(0);
-}
-body.view-left .inner-shell{
-  transform:translate(-50%, -50%) translateZ(var(--inner-shell-depth)) translateX(var(--inner-shell-side-shift));
-}
-body.view-right .inner-shell{
-  transform:translate(-50%, -50%) translateZ(var(--inner-shell-depth)) translateX(calc(var(--inner-shell-side-shift) * -1));
-}
-
-/* =========================================
-   7. Stage Components
-========================================= */
 .edge-btn{
   position:absolute;
   display:inline-flex;
@@ -451,7 +633,7 @@ body.view-right .inner-shell{
   padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
   min-width:var(--edge-btn-min-w);
   min-height:var(--edge-btn-min-h);
-  z-index:20;
+  z-index:var(--z-stage-component);
   pointer-events:auto;
   transition:color .2s ease, filter .2s ease, transform .1s ease;
 }
@@ -519,7 +701,7 @@ body.view-right .inner-shell{
   flex:1;
   min-height:0;
   overflow-y:auto;
-  padding-right:8px;
+  padding-right:var(--gallery-scroll-pad-right);
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.16) transparent;
   -webkit-overflow-scrolling:touch;
@@ -545,19 +727,19 @@ body.view-right .inner-shell{
   border-top:1px solid var(--line-soft);
 }
 
-.gallery-item-meta{
-  opacity:.6;
-  font-size:var(--gallery-meta-size);
-  letter-spacing:var(--gallery-meta-spacing);
-  margin-top:4px;
-}
-
 .gallery-item:hover{
   background:rgba(255,255,255,.03);
 }
 
+.gallery-item-meta{
+  opacity:.6;
+  font-size:var(--gallery-meta-size);
+  letter-spacing:var(--gallery-meta-spacing);
+  margin-top:var(--gallery-meta-gap-top);
+}
+
 .contact-block{
-  margin-top:40px;
+  margin-top:var(--contact-block-margin-top);
   max-width:var(--contact-w);
   font-size:var(--contact-block-size);
   letter-spacing:var(--contact-block-spacing);
@@ -574,7 +756,7 @@ body.view-right .inner-shell{
   font-size:var(--contact-label-size);
   letter-spacing:var(--contact-label-spacing);
   text-transform:uppercase;
-  margin-top:16px;
+  margin-top:var(--contact-label-margin-top);
 }
 
 .contact-value p,
@@ -587,9 +769,10 @@ body.view-right .inner-shell{
   text-decoration:underline;
 }
 
-/* =========================================
-   8. About Section
-========================================= */
+/* =========================================================
+   6. About Section
+   About責務 / 縦スクロールセクション責務
+========================================================= */
 #about{
   border-top:2px solid #fff;
   position:relative;
@@ -616,7 +799,7 @@ body.view-right .inner-shell{
 #about .about-content{
   position:relative;
   z-index:2;
-  max-width:1800px;
+  max-width:var(--about-content-max-w);
   padding:
     var(--about-content-pad-top)
     var(--about-content-pad-right)
@@ -625,12 +808,13 @@ body.view-right .inner-shell{
   margin:0 auto;
 }
 
+/* About Hero / About導入構造責務 */
 .about-hero{
-  min-height:80vh;
+  min-height:var(--about-hero-min-h);
   display:flex;
   flex-direction:column;
   justify-content:center;
-  gap:clamp(10px, 1.2vw, 18px);
+  gap:var(--about-hero-gap);
 }
 
 .about-logo-text{
@@ -650,14 +834,15 @@ body.view-right .inner-shell{
 }
 
 .about-lead{
-  margin-top:18px;
-  max-width:720px;
+  margin-top:var(--about-lead-margin-top);
+  max-width:var(--about-lead-max-w);
   font-size:var(--about-lead-size);
   line-height:var(--about-lead-line);
   letter-spacing:var(--about-lead-spacing);
   opacity:.9;
 }
 
+/* About Stack / About本文スタック責務 */
 .about-stack{
   border-left:1px solid #fff;
   display:grid;
@@ -668,7 +853,7 @@ body.view-right .inner-shell{
 .about-item h3{
   font-size:var(--about-heading-size);
   letter-spacing:var(--about-heading-spacing);
-  margin-bottom:12px;
+  margin-bottom:var(--about-item-heading-gap);
 }
 
 .about-item p{
@@ -676,9 +861,10 @@ body.view-right .inner-shell{
   line-height:var(--about-body-line);
   letter-spacing:var(--about-body-spacing);
   opacity:.85;
-  max-width:560px;
+  max-width:var(--about-body-max-w);
 }
 
+/* About Split / About二分割責務 */
 .about-split{
   border-left:1px solid #fff;
   display:grid;
@@ -688,14 +874,14 @@ body.view-right .inner-shell{
     var(--about-split-pad-top)
     var(--about-split-pad-x)
     var(--about-split-pad-bottom);
-  margin-bottom:clamp(40px, 6vw, 80px);
+  margin-bottom:var(--about-split-margin-bottom);
 }
 
 .about-col h4{
   font-size:var(--about-col-title-size);
   letter-spacing:var(--about-col-title-spacing);
   text-transform:uppercase;
-  margin-bottom:14px;
+  margin-bottom:var(--about-col-heading-gap);
 }
 
 .about-col ul{
@@ -711,29 +897,31 @@ body.view-right .inner-shell{
   opacity:.85;
 }
 
+/* About Credit / Aboutクレジット責務 */
 .about-credit-title{
   letter-spacing:var(--about-credit-title-spacing);
   text-transform:uppercase;
   opacity:.85;
   font-size:var(--about-credit-title-size);
-  margin-bottom:10px;
+  margin-bottom:var(--about-credit-title-gap);
 }
 
 .about-credit-name{
   font-size:var(--about-credit-name-size);
   letter-spacing:var(--about-credit-name-spacing);
-  margin-bottom:60px;
+  margin-bottom:var(--about-credit-block-gap);
   display:flex;
   justify-content:space-between;
   align-items:center;
   width:100%;
-  gap:24px;
+  gap:var(--about-credit-name-gap);
 }
 
 .about-credit-name a{
-  font-size:0.64rem;
+  font-size:var(--about-credit-link-size);
 }
 
+/* About Actions / About戻り導線責務 */
 .about-actions{
   width:100%;
   padding:0 var(--about-back-pad-x);
@@ -755,9 +943,10 @@ body.view-right .inner-shell{
   filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
 
-/* =========================================
-   9. Modal
-========================================= */
+/* =========================================================
+   7. Modal System
+   モーダル責務 / 動画詳細表示責務
+========================================================= */
 .modal{
   position:fixed;
   inset:0;
@@ -785,19 +974,19 @@ body.view-right .inner-shell{
   position:relative;
   z-index:1;
   width:var(--modal-width);
-  max-width:1400px;
+  max-width:var(--modal-max-w);
   background:rgba(0,0,0,.9);
   box-shadow:var(--shadow-modal);
 }
 
 .modal__close{
   position:absolute;
-  top:8px;
-  right:12px;
+  top:var(--modal-close-top);
+  right:var(--modal-close-right);
   background:none;
   border:none;
   color:#fff;
-  font-size:1.2rem;
+  font-size:var(--modal-close-size);
   cursor:pointer;
   opacity:.85;
   z-index:2;
@@ -812,7 +1001,7 @@ body.view-right .inner-shell{
   aspect-ratio:16 / 9;
   position:relative;
   overflow:hidden;
-  max-height:80vh;
+  max-height:var(--modal-video-max-h);
 }
 
 .modal__video-frame iframe{
@@ -823,10 +1012,10 @@ body.view-right .inner-shell{
 }
 
 .modal__footer{
-  margin-top:10px;
+  margin-top:var(--modal-footer-gap-top);
   display:flex;
   justify-content:center;
-  padding-bottom:10px;
+  padding-bottom:var(--modal-footer-pad-bottom);
 }
 
 .modal__credit-toggle{
@@ -859,26 +1048,29 @@ body.view-right .inner-shell{
 
 .modal__credit-inner{
   text-align:center;
-  max-width:520px;
-  padding:24px 32px 20px;
+  max-width:var(--modal-credit-inner-max-w);
+  padding:
+    var(--modal-credit-inner-pad-top)
+    var(--modal-credit-inner-pad-x)
+    var(--modal-credit-inner-pad-bottom);
 }
 
 .modal__credit-title{
   font-size:var(--modal-credit-title-size);
-  margin-bottom:18px;
+  margin-bottom:var(--modal-credit-title-gap);
   letter-spacing:var(--modal-credit-title-spacing);
 }
 
 .modal__credit-list{
   font-size:var(--modal-credit-list-size);
   line-height:var(--modal-credit-list-line);
-  margin-bottom:18px;
+  margin-bottom:var(--modal-credit-list-gap);
 }
 
 .credit-row{
   display:flex;
   justify-content:space-between;
-  gap:16px;
+  gap:var(--modal-credit-row-gap);
 }
 
 .credit-role{
@@ -902,51 +1094,60 @@ body.view-right .inner-shell{
   opacity:.85;
 }
 
-/* =========================================
-   Pull Entrance Hint
-========================================= */
-.pull-return{
-  position:fixed;
-  top:28px;
-  left:50%;
-  transform:translateX(-50%) translateY(-14px);
-  opacity:0;
+/* =========================================================
+   8. Interaction Overlay
+   操作補助責務 / 補助演出責務
+========================================================= */
+.video-unlock-flash{
+  position:absolute;
+  inset:0;
   pointer-events:none;
-  z-index:21000;
-  transition:opacity .28s ease, transform .28s ease;
+  opacity:0;
+  z-index:var(--z-video-flash);
+  border-radius:0;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(255,255,255,.16) 0%,
+      rgba(255,255,255,.10) 38%,
+      rgba(255,255,255,.05) 62%,
+      rgba(255,255,255,0) 100%
+    );
+  filter:blur(var(--video-unlock-flash-blur));
+  transform:scale(var(--video-unlock-flash-scale));
 }
 
-body.is-pull-hint-visible .pull-return{
-  opacity:1;
-  transform:translateX(-50%) translateY(0);
+.video-unlock-flash.is-active{
+  animation:videoUnlockFlash var(--video-unlock-flash-duration) ease-out forwards;
 }
 
-.pull-return-link{
-  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  font-size:clamp(.55rem, 1vw, 1.05rem);
-  font-weight:300;
-  letter-spacing:.12em;
-  text-transform:none;
-  color:rgba(255,255,255,.75);
-  text-decoration:none;
-  border-bottom:1px solid rgba(255,255,255,.22);
-  padding-bottom:3px;
-  opacity:.75;
-  transition:
-    opacity .22s ease,
-    border-color .22s ease,
-    transform .22s ease;
+@keyframes videoUnlockFlash{
+  0%{
+    opacity:0;
+    transform:scale(.96);
+    filter:blur(18px);
+  }
+  22%{
+    opacity:var(--video-unlock-flash-opacity-peak);
+    transform:scale(1.01);
+    filter:blur(12px);
+  }
+  100%{
+    opacity:0;
+    transform:scale(1.08);
+    filter:blur(24px);
+  }
 }
 
-.pull-return-link:hover{
-  opacity:1;
-  border-color:rgba(255,255,255,.45);
-  transform:translateY(-1px);
-}
+/* =========================================================
+   9. Responsive Overrides
+   レスポンシブ責務 / 画面条件別上書き責務
+========================================================= */
 
-/* =========================================
-   10. Narrow Width / Tablet
-========================================= */
+/* -----------------------------------------
+   9-1. Narrow Width / Tablet
+   狭幅上書き責務
+----------------------------------------- */
 @media (max-width:900px){
   :root{
     --about-content-pad-top:100px;
@@ -968,19 +1169,22 @@ body.is-pull-hint-visible .pull-return{
   }
 }
 
-/* =========================================
-   11. Mobile Landscape
-========================================= */
+/* -----------------------------------------
+   9-2. Mobile Landscape
+   スマホ横向き上書き責務
+----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
+    /* Stage Components / ステージ上UI上書き */
     --edge-btn-size:1.4rem;
 
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-item-size:1.5rem;
     --gallery-meta-size:1.08rem;
     --gallery-item-pad-y:18px;
-    --gallery-item-pad-x:0;
     --gallery-panel-gap-top:28px;
+    --gallery-scroll-pad-right:var(--gallery-scroll-pad-right-landscape);
+    --gallery-meta-gap-top:var(--gallery-meta-gap-top-landscape);
 
     --contact-w:clamp(520px, 62vw, 760px);
     --contact-block-size:1.18rem;
@@ -989,6 +1193,7 @@ body.is-pull-hint-visible .pull-return{
     --contact-label-spacing:.12em;
     --contact-value-size:1.34rem;
 
+    /* About / About上書き */
     --about-logo-main-size:clamp(1.7rem, 3vw, 3.2rem);
     --about-logo-sub-size:.74rem;
     --about-logo-spacing:.14em;
@@ -1016,6 +1221,7 @@ body.is-pull-hint-visible .pull-return{
     --about-credit-title-spacing:.10em;
     --about-credit-name-size:.96rem;
     --about-credit-name-spacing:.06em;
+    --about-credit-link-size:var(--about-credit-link-size-landscape);
 
     --about-back-size:.74rem;
     --about-back-spacing:.08em;
@@ -1036,6 +1242,9 @@ body.is-pull-hint-visible .pull-return{
     --about-back-pad-x:clamp(6px, 2vw, 14px);
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
+    /* Modal / モーダル上書き */
+    --modal-width:var(--modal-width-landscape);
+    --modal-video-max-h:var(--modal-video-max-h-landscape);
     --modal-credit-toggle-size:.8rem;
     --modal-credit-title-size:.92rem;
     --modal-credit-list-size:.78rem;
@@ -1054,47 +1263,6 @@ body.is-pull-hint-visible .pull-return{
     display:block;
   }
 
-  .video-unlock-flash{
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-    opacity:0;
-    z-index:9;
-    border-radius:0;
-    background:
-      radial-gradient(
-        ellipse at center,
-        rgba(255,255,255,.16) 0%,
-        rgba(255,255,255,.10) 38%,
-        rgba(255,255,255,.05) 62%,
-        rgba(255,255,255,0) 100%
-      );
-    filter:blur(14px);
-    transform:scale(.96);
-  }
-
-  .video-unlock-flash.is-active{
-    animation:videoUnlockFlash .72s ease-out forwards;
-  }
-
-  @keyframes videoUnlockFlash{
-    0%{
-      opacity:0;
-      transform:scale(.96);
-      filter:blur(18px);
-    }
-    22%{
-      opacity:.95;
-      transform:scale(1.01);
-      filter:blur(12px);
-    }
-    100%{
-      opacity:0;
-      transform:scale(1.08);
-      filter:blur(24px);
-    }
-  }
-
   #about .about-content{
     max-width:none;
   }
@@ -1102,7 +1270,7 @@ body.is-pull-hint-visible .pull-return{
   .about-hero{
     min-height:auto;
     width:min(82vw, 720px);
-    gap:30px;
+    gap:var(--about-hero-gap-landscape);
     padding-bottom:10px;
   }
 
@@ -1112,11 +1280,11 @@ body.is-pull-hint-visible .pull-return{
   }
 
   .about-stack{
-    margin-top:34px;
+    margin-top:var(--about-stack-margin-top-landscape);
   }
 
   .about-item h3{
-    margin-bottom:16px;
+    margin-bottom:var(--about-item-heading-gap-landscape);
   }
 
   .about-item p{
@@ -1124,15 +1292,11 @@ body.is-pull-hint-visible .pull-return{
   }
 
   .about-split{
-    margin-top:18px;
+    margin-top:var(--about-split-margin-top-landscape);
   }
 
   .about-credit{
-    margin-top:18px;
-  }
-
-  .about-credit-name a{
-    font-size:0.76rem;
+    margin-top:var(--about-credit-margin-top-landscape);
   }
 
   .about-col li{
@@ -1165,8 +1329,8 @@ body.is-pull-hint-visible .pull-return{
     position:relative;
     width:var(--gallery-w);
     max-width:none;
-    height:470px;
-    min-height:470px;
+    height:var(--gallery-panel-fixed-h-landscape);
+    min-height:var(--gallery-panel-fixed-h-landscape);
     margin-top:var(--gallery-panel-gap-top);
     display:flex;
     flex-direction:column;
@@ -1179,7 +1343,6 @@ body.is-pull-hint-visible .pull-return{
     height:100%;
     overflow-y:auto;
     overflow-x:hidden;
-    padding-right:10px;
     -webkit-overflow-scrolling:touch;
     overscroll-behavior-y:contain;
     overscroll-behavior-x:none;
@@ -1196,7 +1359,6 @@ body.is-pull-hint-visible .pull-return{
   }
 
   .gallery-item-meta{
-    margin-top:8px;
     line-height:1.35;
   }
 
@@ -1208,11 +1370,11 @@ body.is-pull-hint-visible .pull-return{
   .view-right .contact-block{
     width:var(--contact-w);
     max-width:none;
-    margin-top:28px;
+    margin-top:var(--contact-block-margin-top-landscape);
   }
 
   .contact-label{
-    margin-top:22px;
+    margin-top:var(--contact-label-margin-top-landscape);
   }
 
   .contact-value p,
@@ -1220,16 +1382,16 @@ body.is-pull-hint-visible .pull-return{
     line-height:1.65;
   }
 
-  .modal__content{
-    width:min(86vw, 1100px);
-  }
-
-  .modal__video-frame{
-    max-height:58vh;
-  }
-
   .modal__footer{
-    margin-top:6px;
-    padding-bottom:8px;
+    margin-top:var(--modal-footer-gap-top-landscape);
+    padding-bottom:var(--modal-footer-pad-bottom-landscape);
+  }
+
+  .modal__credit-inner{
+    width:var(--modal-credit-inner-width-landscape);
+    padding:
+      var(--modal-credit-inner-pad-top-landscape)
+      var(--modal-credit-inner-pad-x-landscape)
+      var(--modal-credit-inner-pad-bottom-landscape);
   }
 }
