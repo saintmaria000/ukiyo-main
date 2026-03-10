@@ -1141,7 +1141,7 @@ body.is-pull-hint-visible .pull-return{
 
   .about-hero{
     min-height:auto;
-    width:min(52vw, 720px);
+    width:min(82vw, 720px);
     gap:30px;
     padding-bottom:10px;
   }
