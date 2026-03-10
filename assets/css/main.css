@@ -1045,34 +1045,36 @@ body.view-right .inner-shell{
     max-width:44ch;
   }
 
-  .view-left .view-inner{
-    justify-content:flex-start;
-    align-items:flex-start;
-    padding-top:88px;
-    padding-bottom:24px;
-  }
+.view-left .view-inner{
+  justify-content:center;
+  align-items:flex-start;
+  padding-top:0;
+  padding-bottom:0;
+}
 
-  .gallery-panel{
-    position:relative;
-    width:clamp(360px, 48vw, 520px);
-    max-width:none;
-    height:calc(100vh - 165px);
-    min-height:0;
-    margin-top:18px;
-    display:flex;
-    flex-direction:column;
-  }
+.gallery-panel{
+  position:relative;
+  width:clamp(420px, 56vw, 620px);
+  max-width:none;
+  height:310px; /* 5件見せる固定高さ */
+  min-height:310px;
+  margin-top:22px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
 
-  .gallery-scroll{
-    flex:1;
-    min-height:0;
-    overflow-y:auto;
-    overflow-x:hidden;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior:contain;
-    touch-action:pan-y;
-    padding-right:4px;
-  }
+.gallery-scroll{
+  flex:1;
+  min-height:0;
+  height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
+  padding-right:6px;
+}
 
   .gallery-item-title{
     line-height:1.4;
@@ -1095,9 +1097,9 @@ body.view-right .inner-shell{
     --edge-btn-size: 1.4rem;
 
     /* ===== Gallery / ギャラリー ===== */
-    --gallery-item-size: .98rem;
-    --gallery-meta-size: .8rem;
-    --gallery-item-pad-y: 14px;
+    --gallery-item-size: 1.04rem;
+    --gallery-meta-size: .84rem;
+    --gallery-item-pad-y: 12px;
     /* ===== Contact / コンタクト ===== */
     --contact-label-size: .95rem;
     --contact-value-size: .9rem;
