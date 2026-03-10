@@ -756,7 +756,9 @@ body.view-right .inner-shell{
   align-items:center;
   width:100%;
 }
-
+.about-credit-name a{
+font-size: o.64rem;
+}
 .about-actions{
   width:100%;
   padding:0 var(--about-back-pad-x);
