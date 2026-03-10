@@ -940,7 +940,7 @@ body.view-right .inner-shell{
 .pull-return-link{
   display: inline-block;
   pointer-events: auto;
-  font-size: .9rem;
+  font-size: .74rem;
   letter-spacing: .2em;
   text-transform: uppercase;
   text-decoration: none;
