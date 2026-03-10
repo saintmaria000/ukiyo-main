@@ -954,7 +954,7 @@ body.view-right .inner-shell{
   - Gallery内スクロールをページスクロールと分離
   - Gallery / Contact を同じ密度感で調整
   ========================================= */
-  @media (pointer: coarse) and (orientation: landscape){
+@media (pointer: coarse) and (orientation: landscape){
 
     :root{
       /* ===== Stage UI ===== */
@@ -1205,74 +1205,4 @@ body.view-right .inner-shell{
       margin-top:6px;
       padding-bottom:8px;
     }
-  }
-
-  :root{
-    /* ===== Stage UI / ステージUI ===== */
-    --edge-btn-size: 1.4rem;
-
-    /* ===== Gallery / ギャラリー ===== */
-    --gallery-item-size: 1.04rem;
-    --gallery-meta-size: .84rem;
-    --gallery-item-pad-y: 12px;
-    /* ===== Contact / コンタクト ===== */
-    --contact-label-size: .95rem;
-    --contact-value-size: .9rem;
-    --contact-block-size: .78rem;
-    --contact-block-spacing: .06em;
-
-    /* ===== About / About ===== */
-    --about-logo-main-size: clamp(1.7rem, 3vw, 3.2rem);
-    --about-logo-sub-size: .74rem;
-    --about-logo-spacing: .14em;
-    --about-logo-sub-spacing: .08em;
-
-    --about-lead-size: .68rem;
-    --about-lead-line: 1.78;
-    --about-lead-spacing: .02em;
-
-    --about-heading-size: .96rem;
-    --about-heading-spacing: .10em;
-
-    --about-body-size: .8rem;
-    --about-body-line: 1.74;
-    --about-body-spacing: .02em;
-
-    --about-col-title-size: .88rem;
-    --about-col-title-spacing: .08em;
-
-    --about-col-item-size: .8rem;
-    --about-col-item-line: 1.74;
-    --about-col-item-spacing: .02em;
-
-    --about-credit-title-size: .78rem;
-    --about-credit-title-spacing: .10em;
-    --about-credit-name-size: .96rem;
-    --about-credit-name-spacing: .06em;
-
-    --about-back-size: .74rem;
-    --about-back-spacing: .08em;
-
-    --about-content-pad-top: 64px;
-    --about-content-pad-right: 3.5vw;
-    --about-content-pad-bottom: 96px;
-    --about-content-pad-left: 4.5vw;
-
-    --about-stack-gap: clamp(34px, 4vw, 58px);
-    --about-stack-pad: clamp(20px, 3vw, 34px);
-
-    --about-split-gap: clamp(20px, 2.4vw, 28px);
-    --about-split-pad-top: clamp(20px, 3vw, 30px);
-    --about-split-pad-x: clamp(20px, 3vw, 30px);
-    --about-split-pad-bottom: clamp(40px, 6vw, 68px);
-
-    --about-back-pad-x: clamp(6px, 2vw, 14px);
-    --about-back-margin-top: clamp(30px, 4vw, 54px);
-
-    /* ===== Modal / モーダル ===== */
-    --modal-credit-toggle-size: .8rem;
-    --modal-credit-title-size: .92rem;
-    --modal-credit-list-size: .78rem;
-    --modal-credit-close-size: .72rem;
-  }
 }
