@@ -20,6 +20,7 @@
 
   let shards = [];
   let bloomParticles = [];
+  let finalLogoEl = null;
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -37,8 +38,8 @@
     wave4Amp: 0.005,
 
     shatterDuration: 2100,
-    convergeDuration: 1700,
-    bloomDuration: 550,
+    convergeDuration: 1450,
+    bloomDuration: 500,
     logoHoldDuration: 1200,
 
     shardCountLarge: 95,
@@ -56,8 +57,8 @@
     zNearLimit: -1100,
     zFarLimit: 2600,
 
-    convergeSnapStrength: 0.050,
-    convergeZStrength: 0.045
+    convergeSnapStrength: 0.060,
+    convergeZStrength: 0.050
   };
 
   function nowMs() {
@@ -80,14 +81,92 @@
     return t * t * t;
   }
 
-  function easeInOutCubic(t) {
-    return t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  function easeOutBack(t) {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
   }
 
   function safe(n, fallback = 0) {
     return Number.isFinite(n) ? n : fallback;
+  }
+
+  function ensureFinalLogo() {
+    if (finalLogoEl) return finalLogoEl;
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .js-final-logo{
+        position:fixed;
+        inset:0;
+        z-index:12;
+        display:grid;
+        place-items:center;
+        text-align:center;
+        pointer-events:none;
+        opacity:0;
+      }
+      .js-final-logo__inner{
+        transform:translateY(14px) scale(.94);
+        opacity:0;
+      }
+      .js-final-logo.is-visible{
+        opacity:1;
+      }
+      .js-final-logo.is-visible .js-final-logo__inner{
+        animation:jsFinalLogoBounce 820ms cubic-bezier(.2,.9,.2,1) forwards;
+      }
+      .js-final-logo__main{
+        color:rgba(255,255,255,.95);
+        font-size:clamp(2.8rem, 10vw, 7rem);
+        line-height:1;
+        letter-spacing:.16em;
+        white-space:nowrap;
+      }
+      .js-final-logo__sub{
+        margin-top:14px;
+        color:rgba(255,255,255,.36);
+        font-size:clamp(.72rem, 1.35vw, 1rem);
+        letter-spacing:.30em;
+        text-transform:uppercase;
+      }
+      @keyframes jsFinalLogoBounce{
+        0%{
+          opacity:0;
+          transform:translateY(16px) scale(.92);
+        }
+        55%{
+          opacity:1;
+          transform:translateY(-8px) scale(1.04);
+        }
+        75%{
+          opacity:1;
+          transform:translateY(3px) scale(.992);
+        }
+        100%{
+          opacity:1;
+          transform:translateY(0) scale(1);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    finalLogoEl = document.createElement("div");
+    finalLogoEl.className = "js-final-logo";
+    finalLogoEl.setAttribute("aria-hidden", "true");
+    finalLogoEl.innerHTML = `
+      <div class="js-final-logo__inner">
+        <div class="js-final-logo__main">憂き世</div>
+        <div class="js-final-logo__sub">ukiyo Film</div>
+      </div>
+    `;
+    document.body.appendChild(finalLogoEl);
+    return finalLogoEl;
+  }
+
+  function showFinalLogo() {
+    const el = ensureFinalLogo();
+    el.classList.add("is-visible");
   }
 
   function resize() {
@@ -112,12 +191,10 @@
 
   function getOrbRadius() {
     if (!w || !h) return 120;
-
     const base = Math.min(w, h) * CONFIG.orbScale;
     const r = clamp(base, CONFIG.orbMin, CONFIG.orbMax);
     const breathing = 1 + Math.sin(time * 0.16) * 0.010;
     const result = r * breathing;
-
     return Number.isFinite(result) ? result : 120;
   }
 
@@ -127,7 +204,6 @@
     const wave3 = Math.sin(theta * 5.0 + t * 0.24 - 1.2) * baseR * CONFIG.wave3Amp;
     const wave4 = Math.sin(theta * 8.0 - t * 0.16 + 2.1) * baseR * CONFIG.wave4Amp;
     const breath = Math.sin(t * 0.12) * baseR * 0.006;
-
     const rr = baseR + wave1 + wave2 + wave3 + wave4 + breath;
     return Number.isFinite(rr) ? rr : baseR;
   }
@@ -311,7 +387,6 @@
     const u = Math.random() * 2 - 1;
     const theta = Math.random() * Math.PI * 2;
     const k = Math.sqrt(1 - u * u);
-
     return {
       x: k * Math.cos(theta),
       y: k * Math.sin(theta),
@@ -372,9 +447,9 @@
         aspect,
         rot: Math.random() * Math.PI * 2,
         spin,
-        logoTargetX: cx,
-        logoTargetY: cy,
-        logoTargetZ: 0,
+        centerTargetX: cx,
+        centerTargetY: cy,
+        centerTargetZ: 0,
         distFromCenterNorm: 1,
         frontness
       });
@@ -474,143 +549,48 @@
     });
   }
 
-  function buildGlyphTargets() {
-    const cx = w * 0.5;
-    const cy = h * 0.5;
-    const gap = Math.min(w, h) * 0.100;
-    const scale = Math.min(w, h) * 0.0076;
+  function createBloomParticles() {
+    const { x: cx, y: cy } = getCenter();
+    bloomParticles = [];
 
-    const glyphs = [
-      {
-        ox: -gap,
-        oy: 0,
-        matrix: [
-          "  xxx   ",
-          " x   x  ",
-          "xxxxxx  ",
-          "x xxxx  ",
-          "x x  x  ",
-          "xxxxxx  ",
-          "x    x  ",
-          "x    x  "
-        ]
-      },
-      {
-        ox: 0,
-        oy: 0,
-        matrix: [
-          " xxxx   ",
-          "    x   ",
-          " xxxxx  ",
-          " x   x  ",
-          " xxxxx  ",
-          " x      ",
-          " xxxxx  ",
-          "        "
-        ]
-      },
-      {
-        ox: gap,
-        oy: 0,
-        matrix: [
-          "xxxxxx  ",
-          "  xx    ",
-          "xxxxxx  ",
-          "x   xx  ",
-          "x    x  ",
-          "xxxxxx  ",
-          "        ",
-          "        "
-        ]
-      }
-    ];
-
-    const targets = [];
-
-    glyphs.forEach((g, gi) => {
-      g.matrix.forEach((row, iy) => {
-        for (let ix = 0; ix < row.length; ix++) {
-          if (row[ix] !== "x") continue;
-
-          const baseX = cx + g.ox + (ix - row.length / 2) * scale * 1.75;
-          const baseY = cy + g.oy + (iy - g.matrix.length / 2) * scale * 2.0;
-
-          // 文字ごとに点密度を上げる
-          const density = gi === 0 ? 10 : 9;
-          for (let n = 0; n < density; n++) {
-            targets.push({
-              x: baseX + (Math.random() - 0.5) * scale * 1.0,
-              y: baseY + (Math.random() - 0.5) * scale * 1.0,
-              z: lerp(-22, 22, Math.random())
-            });
-          }
-        }
+    for (let i = 0; i < 100; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * Math.min(w, h) * 0.045;
+      bloomParticles.push({
+        x: cx + Math.cos(a) * r,
+        y: cy + Math.sin(a) * r,
+        size: 0.8 + Math.random() * 3.2,
+        alpha: 0.08 + Math.random() * 0.14
       });
-    });
-
-    return targets;
-  }
-
-  function assignTargets() {
-    const targets = buildGlyphTargets();
-    if (!targets.length) return;
-
-    const center = getCenter();
-    const maxDist = Math.max(Math.hypot(center.x, center.y), 1);
-
-    shards.forEach((s, i) => {
-      const target = targets[i % targets.length];
-      s.logoTargetX = target.x;
-      s.logoTargetY = target.y;
-      s.logoTargetZ = target.z;
-
-      const dist = Math.hypot(s.x - center.x, s.y - center.y);
-      s.distFromCenterNorm = clamp(dist / maxDist, 0, 1);
-    });
+    }
   }
 
   function drawCentralBloom(progress) {
     const { x: cx, y: cy } = getCenter();
     const base = Math.min(w, h) * 0.09;
-    const p = easeOutCubic(progress);
+    const p = easeOutBack(clamp(progress, 0, 1));
 
     const g = ctx.createRadialGradient(
       cx, cy, 0,
-      cx, cy, base * (0.5 + p * 1.9)
+      cx, cy, base * (0.55 + p * 1.95)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.28 * (1 - progress)})`);
-    g.addColorStop(0.18, `rgba(255,255,255,${0.15 * (1 - progress)})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.32 * (1 - progress)})`);
+    g.addColorStop(0.18, `rgba(255,255,255,${0.17 * (1 - progress)})`);
     g.addColorStop(0.55, `rgba(255,255,255,${0.05 * (1 - progress)})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, base * (0.5 + p * 1.9), 0, Math.PI * 2);
+    ctx.arc(cx, cy, base * (0.55 + p * 1.95), 0, Math.PI * 2);
     ctx.fill();
-  }
-
-  function createBloomParticles() {
-    const { x: cx, y: cy } = getCenter();
-    bloomParticles = [];
-
-    for (let i = 0; i < 90; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const r = Math.random() * Math.min(w, h) * 0.04;
-      bloomParticles.push({
-        x: cx + Math.cos(a) * r,
-        y: cy + Math.sin(a) * r,
-        size: 0.8 + Math.random() * 2.8,
-        alpha: 0.08 + Math.random() * 0.12
-      });
-    }
   }
 
   function drawBloomParticles(progress) {
     const p = easeOutCubic(progress);
     bloomParticles.forEach((bp) => {
       ctx.beginPath();
-      ctx.arc(bp.x, bp.y, bp.size * (1 + p * 0.6), 0, Math.PI * 2);
+      ctx.arc(bp.x, bp.y, bp.size * (1 + p * 0.8), 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,255,255,${bp.alpha * (1 - progress)})`;
       ctx.fill();
     });
@@ -619,16 +599,21 @@
   function drawShardsConverge(progress) {
     const pull = easeInCubic(progress);
     const drawList = [];
+    const { x: cx, y: cy } = getCenter();
 
     shards.forEach((s) => {
-      const speedBias = lerp(1.38, 0.44, s.distFromCenterNorm);
-      const snap = CONFIG.convergeSnapStrength * speedBias * (0.18 + pull * 3.1);
-      const snapZ = CONFIG.convergeZStrength * speedBias * (0.18 + pull * 2.7);
-      const drag = lerp(0.95, lerp(0.84, 0.90, s.distFromCenterNorm), pull);
+      const dist = Math.hypot(s.x - cx, s.y - cy);
+      const maxDist = Math.max(Math.hypot(w * 0.5, h * 0.5), 1);
+      s.distFromCenterNorm = clamp(dist / maxDist, 0, 1);
 
-      s.vx += (s.logoTargetX - s.x) * snap;
-      s.vy += (s.logoTargetY - s.y) * snap;
-      s.vz += (s.logoTargetZ - s.z) * snapZ;
+      const speedBias = lerp(1.42, 0.42, s.distFromCenterNorm);
+      const snap = CONFIG.convergeSnapStrength * speedBias * (0.22 + pull * 3.4);
+      const snapZ = CONFIG.convergeZStrength * speedBias * (0.20 + pull * 2.9);
+      const drag = lerp(0.95, lerp(0.83, 0.90, s.distFromCenterNorm), pull);
+
+      s.vx += (s.centerTargetX - s.x) * snap;
+      s.vy += (s.centerTargetY - s.y) * snap;
+      s.vz += (s.centerTargetZ - s.z) * snapZ;
 
       s.vx *= drag;
       s.vy *= drag;
@@ -646,8 +631,8 @@
     drawList.sort((a, b) => a.z - b.z);
 
     drawList.forEach((s) => {
-      const alpha = lerp(s.isSmall ? 0.04 : 0.06, s.isSmall ? 0.22 : 0.34, pull);
-      const finalSize = lerp(s.baseSize * 0.72, s.isSmall ? 0.95 : 1.55, pull);
+      const alpha = lerp(s.isSmall ? 0.04 : 0.06, s.isSmall ? 0.24 : 0.34, pull);
+      const finalSize = lerp(s.baseSize * 0.72, s.isSmall ? 0.55 : 0.9, pull);
       const finalAspect = lerp(s.aspect, 1.0, pull);
 
       drawGlassShard3D(
@@ -678,6 +663,7 @@
     const r = getOrbRadius();
 
     createShards(x, y, r);
+    ensureFinalLogo();
   }
 
   function maybeAdvanceState(now) {
@@ -686,7 +672,6 @@
     if (state === "shatter" && elapsed >= CONFIG.shatterDuration) {
       state = "converge";
       stateStart = now;
-      assignTargets();
       return;
     }
 
@@ -700,6 +685,7 @@
     if (state === "bloom" && elapsed >= CONFIG.bloomDuration) {
       state = "logo";
       stateStart = now;
+      showFinalLogo();
       return;
     }
 
@@ -743,16 +729,13 @@
       drawAmbientVoid(cx, cy, r, t, 0.13 * (1 - p));
       drawShardsConverge(p);
 
-      // 終盤に向かうほど中央の発光を先行で足す
       const preGlow = Math.max(0, (p - 0.72) / 0.28);
-      if (preGlow > 0) drawCentralBloom(preGlow * 0.7);
+      if (preGlow > 0) drawCentralBloom(preGlow * 0.72);
 
       return;
     }
 
     if (state === "bloom") {
-      drawShardsConverge(1);
-
       const p = clamp((now - stateStart) / CONFIG.bloomDuration, 0, 1);
       drawCentralBloom(p);
       drawBloomParticles(p);
@@ -760,10 +743,8 @@
     }
 
     if (state === "logo") {
-      drawShardsConverge(1);
-
-      // 文字定着後のごく薄い残光
-      drawCentralBloom(1);
+      // 文字だけ見せる。破片はもう描かない。
+      return;
     }
   }
 
@@ -801,4 +782,4 @@
   tick();
 })();
 
-// h
+// a
