@@ -890,7 +890,8 @@ body.view-right .inner-shell{
     var(--about-split-pad-bottom);
   margin-bottom:var(--about-split-margin-bottom);
   width:100%;
-  max-width:1380px;
+  max-width:1480px;
+   margin-top:120px;
   margin-left:0;
   margin-right:auto;
 }
