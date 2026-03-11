@@ -1403,7 +1403,7 @@ body.view-right .inner-shell{
   .about-stack{
     margin-top:0;
     padding:
-    calc(var(--about-stack-pad) + 40px)
+    calc(var(--about-stack-pad) + 26px)
     var(--about-stack-pad)
     calc(var(--about-stack-pad) + 30px)
     var(--about-stack-pad);
