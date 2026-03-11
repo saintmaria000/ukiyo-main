@@ -855,21 +855,34 @@
     tick();
   }
 
-  langLinks.forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      startTransition(link.getAttribute("href"));
-    });
-  });
+function getDefaultHref() {
+  const link =
+    document.querySelector(".lang-link.is-active") ||
+    document.querySelector(".lang-link");
 
-  window.addEventListener("resize", resize);
+  return link ? link.getAttribute("href") : null;
+}
 
-  if (motionQuery.addEventListener) {
-    motionQuery.addEventListener("change", start);
-  } else if (motionQuery.addListener) {
-    motionQuery.addListener(start);
-  }
+function handleScreenTrigger(e) {
+  if (state !== "idle") return;
 
-  resize();
-  tick();
+  const href = getDefaultHref();
+  if (!href) return;
+
+  if (e && e.preventDefault) e.preventDefault();
+
+  startTransition(href);
+}
+window.addEventListener("pointerdown", handleScreenTrigger, { passive:false });
+
+window.addEventListener("resize", resize);
+
+if (motionQuery.addEventListener) {
+  motionQuery.addEventListener("change", start);
+} else if (motionQuery.addListener) {
+  motionQuery.addListener(start);
+}
+
+resize();
+tick();
 })();
