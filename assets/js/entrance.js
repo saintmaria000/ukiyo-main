@@ -20,7 +20,6 @@
   let nextHref = null;
 
   let shards = [];
-  let crackLines = [];
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -29,7 +28,7 @@
     orbMin: 110,
     orbMax: 250,
 
-    idleOutlineAlpha: 0.040,
+    idleOutlineAlpha: 0.038,
     idleCoreAlpha: 0.012,
 
     wave1Amp: 0.020,
@@ -37,22 +36,19 @@
     wave3Amp: 0.008,
     wave4Amp: 0.005,
 
-    shatterDuration: 1200,
-    convergeDuration: 1100,
-    logoDelay: 420,
-    logoDurationBeforeNavigate: 900,
+    shatterDuration: 2000,
+    convergeDuration: 1600,
+    logoDelay: 360,
+    logoDurationBeforeNavigate: 1000,
 
-    shardCount: 140,
-    shardMinSize: 1.4,
-    shardMaxSize: 8.8,
+    shardCount: 220,
+    shardMinSize: 1.2,
+    shardMaxSize: 10.5,
 
-    crackCount: 18,
+    explodeDistanceMin: 1.0,
+    explodeDistanceMax: 2.15,
 
-    explodeDistanceMin: 0.95,
-    explodeDistanceMax: 1.75,
-
-    convergeSnapStrength: 0.050,
-    convergeDrag: 0.86
+    convergeSnapStrength: 0.050
   };
 
   function nowMs() {
@@ -302,46 +298,30 @@
     drawHighlight(cx, cy, r, t, 1, 1);
   }
 
-  function createCrackLines(cx, cy, r) {
-    crackLines = [];
-
-    for (let i = 0; i < CONFIG.crackCount; i++) {
-      const baseAngle = (Math.PI * 2 * i) / CONFIG.crackCount + (Math.random() - 0.5) * 0.16;
-      const segments = 4 + Math.floor(Math.random() * 3);
-      const pts = [{ x: cx, y: cy }];
-
-      for (let s = 1; s <= segments; s++) {
-        const rr = r * (0.18 + (s / segments) * (0.78 + Math.random() * 0.18));
-        const aa = baseAngle + (Math.random() - 0.5) * 0.30;
-        pts.push({
-          x: cx + Math.cos(aa) * rr,
-          y: cy + Math.sin(aa) * rr
-        });
-      }
-
-      crackLines.push(pts);
-    }
-  }
-
   function createShards(cx, cy, r) {
     shards = [];
     const maxSide = Math.max(w, h);
 
     for (let i = 0; i < CONFIG.shardCount; i++) {
-      const angle = (Math.PI * 2 * i) / CONFIG.shardCount + (Math.random() - 0.5) * 0.26;
-      const speedMul = 0.8 + Math.random() * 1.0;
-      const distNorm = CONFIG.explodeDistanceMin + Math.random() * (CONFIG.explodeDistanceMax - CONFIG.explodeDistanceMin);
-      const targetDist = maxSide * distNorm * speedMul;
+      const angle = (Math.PI * 2 * i) / CONFIG.shardCount + (Math.random() - 0.5) * 0.28;
 
-      const sx = cx + Math.cos(angle) * r * (0.08 + Math.random() * 0.12);
-      const sy = cy + Math.sin(angle) * r * (0.08 + Math.random() * 0.12);
+      const depth = Math.random(); // 0=遠い 1=近い
+      const perspectiveScale = lerp(0.55, 1.55, depth);
+      const brightness = lerp(0.08, 0.28, depth);
+
+      const distNorm = CONFIG.explodeDistanceMin + Math.random() * (CONFIG.explodeDistanceMax - CONFIG.explodeDistanceMin);
+      const targetDist = maxSide * distNorm * perspectiveScale;
+
+      const sx = cx + Math.cos(angle) * r * (0.06 + Math.random() * 0.14);
+      const sy = cy + Math.sin(angle) * r * (0.06 + Math.random() * 0.14);
 
       const tx = cx + Math.cos(angle) * targetDist;
       const ty = cy + Math.sin(angle) * targetDist;
 
-      const size = CONFIG.shardMinSize + Math.random() * (CONFIG.shardMaxSize - CONFIG.shardMinSize);
-      const spin = (Math.random() - 0.5) * 0.32;
-      const aspect = 0.7 + Math.random() * 2.8;
+      const sizeBase = CONFIG.shardMinSize + Math.random() * (CONFIG.shardMaxSize - CONFIG.shardMinSize);
+      const size = sizeBase * perspectiveScale;
+      const spin = (Math.random() - 0.5) * lerp(0.12, 0.34, depth);
+      const aspect = 0.7 + Math.random() * 2.9;
 
       shards.push({
         startX: sx,
@@ -353,79 +333,66 @@
         vx: 0,
         vy: 0,
         size,
+        baseSize: size,
         aspect,
         rot: Math.random() * Math.PI * 2,
         spin,
-        alpha: 0.12 + Math.random() * 0.20,
+        alpha: brightness,
+        depth,
         logoTargetX: cx,
-        logoTargetY: cy
+        logoTargetY: cy,
+        distFromCenterNorm: 1
       });
     }
   }
 
-  function drawCracks(progress) {
-    const grow = easeOutCubic(progress);
-    const alpha = 0.30 * (1 - progress) + 0.06;
-
-    ctx.save();
-    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-    ctx.lineWidth = 1;
-
-    crackLines.forEach((line) => {
-      ctx.beginPath();
-      ctx.moveTo(line[0].x, line[0].y);
-
-      const end = Math.max(2, Math.floor(line.length * grow));
-      for (let i = 1; i < Math.min(end, line.length); i++) {
-        ctx.lineTo(line[i].x, line[i].y);
-      }
-
-      ctx.stroke();
-    });
-
-    ctx.restore();
-  }
-
-  function drawGlassShard(x, y, size, aspect, rot, alpha) {
+  function drawGlassShard(x, y, size, aspect, rot, alpha, depth = 0.5) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rot);
 
     ctx.beginPath();
-    ctx.moveTo(-size * 1.2 * aspect, -size * 0.15);
-    ctx.lineTo(-size * 0.15, -size * 1.0);
-    ctx.lineTo(size * 1.1 * aspect, -size * 0.10);
-    ctx.lineTo(size * 0.30, size * 0.95);
-    ctx.lineTo(-size * 0.95 * aspect, size * 0.35);
+    ctx.moveTo(-size * 1.25 * aspect, -size * 0.18);
+    ctx.lineTo(-size * 0.18, -size * 1.08);
+    ctx.lineTo(size * 1.08 * aspect, -size * 0.16);
+    ctx.lineTo(size * 0.34, size * 1.0);
+    ctx.lineTo(-size * 0.98 * aspect, size * 0.38);
     ctx.closePath();
 
-    ctx.fillStyle = `rgba(255,255,255,${alpha * 0.45})`;
+    ctx.fillStyle = `rgba(255,255,255,${alpha * lerp(0.30, 0.55, depth)})`;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-    ctx.lineWidth = 0.9;
+    ctx.strokeStyle = `rgba(255,255,255,${alpha * lerp(0.75, 1.0, depth)})`;
+    ctx.lineWidth = lerp(0.6, 1.1, depth);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(-size * 0.55 * aspect, -size * 0.08);
-    ctx.lineTo(size * 0.70 * aspect, -size * 0.02);
-    ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.65})`;
-    ctx.lineWidth = 0.7;
+    ctx.moveTo(-size * 0.55 * aspect, -size * 0.06);
+    ctx.lineTo(size * 0.72 * aspect, -size * 0.02);
+    ctx.strokeStyle = `rgba(255,255,255,${alpha * lerp(0.35, 0.85, depth)})`;
+    ctx.lineWidth = lerp(0.45, 0.8, depth);
     ctx.stroke();
 
     ctx.restore();
   }
 
-  function drawShardsExplode(progress) {
-    const move = 1 - Math.pow(1 - progress, 5);
+  function shatterMotion(progress, depth) {
+    // 最初だけ速く、途中でかなり減速
+    const fast = 1 - Math.pow(1 - progress, 4.5);
+    const slowFactor = lerp(0.78, 1.18, depth);
+    return Math.pow(fast, slowFactor);
+  }
 
+  function drawShardsExplode(progress) {
     shards.forEach((s) => {
+      const move = shatterMotion(progress, s.depth);
+
       s.x = lerp(s.startX, s.targetX, move);
       s.y = lerp(s.startY, s.targetY, move);
       s.rot += s.spin;
 
-      const alpha = s.alpha * (1 - progress * 0.25);
-      drawGlassShard(s.x, s.y, s.size, s.aspect, s.rot, alpha);
+      const alpha = s.alpha * (1 - progress * 0.18);
+      drawGlassShard(s.x, s.y, s.size, s.aspect, s.rot, alpha, s.depth);
     });
   }
 
@@ -490,7 +457,7 @@
           const baseX = cx + g.ox + (ix - row.length / 2) * scale * 1.7;
           const baseY = cy + g.oy + (iy - g.matrix.length / 2) * scale * 2.0;
 
-          for (let n = 0; n < 8; n++) {
+          for (let n = 0; n < 10; n++) {
             targets.push({
               x: baseX + (Math.random() - 0.5) * scale * 0.9,
               y: baseY + (Math.random() - 0.5) * scale * 0.9
@@ -507,10 +474,16 @@
     const targets = buildLogoTargets();
     if (!targets.length) return;
 
+    const center = getCenter();
+    const maxDist = Math.max(Math.hypot(center.x, center.y), 1);
+
     shards.forEach((s, i) => {
       const target = targets[i % targets.length];
       s.logoTargetX = target.x;
       s.logoTargetY = target.y;
+
+      const dist = Math.hypot(s.x - center.x, s.y - center.y);
+      s.distFromCenterNorm = clamp(dist / maxDist, 0, 1);
     });
   }
 
@@ -518,25 +491,29 @@
     const pull = easeInCubic(progress);
 
     shards.forEach((s) => {
-      const ax = (s.logoTargetX - s.x) * (CONFIG.convergeSnapStrength * (0.35 + pull * 2.5));
-      const ay = (s.logoTargetY - s.y) * (CONFIG.convergeSnapStrength * (0.35 + pull * 2.5));
+      // 外側ほど遅い、内側ほど速い
+      const speedBias = lerp(1.35, 0.42, s.distFromCenterNorm);
+      const snap = CONFIG.convergeSnapStrength * speedBias * (0.20 + pull * 2.9);
+      const drag = lerp(0.95, lerp(0.84, 0.90, s.distFromCenterNorm), pull);
+
+      const ax = (s.logoTargetX - s.x) * snap;
+      const ay = (s.logoTargetY - s.y) * snap;
 
       s.vx += ax;
       s.vy += ay;
 
-      const dynamicDrag = lerp(0.93, CONFIG.convergeDrag, pull);
-      s.vx *= dynamicDrag;
-      s.vy *= dynamicDrag;
+      s.vx *= drag;
+      s.vy *= drag;
 
       s.x += s.vx;
       s.y += s.vy;
-      s.rot += s.spin * (0.35 + (1 - pull) * 0.85);
+      s.rot += s.spin * (0.2 + (1 - pull) * 0.7);
 
-      const alpha = lerp(0.04, 0.30, pull);
-      const finalSize = lerp(s.size * 0.70, 1.6, pull);
+      const alpha = lerp(0.05, 0.32, pull);
+      const finalSize = lerp(s.baseSize * 0.78, 1.5, pull);
       const finalAspect = lerp(s.aspect, 1.0, pull);
 
-      drawGlassShard(s.x, s.y, finalSize, finalAspect, s.rot, alpha);
+      drawGlassShard(s.x, s.y, finalSize, finalAspect, s.rot, alpha, s.depth);
     });
   }
 
@@ -553,7 +530,6 @@
     const { x, y } = getCenter();
     const r = getOrbRadius();
 
-    createCrackLines(x, y, r);
     createShards(x, y, r);
   }
 
@@ -596,16 +572,15 @@
     if (state === "shatter") {
       const p = clamp((now - stateStart) / CONFIG.shatterDuration, 0, 1);
 
-      const orbAlpha = Math.max(0, 1 - easeOutCubic(p) * 1.05);
-      const orbScale = lerp(1, 0.92, p);
+      const orbAlpha = Math.max(0, 1 - easeOutCubic(p) * 1.08);
+      const orbScale = lerp(1, 0.90, p);
 
-      drawAmbientVoid(cx, cy, r, t, orbAlpha * 0.6);
-      drawShadow(cx, cy, r, orbAlpha * 0.8);
+      drawAmbientVoid(cx, cy, r, t, orbAlpha * 0.55);
+      drawShadow(cx, cy, r, orbAlpha * 0.75);
       drawOrbBody(cx, cy, r, t, orbAlpha, orbScale);
       drawInteriorTexture(cx, cy, r, t, orbAlpha, orbScale);
       drawHighlight(cx, cy, r, t, orbAlpha, orbScale);
 
-      drawCracks(Math.min(p * 1.1, 1));
       drawShardsExplode(p);
       return;
     }
