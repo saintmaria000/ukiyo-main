@@ -880,7 +880,12 @@ body.view-right .inner-shell{
   margin-top:0;
   margin-left:0;
   margin-right:auto;
-  padding:var(--about-stack-pad);
+  padding:
+    var(--about-stack-pad)
+    var(--about-stack-pad)
+    calc(var(--about-stack-pad) + 40px)
+    var(--about-stack-pad);
+    
   display:grid;
   gap:var(--about-stack-gap);
   border-left:1px solid #fff;
@@ -896,7 +901,9 @@ body.view-right .inner-shell{
   background:#fff;
   pointer-events:none;
 }
+.about-stack::before{
 
+}
 .about-item h3{
   font-size:var(--about-heading-size);
   letter-spacing:var(--about-heading-spacing);
