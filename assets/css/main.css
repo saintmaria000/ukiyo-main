@@ -1373,28 +1373,30 @@ body.view-right .inner-shell{
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
     /* Modal本体 */
-    --modal-width:min(84vw, 900px);
-    --modal-video-max-h:56vh;
+    --modal-width:min(78vw, 760px);
+    --modal-video-max-h:58vh;
 
     /* Footer */
     --modal-footer-gap-top:4px;
     --modal-footer-pad-bottom:6px;
-    --modal-credit-toggle-size:.76rem;
+    --modal-credit-toggle-size:.74rem;
 
     /* Credit */
-    --modal-credit-inner-width:min(92%, 640px);
-    --modal-credit-inner-pad-top:14px;
-    --modal-credit-inner-pad-x:16px;
-    --modal-credit-inner-pad-bottom:12px;
+    --modal-credit-inner-width:min(90%, 520px);
+    --modal-credit-inner-pad-top:16px;
+    --modal-credit-inner-pad-x:18px;
+    --modal-credit-inner-pad-bottom:14px;
 
-    --modal-credit-title-size:.78rem;
+    --modal-credit-title-size:.82rem;
     --modal-credit-title-gap:12px;
-    --modal-credit-list-size:.68rem;
+
+    --modal-credit-list-size:.72rem;
     --modal-credit-list-line:1.45;
     --modal-credit-list-gap:12px;
+
     --modal-credit-row-gap:10px;
 
-    --modal-credit-close-size:.68rem;
+    --modal-credit-close-size:.70rem;
   }
 }
 
@@ -1505,14 +1507,15 @@ body.view-right .inner-shell{
   .contact-value a{
     line-height:1.65;
   }
-    .modal__content{
-    max-height:88vh;
+  .modal__content{
     overflow:hidden;
+    width:var(--modal-width);
+    max-width:var(--modal-max-w);
   }
-
   .modal__video-frame{
     max-height:none;
     height:56vh;
+    aspect-ratio:16 / 9;
   }
 
   .modal__credit{
