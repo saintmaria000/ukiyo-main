@@ -1372,19 +1372,29 @@ body.view-right .inner-shell{
     --about-back-pad-x:clamp(6px, 2vw, 14px);
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
-    /* Modal */
-    --modal-width:min(82vw, 1100px);
-    --modal-video-max-h:58vh;
-    --modal-footer-gap-top:6px;
-    --modal-footer-pad-bottom:8px;
-    --modal-credit-toggle-size:.8rem;
-    --modal-credit-inner-width:min(88%, 520px);
-    --modal-credit-inner-pad-top:20px;
-    --modal-credit-inner-pad-x:24px;
-    --modal-credit-inner-pad-bottom:18px;
-    --modal-credit-title-size:.92rem;
-    --modal-credit-list-size:.78rem;
-    --modal-credit-close-size:.72rem;
+    /* Modal本体 */
+    --modal-width:min(84vw, 900px);
+    --modal-video-max-h:56vh;
+
+    /* Footer */
+    --modal-footer-gap-top:4px;
+    --modal-footer-pad-bottom:6px;
+    --modal-credit-toggle-size:.76rem;
+
+    /* Credit */
+    --modal-credit-inner-width:min(92%, 640px);
+    --modal-credit-inner-pad-top:14px;
+    --modal-credit-inner-pad-x:16px;
+    --modal-credit-inner-pad-bottom:12px;
+
+    --modal-credit-title-size:.78rem;
+    --modal-credit-title-gap:12px;
+    --modal-credit-list-size:.68rem;
+    --modal-credit-list-line:1.45;
+    --modal-credit-list-gap:12px;
+    --modal-credit-row-gap:10px;
+
+    --modal-credit-close-size:.68rem;
   }
 }
 
@@ -1495,6 +1505,64 @@ body.view-right .inner-shell{
   .contact-value a{
     line-height:1.65;
   }
+    .modal__content{
+    max-height:88vh;
+    overflow:hidden;
+  }
+
+  .modal__video-frame{
+    max-height:none;
+    height:56vh;
+  }
+
+  .modal__credit{
+    align-items:flex-start;
+    justify-content:center;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:10px 0;
+  }
+
+  .modal__credit-inner{
+    width:var(--modal-credit-inner-width);
+    max-width:none;
+    margin:0 auto;
+  }
+
+  .modal__credit-title{
+    line-height:1.3;
+  }
+
+  .modal__credit-list{
+    overflow:visible;
+  }
+
+  .credit-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:var(--modal-credit-row-gap);
+  }
+
+  .credit-role,
+  .credit-name{
+    font-size:var(--modal-credit-list-size);
+    line-height:var(--modal-credit-list-line);
+  }
+
+  .credit-role{
+    flex:1 1 58%;
+    min-width:0;
+    text-align:left;
+  }
+
+  .credit-name{
+    flex:1 1 42%;
+    min-width:0;
+    text-align:right;
+    word-break:break-word;
+  }
+
 }
 
 
