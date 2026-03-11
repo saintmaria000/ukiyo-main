@@ -1524,7 +1524,13 @@ body.view-right .inner-shell{
     min-height:0;
     overflow:hidden;
   }
+    .gallery-item{
+    transition:opacity .2s ease, background .2s ease;
+  }
 
+  .gallery-item.is-centered{
+    background:rgba(255,255,255,.04);
+  }
   .gallery-scroll{
     position:relative;
     z-index:1;
