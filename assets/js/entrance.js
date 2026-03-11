@@ -7,7 +7,6 @@
 
   const langLinks = document.querySelectorAll(".lang-link");
   const langSelect = document.querySelector(".lang-select");
-  const revealLogo = document.getElementById("revealLogo");
 
   let w = 0;
   let h = 0;
@@ -15,11 +14,12 @@
   let rafId = 0;
   let time = 0;
 
-  let state = "idle"; // idle | shatter | converge | logo
+  let state = "idle"; // idle | shatter | converge | bloom | logo
   let stateStart = 0;
   let nextHref = null;
 
   let shards = [];
+  let bloomParticles = [];
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -36,23 +36,28 @@
     wave3Amp: 0.008,
     wave4Amp: 0.005,
 
-    shatterDuration: 2000,
+    shatterDuration: 2100,
     convergeDuration: 1700,
-    logoDelay: 360,
-    logoDurationBeforeNavigate: 1000,
+    bloomDuration: 550,
+    logoHoldDuration: 1200,
 
-    shardCount: 110,          // 多すぎない、でも十分
-    shardMinSize: 1.8,
-    shardMaxSize: 13.0,
+    shardCountLarge: 95,
+    shardCountSmall: 220,
 
-    explodeRadiusMin: 900,
-    explodeRadiusMax: 2400,
+    shardLargeMin: 2.0,
+    shardLargeMax: 14.0,
+    shardSmallMin: 0.7,
+    shardSmallMax: 3.0,
 
-    camera: 900,              // 小さいほど手前感が強い
-    zNearLimit: -700,
-    zFarLimit: 2000,
+    explodeRadiusMin: 1200,
+    explodeRadiusMax: 3200,
 
-    convergeSnapStrength: 0.050
+    camera: 760,
+    zNearLimit: -1100,
+    zFarLimit: 2600,
+
+    convergeSnapStrength: 0.050,
+    convergeZStrength: 0.045
   };
 
   function nowMs() {
@@ -73,6 +78,12 @@
 
   function easeInCubic(t) {
     return t * t * t;
+  }
+
+  function easeInOutCubic(t) {
+    return t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
   function safe(n, fallback = 0) {
@@ -170,7 +181,7 @@
       safe(Math.max(0.0001, r * 0.12), 1),
       safe(cx, cx),
       safe(cy, cy),
-      safe(Math.max(0.0001, r * 2.5), r * 2.5)
+      safe(Math.max(0.0001, r * 2.7), r * 2.7)
     );
 
     g.addColorStop(0, `rgba(255,255,255,${0.010 * alphaMul})`);
@@ -180,7 +191,7 @@
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, Math.max(1, r * 2.5), 0, Math.PI * 2);
+    ctx.arc(cx, cy, Math.max(1, r * 2.7), 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -311,60 +322,66 @@
   function createShards(cx, cy, r) {
     shards = [];
 
-    for (let i = 0; i < CONFIG.shardCount; i++) {
-      // 球の表面から生まれる
+    function makeShard(isSmall) {
       const dir = randomUnitVector3();
 
-      const startRadius = r * (0.75 + Math.random() * 0.25);
+      const startRadius = r * (0.72 + Math.random() * 0.32);
       const startX = cx + dir.x * startRadius;
       const startY = cy + dir.y * startRadius;
-      const startZ = dir.z * r * 0.9;
+      const startZ = dir.z * r * 1.0;
 
-      // 飛散方向もほぼその法線方向
       const explodeLength = lerp(CONFIG.explodeRadiusMin, CONFIG.explodeRadiusMax, Math.random());
-      const targetX = cx + dir.x * explodeLength;
-      const targetY = cy + dir.y * explodeLength;
-      const targetZ = dir.z * explodeLength;
+      const spreadBoost = isSmall ? lerp(1.0, 1.55, Math.random()) : lerp(0.9, 1.2, Math.random());
 
-      // 手前に来る破片ほど大きく明るく
+      const targetX = cx + dir.x * explodeLength * spreadBoost;
+      const targetY = cy + dir.y * explodeLength * spreadBoost;
+      const targetZ = dir.z * explodeLength * spreadBoost;
+
       const frontness = (dir.z + 1) * 0.5;
-      const size = lerp(CONFIG.shardMinSize, CONFIG.shardMaxSize, Math.random()) * lerp(0.8, 1.35, frontness);
-      const alpha = lerp(0.10, 0.28, frontness);
-      const aspect = 0.8 + Math.random() * 2.4;
-      const spin = (Math.random() - 0.5) * lerp(0.10, 0.34, frontness);
+      const sizeMin = isSmall ? CONFIG.shardSmallMin : CONFIG.shardLargeMin;
+      const sizeMax = isSmall ? CONFIG.shardSmallMax : CONFIG.shardLargeMax;
+      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.4, frontness);
+
+      const alpha = isSmall
+        ? lerp(0.05, 0.18, frontness)
+        : lerp(0.10, 0.30, frontness);
+
+      const aspect = isSmall
+        ? 0.8 + Math.random() * 1.8
+        : 0.8 + Math.random() * 2.5;
+
+      const spin = (Math.random() - 0.5) * (isSmall ? lerp(0.14, 0.42, frontness) : lerp(0.08, 0.28, frontness));
 
       shards.push({
+        isSmall,
         startX,
         startY,
         startZ,
-
         x: startX,
         y: startY,
         z: startZ,
-
         targetX,
         targetY,
         targetZ,
-
         vx: 0,
         vy: 0,
         vz: 0,
-
         size,
         baseSize: size,
         alpha,
         aspect,
         rot: Math.random() * Math.PI * 2,
         spin,
-
         logoTargetX: cx,
         logoTargetY: cy,
         logoTargetZ: 0,
-
         distFromCenterNorm: 1,
         frontness
       });
     }
+
+    for (let i = 0; i < CONFIG.shardCountLarge; i++) makeShard(false);
+    for (let i = 0; i < CONFIG.shardCountSmall; i++) makeShard(true);
   }
 
   function project3D(x, y, z) {
@@ -375,50 +392,66 @@
     return {
       x,
       y,
-      scale: clamp(p, 0.18, 4.5),
+      scale: clamp(p, 0.16, 5.0),
       visible: cam + zz > 1
     };
   }
 
-  function drawGlassShard3D(x, y, z, size, aspect, rot, alpha, frontness) {
+  function drawGlassShard3D(x, y, z, size, aspect, rot, alpha, frontness, isSmall) {
     const proj = project3D(x, y, z);
     if (!proj.visible) return;
 
     const drawSize = size * proj.scale;
-    const drawAlpha = alpha * clamp(proj.scale * 0.9, 0.14, 1.9);
+    const drawAlpha = alpha * clamp(proj.scale * 0.95, 0.10, 2.0);
 
     ctx.save();
     ctx.translate(proj.x, proj.y);
     ctx.rotate(rot);
 
-    ctx.beginPath();
-    ctx.moveTo(-drawSize * 1.2 * aspect, -drawSize * 0.18);
-    ctx.lineTo(-drawSize * 0.20, -drawSize * 1.05);
-    ctx.lineTo(drawSize * 1.02 * aspect, -drawSize * 0.12);
-    ctx.lineTo(drawSize * 0.35, drawSize * 0.98);
-    ctx.lineTo(-drawSize * 0.95 * aspect, drawSize * 0.38);
-    ctx.closePath();
+    if (isSmall) {
+      ctx.beginPath();
+      ctx.moveTo(-drawSize * 0.95 * aspect, -drawSize * 0.10);
+      ctx.lineTo(-drawSize * 0.08, -drawSize * 0.82);
+      ctx.lineTo(drawSize * 0.88 * aspect, -drawSize * 0.06);
+      ctx.lineTo(drawSize * 0.18, drawSize * 0.75);
+      ctx.lineTo(-drawSize * 0.72 * aspect, drawSize * 0.26);
+      ctx.closePath();
 
-    ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.28, 0.55, frontness)})`;
-    ctx.fill();
+      ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.22, 0.48, frontness)})`;
+      ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.68, 1.0, frontness)})`;
-    ctx.lineWidth = clamp(0.45 * proj.scale, 0.35, 1.7);
-    ctx.stroke();
+      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.56, 0.90, frontness)})`;
+      ctx.lineWidth = clamp(0.28 * proj.scale, 0.20, 0.9);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(-drawSize * 1.2 * aspect, -drawSize * 0.18);
+      ctx.lineTo(-drawSize * 0.20, -drawSize * 1.05);
+      ctx.lineTo(drawSize * 1.02 * aspect, -drawSize * 0.12);
+      ctx.lineTo(drawSize * 0.35, drawSize * 0.98);
+      ctx.lineTo(-drawSize * 0.95 * aspect, drawSize * 0.38);
+      ctx.closePath();
 
-    ctx.beginPath();
-    ctx.moveTo(-drawSize * 0.52 * aspect, -drawSize * 0.05);
-    ctx.lineTo(drawSize * 0.70 * aspect, -drawSize * 0.02);
-    ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.30, 0.90, frontness)})`;
-    ctx.lineWidth = clamp(0.30 * proj.scale, 0.22, 1.0);
-    ctx.stroke();
+      ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.28, 0.55, frontness)})`;
+      ctx.fill();
+
+      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.68, 1.0, frontness)})`;
+      ctx.lineWidth = clamp(0.42 * proj.scale, 0.28, 1.7);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-drawSize * 0.52 * aspect, -drawSize * 0.05);
+      ctx.lineTo(drawSize * 0.70 * aspect, -drawSize * 0.02);
+      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.30, 0.90, frontness)})`;
+      ctx.lineWidth = clamp(0.24 * proj.scale, 0.18, 0.9);
+      ctx.stroke();
+    }
 
     ctx.restore();
   }
 
   function shatterMotion(progress) {
-    // 最初に強く出て、その後かなり減速
-    return 1 - Math.pow(1 - progress, 4.6);
+    return 1 - Math.pow(1 - progress, 4.8);
   }
 
   function drawShardsExplode(progress) {
@@ -430,84 +463,85 @@
       s.y = lerp(s.startY, s.targetY, move);
       s.z = lerp(s.startZ, s.targetZ, move);
       s.rot += s.spin;
-
       drawList.push(s);
     });
 
     drawList.sort((a, b) => a.z - b.z);
 
     drawList.forEach((s) => {
-      const alpha = s.alpha * (1 - progress * 0.16);
-      drawGlassShard3D(s.x, s.y, s.z, s.size, s.aspect, s.rot, alpha, s.frontness);
+      const alpha = s.alpha * (1 - progress * 0.14);
+      drawGlassShard3D(s.x, s.y, s.z, s.size, s.aspect, s.rot, alpha, s.frontness, s.isSmall);
     });
   }
 
-  function buildLogoTargets() {
+  function buildGlyphTargets() {
     const cx = w * 0.5;
     const cy = h * 0.5;
-    const gap = Math.min(w, h) * 0.095;
-    const scale = Math.min(w, h) * 0.0078;
+    const gap = Math.min(w, h) * 0.100;
+    const scale = Math.min(w, h) * 0.0076;
 
     const glyphs = [
       {
         ox: -gap,
         oy: 0,
         matrix: [
-          "  xxx ",
-          " x   x",
-          "xxxxx ",
-          "x xxx ",
-          "x x x ",
-          "xxxxx ",
-          "x   x ",
-          "x   x "
+          "  xxx   ",
+          " x   x  ",
+          "xxxxxx  ",
+          "x xxxx  ",
+          "x x  x  ",
+          "xxxxxx  ",
+          "x    x  ",
+          "x    x  "
         ]
       },
       {
         ox: 0,
         oy: 0,
         matrix: [
-          " xxx  ",
-          "   x  ",
-          " xxxx ",
-          " x  x ",
-          " xxxx ",
-          " x    ",
-          " xxxx ",
-          "      "
+          " xxxx   ",
+          "    x   ",
+          " xxxxx  ",
+          " x   x  ",
+          " xxxxx  ",
+          " x      ",
+          " xxxxx  ",
+          "        "
         ]
       },
       {
         ox: gap,
         oy: 0,
         matrix: [
-          "xxxxx ",
-          "  x   ",
-          "xxxxx ",
-          "x  xx ",
-          "x   x ",
-          "xxxxx ",
-          "      ",
-          "      "
+          "xxxxxx  ",
+          "  xx    ",
+          "xxxxxx  ",
+          "x   xx  ",
+          "x    x  ",
+          "xxxxxx  ",
+          "        ",
+          "        "
         ]
       }
     ];
 
     const targets = [];
 
-    glyphs.forEach((g) => {
+    glyphs.forEach((g, gi) => {
       g.matrix.forEach((row, iy) => {
         for (let ix = 0; ix < row.length; ix++) {
           if (row[ix] !== "x") continue;
 
-          const baseX = cx + g.ox + (ix - row.length / 2) * scale * 1.7;
+          const baseX = cx + g.ox + (ix - row.length / 2) * scale * 1.75;
           const baseY = cy + g.oy + (iy - g.matrix.length / 2) * scale * 2.0;
 
-          for (let n = 0; n < 10; n++) {
+          // 文字ごとに点密度を上げる
+          const density = gi === 0 ? 10 : 9;
+          for (let n = 0; n < density; n++) {
             targets.push({
-              x: baseX + (Math.random() - 0.5) * scale * 0.9,
-              y: baseY + (Math.random() - 0.5) * scale * 0.9,
-              z: lerp(-20, 20, Math.random())
+              x: baseX + (Math.random() - 0.5) * scale * 1.0,
+              y: baseY + (Math.random() - 0.5) * scale * 1.0,
+              z: lerp(-22, 22, Math.random())
             });
           }
         }
@@ -518,7 +552,7 @@
   }
 
   function assignTargets() {
-    const targets = buildLogoTargets();
+    const targets = buildGlyphTargets();
     if (!targets.length) return;
 
     const center = getCenter();
@@ -535,18 +569,66 @@
     });
   }
 
+  function drawCentralBloom(progress) {
+    const { x: cx, y: cy } = getCenter();
+    const base = Math.min(w, h) * 0.09;
+    const p = easeOutCubic(progress);
+
+    const g = ctx.createRadialGradient(
+      cx, cy, 0,
+      cx, cy, base * (0.5 + p * 1.9)
+    );
+
+    g.addColorStop(0, `rgba(255,255,255,${0.28 * (1 - progress)})`);
+    g.addColorStop(0.18, `rgba(255,255,255,${0.15 * (1 - progress)})`);
+    g.addColorStop(0.55, `rgba(255,255,255,${0.05 * (1 - progress)})`);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, base * (0.5 + p * 1.9), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function createBloomParticles() {
+    const { x: cx, y: cy } = getCenter();
+    bloomParticles = [];
+
+    for (let i = 0; i < 90; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * Math.min(w, h) * 0.04;
+      bloomParticles.push({
+        x: cx + Math.cos(a) * r,
+        y: cy + Math.sin(a) * r,
+        size: 0.8 + Math.random() * 2.8,
+        alpha: 0.08 + Math.random() * 0.12
+      });
+    }
+  }
+
+  function drawBloomParticles(progress) {
+    const p = easeOutCubic(progress);
+    bloomParticles.forEach((bp) => {
+      ctx.beginPath();
+      ctx.arc(bp.x, bp.y, bp.size * (1 + p * 0.6), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${bp.alpha * (1 - progress)})`;
+      ctx.fill();
+    });
+  }
+
   function drawShardsConverge(progress) {
     const pull = easeInCubic(progress);
     const drawList = [];
 
     shards.forEach((s) => {
-      const speedBias = lerp(1.35, 0.42, s.distFromCenterNorm);
-      const snap = CONFIG.convergeSnapStrength * speedBias * (0.20 + pull * 2.9);
+      const speedBias = lerp(1.38, 0.44, s.distFromCenterNorm);
+      const snap = CONFIG.convergeSnapStrength * speedBias * (0.18 + pull * 3.1);
+      const snapZ = CONFIG.convergeZStrength * speedBias * (0.18 + pull * 2.7);
       const drag = lerp(0.95, lerp(0.84, 0.90, s.distFromCenterNorm), pull);
 
       s.vx += (s.logoTargetX - s.x) * snap;
       s.vy += (s.logoTargetY - s.y) * snap;
-      s.vz += (s.logoTargetZ - s.z) * snap * 0.85;
+      s.vz += (s.logoTargetZ - s.z) * snapZ;
 
       s.vx *= drag;
       s.vy *= drag;
@@ -556,7 +638,7 @@
       s.y += s.vy;
       s.z += s.vz;
 
-      s.rot += s.spin * (0.18 + (1 - pull) * 0.65);
+      s.rot += s.spin * (0.14 + (1 - pull) * 0.55);
 
       drawList.push(s);
     });
@@ -564,8 +646,8 @@
     drawList.sort((a, b) => a.z - b.z);
 
     drawList.forEach((s) => {
-      const alpha = lerp(0.05, 0.32, pull);
-      const finalSize = lerp(s.baseSize * 0.76, 1.5, pull);
+      const alpha = lerp(s.isSmall ? 0.04 : 0.06, s.isSmall ? 0.22 : 0.34, pull);
+      const finalSize = lerp(s.baseSize * 0.72, s.isSmall ? 0.95 : 1.55, pull);
       const finalAspect = lerp(s.aspect, 1.0, pull);
 
       drawGlassShard3D(
@@ -576,7 +658,8 @@
         finalAspect,
         s.rot,
         alpha,
-        s.frontness
+        s.frontness,
+        s.isSmall
       );
     });
   }
@@ -593,6 +676,7 @@
 
     const { x, y } = getCenter();
     const r = getOrbRadius();
+
     createShards(x, y, r);
   }
 
@@ -607,13 +691,19 @@
     }
 
     if (state === "converge" && elapsed >= CONFIG.convergeDuration) {
-      state = "logo";
+      state = "bloom";
       stateStart = now;
-      if (revealLogo) revealLogo.classList.add("is-visible");
+      createBloomParticles();
       return;
     }
 
-    if (state === "logo" && elapsed >= CONFIG.logoDelay + CONFIG.logoDurationBeforeNavigate) {
+    if (state === "bloom" && elapsed >= CONFIG.bloomDuration) {
+      state = "logo";
+      stateStart = now;
+      return;
+    }
+
+    if (state === "logo" && elapsed >= CONFIG.logoHoldDuration) {
       window.location.href = nextHref;
     }
   }
@@ -650,13 +740,30 @@
 
     if (state === "converge") {
       const p = clamp((now - stateStart) / CONFIG.convergeDuration, 0, 1);
-      drawAmbientVoid(cx, cy, r, t, 0.12 * (1 - p));
+      drawAmbientVoid(cx, cy, r, t, 0.13 * (1 - p));
       drawShardsConverge(p);
+
+      // 終盤に向かうほど中央の発光を先行で足す
+      const preGlow = Math.max(0, (p - 0.72) / 0.28);
+      if (preGlow > 0) drawCentralBloom(preGlow * 0.7);
+
+      return;
+    }
+
+    if (state === "bloom") {
+      drawShardsConverge(1);
+
+      const p = clamp((now - stateStart) / CONFIG.bloomDuration, 0, 1);
+      drawCentralBloom(p);
+      drawBloomParticles(p);
       return;
     }
 
     if (state === "logo") {
       drawShardsConverge(1);
+
+      // 文字定着後のごく薄い残光
+      drawCentralBloom(1);
     }
   }
 
@@ -694,4 +801,4 @@
   tick();
 })();
 
-// b
+// h
