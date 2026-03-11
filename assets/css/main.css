@@ -941,6 +941,7 @@ body.view-right .inner-shell{
 
 .about-credit-name a{
   font-size:var(--about-credit-link-size);
+  text-decoration: none;
 }
 
 /* About Actions / About戻り導線責務 */
