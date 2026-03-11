@@ -1574,7 +1574,7 @@ a{
   /* PC版の左右配置思想を維持しつつ、スマホ用に列幅だけ固定 */
   .credit-row{
     display:flex;
-    justify-content:flex-start;
+    justify-content:space-between;
     align-items:flex-start;
     gap:var(--modal-credit-col-gap);
   }
@@ -1587,6 +1587,7 @@ a{
   }
 
   .credit-role{
+      flex:0 0 150px; 
     width:var(--modal-credit-col-role);
     flex:0 0 var(--modal-credit-col-role);
     text-align:right;
@@ -1637,4 +1638,4 @@ a{
   }
 }
 
-/* q */
+/* nj */
