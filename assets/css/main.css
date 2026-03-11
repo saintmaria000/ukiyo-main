@@ -1434,7 +1434,7 @@ body.view-right .inner-shell{
 
 /* =========================================================
    11. 端末対策
-   iPhoneスクロール確認用
+   iPhoneスクロール対策
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
 
