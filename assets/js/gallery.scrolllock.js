@@ -1,12 +1,17 @@
 (function () {
   const body = document.body;
-  const galleryScroll = document.querySelector('.gallery-scroll');
   const mq = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
-  if (!galleryScroll) return;
+  function isGalleryView() {
+    return body.classList.contains('view-left');
+  }
+
+  function shouldLockPageScroll() {
+    return mq.matches && isGalleryView();
+  }
 
   function updateGalleryScrollLock() {
-    body.classList.remove('is-gallery-scroll-lock');
+    body.classList.toggle('is-gallery-scroll-lock', shouldLockPageScroll());
   }
 
   window.addEventListener('resize', updateGalleryScrollLock);
@@ -17,6 +22,16 @@
   } else if (mq.addListener) {
     mq.addListener(updateGalleryScrollLock);
   }
+
+  // view切替に追従
+  const observer = new MutationObserver(() => {
+    updateGalleryScrollLock();
+  });
+
+  observer.observe(body, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
 
   updateGalleryScrollLock();
 })();
