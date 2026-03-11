@@ -883,7 +883,7 @@ body.view-right .inner-shell{
   padding:
     var(--about-stack-pad)
     var(--about-stack-pad)
-    calc(var(--about-stack-pad) + 40px)
+    calc(var(--about-stack-pad) + 110px)
     var(--about-stack-pad);
 
   display:grid;
@@ -901,9 +901,7 @@ body.view-right .inner-shell{
   background:#fff;
   pointer-events:none;
 }
-.about-stack::before{
 
-}
 .about-item h3{
   font-size:var(--about-heading-size);
   letter-spacing:var(--about-heading-spacing);
