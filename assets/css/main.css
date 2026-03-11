@@ -1338,7 +1338,7 @@ body.view-right .inner-shell{
     --about-credit-link-size:.64rem;
 
     /* About 戻り */
-    --about-back-size:.74rem;
+    --about-back-size:.64rem;
     --about-back-spacing:.08em;
     --about-back-pad-x:clamp(6px, 2vw, 14px);
     --about-back-margin-top:clamp(30px, 4vw, 54px);
