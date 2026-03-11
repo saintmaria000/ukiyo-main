@@ -1261,13 +1261,12 @@ body.view-right .inner-shell{
 /* -----------------------------------------
    9-1. 狭い幅
    まずAbout中心
-  ----------------------------------------- */
+----------------------------------------- */
 @media (max-width:900px){
   :root{
     --about-content-pad-top:100px;
-    --about-content-pad-right:7vw;
+    --about-content-pad-x:7vw;
     --about-content-pad-bottom:120px;
-    --about-content-pad-left:7vw;
 
     --about-lead-size:.95rem;
     --about-body-size:.95rem;
@@ -1281,7 +1280,7 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    9-2. タッチ横向き
-   スマホ横向き + iPad横向きもここに入る
+   スマホ横向き + iPad横向き
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
@@ -1292,7 +1291,6 @@ body.view-right .inner-shell{
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-gap-top:28px;
     --gallery-panel-fixed-h:470px;
-    --gallery-scroll-pad-right:10px;
 
     --gallery-item-size:1.5rem;
     --gallery-item-pad-y:18px;
@@ -1310,11 +1308,10 @@ body.view-right .inner-shell{
     --contact-label-margin-top:22px;
     --contact-value-size:1.34rem;
 
-    /* About 導入 */
+    /* About */
     --about-content-pad-top:0px;
-    --about-content-pad-right:7.5vw;
+    --about-content-pad-x:7.5vw;
     --about-content-pad-bottom:96px;
-    --about-content-pad-left:7.5vw;
 
     --about-hero-min-h:100svh;
     --about-hero-pad-top:64px;
@@ -1331,7 +1328,6 @@ body.view-right .inner-shell{
     --about-lead-line:1.78;
     --about-lead-spacing:.02em;
 
-    /* About 本文 */
     --about-stack-gap:clamp(44px, 4vw, 68px);
     --about-stack-pad:clamp(20px, 3vw, 34px);
     --about-stack-line-protrusion:48px;
@@ -1344,7 +1340,6 @@ body.view-right .inner-shell{
     --about-body-line:1.74;
     --about-body-spacing:.02em;
 
-    /* About 2カラム */
     --about-split-gap:clamp(20px, 2.4vw, 28px);
     --about-split-pad-top:clamp(20px, 3vw, 30px);
     --about-split-pad-x:clamp(20px, 3vw, 30px);
@@ -1358,7 +1353,6 @@ body.view-right .inner-shell{
     --about-col-item-line:1.74;
     --about-col-item-spacing:.02em;
 
-    /* About クレジット */
     --about-credit-margin-top:18px;
     --about-credit-title-size:.78rem;
     --about-credit-title-spacing:.10em;
@@ -1366,23 +1360,21 @@ body.view-right .inner-shell{
     --about-credit-name-spacing:.06em;
     --about-credit-link-size:.64rem;
 
-    /* About 戻り */
     --about-back-size:.64rem;
     --about-back-spacing:.08em;
-    --about-back-pad-x:clamp(6px, 2vw, 14px);
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
-    /* Modal本体 */
-    --modal-width:min(78vw, 760px);
-    --modal-video-max-h:58vh;
+    /* Modal
+       横幅だけ締める。高さは直接潰さない */
+    --modal-width:min(76vw, 720px);
 
-    /* Footer */
     --modal-footer-gap-top:4px;
     --modal-footer-pad-bottom:6px;
     --modal-credit-toggle-size:.74rem;
 
-    /* Credit */
-    --modal-credit-inner-width:min(90%, 520px);
+    /* Credit
+       中央にまとまる比率 */
+    --modal-credit-inner-width:min(90%, 460px);
     --modal-credit-inner-pad-top:16px;
     --modal-credit-inner-pad-x:18px;
     --modal-credit-inner-pad-bottom:14px;
@@ -1394,8 +1386,7 @@ body.view-right .inner-shell{
     --modal-credit-list-line:1.45;
     --modal-credit-list-gap:12px;
 
-    --modal-credit-row-gap:10px;
-
+    --modal-credit-row-gap:18px;
     --modal-credit-close-size:.70rem;
   }
 }
@@ -1440,14 +1431,13 @@ body.view-right .inner-shell{
     max-width:none;
   }
 
-  /* overlap方式は廃止 */
   .about-stack{
     margin-top:0;
     padding:
-    calc(var(--about-stack-pad) + 26px)
-    var(--about-stack-pad)
-    calc(var(--about-stack-pad) + 30px)
-    var(--about-stack-pad);
+      calc(var(--about-stack-pad) + 26px)
+      var(--about-stack-pad)
+      calc(var(--about-stack-pad) + 30px)
+      var(--about-stack-pad);
   }
 
   .about-stack > :first-child{
@@ -1507,15 +1497,17 @@ body.view-right .inner-shell{
   .contact-value a{
     line-height:1.65;
   }
+
+  /* Modal */
   .modal__content{
-    overflow:hidden;
     width:var(--modal-width);
     max-width:var(--modal-max-w);
+    overflow:hidden;
   }
+
   .modal__video-frame{
-    max-height:none;
-    height:56vh;
     aspect-ratio:16 / 9;
+    max-height:none;
   }
 
   .modal__credit{
@@ -1537,43 +1529,42 @@ body.view-right .inner-shell{
   }
 
   .modal__credit-list{
+    max-width:100%;
+    margin:0 auto var(--modal-credit-list-gap);
     overflow:visible;
   }
 
+  /* Credit layout
+     中央にまとまる2カラム */
   .credit-row{
-    display:flex;
-    align-items:flex-start;
-    gap:12px;
+    display:grid;
+    grid-template-columns:140px 1fr;
+    column-gap:var(--modal-credit-row-gap);
+    align-items:start;
   }
 
   .credit-role,
   .credit-name{
     font-size:var(--modal-credit-list-size);
     line-height:var(--modal-credit-list-line);
-    width:140px;
-    flex-shrink:0;
+    min-width:0;
   }
 
   .credit-role{
-    flex:1 1 58%;
-    min-width:0;
-    text-align:left;
+    text-align:right;
+    opacity:.7;
   }
 
   .credit-name{
-    flex:1 1 42%;
-    min-width:0;
-    text-align:right;
+    text-align:left;
     word-break:break-word;
   }
-
 }
 
 
 /* =========================================================
    11. 端末対策
    iPhone向け Gallery ロック簡易版
-   body fixed は使わない
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
   .edge-btn{
@@ -1596,17 +1587,18 @@ body.view-right .inner-shell{
     min-height:0;
     overflow:hidden;
   }
-    .gallery-item{
+
+  .gallery-item{
     transition:opacity .2s ease, background .2s ease;
   }
 
   .gallery-item.is-centered{
     background:rgba(255,255,255,.04);
   }
+
   .gallery-scroll{
     position:relative;
     z-index:1;
-
     flex:1;
     min-height:0;
 
@@ -1624,4 +1616,4 @@ body.view-right .inner-shell{
   }
 }
 
-/* 1 */
+/* 2 */
