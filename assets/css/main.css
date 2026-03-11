@@ -434,9 +434,8 @@ body.is-pull-hint-visible .pull-return{
   font-weight:300;
   letter-spacing:var(--pull-return-link-letter-spacing);
   text-transform:none;
-  color:rgba(255,255,255,.95);
+  color:rgb(255, 255, 255);
   text-decoration:none;
-  border-bottom:1px solid rgba(255,255,255,.22);
   padding-bottom:var(--pull-return-link-pad-bottom);
   opacity:var(--pull-return-link-opacity);
   transition:
