@@ -1438,10 +1438,10 @@ body.view-right .inner-shell{
 
 /* =========================================================
    11. 端末対策
-   操作とスクロールだけ
-   値は9、形は10、挙動はここ
+   iPhoneスクロール対策
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
+
   .edge-btn{
     z-index:20000;
   }
@@ -1454,31 +1454,43 @@ body.view-right .inner-shell{
     display:block;
   }
 
+  /* bodyスクロール止める */
   body.is-gallery-scroll-lock{
     position:fixed;
     inset:0;
     width:100%;
+    height:100%;
     overflow:hidden;
+    touch-action:none;
   }
 
-  body.is-gallery-scroll-lock .gallery-scroll{
-    overflow-y:auto;
-    overflow-x:hidden;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior-y:contain;
-    touch-action:pan-y;
+  /* galleryコンテナ */
+  .gallery-panel{
+    overflow:hidden;
+    min-height:0;
   }
 
+  /* galleryスクロール */
   .gallery-scroll{
     flex:1;
     min-height:0;
     height:100%;
-    overflow-y:auto;
+    overflow-y:scroll;
     overflow-x:hidden;
     -webkit-overflow-scrolling:touch;
     overscroll-behavior-y:contain;
     overscroll-behavior-x:none;
-    touch-action:pan-y;
+    touch-action:auto;
     pointer-events:auto;
   }
+
+  /* lock中でもgalleryはスクロール可能 */
+  body.is-gallery-scroll-lock .gallery-scroll{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    touch-action:auto;
+    pointer-events:auto;
+  }
+
 }
