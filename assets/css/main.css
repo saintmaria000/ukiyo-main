@@ -705,10 +705,6 @@ body.view-right .inner-shell{
   padding-right:var(--gallery-scroll-pad-right);
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.16) transparent;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
-  touch-action:pan-y;
-  pointer-events:auto;
 }
 
 .gallery-item{
