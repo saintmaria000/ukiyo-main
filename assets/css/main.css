@@ -954,7 +954,6 @@ body.view-right .inner-shell{
   justify-content:space-between;
   align-items:center;
   width:100%;
-  max-width:1480px;
   gap:var(--about-credit-name-gap);
   margin-left:0;
   margin-right:auto;
