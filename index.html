@@ -1,150 +1,491 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>ukiyo Film</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>ukiyo Film</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  <style>
+    :root{
+      --bg:#000;
+      --fg:rgba(255,255,255,.92);
+      --fg-soft:rgba(255,255,255,.68);
+      --fg-faint:rgba(255,255,255,.42);
+      --line:rgba(255,255,255,.14);
 
-  body, html {
-    width: 100%;
-    height: 100%;
-    background: #000;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
-  }
+      --logo-main-size:clamp(2.4rem, 7vw, 5.8rem);
+      --logo-sub-size:clamp(.78rem, 1.25vw, 1rem);
+      --copy-size:clamp(.72rem, 1vw, .9rem);
+      --lang-size:clamp(.78rem, 1.1vw, .92rem);
 
-  /* Canvasは背景として固定 */
-  #particle-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-  }
+      --safe-x:clamp(20px, 4vw, 40px);
+      --safe-y:clamp(22px, 4vh, 42px);
 
-  /* ロゴ（最前面） */
-  .logo {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    letter-spacing: 0.25em;
-    color: #fff;
-    z-index: 10;
-  }
+      --logo-gap:clamp(10px, 1.2vw, 16px);
+      --copy-gap:clamp(16px, 2vh, 24px);
+      --lang-gap:clamp(10px, 1.6vw, 18px);
 
-  .logo-main {
-    font-size: 2.4rem;
-    font-weight: 400;
-  }
+      --fade-duration:1400ms;
+      --blur-bg:14px;
+    }
 
-  .logo-sub {
-    font-size: 0.9rem;
-    margin-top: 0.4rem;
-  }
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
 
-  /* 言語選択 */
-  .lang-select {
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #fff;
-    z-index: 10;
-    letter-spacing: 0.3em;
-    font-size: 0.8rem;
-    opacity: 0.85;
-  }
+    html,
+    body{
+      width:100%;
+      min-height:100%;
+      background:var(--bg);
+      color:var(--fg);
+      font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
+      overflow:hidden;
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+    }
 
-  .lang-select a {
-    text-decoration: none;
-    color: #fff;
-    margin: 0 6px;
-  }
+    body{
+      position:relative;
+      isolation:isolate;
+    }
 
-  .lang-select a:hover {
-    opacity: 1;
-  }
-</style>
+    canvas,
+    .bg-glow,
+    .bg-vignette{
+      position:fixed;
+      inset:0;
+    }
 
+    #particle-canvas{
+      z-index:0;
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .bg-glow{
+      z-index:1;
+      pointer-events:none;
+      background:
+        radial-gradient(
+          circle at 50% 42%,
+          rgba(255,255,255,.07) 0%,
+          rgba(255,255,255,.025) 20%,
+          rgba(255,255,255,0) 52%
+        ),
+        radial-gradient(
+          circle at 50% 50%,
+          rgba(255,255,255,.03) 0%,
+          rgba(255,255,255,0) 58%
+        );
+      filter:blur(26px);
+      opacity:.9;
+    }
+
+    .bg-vignette{
+      z-index:2;
+      pointer-events:none;
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0,0,0,0) 42%,
+          rgba(0,0,0,.24) 72%,
+          rgba(0,0,0,.52) 100%
+        );
+    }
+
+    .entrance{
+      position:relative;
+      z-index:3;
+      min-height:100svh;
+      min-height:100vh;
+      display:grid;
+      grid-template-rows:1fr auto auto;
+      padding:var(--safe-y) var(--safe-x);
+    }
+
+    .brand-wrap{
+      align-self:center;
+      justify-self:center;
+      width:min(92vw, 900px);
+      text-align:center;
+      display:grid;
+      justify-items:center;
+      gap:var(--copy-gap);
+      opacity:0;
+      transform:translateY(10px);
+      animation:fadeUp var(--fade-duration) ease forwards;
+    }
+
+    .brand{
+      display:grid;
+      justify-items:center;
+      gap:var(--logo-gap);
+    }
+
+    .logo-main{
+      font-size:var(--logo-main-size);
+      font-weight:300;
+      line-height:.92;
+      letter-spacing:.28em;
+      text-transform:lowercase;
+      color:var(--fg);
+      padding-left:.28em;
+      text-wrap:balance;
+    }
+
+    .logo-sub{
+      font-size:var(--logo-sub-size);
+      line-height:1.2;
+      letter-spacing:.42em;
+      text-transform:uppercase;
+      color:var(--fg-soft);
+      padding-left:.42em;
+    }
+
+    .brand-copy{
+      max-width:36rem;
+      font-size:var(--copy-size);
+      line-height:1.8;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--fg-faint);
+      text-wrap:balance;
+    }
+
+    .lang-nav{
+      align-self:end;
+      justify-self:center;
+      width:min(92vw, 520px);
+      opacity:0;
+      transform:translateY(12px);
+      animation:fadeUp var(--fade-duration) ease .22s forwards;
+    }
+
+    .lang-list{
+      list-style:none;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:var(--lang-gap);
+      padding:0;
+      margin:0;
+    }
+
+    .lang-list li{
+      display:flex;
+      align-items:center;
+    }
+
+    .lang-list li + li::before{
+      content:"";
+      display:block;
+      width:22px;
+      height:1px;
+      margin-right:var(--lang-gap);
+      background:var(--line);
+    }
+
+    .lang-link{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:60px;
+      min-height:42px;
+      padding:10px 12px;
+      color:var(--fg-soft);
+      font-size:var(--lang-size);
+      line-height:1;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+      text-decoration:none;
+      transition:
+        color .28s ease,
+        opacity .28s ease,
+        transform .28s ease;
+      outline:none;
+    }
+
+    .lang-link::after{
+      content:"";
+      position:absolute;
+      left:12px;
+      right:12px;
+      bottom:8px;
+      height:1px;
+      background:rgba(255,255,255,.55);
+      transform:scaleX(0);
+      transform-origin:center;
+      transition:transform .28s ease;
+    }
+
+    .lang-link:hover,
+    .lang-link:focus-visible{
+      color:var(--fg);
+      transform:translateY(-1px);
+    }
+
+    .lang-link:hover::after,
+    .lang-link:focus-visible::after{
+      transform:scaleX(1);
+    }
+
+    .footer-note{
+      justify-self:center;
+      margin-top:18px;
+      font-size:.68rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.26);
+      opacity:0;
+      animation:fadeIn 1800ms ease .65s forwards;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    @keyframes fadeUp{
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
+
+    @keyframes fadeIn{
+      to{
+        opacity:1;
+      }
+    }
+
+    @media (max-width: 640px){
+      .entrance{
+        grid-template-rows:1fr auto auto;
+      }
+
+      .logo-main{
+        letter-spacing:.22em;
+        padding-left:.22em;
+      }
+
+      .logo-sub{
+        letter-spacing:.34em;
+        padding-left:.34em;
+      }
+
+      .brand-copy{
+        width:min(88vw, 28rem);
+        letter-spacing:.13em;
+        line-height:1.7;
+      }
+
+      .lang-list li + li::before{
+        width:16px;
+      }
+
+      .lang-link{
+        min-width:56px;
+        min-height:40px;
+        padding:10px 10px;
+      }
+    }
+
+    @media (max-height: 560px){
+      .entrance{
+        padding-top:18px;
+        padding-bottom:18px;
+      }
+
+      .brand-wrap{
+        gap:12px;
+      }
+
+      .brand{
+        gap:8px;
+      }
+
+      .footer-note{
+        margin-top:10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .brand-wrap,
+      .lang-nav,
+      .footer-note{
+        animation:none;
+        opacity:1;
+        transform:none;
+      }
+
+      .lang-link{
+        transition:none;
+      }
+    }
+  </style>
 </head>
 <body>
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+  <div class="bg-glow" aria-hidden="true"></div>
+  <div class="bg-vignette" aria-hidden="true"></div>
 
-<canvas id="particle-canvas"></canvas>
+  <main class="entrance">
+    <section class="brand-wrap" aria-label="Site introduction">
+      <div class="brand">
+        <h1 class="logo-main">ukiyo</h1>
+        <p class="logo-sub">Film</p>
+      </div>
 
-<!-- ロゴ -->
-<div class="logo">
-  <div class="logo-main">ukiyo</div>
-  <div class="logo-sub">Film</div>
-</div>
+      <p class="brand-copy">
+        Moving images, quiet tension, and fleeting moments.
+      </p>
+    </section>
 
-<!-- 言語選択 -->
-<div class="lang-select">
-  <a href="ja/index.html">JA</a> / <a href="en/index.html">EN</a>
-</div>
+    <nav class="lang-nav" aria-label="Language selection">
+      <ul class="lang-list">
+        <li><a class="lang-link" href="ja/index.html" lang="ja">JA</a></li>
+        <li><a class="lang-link" href="en/index.html" lang="en">EN</a></li>
+      </ul>
+    </nav>
 
-<script>
-/* 粒子パラメータ */
-const canvas = document.getElementById("particle-canvas");
-const ctx = canvas.getContext("2d");
+    <div class="footer-note">Select language to enter</div>
+  </main>
 
-let particles = [];
-const NUM = 80;                // 粒子数（重くしたくないので少なめ）
-const SPEED = 0.3;             // 移動速度（遅いほど“宇宙感”）
-const MAX_SIZE = 2;            // 粒子サイズ
-const COLOR = "rgba(255,255,255,0.6)";  // 白に近い光
+  <script>
+    (() => {
+      const canvas = document.getElementById("particle-canvas");
+      const ctx = canvas.getContext("2d");
 
-/* Canvasリサイズ */
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resize);
-resize();
+      const state = {
+        particles: [],
+        animationId: null,
+        dpr: Math.min(window.devicePixelRatio || 1, 2),
+        width: 0,
+        height: 0,
+        reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      };
 
-/* 粒子生成 */
-function initParticles() {
-  particles = [];
-  for (let i = 0; i < NUM; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * MAX_SIZE + 0.2,
-      vx: (Math.random() - 0.5) * SPEED,
-      vy: (Math.random() - 0.5) * SPEED
-    });
-  }
-}
-initParticles();
+      const CONFIG = {
+        density: 0.000045,
+        minSize: 0.5,
+        maxSize: 2.2,
+        baseSpeed: 0.08,
+        glowAlpha: 0.6,
+        linkDistance: 120,
+        linkAlpha: 0.08
+      };
 
-/* 描画ループ */
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+      function setCanvasSize() {
+        state.width = window.innerWidth;
+        state.height = window.innerHeight;
+        state.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  particles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
+        canvas.width = Math.floor(state.width * state.dpr);
+        canvas.height = Math.floor(state.height * state.dpr);
+        canvas.style.width = state.width + "px";
+        canvas.style.height = state.height + "px";
 
-    // 端で反転
-    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+      }
 
-    ctx.beginPath();
-    ctx.fillStyle = COLOR;
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fill();
-  });
+      function getParticleCount() {
+        const area = state.width * state.height;
+        const count = Math.round(area * CONFIG.density);
+        return Math.max(28, Math.min(count, 110));
+      }
 
-  requestAnimationFrame(animate);
-}
-animate();
+      function createParticle() {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = CONFIG.baseSpeed * (0.4 + Math.random() * 1.2);
 
-</script>
+        return {
+          x: Math.random() * state.width,
+          y: Math.random() * state.height,
+          r: CONFIG.minSize + Math.random() * (CONFIG.maxSize - CONFIG.minSize),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          a: 0.18 + Math.random() * 0.5
+        };
+      }
 
+      function buildParticles() {
+        const count = state.reducedMotion ? Math.max(16, Math.floor(getParticleCount() * 0.35)) : getParticleCount();
+        state.particles = Array.from({ length: count }, createParticle);
+      }
+
+      function wrapParticle(p) {
+        const pad = 20;
+        if (p.x < -pad) p.x = state.width + pad;
+        if (p.x > state.width + pad) p.x = -pad;
+        if (p.y < -pad) p.y = state.height + pad;
+        if (p.y > state.height + pad) p.y = -pad;
+      }
+
+      function drawParticle(p) {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${p.a})`;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function drawLinks() {
+        if (state.reducedMotion) return;
+
+        for (let i = 0; i < state.particles.length; i++) {
+          const a = state.particles[i];
+
+          for (let j = i + 1; j < state.particles.length; j++) {
+            const b = state.particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.hypot(dx, dy);
+
+            if (dist < CONFIG.linkDistance) {
+              const alpha = (1 - dist / CONFIG.linkDistance) * CONFIG.linkAlpha;
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+              ctx.lineWidth = 1;
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, state.width, state.height);
+
+        for (const p of state.particles) {
+          if (!state.reducedMotion) {
+            p.x += p.vx;
+            p.y += p.vy;
+            wrapParticle(p);
+          }
+          drawParticle(p);
+        }
+
+        drawLinks();
+        state.animationId = requestAnimationFrame(render);
+      }
+
+      function rebuild() {
+        cancelAnimationFrame(state.animationId);
+        setCanvasSize();
+        buildParticles();
+        render();
+      }
+
+      let resizeTimer = null;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(rebuild, 120);
+      });
+
+      rebuild();
+    })();
+  </script>
 </body>
 </html>
