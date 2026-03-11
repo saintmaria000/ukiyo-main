@@ -240,20 +240,21 @@ a{
   --contact-value-size:1.14rem;
 
   /* -----------------------------------------
-     3-11. About
-     独立セクション
+   3-11. About
   ----------------------------------------- */
 
   /* 外側 */
   --about-content-max-w:2000px;
-  --about-content-pad-top:120px;
-  --about-content-pad-right:6vw;
+  --about-content-pad-top:0px;
+  --about-content-pad-x:6vw;
   --about-content-pad-bottom:180px;
-  --about-content-pad-left:6vw;
 
-  /* 導入 */
-  --about-hero-min-h:86vh;
+  /* hero */
+  --about-hero-min-h:100svh;
+  --about-hero-pad-top:120px;
+  --about-hero-pad-bottom:110px;
   --about-hero-gap:clamp(14px, 1.6vw, 24px);
+  --about-hero-max-w:1280px;
 
   --about-logo-main-size:clamp(3.2rem, 5vw, 6.2rem);
   --about-logo-sub-size:clamp(1rem, 1.3vw, 1.24rem);
@@ -266,10 +267,11 @@ a{
   --about-lead-spacing:.05em;
   --about-lead-margin-top:20px;
 
-  /* 本文 */
-  --about-stack-gap:clamp(96px, 10vw, 210px);
+  /* stack */
+  --about-stack-gap:clamp(120px, 11vw, 220px);
   --about-stack-pad:clamp(22px, 3vw, 54px);
-  --about-stack-overlap:56px;
+  --about-stack-line-protrusion:56px;
+  --about-stack-max-w:1320px;
 
   --about-heading-size:1.7rem;
   --about-heading-spacing:.20em;
@@ -281,7 +283,7 @@ a{
   --about-body-max-w:700px;
 
   /* 2カラム */
-  --about-split-gap:clamp(28px, 4vw, 56px);
+  --about-split-gap:clamp(36px, 4vw, 56px);
   --about-split-pad-top:clamp(28px, 3vw, 56px);
   --about-split-pad-x:clamp(22px, 3vw, 54px);
   --about-split-pad-bottom:clamp(72px, 10vw, 180px);
@@ -296,7 +298,7 @@ a{
   --about-col-item-line:2;
   --about-col-item-spacing:.05em;
 
-  /* クレジット */
+  /* credit */
   --about-credit-margin-top:0px;
   --about-credit-title-size:1rem;
   --about-credit-title-spacing:.18em;
@@ -311,7 +313,6 @@ a{
   /* 戻り */
   --about-back-size:.95rem;
   --about-back-spacing:.16em;
-  --about-back-pad-x:clamp(12px, 3vw, 48px);
   --about-back-margin-top:clamp(64px, 10vw, 180px);
 
   /* -----------------------------------------
@@ -786,16 +787,15 @@ body.view-right .inner-shell{
 
 /* =========================================================
    6. About
-   Aboutだけ独立した縦スクロール
 ========================================================= */
 
 /* -----------------------------------------
    6-1. 全体
-  ----------------------------------------- */
+----------------------------------------- */
 #about{
-  border-top:2px solid #fff;
   position:relative;
   overflow:hidden;
+  border-top:2px solid #fff;
 }
 
 #about .about-bg-video{
@@ -819,25 +819,28 @@ body.view-right .inner-shell{
   position:relative;
   z-index:2;
   max-width:var(--about-content-max-w);
+  margin:0 auto;
   padding:
     var(--about-content-pad-top)
-    var(--about-content-pad-right)
-    var(--about-content-pad-bottom)
-    var(--about-content-pad-left);
-  margin:0 auto;
+    var(--about-content-pad-x)
+    var(--about-content-pad-bottom);
 }
 
 /* -----------------------------------------
-   6-2. 導入
-  ----------------------------------------- */
+   6-2. hero
+   1画面使用 / 中身は縦中央 / 横は左寄せ
+----------------------------------------- */
 .about-hero{
   min-height:var(--about-hero-min-h);
+  width:100%;
+  max-width:var(--about-hero-max-w);
   display:flex;
   flex-direction:column;
   justify-content:center;
+  align-items:flex-start;
   gap:var(--about-hero-gap);
-  width:100%;
-  max-width:1280px;
+  padding-top:var(--about-hero-pad-top);
+  padding-bottom:var(--about-hero-pad-bottom);
 }
 
 .about-logo-text{
@@ -866,22 +869,32 @@ body.view-right .inner-shell{
 }
 
 /* -----------------------------------------
-   6-3. 本文
-  ----------------------------------------- */
+   6-3. stack
+   本体は通常位置
+   はみ出しラインだけ疑似要素で作る
+----------------------------------------- */
 .about-stack{
-  border-left:1px solid #fff;
-  display:grid;
-  gap:var(--about-stack-gap);
-  padding:var(--about-stack-pad);
+  position:relative;
   width:100%;
-  max-width:1320px;
-  margin-top:calc(var(--about-stack-overlap) * -1);
+  max-width:var(--about-stack-max-w);
+  margin-top:0;
   margin-left:0;
   margin-right:auto;
+  padding:var(--about-stack-pad);
+  display:grid;
+  gap:var(--about-stack-gap);
+  border-left:1px solid #fff;
 }
 
-.about-stack > :first-child{
-  margin-top:var(--about-stack-overlap);
+.about-stack::before{
+  content:"";
+  position:absolute;
+  left:-1px;
+  bottom:100%;
+  width:1px;
+  height:var(--about-stack-line-protrusion);
+  background:#fff;
+  pointer-events:none;
 }
 
 .about-item h3{
@@ -900,7 +913,7 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    6-4. 2カラム
-  ----------------------------------------- */
+----------------------------------------- */
 .about-split{
   border-left:1px solid #fff;
   display:grid;
@@ -941,7 +954,7 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    6-5. クレジット
-  ----------------------------------------- */
+----------------------------------------- */
 .about-credit{
   margin-top:var(--about-credit-margin-top);
 }
@@ -974,11 +987,9 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    6-6. 戻り
-  ----------------------------------------- */
+----------------------------------------- */
 .about-actions{
   width:100%;
-  max-width:none;
-  padding:0;
   margin-top:var(--about-back-margin-top);
   font-size:var(--about-back-size);
   letter-spacing:var(--about-back-spacing);
@@ -996,7 +1007,6 @@ body.view-right .inner-shell{
 .about-actions a:hover{
   filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
-
 
 /* =========================================================
    7. Modal
@@ -1239,7 +1249,7 @@ body.view-right .inner-shell{
 /* -----------------------------------------
    9-2. タッチ横向き
    スマホ横向き + iPad横向きもここに入る
-  ----------------------------------------- */
+----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
     /* ステージ共通 */
@@ -1268,12 +1278,16 @@ body.view-right .inner-shell{
     --contact-value-size:1.34rem;
 
     /* About 導入 */
-    --about-content-pad-top:64px;
+    --about-content-pad-top:0px;
     --about-content-pad-right:7.5vw;
     --about-content-pad-bottom:96px;
     --about-content-pad-left:7.5vw;
 
+    --about-hero-min-h:100svh;
+    --about-hero-pad-top:64px;
+    --about-hero-pad-bottom:54px;
     --about-hero-gap:30px;
+    --about-hero-max-w:720px;
 
     --about-logo-main-size:clamp(1.7rem, 3vw, 3.2rem);
     --about-logo-sub-size:.74rem;
@@ -1285,9 +1299,9 @@ body.view-right .inner-shell{
     --about-lead-spacing:.02em;
 
     /* About 本文 */
-    --about-stack-gap:clamp(34px, 4vw, 58px);
+    --about-stack-gap:clamp(44px, 4vw, 68px);
     --about-stack-pad:clamp(20px, 3vw, 34px);
-    --about-stack-overlap:48px;
+    --about-stack-line-protrusion:48px;
 
     --about-heading-size:.96rem;
     --about-heading-spacing:.10em;
@@ -1349,7 +1363,7 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    10-1. 狭い幅
-  ----------------------------------------- */
+----------------------------------------- */
 @media (max-width:900px){
   .about-split{
     grid-template-columns:1fr;
@@ -1358,20 +1372,22 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    10-2. タッチ横向き
-   Contactはここで margin-top を戻す
-  ----------------------------------------- */
+----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   #about .about-content{
     max-width:none;
   }
 
   .about-hero{
-    min-height:calc(100dvh - var(--about-stack-overlap));
     width:min(82vw, 720px);
+    max-width:none;
+    min-height:var(--about-hero-min-h);
     display:flex;
     flex-direction:column;
     justify-content:center;
-    padding-bottom:22px;
+    align-items:flex-start;
+    padding-top:var(--about-hero-pad-top);
+    padding-bottom:var(--about-hero-pad-bottom);
   }
 
   .about-lead{
@@ -1379,18 +1395,16 @@ body.view-right .inner-shell{
     max-width:none;
   }
 
+  /* overlap方式は廃止 */
   .about-stack{
-    margin-top:calc(var(--about-stack-overlap) * -1);
+    margin-top:0;
   }
 
   .about-stack > :first-child{
-    margin-top:var(--about-stack-overlap);
+    margin-top:0;
   }
 
-  .about-item p{
-    max-width:44ch;
-  }
-
+  .about-item p,
   .about-col li{
     max-width:44ch;
   }
@@ -1452,7 +1466,6 @@ body.view-right .inner-shell{
    body fixed は使わない
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
-
   .edge-btn{
     z-index:20000;
   }
@@ -1466,7 +1479,8 @@ body.view-right .inner-shell{
   }
 
   body.is-gallery-scroll-lock{
-    overflow:hidden;
+    overflow-x:hidden;
+    overflow-y:auto;
   }
 
   .gallery-panel{
@@ -1476,6 +1490,9 @@ body.view-right .inner-shell{
 
   .gallery-scroll{
     min-height:0;
+    height:100%;
     -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
   }
 }
