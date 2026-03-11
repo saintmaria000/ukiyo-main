@@ -1542,15 +1542,16 @@ body.view-right .inner-shell{
 
   .credit-row{
     display:flex;
-    justify-content:space-between;
     align-items:flex-start;
-    gap:var(--modal-credit-row-gap);
+    gap:12px;
   }
 
   .credit-role,
   .credit-name{
     font-size:var(--modal-credit-list-size);
     line-height:var(--modal-credit-list-line);
+    width:140px;
+    flex-shrink:0;
   }
 
   .credit-role{
