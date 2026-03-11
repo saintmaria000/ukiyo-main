@@ -1305,7 +1305,7 @@ body.view-right .inner-shell{
     /* About 本文 */
     --about-stack-gap:clamp(44px, 4vw, 68px);
     --about-stack-pad:clamp(20px, 3vw, 34px);
-    --about-stack-line-protrusion:52px;
+    --about-stack-line-protrusion:48px;
 
     --about-heading-size:.96rem;
     --about-heading-spacing:.10em;
