@@ -1376,6 +1376,7 @@ a{
     /* Credit
       PC版の思想を保ちつつ、スマホでは中央箱を締める */
     --modal-credit-inner-width:min(92%, 520px);
+    --modal-credit-inner-max-w:270px;
     --modal-credit-inner-pad-top:14px;
     --modal-credit-inner-pad-x:16px;
     --modal-credit-inner-pad-bottom:12px;
