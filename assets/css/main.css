@@ -701,13 +701,18 @@ body.view-right .inner-shell{
 .gallery-scroll{
   flex:1;
   min-height:0;
+  width:100%;
   overflow-y:auto;
   padding-right:var(--gallery-scroll-pad-right);
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.16) transparent;
+  position:relative;
+  z-index:2;
 }
 
+
 .gallery-item{
+  display:block;
   width:100%;
   text-align:left;
   background:transparent;
@@ -718,6 +723,11 @@ body.view-right .inner-shell{
   letter-spacing:var(--gallery-item-spacing);
   cursor:pointer;
   transition:color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
+  position:relative;
+  z-index:2;
+}
+.gallery-item > *{
+  pointer-events:none;
 }
 
 .gallery-item:first-child{
@@ -1467,13 +1477,14 @@ body.view-right .inner-shell{
   .gallery-scroll{
     flex:1;
     min-height:0;
+    width:100%;
     height:100%;
     overflow-y:auto;
     overflow-x:hidden;
     -webkit-overflow-scrolling:touch;
     position:relative;
-    z-index:1;
+    z-index:2;
     -webkit-transform:translateZ(0);
     transform:translateZ(0);
-  }
+}
 }
