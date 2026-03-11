@@ -270,7 +270,7 @@ a{
   /* stack */
   --about-stack-gap:clamp(120px, 11vw, 220px);
   --about-stack-pad:clamp(22px, 3vw, 54px);
-  --about-stack-line-protrusion:56px;
+  --about-stack-line-protrusion:96px;
   --about-stack-max-w:1320px;
 
   --about-heading-size:1.7rem;
@@ -1301,7 +1301,7 @@ body.view-right .inner-shell{
     /* About 本文 */
     --about-stack-gap:clamp(44px, 4vw, 68px);
     --about-stack-pad:clamp(20px, 3vw, 34px);
-    --about-stack-line-protrusion:48px;
+    --about-stack-line-protrusion:68px;
 
     --about-heading-size:.96rem;
     --about-heading-spacing:.10em;
