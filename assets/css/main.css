@@ -420,7 +420,7 @@ a{
     left:50%;
     transform:translateX(-50%) translateY(var(--pull-return-offset-y));
     opacity:0;
-    pointer-events:none;
+    pointer-events:auto;
     z-index:var(--z-pull-return);
     transition:opacity .28s ease, transform .28s ease;
   }
@@ -444,6 +444,7 @@ a{
       opacity .22s ease,
       border-color .22s ease,
       transform .22s ease;
+    
   }
 
   .pull-return-link:hover{
