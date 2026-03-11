@@ -855,23 +855,12 @@
     tick();
   }
 
-function getDefaultHref() {
-  const link =
-    document.querySelector(".lang-link.is-active") ||
-    document.querySelector(".lang-link");
-
-  return link ? link.getAttribute("href") : null;
-}
+const ENTER_HREF = "./ja/index.html";
 
 function handleScreenTrigger(e) {
   if (state !== "idle") return;
-
-  const href = getDefaultHref();
-  if (!href) return;
-
   if (e && e.preventDefault) e.preventDefault();
-
-  startTransition(href);
+  startTransition(ENTER_HREF);
 }
 window.addEventListener("pointerdown", handleScreenTrigger, { passive:false });
 
