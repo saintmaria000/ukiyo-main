@@ -95,60 +95,67 @@
     if (finalLogoEl) return finalLogoEl;
 
     const style = document.createElement("style");
-    style.textContent = `
-      .js-final-logo{
-        position:fixed;
-        inset:0;
-        z-index:12;
-        display:grid;
-        place-items:center;
-        text-align:center;
-        pointer-events:none;
-        opacity:0;
-      }
-      .js-final-logo__inner{
-        transform:translateY(14px) scale(.94);
-        opacity:0;
-      }
-      .js-final-logo.is-visible{
-        opacity:1;
-      }
-      .js-final-logo.is-visible .js-final-logo__inner{
-        animation:jsFinalLogoBounce 820ms cubic-bezier(.2,.9,.2,1) forwards;
-      }
-      .js-final-logo__main{
-        color:rgba(255,255,255,.95);
-        font-size:clamp(2.8rem, 10vw, 7rem);
-        line-height:1;
-        letter-spacing:.16em;
-        white-space:nowrap;
-      }
-      .js-final-logo__sub{
-        margin-top:14px;
-        color:rgba(255,255,255,.36);
-        font-size:clamp(.72rem, 1.35vw, 1rem);
-        letter-spacing:.30em;
-        text-transform:uppercase;
-      }
-      @keyframes jsFinalLogoBounce{
-        0%{
-          opacity:0;
-          transform:translateY(16px) scale(.92);
-        }
-        55%{
-          opacity:1;
-          transform:translateY(-8px) scale(1.04);
-        }
-        75%{
-          opacity:1;
-          transform:translateY(3px) scale(.992);
-        }
-        100%{
-          opacity:1;
-          transform:translateY(0) scale(1);
-        }
-      }
-    `;
+style = document.createElement("style");
+style.textContent = `
+  .js-final-logo{
+    position:fixed;
+    inset:0;
+    z-index:12;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    pointer-events:none;
+    opacity:0;
+  }
+
+  .js-final-logo__inner{
+    transform:translateY(-34px) scale(.985);
+    opacity:0;
+  }
+
+  .js-final-logo.is-visible{
+    opacity:1;
+  }
+
+  .js-final-logo.is-visible .js-final-logo__inner{
+    animation:jsFinalLogoDrop 1200ms cubic-bezier(.18,.82,.22,1) forwards;
+  }
+
+  .js-final-logo__main{
+    color:rgba(255,255,255,.95);
+    font-size:clamp(2.8rem, 10vw, 7rem);
+    line-height:1;
+    letter-spacing:.16em;
+    white-space:nowrap;
+  }
+
+  .js-final-logo__sub{
+    margin-top:14px;
+    color:rgba(255,255,255,.36);
+    font-size:clamp(.72rem, 1.35vw, 1rem);
+    letter-spacing:.30em;
+    text-transform:uppercase;
+  }
+
+  @keyframes jsFinalLogoDrop{
+    0%{
+      opacity:0;
+      transform:translateY(-34px) scale(.985);
+    }
+    55%{
+      opacity:1;
+      transform:translateY(4px) scale(1);
+    }
+    72%{
+      opacity:1;
+      transform:translateY(-2px) scale(1);
+    }
+    100%{
+      opacity:1;
+      transform:translateY(0) scale(1);
+    }
+  }
+`;
     document.head.appendChild(style);
 
     finalLogoEl = document.createElement("div");
@@ -782,4 +789,4 @@
   tick();
 })();
 
-// a
+// 
