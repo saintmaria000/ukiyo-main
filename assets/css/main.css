@@ -1483,9 +1483,8 @@ body.view-right .inner-shell{
     display:block;
   }
 
-  body.is-gallery-scroll-lock{
-    overflow-x:hidden;
-    overflow-y:auto;
+  body.is-stage-scroll-lock{
+    overflow:hidden;
   }
 
   .gallery-panel{

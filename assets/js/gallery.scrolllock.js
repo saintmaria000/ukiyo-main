@@ -2,30 +2,32 @@
   const body = document.body;
   const mq = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
-  function isGalleryView() {
-    return body.classList.contains('view-left');
+  function isSideView() {
+    return (
+      body.classList.contains('view-left') ||
+      body.classList.contains('view-right')
+    );
   }
 
   function shouldLockPageScroll() {
-    return mq.matches && isGalleryView();
+    return mq.matches && isSideView();
   }
 
-  function updateGalleryScrollLock() {
-    body.classList.toggle('is-gallery-scroll-lock', shouldLockPageScroll());
+  function updateStageScrollLock() {
+    body.classList.toggle('is-stage-scroll-lock', shouldLockPageScroll());
   }
 
-  window.addEventListener('resize', updateGalleryScrollLock);
-  window.addEventListener('orientationchange', updateGalleryScrollLock);
+  window.addEventListener('resize', updateStageScrollLock);
+  window.addEventListener('orientationchange', updateStageScrollLock);
 
   if (mq.addEventListener) {
-    mq.addEventListener('change', updateGalleryScrollLock);
+    mq.addEventListener('change', updateStageScrollLock);
   } else if (mq.addListener) {
-    mq.addListener(updateGalleryScrollLock);
+    mq.addListener(updateStageScrollLock);
   }
 
-  // view切替に追従
   const observer = new MutationObserver(() => {
-    updateGalleryScrollLock();
+    updateStageScrollLock();
   });
 
   observer.observe(body, {
@@ -33,5 +35,5 @@
     attributeFilter: ['class']
   });
 
-  updateGalleryScrollLock();
+  updateStageScrollLock();
 })();
