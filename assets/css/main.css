@@ -214,7 +214,7 @@ a{
   --gallery-panel-max-h:760px;
   --gallery-panel-min-h:320px;
   --gallery-panel-vh-offset:180px;
-  --gallery-panel-fixed-h:auto; /* 通常時はauto、横向き端末だけ固定高にする */
+  --gallery-panel-fixed-h:auto;
   --gallery-scroll-pad-right:8px;
 
   --gallery-item-size:.96rem;
@@ -269,7 +269,7 @@ a{
   /* 本文 */
   --about-stack-gap:clamp(96px, 10vw, 210px);
   --about-stack-pad:clamp(22px, 3vw, 54px);
-  --about-stack-overlap:56px; /* 余白ではなくheroとの食い込み量 */
+  --about-stack-overlap:56px;
 
   --about-heading-size:1.7rem;
   --about-heading-spacing:.20em;
@@ -664,14 +664,14 @@ body.view-right .inner-shell{
   ----------------------------------------- */
 .gallery-panel{
   position:relative;
-  margin-top:var(--gallery-panel-gap-top);
-  max-width:var(--gallery-w);
   width:100%;
+  max-width:var(--gallery-w);
+  min-width:0;
+  margin-top:var(--gallery-panel-gap-top);
   height:min(var(--gallery-panel-max-h), calc(100vh - var(--gallery-panel-vh-offset)));
   min-height:var(--gallery-panel-min-h);
   display:flex;
   flex-direction:column;
-  min-width:0;
 }
 
 .gallery-preview{
@@ -691,6 +691,7 @@ body.view-right .inner-shell{
   transform:scale(1.04);
   transition:opacity .45s ease, transform .8s ease;
   filter:brightness(.75);
+  pointer-events:none;
 }
 
 .gallery-preview.is-visible .gallery-preview-img{
@@ -699,33 +700,34 @@ body.view-right .inner-shell{
 }
 
 .gallery-scroll{
+  position:relative;
+  z-index:1;
   flex:1;
   min-height:0;
   width:100%;
   overflow-y:auto;
-  padding-right:var(--gallery-scroll-pad-right);
+  overflow-x:hidden;
+  padding-right:0;
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.16) transparent;
-  position:relative;
-  z-index:2;
 }
-
 
 .gallery-item{
   display:block;
+  position:relative;
+  z-index:1;
   width:100%;
   text-align:left;
   background:transparent;
   border:none;
-  padding:var(--gallery-item-pad-y) var(--gallery-item-pad-x);
+  padding:var(--gallery-item-pad-y) 0;
   border-bottom:1px solid var(--line-soft);
   font-size:var(--gallery-item-size);
   letter-spacing:var(--gallery-item-spacing);
   cursor:pointer;
   transition:color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
-  position:relative;
-  z-index:2;
 }
+
 .gallery-item > *{
   pointer-events:none;
 }
@@ -1403,13 +1405,15 @@ body.view-right .inner-shell{
   .gallery-panel{
     position:relative;
     width:var(--gallery-w);
-    max-width:none;
+    max-width:var(--gallery-w);
+    min-width:var(--gallery-w);
     height:var(--gallery-panel-fixed-h);
     min-height:var(--gallery-panel-fixed-h);
     margin-top:var(--gallery-panel-gap-top);
     display:flex;
     flex-direction:column;
     overflow:hidden;
+    align-self:flex-start;
   }
 
   .gallery-item{
@@ -1461,30 +1465,17 @@ body.view-right .inner-shell{
     display:block;
   }
 
-  /* ページ全体は止めるが fixed にはしない */
   body.is-gallery-scroll-lock{
     overflow:hidden;
   }
 
   .gallery-panel{
-    overflow:hidden;
     min-height:0;
-    position:relative;
-    -webkit-transform:translateZ(0);
-    transform:translateZ(0);
+    overflow:hidden;
   }
 
   .gallery-scroll{
-    flex:1;
     min-height:0;
-    width:100%;
-    height:100%;
-    overflow-y:auto;
-    overflow-x:hidden;
     -webkit-overflow-scrolling:touch;
-    position:relative;
-    z-index:2;
-    -webkit-transform:translateZ(0);
-    transform:translateZ(0);
-}
+  }
 }
