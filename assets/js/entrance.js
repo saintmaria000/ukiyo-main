@@ -29,17 +29,19 @@
     orbMin: 110,
     orbMax: 250,
 
-    idleOutlineAlpha: 0.038,
-    idleCoreAlpha: 0.012,
+    idleOutlineAlpha: 0.042,
+    idleCoreAlpha: 0.014,
 
-    wave1Amp: 0.020,
-    wave2Amp: 0.012,
-    wave3Amp: 0.008,
-    wave4Amp: 0.005,
+    // 水滴の揺らめきを少し強める
+    wave1Amp: 0.034,
+    wave2Amp: 0.020,
+    wave3Amp: 0.013,
+    wave4Amp: 0.008,
+    idlePulseAmp: 0.020,
 
     shatterDuration: 2100,
-    convergeDuration: 1450,
-    bloomDuration: 500,
+    convergeDuration: 1650,
+    bloomDuration: 820,
     logoHoldDuration: 1200,
 
     shardCountLarge: 95,
@@ -81,6 +83,16 @@
     return t * t * t;
   }
 
+  function easeOutQuart(t) {
+    return 1 - Math.pow(1 - t, 4);
+  }
+
+  function easeInOutCubic(t) {
+    return t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
   function easeOutBack(t) {
     const c1 = 1.70158;
     const c3 = c1 + 1;
@@ -95,67 +107,66 @@
     if (finalLogoEl) return finalLogoEl;
 
     const style = document.createElement("style");
-style = document.createElement("style");
-style.textContent = `
-  .js-final-logo{
-    position:fixed;
-    inset:0;
-    z-index:12;
-    display:grid;
-    place-items:center;
-    text-align:center;
-    pointer-events:none;
-    opacity:0;
-  }
+    style.textContent = `
+      .js-final-logo{
+        position:fixed;
+        inset:0;
+        z-index:12;
+        display:grid;
+        place-items:center;
+        text-align:center;
+        pointer-events:none;
+        opacity:0;
+      }
 
-  .js-final-logo__inner{
-    transform:translateY(-34px) scale(.985);
-    opacity:0;
-  }
+      .js-final-logo__inner{
+        transform:translateY(-42px) scale(.988);
+        opacity:0;
+      }
 
-  .js-final-logo.is-visible{
-    opacity:1;
-  }
+      .js-final-logo.is-visible{
+        opacity:1;
+      }
 
-  .js-final-logo.is-visible .js-final-logo__inner{
-    animation:jsFinalLogoDrop 1200ms cubic-bezier(.18,.82,.22,1) forwards;
-  }
+      .js-final-logo.is-visible .js-final-logo__inner{
+        animation:jsFinalLogoDrop 1180ms cubic-bezier(.19,.82,.22,1) forwards;
+      }
 
-  .js-final-logo__main{
-    color:rgba(255,255,255,.95);
-    font-size:clamp(2.8rem, 10vw, 7rem);
-    line-height:1;
-    letter-spacing:.16em;
-    white-space:nowrap;
-  }
+      .js-final-logo__main{
+        color:rgba(255,255,255,.95);
+        font-size:clamp(2.8rem, 10vw, 7rem);
+        line-height:1;
+        letter-spacing:.16em;
+        white-space:nowrap;
+      }
 
-  .js-final-logo__sub{
-    margin-top:14px;
-    color:rgba(255,255,255,.36);
-    font-size:clamp(.72rem, 1.35vw, 1rem);
-    letter-spacing:.30em;
-    text-transform:uppercase;
-  }
+      .js-final-logo__sub{
+        margin-top:14px;
+        color:rgba(255,255,255,.36);
+        font-size:clamp(.72rem, 1.35vw, 1rem);
+        letter-spacing:.30em;
+        text-transform:uppercase;
+      }
 
-  @keyframes jsFinalLogoDrop{
-    0%{
-      opacity:0;
-      transform:translateY(-34px) scale(.985);
-    }
-    55%{
-      opacity:1;
-      transform:translateY(4px) scale(1);
-    }
-    72%{
-      opacity:1;
-      transform:translateY(-2px) scale(1);
-    }
-    100%{
-      opacity:1;
-      transform:translateY(0) scale(1);
-    }
-  }
-`;
+      @keyframes jsFinalLogoDrop{
+        0%{
+          opacity:0;
+          transform:translateY(-42px) scale(.988);
+        }
+        58%{
+          opacity:1;
+          transform:translateY(5px) scale(1);
+        }
+        78%{
+          opacity:1;
+          transform:translateY(-1px) scale(1);
+        }
+        100%{
+          opacity:1;
+          transform:translateY(0) scale(1);
+        }
+      }
+    `;
     document.head.appendChild(style);
 
     finalLogoEl = document.createElement("div");
@@ -200,17 +211,17 @@ style.textContent = `
     if (!w || !h) return 120;
     const base = Math.min(w, h) * CONFIG.orbScale;
     const r = clamp(base, CONFIG.orbMin, CONFIG.orbMax);
-    const breathing = 1 + Math.sin(time * 0.16) * 0.010;
+    const breathing = 1 + Math.sin(time * 0.18) * CONFIG.idlePulseAmp;
     const result = r * breathing;
     return Number.isFinite(result) ? result : 120;
   }
 
   function radiusAt(theta, baseR, t) {
-    const wave1 = Math.sin(theta * 2.0 + t * 0.65) * baseR * CONFIG.wave1Amp;
-    const wave2 = Math.sin(theta * 3.0 - t * 0.42 + 0.9) * baseR * CONFIG.wave2Amp;
-    const wave3 = Math.sin(theta * 5.0 + t * 0.24 - 1.2) * baseR * CONFIG.wave3Amp;
-    const wave4 = Math.sin(theta * 8.0 - t * 0.16 + 2.1) * baseR * CONFIG.wave4Amp;
-    const breath = Math.sin(t * 0.12) * baseR * 0.006;
+    const wave1 = Math.sin(theta * 2.0 + t * 0.95) * baseR * CONFIG.wave1Amp;
+    const wave2 = Math.sin(theta * 3.2 - t * 0.66 + 0.9) * baseR * CONFIG.wave2Amp;
+    const wave3 = Math.sin(theta * 5.6 + t * 0.38 - 1.2) * baseR * CONFIG.wave3Amp;
+    const wave4 = Math.sin(theta * 8.8 - t * 0.28 + 2.1) * baseR * CONFIG.wave4Amp;
+    const breath = Math.sin(t * 0.18) * baseR * 0.010;
     const rr = baseR + wave1 + wave2 + wave3 + wave4 + breath;
     return Number.isFinite(rr) ? rr : baseR;
   }
@@ -255,8 +266,8 @@ style.textContent = `
   }
 
   function drawAmbientVoid(cx, cy, r, t, alphaMul = 1) {
-    const driftX = Math.sin(t * 0.18) * r * 0.03;
-    const driftY = Math.cos(t * 0.14) * r * 0.03;
+    const driftX = Math.sin(t * 0.24) * r * 0.04;
+    const driftY = Math.cos(t * 0.19) * r * 0.04;
 
     const g = ctx.createRadialGradient(
       safe(cx + driftX, cx),
@@ -267,9 +278,9 @@ style.textContent = `
       safe(Math.max(0.0001, r * 2.7), r * 2.7)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.010 * alphaMul})`);
-    g.addColorStop(0.35, `rgba(255,255,255,${0.004 * alphaMul})`);
-    g.addColorStop(0.7, `rgba(255,255,255,${0.0015 * alphaMul})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.012 * alphaMul})`);
+    g.addColorStop(0.35, `rgba(255,255,255,${0.0048 * alphaMul})`);
+    g.addColorStop(0.7, `rgba(255,255,255,${0.0017 * alphaMul})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = g;
@@ -309,11 +320,11 @@ style.textContent = `
       safe(Math.max(0.0001, r * 1.15), r)
     );
 
-    body.addColorStop(0, `rgba(255,255,255,${0.055 * alphaMul})`);
-    body.addColorStop(0.28, `rgba(255,255,255,${0.024 * alphaMul})`);
-    body.addColorStop(0.56, `rgba(255,255,255,${0.014 * alphaMul})`);
+    body.addColorStop(0, `rgba(255,255,255,${0.062 * alphaMul})`);
+    body.addColorStop(0.28, `rgba(255,255,255,${0.026 * alphaMul})`);
+    body.addColorStop(0.56, `rgba(255,255,255,${0.015 * alphaMul})`);
     body.addColorStop(0.8, `rgba(255,255,255,${CONFIG.idleCoreAlpha * alphaMul})`);
-    body.addColorStop(1, `rgba(255,255,255,${0.005 * alphaMul})`);
+    body.addColorStop(1, `rgba(255,255,255,${0.0055 * alphaMul})`);
 
     ctx.fillStyle = body;
     ctx.fill();
@@ -344,12 +355,12 @@ style.textContent = `
         if (!Number.isFinite(dist) || dist > 1.02) continue;
 
         const v =
-          Math.sin(nx * 5.8 + t * 0.72) +
-          Math.sin(ny * 6.6 - t * 0.56) +
-          Math.sin((nx + ny) * 4.4 + t * 0.34) +
-          Math.sin((nx - ny) * 3.8 - t * 0.22);
+          Math.sin(nx * 6.2 + t * 1.05) +
+          Math.sin(ny * 7.0 - t * 0.82) +
+          Math.sin((nx + ny) * 4.9 + t * 0.48) +
+          Math.sin((nx - ny) * 4.2 - t * 0.34);
 
-        const alpha = ((v + 4) / 8) * 0.010 * alphaMul;
+        const alpha = ((v + 4) / 8) * 0.012 * alphaMul;
         ctx.fillStyle = `rgba(255,255,255,${Math.max(0, alpha)})`;
         ctx.fillRect(px, py, cellW + 0.35, cellH + 0.35);
       }
@@ -359,8 +370,8 @@ style.textContent = `
   }
 
   function drawHighlight(cx, cy, r, t, alphaMul = 1, scale = 1) {
-    const hx = cx - r * 0.26 * scale + Math.sin(t * 0.42) * r * 0.015;
-    const hy = cy - r * 0.31 * scale + Math.cos(t * 0.30) * r * 0.015;
+    const hx = cx - r * 0.26 * scale + Math.sin(t * 0.56) * r * 0.020;
+    const hy = cy - r * 0.31 * scale + Math.cos(t * 0.40) * r * 0.020;
 
     const g = ctx.createRadialGradient(
       safe(hx, cx),
@@ -371,8 +382,8 @@ style.textContent = `
       safe(Math.max(0.0001, r * 0.24 * scale), r * 0.2)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.06 * alphaMul})`);
-    g.addColorStop(0.24, `rgba(255,255,255,${0.022 * alphaMul})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.062 * alphaMul})`);
+    g.addColorStop(0.24, `rgba(255,255,255,${0.023 * alphaMul})`);
     g.addColorStop(0.58, `rgba(255,255,255,${0.008 * alphaMul})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
@@ -432,7 +443,11 @@ style.textContent = `
         ? 0.8 + Math.random() * 1.8
         : 0.8 + Math.random() * 2.5;
 
-      const spin = (Math.random() - 0.5) * (isSmall ? lerp(0.14, 0.42, frontness) : lerp(0.08, 0.28, frontness));
+      const spin = (Math.random() - 0.5) * (
+        isSmall
+          ? lerp(0.14, 0.42, frontness)
+          : lerp(0.08, 0.28, frontness)
+      );
 
       shards.push({
         isSmall,
@@ -458,7 +473,10 @@ style.textContent = `
         centerTargetY: cy,
         centerTargetZ: 0,
         distFromCenterNorm: 1,
-        frontness
+        frontness,
+
+        // 手前ほど少し滞空
+        hoverDelay: lerp(0, 260, frontness) + Math.random() * 180
       });
     }
 
@@ -604,43 +622,100 @@ style.textContent = `
   }
 
   function drawShardsConverge(progress) {
-    const pull = easeInCubic(progress);
     const drawList = [];
     const { x: cx, y: cy } = getCenter();
 
     shards.forEach((s) => {
+      const elapsedMs = progress * CONFIG.convergeDuration;
+      const holdRatio = clamp(s.hoverDelay / CONFIG.convergeDuration, 0, 0.45);
+      const localProgress = clamp((elapsedMs - s.hoverDelay) / Math.max(1, CONFIG.convergeDuration - s.hoverDelay), 0, 1);
+
       const dist = Math.hypot(s.x - cx, s.y - cy);
       const maxDist = Math.max(Math.hypot(w * 0.5, h * 0.5), 1);
       s.distFromCenterNorm = clamp(dist / maxDist, 0, 1);
 
-      const speedBias = lerp(1.42, 0.42, s.distFromCenterNorm);
-      const snap = CONFIG.convergeSnapStrength * speedBias * (0.22 + pull * 3.4);
-      const snapZ = CONFIG.convergeZStrength * speedBias * (0.20 + pull * 2.9);
-      const drag = lerp(0.95, lerp(0.83, 0.90, s.distFromCenterNorm), pull);
+      const outerBias = s.distFromCenterNorm;
+      const innerBias = 1 - outerBias;
 
-      s.vx += (s.centerTargetX - s.x) * snap;
-      s.vy += (s.centerTargetY - s.y) * snap;
-      s.vz += (s.centerTargetZ - s.z) * snapZ;
+      const pull = easeInCubic(localProgress);
+      const shapedPull = easeInOutCubic(localProgress);
 
-      s.vx *= drag;
-      s.vy *= drag;
-      s.vz *= drag;
+      let snap = 0;
+      let snapZ = 0;
+      let drag = 0.94;
 
-      s.x += s.vx;
-      s.y += s.vy;
-      s.z += s.vz;
+      if (elapsedMs < s.hoverDelay) {
+        const hoverT = clamp(elapsedMs / Math.max(1, s.hoverDelay), 0, 1);
+        const hoverWave = Math.sin(hoverT * Math.PI) * 0.20;
 
-      s.rot += s.spin * (0.14 + (1 - pull) * 0.55);
+        s.vx *= 0.965;
+        s.vy *= 0.965;
+        s.vz *= 0.965;
 
-      drawList.push(s);
+        s.x += Math.sin(s.rot * 1.13 + hoverT * 3.4) * (0.14 + s.frontness * 0.24);
+        s.y += Math.cos(s.rot * 0.92 + hoverT * 2.8) * (0.10 + s.frontness * 0.20);
+        s.z += hoverWave * lerp(1.8, 10.0, s.frontness);
+      } else {
+        const speedBias = lerp(1.28, 0.56, outerBias); // 内側速く / 外側遅く
+        snap = CONFIG.convergeSnapStrength * speedBias * (0.22 + shapedPull * 3.1);
+        snapZ = CONFIG.convergeZStrength * speedBias * (0.18 + shapedPull * 2.7);
+
+        // 終盤は強く drag をかけて跳ね返りを殺す
+        drag = lerp(
+          0.93,
+          lerp(0.84, 0.89, outerBias),
+          shapedPull
+        );
+
+        if (localProgress > 0.78) {
+          drag *= 0.92;
+          snap *= 1.12;
+          snapZ *= 1.08;
+        }
+
+        if (localProgress > 0.90) {
+          drag *= 0.88;
+          snap *= 1.18;
+          snapZ *= 1.14;
+        }
+
+        s.vx += (s.centerTargetX - s.x) * snap;
+        s.vy += (s.centerTargetY - s.y) * snap;
+        s.vz += (s.centerTargetZ - s.z) * snapZ;
+
+        s.vx *= drag;
+        s.vy *= drag;
+        s.vz *= drag;
+
+        s.x += s.vx;
+        s.y += s.vy;
+        s.z += s.vz;
+      }
+
+      s.rot += s.spin * (0.10 + (1 - pull) * 0.48);
+
+      drawList.push({
+        ...s,
+        localProgress,
+        holdRatio,
+        innerBias
+      });
     });
 
     drawList.sort((a, b) => a.z - b.z);
 
     drawList.forEach((s) => {
-      const alpha = lerp(s.isSmall ? 0.04 : 0.06, s.isSmall ? 0.24 : 0.34, pull);
-      const finalSize = lerp(s.baseSize * 0.72, s.isSmall ? 0.55 : 0.9, pull);
-      const finalAspect = lerp(s.aspect, 1.0, pull);
+      const alphaFade = 1 - easeOutQuart(s.localProgress);
+      const alphaBase = s.isSmall ? 0.22 : 0.30;
+      const alpha = Math.max(0, alphaBase * alphaFade + 0.02 * (1 - s.localProgress));
+
+      const finalSize = lerp(
+        s.baseSize * 0.74,
+        s.isSmall ? 0.34 : 0.58,
+        easeOutCubic(s.localProgress)
+      );
+
+      const finalAspect = lerp(s.aspect, 0.96, easeOutCubic(s.localProgress));
 
       drawGlassShard3D(
         s.x,
@@ -689,6 +764,8 @@ style.textContent = `
       return;
     }
 
+    // bloom の終わりで即ロゴではなく少し間を置きつつ、
+    // まだ吸い込まれている最中にロゴへ移る
     if (state === "bloom" && elapsed >= CONFIG.bloomDuration) {
       state = "logo";
       stateStart = now;
@@ -746,11 +823,19 @@ style.textContent = `
       const p = clamp((now - stateStart) / CONFIG.bloomDuration, 0, 1);
       drawCentralBloom(p);
       drawBloomParticles(p);
+
+      // bloom 中もまだ中央に吸わせ続ける
+      drawShardsConverge(0.88 + p * 0.12);
       return;
     }
 
     if (state === "logo") {
-      // 文字だけ見せる。破片はもう描かない。
+      // ロゴを見せつつ、ごく短く収束の残像感だけ残す
+      const p = clamp((now - stateStart) / Math.max(1, CONFIG.logoHoldDuration * 0.42), 0, 1);
+      if (p < 1) {
+        drawShardsConverge(0.97 + p * 0.03);
+        drawCentralBloom(0.72 + p * 0.28);
+      }
       return;
     }
   }
@@ -788,5 +873,3 @@ style.textContent = `
   resize();
   tick();
 })();
-
-// 
