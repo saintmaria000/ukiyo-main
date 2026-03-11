@@ -5,6 +5,8 @@
 
   if (!galleryScroll) return;
 
+  let startY = 0;
+
   function isGalleryView() {
     return body.classList.contains('view-left');
   }
@@ -15,6 +17,18 @@
 
   function updateGalleryScrollLock() {
     body.classList.toggle('is-gallery-scroll-lock', shouldLockPageScroll());
+  }
+
+  function canScroll(el) {
+    return el.scrollHeight > el.clientHeight;
+  }
+
+  function isAtTop(el) {
+    return el.scrollTop <= 0;
+  }
+
+  function isAtBottom(el) {
+    return el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
   }
 
   // ----------------------------------------
@@ -43,19 +57,57 @@
   }
 
   // ----------------------------------------
-  // Gallery外のタッチ移動を止める
-  // Gallery中だけリストスクロール許可
+  // Gallery内の touch 開始位置を記録
+  // iPhone用
+  // ----------------------------------------
+  galleryScroll.addEventListener(
+    'touchstart',
+    (e) => {
+      if (!shouldLockPageScroll()) return;
+      if (!e.touches || !e.touches.length) return;
+      startY = e.touches[0].clientY;
+    },
+    { passive: true }
+  );
+
+  // ----------------------------------------
+  // Gallery外は止める
+  // Gallery内は端だけ止める
+  // iPhoneのバウンス抜け対策
   // ----------------------------------------
   document.addEventListener(
     'touchmove',
     (e) => {
       if (!shouldLockPageScroll()) return;
 
-      const insideGalleryScroll = e.target.closest('.gallery-scroll');
+      const scroller = e.target.closest('.gallery-scroll');
 
-      if (!insideGalleryScroll) {
+      // Gallery外は止める
+      if (!scroller) {
+        e.preventDefault();
+        return;
+      }
+
+      // スクロールする中身がない時は止める
+      if (!canScroll(scroller)) {
+        e.preventDefault();
+        return;
+      }
+
+      const currentY = e.touches[0].clientY;
+      const deltaY = currentY - startY;
+
+      // 上端でさらに下に引く時
+      if (isAtTop(scroller) && deltaY > 0) {
         e.preventDefault();
       }
+
+      // 下端でさらに上に引く時
+      if (isAtBottom(scroller) && deltaY < 0) {
+        e.preventDefault();
+      }
+
+      startY = currentY;
     },
     { passive: false }
   );
