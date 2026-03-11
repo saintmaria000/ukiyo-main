@@ -1366,33 +1366,32 @@ a{
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
     /* Modal
-       横幅だけ締める。高さは直接潰さない */
+      横幅だけ締める。高さは直接潰さない */
     --modal-width:min(76vw, 720px);
 
     --modal-footer-gap-top:4px;
     --modal-footer-pad-bottom:6px;
-    --modal-credit-toggle-size:.74rem;
+    --modal-credit-toggle-size:.72rem;
 
     /* Credit
-       7の構造を保ったまま中央ブロック化 */
-    --modal-credit-inner-width:min(92%, 560px);
-    --modal-credit-inner-pad-top:16px;
-    --modal-credit-inner-pad-x:18px;
-    --modal-credit-inner-pad-bottom:14px;
+      PC版の思想を保ちつつ、スマホでは中央箱を締める */
+    --modal-credit-inner-width:min(92%, 520px);
+    --modal-credit-inner-pad-top:14px;
+    --modal-credit-inner-pad-x:16px;
+    --modal-credit-inner-pad-bottom:12px;
 
-    --modal-credit-block-w:min(90%, 500px);
+    --modal-credit-title-size:.76rem;
+    --modal-credit-title-gap:10px;
 
-    --modal-credit-title-size:.82rem;
-    --modal-credit-title-gap:12px;
+    --modal-credit-list-size:.66rem;
+    --modal-credit-list-line:1.4;
+    --modal-credit-list-gap:10px;
 
-    --modal-credit-list-size:.72rem;
-    --modal-credit-list-line:1.45;
-    --modal-credit-list-gap:12px;
+    /* role列の固定幅 */
+    --modal-credit-col-role:148px;
+    --modal-credit-col-gap:14px;
 
-    --modal-credit-col-role:170px;
-    --modal-credit-col-gap:18px;
-
-    --modal-credit-close-size:.70rem;
+    --modal-credit-close-size:.66rem;
   }
 }
 
@@ -1552,23 +1551,27 @@ a{
   /* タイトルと一覧を同じ中央幅に揃える */
   .modal__credit-title,
   .modal__credit-list{
-    width:var(--modal-credit-block-w);
+    width:min(100%, calc(var(--modal-credit-col-role) + var(--modal-credit-col-gap) + 1fr));
     max-width:100%;
     margin-left:auto;
     margin-right:auto;
   }
 
   .modal__credit-title{
+    font-size:var(--modal-credit-title-size);
     line-height:1.3;
     text-align:center;
+    margin-bottom:var(--modal-credit-title-gap);
   }
 
   .modal__credit-list{
+    font-size:var(--modal-credit-list-size);
+    line-height:var(--modal-credit-list-line);
     margin-bottom:var(--modal-credit-list-gap);
     overflow:visible;
   }
 
-  /* 7の flex 構造を活かして列だけ固定 */
+  /* PC版の左右配置思想を維持しつつ、スマホ用に列幅だけ固定 */
   .credit-row{
     display:flex;
     justify-content:flex-start;
@@ -1578,9 +1581,9 @@ a{
 
   .credit-role,
   .credit-name{
+    min-width:0;
     font-size:var(--modal-credit-list-size);
     line-height:var(--modal-credit-list-line);
-    min-width:0;
   }
 
   .credit-role{
