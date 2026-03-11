@@ -253,7 +253,7 @@ a{
   --about-hero-min-h:100svh;
   --about-hero-pad-top:120px;
   --about-hero-pad-bottom:110px;
-  --about-hero-gap:clamp(14px, 1.6vw, 24px);
+  --about-hero-gap:clamp(10px, 1.2vw, 18px);
   --about-hero-max-w:1280px;
 
   --about-logo-main-size:clamp(3.2rem, 5vw, 6.2rem);
@@ -265,7 +265,7 @@ a{
   --about-lead-size:1.18rem;
   --about-lead-line:1.95;
   --about-lead-spacing:.05em;
-  --about-lead-margin-top:20px;
+  --about-lead-margin-top:0px;
 
   /* stack */
   --about-stack-gap:clamp(120px, 11vw, 220px);
