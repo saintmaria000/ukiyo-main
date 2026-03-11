@@ -1526,8 +1526,20 @@ body.view-right .inner-shell{
   }
 
   .gallery-scroll{
+    position:relative;
+    z-index:1;
+
+    flex:1;
     min-height:0;
-    height:100%;
+
+    width:calc(100% + 80px);
+    margin-left:-40px;
+    padding-left:40px;
+    padding-right:40px;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
     -webkit-overflow-scrolling:touch;
     overscroll-behavior-y:contain;
     touch-action:pan-y;
