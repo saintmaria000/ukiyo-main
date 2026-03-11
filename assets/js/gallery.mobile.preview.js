@@ -1,11 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
   const preview = document.querySelector(".view.view-left .gallery-preview");
   const previewImg = document.querySelector(".view.view-left .gallery-preview-img");
-  const scroll = document.querySelector(".view.view-left .gallery-scroll");
+
+  const panel =
+    document.querySelector(".view.view-left .gallery-panel") ||
+    document.querySelector(".view.view-left .gallery-scroll");
+
+  const content =
+    document.querySelector(".view.view-left .gallery-scroll") ||
+    panel;
+
   const WORKS = window.WORKS || {};
   const mq = window.matchMedia("(pointer: coarse) and (orientation: landscape)");
 
-  if (!preview || !previewImg || !scroll) return;
+  if (!preview || !previewImg || !panel || !content) return;
 
   let ticking = false;
   let currentWorkId = null;
@@ -16,10 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showPreview() {
     preview.classList.add("is-visible");
-  }
-
-  function hidePreview() {
-    preview.classList.remove("is-visible");
   }
 
   function getYoutubeId(url) {
@@ -112,32 +116,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function updatePreviewByWorkId(workId) {
-    if (!workId || workId === currentWorkId) return;
+    if (!workId) return;
 
     const work = WORKS[workId];
-    if (!work?.video) {
-      hidePreview();
+    if (!work?.video) return;
+
+    const youtubeId = work.youtubeId || getYoutubeId(work.video);
+    if (!youtubeId) return;
+
+    if (workId === currentWorkId && previewImg.getAttribute("src")) {
+      showPreview();
       return;
     }
-
-    const youtubeId = getYoutubeId(work.video);
-    if (!youtubeId) {
-      hidePreview();
-      return;
-    }
-
-    currentWorkId = workId;
 
     try {
       await loadImageSequential(getThumbnailUrls(youtubeId));
+      currentWorkId = workId;
       showPreview();
     } catch {
-      hidePreview();
+      if (previewImg.getAttribute("src")) {
+        showPreview();
+      }
     }
   }
 
   function getGalleryItems() {
-    return Array.from(scroll.querySelectorAll(".gallery-item"));
+    return Array.from(content.querySelectorAll(".gallery-item"));
   }
 
   function clearCenteredState() {
@@ -148,8 +152,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const items = getGalleryItems();
     if (!items.length) return null;
 
-    const scrollRect = scroll.getBoundingClientRect();
-    const centerY = scrollRect.top + scrollRect.height / 2;
+    const panelRect = panel.getBoundingClientRect();
+    const centerY = panelRect.top + panelRect.height / 2;
 
     let closestItem = null;
     let closestDistance = Infinity;
@@ -177,7 +181,14 @@ document.addEventListener("DOMContentLoaded", () => {
     clearCenteredState();
     centered.classList.add("is-centered");
 
-    const workId = centered.dataset.workId || centered.dataset.originWorkId;
+    const workId =
+      centered.dataset.workId ||
+      centered.dataset.originWorkId ||
+      centered.getAttribute("data-work-id") ||
+      centered.getAttribute("data-origin-work-id");
+
+    if (!workId) return;
+
     updatePreviewByWorkId(workId);
   }
 
@@ -201,8 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
     requestCenteredPreviewUpdate();
   }
 
-  scroll.addEventListener("scroll", handleScroll, { passive: true });
-  scroll.addEventListener("galleryloopready", requestCenteredPreviewUpdate);
+  panel.addEventListener("scroll", handleScroll, { passive: true });
+  panel.addEventListener("galleryloopready", requestCenteredPreviewUpdate);
   window.addEventListener("resize", handleResize);
   window.addEventListener("orientationchange", handleResize);
 
@@ -213,6 +224,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (isMobileLandscape()) {
-    requestCenteredPreviewUpdate();
+    requestAnimationFrame(() => {
+      requestCenteredPreviewUpdate();
+    });
   }
 });
