@@ -1,7 +1,8 @@
 (() => {
   const canvas = document.getElementById("particle-canvas");
-  const ctx = canvas.getContext("2d");
+  if (!canvas) return;
 
+  const ctx = canvas.getContext("2d");
   const langLinks = document.querySelectorAll(".lang-link");
   const langSelect = document.querySelector(".lang-select");
   const revealLogo = document.getElementById("revealLogo");
@@ -9,15 +10,15 @@
   let w = 0;
   let h = 0;
   let dpr = 1;
+  let rafId = 0;
   let time = 0;
-  let animationId = null;
 
-  let state = "idle"; // idle | burst | logo | done
+  let state = "idle"; // idle | shatter | converge | logo
   let stateStart = 0;
   let nextHref = null;
 
-  let droplets = [];
-  let ripples = [];
+  let shards = [];
+  let crackLines = [];
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -26,30 +27,44 @@
     orbMin: 110,
     orbMax: 250,
 
-    outlineAlpha: 0.035,
-    glowAlpha: 0.015,
-    coreAlpha: 0.010,
+    idleOutlineAlpha: 0.040,
+    idleCoreAlpha: 0.012,
+    idleGlowAlpha: 0.020,
 
     wave1Amp: 0.020,
     wave2Amp: 0.012,
     wave3Amp: 0.008,
     wave4Amp: 0.005,
 
-    speed: 0.48,
+    shatterDuration: 1200,
+    convergeDuration: 1100,
+    logoDelay: 420,
 
-    bandCount: 5,
-    bandAlpha: 0.008,
+    shardCount: 120,
+    shardMinSize: 1.2,
+    shardMaxSize: 8.5,
 
-    textureCols: 56,
-    textureRows: 56,
-    textureAlpha: 0.010,
+    crackCount: 18,
 
-    causticLines: 14,
-    causticAlpha: 0.007
+    explodeDistanceMin: 0.95,
+    explodeDistanceMax: 1.55,
+
+    convergeSnapStrength: 0.050,
+    convergeDrag: 0.86,
+
+    logoDurationBeforeNavigate: 900
   };
 
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+  function nowMs() {
+    return performance.now();
+  }
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
   }
 
   function easeOutCubic(t) {
@@ -80,10 +95,7 @@
   }
 
   function getCenter() {
-    return {
-      x: w * 0.5,
-      y: h * 0.5
-    };
+    return { x: w * 0.5, y: h * 0.5 };
   }
 
   function getOrbRadius() {
@@ -144,10 +156,10 @@
     const g = ctx.createRadialGradient(
       cx + driftX,
       cy + driftY,
-      r * 0.18,
+      r * 0.12,
       cx,
       cy,
-      r * 2.2
+      r * 2.4
     );
 
     g.addColorStop(0, `rgba(255,255,255,${0.010 * alphaMul})`);
@@ -157,7 +169,7 @@
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 2.3, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 2.5, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -171,12 +183,12 @@
       r * 1.0
     );
 
-    g.addColorStop(0, `rgba(0,0,0,${0.14 * alphaMul})`);
+    g.addColorStop(0, `rgba(0,0,0,${0.16 * alphaMul})`);
     g.addColorStop(1, "rgba(0,0,0,0)");
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.ellipse(cx, cy + r * 0.36, r * 0.72, r * 0.40, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy + r * 0.36, r * 0.74, r * 0.42, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -195,24 +207,24 @@
     body.addColorStop(0, `rgba(255,255,255,${0.055 * alphaMul})`);
     body.addColorStop(0.28, `rgba(255,255,255,${0.024 * alphaMul})`);
     body.addColorStop(0.56, `rgba(255,255,255,${0.014 * alphaMul})`);
-    body.addColorStop(0.8, `rgba(255,255,255,${CONFIG.coreAlpha * alphaMul})`);
+    body.addColorStop(0.8, `rgba(255,255,255,${CONFIG.idleCoreAlpha * alphaMul})`);
     body.addColorStop(1, `rgba(255,255,255,${0.005 * alphaMul})`);
 
     ctx.fillStyle = body;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${CONFIG.outlineAlpha * alphaMul})`;
+    ctx.strokeStyle = `rgba(255,255,255,${CONFIG.idleOutlineAlpha * alphaMul})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 
-  function drawRefractionTexture(cx, cy, r, t, alphaMul = 1, scale = 1) {
+  function drawInteriorTexture(cx, cy, r, t, alphaMul = 1, scale = 1) {
     ctx.save();
     buildOrbPath(cx, cy, r, t, scale);
     ctx.clip();
 
-    const cols = CONFIG.textureCols;
-    const rows = CONFIG.textureRows;
+    const cols = 54;
+    const rows = 54;
     const cellW = (r * 2.16 * scale) / cols;
     const cellH = (r * 2.16 * scale) / rows;
 
@@ -224,7 +236,6 @@
         const nx = (px - cx) / (r * scale);
         const ny = (py - cy) / (r * scale);
         const dist = Math.sqrt(nx * nx + ny * ny);
-
         if (dist > 1.02) continue;
 
         const v =
@@ -233,85 +244,10 @@
           Math.sin((nx + ny) * 4.4 + t * 0.34) +
           Math.sin((nx - ny) * 3.8 - t * 0.22);
 
-        const alpha = ((v + 4) / 8) * CONFIG.textureAlpha * alphaMul;
-
+        const alpha = ((v + 4) / 8) * 0.010 * alphaMul;
         ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.fillRect(px, py, cellW + 0.35, cellH + 0.35);
       }
-    }
-
-    ctx.restore();
-  }
-
-  function drawInteriorBands(cx, cy, r, t, alphaMul = 1, scale = 1) {
-    ctx.save();
-    buildOrbPath(cx, cy, r, t, scale);
-    ctx.clip();
-
-    for (let i = 0; i < CONFIG.bandCount; i++) {
-      const ratio = i / Math.max(CONFIG.bandCount - 1, 1);
-      const yy = cy - r * 0.62 * scale + ratio * r * 1.24 * scale;
-      const amp = r * scale * (0.010 + i * 0.0018);
-      const freq = 1.2 + i * 0.20;
-      const phase = t * (0.34 + i * 0.04) + i * 0.8;
-
-      ctx.beginPath();
-
-      for (let x = cx - r * 1.12 * scale, first = true; x <= cx + r * 1.12 * scale; x += 2.5) {
-        const nx = (x - cx) / (r * scale);
-
-        const y =
-          yy +
-          Math.sin(nx * Math.PI * freq + phase) * amp +
-          Math.sin(nx * Math.PI * (freq * 0.62) - phase * 0.74) * amp * 0.42;
-
-        if (first) {
-          ctx.moveTo(x, y);
-          first = false;
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-
-      ctx.strokeStyle = `rgba(255,255,255,${(CONFIG.bandAlpha + i * 0.0018) * alphaMul})`;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  }
-
-  function drawCausticLines(cx, cy, r, t, alphaMul = 1, scale = 1) {
-    ctx.save();
-    buildOrbPath(cx, cy, r, t, scale);
-    ctx.clip();
-
-    for (let i = 0; i < CONFIG.causticLines; i++) {
-      const ratio = i / Math.max(CONFIG.causticLines - 1, 1);
-      const yy = cy - r * 0.92 * scale + ratio * r * 1.84 * scale;
-      const phase = t * (0.52 + ratio * 0.34) + i * 0.36;
-      const alpha = CONFIG.causticAlpha * (1 - Math.abs(ratio - 0.5) * 1.35) * alphaMul;
-
-      ctx.beginPath();
-
-      for (let x = cx - r * 1.15 * scale, first = true; x <= cx + r * 1.15 * scale; x += 2.2) {
-        const nx = (x - cx) / (r * scale);
-        const y =
-          yy +
-          Math.sin(nx * Math.PI * 2.6 + phase) * r * scale * 0.008 +
-          Math.sin(nx * Math.PI * 5.4 - phase * 0.82) * r * scale * 0.004;
-
-        if (first) {
-          ctx.moveTo(x, y);
-          first = false;
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-
-      ctx.strokeStyle = `rgba(255,255,255,${Math.max(alpha, 0)})`;
-      ctx.lineWidth = 1;
-      ctx.stroke();
     }
 
     ctx.restore();
@@ -322,12 +258,8 @@
     const hy = cy - r * 0.31 * scale + Math.cos(t * 0.30) * r * 0.015;
 
     const g = ctx.createRadialGradient(
-      hx,
-      hy,
-      r * 0.01,
-      hx,
-      hy,
-      r * 0.24 * scale
+      hx, hy, r * 0.01,
+      hx, hy, r * 0.24 * scale
     );
 
     g.addColorStop(0, `rgba(255,255,255,${0.06 * alphaMul})`);
@@ -345,67 +277,110 @@
     drawAmbientVoid(cx, cy, r, t, 1);
     drawShadow(cx, cy, r, 1);
     drawOrbBody(cx, cy, r, t, 1, 1);
-    drawRefractionTexture(cx, cy, r, t, 1, 1);
-    drawInteriorBands(cx, cy, r, t, 1, 1);
-    drawCausticLines(cx, cy, r, t, 1, 1);
+    drawInteriorTexture(cx, cy, r, t, 1, 1);
     drawHighlight(cx, cy, r, t, 1, 1);
   }
 
-  function createBurst(cx, cy, r) {
-    droplets = [];
-    ripples = [];
-
-    const count = 56;
-
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.14;
-      const speed = r * (0.010 + Math.random() * 0.020);
-      const start = r * (0.05 + Math.random() * 0.10);
-
-      droplets.push({
-        x: cx + Math.cos(angle) * start,
-        y: cy + Math.sin(angle) * start,
-        angle,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        size: r * (0.010 + Math.random() * 0.030),
-        stretch: 1.2 + Math.random() * 1.5,
-        rot: angle,
-        alpha: 0.16 + Math.random() * 0.10
-      });
+  function createCrackLines(cx, cy, r) {
+    crackLines = [];
+    for (let i = 0; i < CONFIG.crackCount; i++) {
+      const baseAngle = (Math.PI * 2 * i) / CONFIG.crackCount + (Math.random() - 0.5) * 0.16;
+      const segments = 4 + Math.floor(Math.random() * 3);
+      const pts = [{ x: cx, y: cy }];
+      for (let s = 1; s <= segments; s++) {
+        const rr = r * (0.18 + (s / segments) * (0.78 + Math.random() * 0.18));
+        const aa = baseAngle + (Math.random() - 0.5) * 0.30;
+        pts.push({
+          x: cx + Math.cos(aa) * rr,
+          y: cy + Math.sin(aa) * rr
+        });
+      }
+      crackLines.push(pts);
     }
+  }
 
-    for (let i = 0; i < 3; i++) {
-      ripples.push({
-        r: r * (0.18 + i * 0.08),
-        alpha: 0.10 - i * 0.02
+  function createShards(cx, cy, r) {
+    shards = [];
+    const maxSide = Math.max(w, h);
+
+    for (let i = 0; i < CONFIG.shardCount; i++) {
+      const angle = (Math.PI * 2 * i) / CONFIG.shardCount + (Math.random() - 0.5) * 0.22;
+      const speedMul = 0.75 + Math.random() * 0.9;
+      const distNorm = CONFIG.explodeDistanceMin + Math.random() * (CONFIG.explodeDistanceMax - CONFIG.explodeDistanceMin);
+      const targetDist = maxSide * distNorm * speedMul;
+
+      const sx = cx + Math.cos(angle) * r * (0.10 + Math.random() * 0.10);
+      const sy = cy + Math.sin(angle) * r * (0.10 + Math.random() * 0.10);
+
+      const tx = cx + Math.cos(angle) * targetDist;
+      const ty = cy + Math.sin(angle) * targetDist;
+
+      const size = CONFIG.shardMinSize + Math.random() * (CONFIG.shardMaxSize - CONFIG.shardMinSize);
+      const spin = (Math.random() - 0.5) * 0.28;
+      const aspect = 0.8 + Math.random() * 2.4;
+
+      shards.push({
+        startX: sx,
+        startY: sy,
+        x: sx,
+        y: sy,
+        targetX: tx,
+        targetY: ty,
+        vx: 0,
+        vy: 0,
+        size,
+        aspect,
+        rot: Math.random() * Math.PI * 2,
+        spin,
+        alpha: 0.14 + Math.random() * 0.18,
+        targetIndex: 0
       });
     }
   }
 
-  function drawBurstDroplets(progress) {
-    const p = easeOutCubic(progress);
+  function drawCracks(progress) {
+    const grow = easeOutCubic(progress);
+    const alpha = 0.30 * (1 - progress) + 0.06;
 
-    droplets.forEach(d => {
-      const x = d.x + d.vx * p * 42;
-      const y = d.y + d.vy * p * 42;
-      const size = d.size * (1 - progress * 0.24);
-      const alpha = Math.max(0, d.alpha * (1 - progress));
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth = 1;
+
+    crackLines.forEach(line => {
+      ctx.beginPath();
+      ctx.moveTo(line[0].x, line[0].y);
+
+      const end = Math.max(2, Math.floor(line.length * grow));
+      for (let i = 1; i < Math.min(end, line.length); i++) {
+        ctx.lineTo(line[i].x, line[i].y);
+      }
+
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  }
+
+  function drawShardsExplode(progress) {
+    // 近くは素早く、遠くほど終盤が遅く見えるようなカーブ
+    const move = 1 - Math.pow(1 - progress, 5);
+
+    shards.forEach(s => {
+      const x = lerp(s.startX, s.targetX, move);
+      const y = lerp(s.startY, s.targetY, move);
+
+      s.x = x;
+      s.y = y;
+      s.rot += s.spin;
+
+      const alpha = s.alpha * (1 - progress * 0.28);
 
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(d.rot);
+      ctx.rotate(s.rot);
 
       ctx.beginPath();
-      ctx.ellipse(
-        0,
-        0,
-        size * d.stretch,
-        size,
-        0,
-        0,
-        Math.PI * 2
-      );
+      ctx.ellipse(0, 0, s.size * s.aspect, s.size, 0, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,255,255,${alpha})`;
       ctx.fill();
 
@@ -413,84 +388,153 @@
     });
   }
 
-  function drawBurstRipples(cx, cy, r, progress) {
-    const p = easeOutCubic(progress);
+  function buildLogoTargets() {
+    // 画面中央付近に「憂き世」っぽい密度ブロックを作る簡易ターゲット
+    // フォントアウトライン取得なしで、収束感を優先
+    const cx = w * 0.5;
+    const cy = h * 0.5;
+    const gap = Math.min(w, h) * 0.095;
+    const scale = Math.min(w, h) * 0.0075;
 
-    ripples.forEach((ring, i) => {
-      const rr = ring.r + r * p * (0.26 + i * 0.08);
-      const alpha = Math.max(0, ring.alpha * (1 - progress));
+    const glyphs = [
+      { ox: -gap, oy: 0, matrix: [
+        "  xxx ",
+        " x   x",
+        "xxxxx ",
+        "x xxx ",
+        "x x x ",
+        "xxxxx ",
+        "x   x ",
+        "x   x "
+      ]},
+      { ox: 0, oy: 0, matrix: [
+        " xxx  ",
+        "   x  ",
+        " xxxx ",
+        " x  x ",
+        " xxxx ",
+        " x    ",
+        " xxxx ",
+        "      "
+      ]},
+      { ox: gap, oy: 0, matrix: [
+        "xxxxx ",
+        "  x   ",
+        "xxxxx ",
+        "x  xx ",
+        "x   x ",
+        "xxxxx ",
+        "      ",
+        "      "
+      ]}
+    ];
 
-      ctx.beginPath();
-      ctx.arc(cx, cy, rr, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-      ctx.lineWidth = 1;
-      ctx.stroke();
+    const targets = [];
+
+    glyphs.forEach(g => {
+      g.matrix.forEach((row, iy) => {
+        for (let ix = 0; ix < row.length; ix++) {
+          if (row[ix] !== "x") continue;
+          const baseX = cx + g.ox + (ix - row.length / 2) * scale * 1.7;
+          const baseY = cy + g.oy + (iy - g.matrix.length / 2) * scale * 2.0;
+
+          for (let n = 0; n < 8; n++) {
+            targets.push({
+              x: baseX + (Math.random() - 0.5) * scale * 0.9,
+              y: baseY + (Math.random() - 0.5) * scale * 0.9
+            });
+          }
+        }
+      });
+    });
+
+    return targets;
+  }
+
+  function assignTargets() {
+    const targets = buildLogoTargets();
+    if (!targets.length) return;
+
+    shards.forEach((s, i) => {
+      s.targetIndex = i % targets.length;
+      s.logoTargetX = targets[s.targetIndex].x;
+      s.logoTargetY = targets[s.targetIndex].y;
     });
   }
 
-  function drawWaterTear(cx, cy, r, t, progress) {
-    const p = easeInOutCubic(progress);
-    const alphaMul = Math.max(0, 1 - p * 1.08);
-    const shrink = 1 - p * 0.30;
+  function drawShardsConverge(progress) {
+    // 戻る瞬間ほど速く。最初は遠くで漂い、終盤に強く吸われる。
+    const pull = easeInCubic(progress);
 
-    drawAmbientVoid(cx, cy, r, t, alphaMul * 0.6);
-    drawShadow(cx, cy, r, alphaMul);
-    drawOrbBody(cx, cy, r, t, alphaMul, shrink);
-    drawRefractionTexture(cx, cy, r, t, alphaMul, shrink);
-    drawInteriorBands(cx, cy, r, t, alphaMul, shrink);
-    drawCausticLines(cx, cy, r, t, alphaMul, shrink);
-    drawHighlight(cx, cy, r, t, alphaMul, shrink);
+    shards.forEach(s => {
+      const ax = (s.logoTargetX - s.x) * (CONFIG.convergeSnapStrength * (0.35 + pull * 2.4));
+      const ay = (s.logoTargetY - s.y) * (CONFIG.convergeSnapStrength * (0.35 + pull * 2.4));
 
-    ctx.save();
-    ctx.globalCompositeOperation = "destination-out";
+      s.vx += ax;
+      s.vy += ay;
 
-    const split = r * (0.02 + p * 0.24);
-    const wobble = Math.sin(t * 1.6) * r * 0.01;
+      // 遠くでは緩く、終盤だけドラッグを弱めて急加速っぽく見せる
+      const dynamicDrag = lerp(0.93, CONFIG.convergeDrag, pull);
+      s.vx *= dynamicDrag;
+      s.vy *= dynamicDrag;
 
-    ctx.beginPath();
-    ctx.moveTo(cx - split * 0.55, cy - r * 0.96);
-    ctx.bezierCurveTo(
-      cx - split * 1.35 + wobble,
-      cy - r * 0.42,
-      cx + split * 1.35 - wobble,
-      cy + r * 0.08,
-      cx + split * 0.25,
-      cy + r * 0.98
-    );
-    ctx.lineWidth = Math.max(1, r * (0.012 + p * 0.045));
-    ctx.stroke();
+      s.x += s.vx;
+      s.y += s.vy;
+      s.rot += s.spin * (0.4 + (1 - pull) * 0.8);
 
-    ctx.restore();
+      const alpha = lerp(0.05, 0.28, pull);
 
-    drawBurstRipples(cx, cy, r, progress);
-    drawBurstDroplets(progress);
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(s.rot);
+
+      const finalSize = lerp(s.size * 0.72, 1.8, pull);
+      const finalAspect = lerp(s.aspect, 1.0, pull);
+
+      ctx.beginPath();
+      ctx.ellipse(0, 0, finalSize * finalAspect, finalSize, 0, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fill();
+
+      ctx.restore();
+    });
   }
 
   function startTransition(href) {
     if (state !== "idle") return;
 
     nextHref = href;
-    state = "burst";
-    stateStart = performance.now();
+    state = "shatter";
+    stateStart = nowMs();
 
     document.body.classList.add("is-transitioning");
-    langSelect.classList.add("is-disabled");
+    if (langSelect) langSelect.classList.add("is-disabled");
 
     const { x, y } = getCenter();
     const r = getOrbRadius();
-    createBurst(x, y, r);
+
+    createCrackLines(x, y, r);
+    createShards(x, y, r);
   }
 
-  function updateState(now) {
+  function maybeAdvanceState(now) {
     const elapsed = now - stateStart;
 
-    if (state === "burst" && elapsed > 760) {
-      state = "logo";
-      revealLogo.classList.add("is-visible");
+    if (state === "shatter" && elapsed >= CONFIG.shatterDuration) {
+      state = "converge";
+      stateStart = now;
+      assignTargets();
+      return;
     }
 
-    if (state === "logo" && elapsed > 1780) {
-      state = "done";
+    if (state === "converge" && elapsed >= CONFIG.convergeDuration) {
+      state = "logo";
+      stateStart = now;
+      if (revealLogo) revealLogo.classList.add("is-visible");
+      return;
+    }
+
+    if (state === "logo" && elapsed >= CONFIG.logoDelay + CONFIG.logoDurationBeforeNavigate) {
       window.location.href = nextHref;
     }
   }
@@ -507,36 +551,50 @@
       return;
     }
 
-    updateState(now);
+    maybeAdvanceState(now);
 
-    if (state === "burst") {
-      const progress = Math.min((now - stateStart) / 760, 1);
-      drawWaterTear(cx, cy, r, t, progress);
+    if (state === "shatter") {
+      const p = clamp((now - stateStart) / CONFIG.shatterDuration, 0, 1);
+
+      const orbAlpha = Math.max(0, 1 - easeOutCubic(p) * 1.05);
+      const orbScale = lerp(1, 0.92, p);
+
+      drawAmbientVoid(cx, cy, r, t, orbAlpha * 0.6);
+      drawShadow(cx, cy, r, orbAlpha * 0.8);
+      drawOrbBody(cx, cy, r, t, orbAlpha, orbScale);
+      drawInteriorTexture(cx, cy, r, t, orbAlpha, orbScale);
+      drawHighlight(cx, cy, r, t, orbAlpha, orbScale);
+
+      drawCracks(Math.min(p * 1.1, 1));
+      drawShardsExplode(p);
       return;
     }
 
-    if (state === "logo" || state === "done") {
-      const burstProgress = Math.min((now - stateStart) / 980, 1);
-      const fade = Math.max(0, 1 - (now - stateStart - 760) / 420);
+    if (state === "converge") {
+      const p = clamp((now - stateStart) / CONFIG.convergeDuration, 0, 1);
 
-      if (fade > 0) {
-        drawAmbientVoid(cx, cy, r, t, fade * 0.18);
-        drawBurstDroplets(Math.min(burstProgress + 0.12, 1));
-      }
+      drawAmbientVoid(cx, cy, r, t, 0.12 * (1 - p));
+      drawShardsConverge(p);
+      return;
+    }
+
+    if (state === "logo") {
+      // ロゴが出た後も少しだけ残粒子
+      drawShardsConverge(1);
     }
   }
 
-  function tick(now = performance.now()) {
+  function tick(now = nowMs()) {
     if (!motionQuery.matches) {
       time += 0.016;
     }
 
     render(now);
-    animationId = requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(tick);
   }
 
   function start() {
-    cancelAnimationFrame(animationId);
+    cancelAnimationFrame(rafId);
     resize();
     tick();
   }
