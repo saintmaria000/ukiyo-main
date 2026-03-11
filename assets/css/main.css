@@ -286,7 +286,7 @@ a{
   --about-split-gap:clamp(36px, 4vw, 56px);
   --about-split-pad-top:clamp(28px, 3vw, 56px);
   --about-split-pad-x:clamp(22px, 3vw, 54px);
-  --about-split-pad-bottom:clamp(72px, 10vw, 180px);
+  --about-split-pad-bottom:clamp(72px, 10vw, 100px);
   --about-split-margin-top:120px;
   --about-split-margin-bottom:clamp(56px, 7vw, 96px);
 
@@ -885,7 +885,7 @@ body.view-right .inner-shell{
     var(--about-stack-pad)
     calc(var(--about-stack-pad) + 40px)
     var(--about-stack-pad);
-    
+
   display:grid;
   gap:var(--about-stack-gap);
   border-left:1px solid #fff;
