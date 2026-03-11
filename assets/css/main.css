@@ -239,82 +239,84 @@ a{
   --contact-label-margin-top:16px;
   --contact-value-size:1.14rem;
 
-  /* -----------------------------------------
+/* -----------------------------------------
    3-11. About
-  ----------------------------------------- */
+----------------------------------------- */
 
-  /* 外側 */
-  --about-content-max-w:2000px;
-  --about-content-pad-top:0px;
-  --about-content-pad-x:6vw;
-  --about-content-pad-bottom:180px;
+/* 外側 */
+--about-content-max-w:2000px;
+--about-content-pad-top:0px;
+--about-content-pad-x:6vw;
+--about-content-pad-bottom:180px;
 
-  /* hero */
-  --about-hero-min-h:100svh;
-  --about-hero-pad-top:120px;
-  --about-hero-pad-bottom:110px;
-  --about-hero-gap:clamp(10px, 1.2vw, 18px);
-  --about-hero-max-w:1280px;
+/* hero */
+--about-hero-min-h:100svh;
+--about-hero-pad-top:120px;
+--about-hero-pad-bottom:110px;
+--about-hero-gap:clamp(10px, 1.2vw, 18px);
+--about-hero-max-w:1280px;
 
-  --about-logo-main-size:clamp(3.2rem, 5vw, 6.2rem);
-  --about-logo-sub-size:clamp(1rem, 1.3vw, 1.24rem);
-  --about-logo-spacing:.28em;
-  --about-logo-sub-spacing:.18em;
+--about-logo-main-size:clamp(3.2rem, 5vw, 6.2rem);
+--about-logo-sub-size:clamp(1rem, 1.3vw, 1.24rem);
+--about-logo-spacing:.28em;
+--about-logo-sub-spacing:.18em;
 
-  --about-lead-max-w:1040px;
-  --about-lead-size:1.18rem;
-  --about-lead-line:1.95;
-  --about-lead-spacing:.05em;
-  --about-lead-margin-top:0px;
+--about-lead-max-w:1040px;
+--about-lead-size:1.18rem;
+--about-lead-line:1.95;
+--about-lead-spacing:.05em;
 
-  /* stack */
-  --about-stack-gap:clamp(120px, 11vw, 220px);
-  --about-stack-pad:clamp(22px, 3vw, 54px);
-  --about-stack-line-protrusion:156px;
-  --about-stack-max-w:1320px;
+/* stack */
+--about-stack-max-w:1320px;
+--about-stack-gap:clamp(120px, 11vw, 220px);
 
-  --about-heading-size:1.7rem;
-  --about-heading-spacing:.20em;
-  --about-item-heading-gap:18px;
+--about-stack-pad-top:36px;
+--about-stack-pad-x:clamp(22px, 3vw, 54px);
+--about-stack-pad-bottom:146px;
 
-  --about-body-size:1.12rem;
-  --about-body-line:1.95;
-  --about-body-spacing:.05em;
-  --about-body-max-w:700px;
+--about-stack-line-protrusion:156px;
 
-  /* 2カラム */
-  --about-split-gap:clamp(36px, 4vw, 56px);
-  --about-split-pad-top:clamp(28px, 3vw, 56px);
-  --about-split-pad-x:clamp(22px, 3vw, 54px);
-  --about-split-pad-bottom:clamp(72px, 10vw, 100px);
-  --about-split-margin-top:120px;
-  --about-split-margin-bottom:clamp(56px, 7vw, 96px);
+--about-heading-size:1.7rem;
+--about-heading-spacing:.20em;
+--about-item-heading-gap:18px;
 
-  --about-col-title-size:1.42rem;
-  --about-col-title-spacing:.16em;
-  --about-col-heading-gap:18px;
+--about-body-size:1.12rem;
+--about-body-line:1.95;
+--about-body-spacing:.05em;
+--about-body-max-w:700px;
 
-  --about-col-item-size:1.08rem;
-  --about-col-item-line:2;
-  --about-col-item-spacing:.05em;
+/* 2カラム */
+--about-split-gap:clamp(36px, 4vw, 56px);
+--about-split-pad-top:clamp(28px, 3vw, 56px);
+--about-split-pad-x:clamp(22px, 3vw, 54px);
+--about-split-pad-bottom:clamp(72px, 10vw, 100px);
+--about-split-margin-top:120px;
+--about-split-margin-bottom:clamp(56px, 7vw, 96px);
 
-  /* credit */
-  --about-credit-margin-top:0px;
-  --about-credit-title-size:1rem;
-  --about-credit-title-spacing:.18em;
-  --about-credit-title-gap:12px;
+--about-col-title-size:1.42rem;
+--about-col-title-spacing:.16em;
+--about-col-heading-gap:18px;
 
-  --about-credit-name-size:1.7rem;
-  --about-credit-name-spacing:.12em;
-  --about-credit-name-gap:24px;
-  --about-credit-block-gap:72px;
-  --about-credit-link-size:1rem;
+--about-col-item-size:1.08rem;
+--about-col-item-line:2;
+--about-col-item-spacing:.05em;
 
-  /* 戻り */
-  --about-back-size:.95rem;
-  --about-back-spacing:.16em;
-  --about-back-margin-top:clamp(64px, 10vw, 180px);
+/* credit */
+--about-credit-margin-top:0px;
+--about-credit-title-size:1rem;
+--about-credit-title-spacing:.18em;
+--about-credit-title-gap:12px;
 
+--about-credit-name-size:1.7rem;
+--about-credit-name-spacing:.12em;
+--about-credit-name-gap:24px;
+--about-credit-block-gap:72px;
+--about-credit-link-size:1rem;
+
+/* 戻り */
+--about-back-size:.95rem;
+--about-back-spacing:.16em;
+--about-back-margin-top:clamp(64px, 10vw, 180px);
   /* -----------------------------------------
      3-12. Modal
      動画詳細
@@ -833,11 +835,14 @@ body.view-right .inner-shell{
   min-height:var(--about-hero-min-h);
   width:100%;
   max-width:var(--about-hero-max-w);
+
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:flex-start;
+
   gap:var(--about-hero-gap);
+
   padding-top:var(--about-hero-pad-top);
   padding-bottom:var(--about-hero-pad-bottom);
 }
@@ -859,7 +864,6 @@ body.view-right .inner-shell{
 }
 
 .about-lead{
-  margin-top:var(--about-lead-margin-top);
   max-width:var(--about-lead-max-w);
   font-size:var(--about-lead-size);
   line-height:var(--about-lead-line);
@@ -869,27 +873,31 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    6-3. stack
-   本体は通常位置
-   はみ出しラインだけ疑似要素で作る
+   heroの下に通常配置
+   ライン演出のみ疑似要素
 ----------------------------------------- */
+
 .about-stack{
   position:relative;
   width:100%;
   max-width:var(--about-stack-max-w);
-  margin-top:0;
+
   margin-left:0;
   margin-right:auto;
+
   padding:
-    var(--about-stack-pad)
-    var(--about-stack-pad)
-    calc(var(--about-stack-pad) + 110px)
-    var(--about-stack-pad);
+    var(--about-stack-pad-top)
+    var(--about-stack-pad-x)
+    var(--about-stack-pad-bottom)
+    var(--about-stack-pad-x);
 
   display:grid;
   gap:var(--about-stack-gap);
+
   border-left:1px solid #fff;
 }
 
+/* hero側に伸びるライン */
 .about-stack::before{
   content:"";
   position:absolute;
@@ -900,6 +908,8 @@ body.view-right .inner-shell{
   background:#fff;
   pointer-events:none;
 }
+
+/* stack 内容 */
 
 .about-item h3{
   font-size:var(--about-heading-size);
@@ -918,19 +928,26 @@ body.view-right .inner-shell{
 /* -----------------------------------------
    6-4. 2カラム
 ----------------------------------------- */
+
 .about-split{
   border-left:1px solid #fff;
+
   display:grid;
-  grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+
   gap:var(--about-split-gap);
+
   padding:
     var(--about-split-pad-top)
     var(--about-split-pad-x)
     var(--about-split-pad-bottom);
+
   margin-top:var(--about-split-margin-top);
   margin-bottom:var(--about-split-margin-bottom);
+
   width:100%;
   max-width:1480px;
+
   margin-left:0;
   margin-right:auto;
 }
@@ -959,6 +976,7 @@ body.view-right .inner-shell{
 /* -----------------------------------------
    6-5. クレジット
 ----------------------------------------- */
+
 .about-credit{
   margin-top:var(--about-credit-margin-top);
 }
@@ -974,12 +992,16 @@ body.view-right .inner-shell{
 .about-credit-name{
   font-size:var(--about-credit-name-size);
   letter-spacing:var(--about-credit-name-spacing);
+
   margin-bottom:var(--about-credit-block-gap);
+
   display:flex;
   justify-content:space-between;
   align-items:center;
+
   width:100%;
   gap:var(--about-credit-name-gap);
+
   margin-left:0;
   margin-right:auto;
 }
@@ -992,11 +1014,14 @@ body.view-right .inner-shell{
 /* -----------------------------------------
    6-6. 戻り
 ----------------------------------------- */
+
 .about-actions{
   width:100%;
   margin-top:var(--about-back-margin-top);
+
   font-size:var(--about-back-size);
   letter-spacing:var(--about-back-spacing);
+
   text-transform:uppercase;
   text-align:center;
 }
@@ -1005,7 +1030,11 @@ body.view-right .inner-shell{
   text-decoration:none;
   border-bottom:1px solid rgba(255,255,255,.2);
   padding-bottom:2px;
-  transition:color .2s ease, filter .2s ease, transform .1s ease;
+
+  transition:
+    color .2s ease,
+    filter .2s ease,
+    transform .1s ease;
 }
 
 .about-actions a:hover{
