@@ -1,20 +1,9 @@
 (function () {
   const body = document.body;
-  const galleryScroll = document.querySelector('.gallery-scroll');
   const mq = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
-  if (!galleryScroll) return;
-
-  function isGalleryView() {
-    return body.classList.contains('view-left');
-  }
-
-  function shouldLockPageScroll() {
-    return mq.matches && isGalleryView();
-  }
-
   function updateGalleryScrollLock() {
-    body.classList.toggle('is-gallery-scroll-lock', shouldLockPageScroll());
+    body.classList.remove('is-gallery-scroll-lock');
   }
 
   const observer = new MutationObserver(() => {
