@@ -1380,16 +1380,16 @@ a{
     --modal-credit-inner-pad-x:16px;
     --modal-credit-inner-pad-bottom:12px;
 
-    --modal-credit-title-size:.76rem;
+    --modal-credit-block-w:min(88%, 420px);
+
+    --modal-credit-title-size:.74rem;
     --modal-credit-title-gap:10px;
 
-    --modal-credit-list-size:.66rem;
-    --modal-credit-list-line:1.4;
+    --modal-credit-list-size:.64rem;
+    --modal-credit-list-line:1.38;
     --modal-credit-list-gap:10px;
 
-    /* role列の固定幅 */
-    --modal-credit-col-role:148px;
-    --modal-credit-col-gap:14px;
+    --modal-credit-row-gap:20px;
 
     --modal-credit-close-size:.66rem;
   }
@@ -1538,7 +1538,6 @@ a{
   }
 
   .modal__credit-inner{
-    text-align:center;
     width:var(--modal-credit-inner-width);
     max-width:var(--modal-credit-inner-max-w);
     margin:0 auto;
@@ -1548,10 +1547,10 @@ a{
       var(--modal-credit-inner-pad-bottom);
   }
 
-  /* タイトルと一覧を同じ中央幅に揃える */
+  /* タイトルも一覧も同じ箱幅 */
   .modal__credit-title,
   .modal__credit-list{
-    width:min(100%, calc(var(--modal-credit-col-role) + var(--modal-credit-col-gap) + 1fr));
+    width:var(--modal-credit-block-w);
     max-width:100%;
     margin-left:auto;
     margin-right:auto;
@@ -1571,34 +1570,24 @@ a{
     overflow:visible;
   }
 
-  /* PC版の左右配置思想を維持しつつ、スマホ用に列幅だけ固定 */
+  /* PC版思想に寄せる */
   .credit-row{
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
-    gap:var(--modal-credit-col-gap);
-  }
-
-  .credit-role,
-  .credit-name{
-    min-width:0;
-    font-size:var(--modal-credit-list-size);
-    line-height:var(--modal-credit-list-line);
+    gap:var(--modal-credit-row-gap);
   }
 
   .credit-role{
-      flex:0 0 150px; 
-    width:var(--modal-credit-col-role);
-    flex:0 0 var(--modal-credit-col-role);
-    text-align:right;
     opacity:.7;
+    text-align:left;
     white-space:nowrap;
   }
 
   .credit-name{
-    flex:1 1 auto;
-    text-align:left;
-    word-break:break-word;
+    text-align:right;
+    font-weight:500;
+    white-space:nowrap;
   }
 }
 
