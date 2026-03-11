@@ -3,6 +3,8 @@
   if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
   const langLinks = document.querySelectorAll(".lang-link");
   const langSelect = document.querySelector(".lang-select");
   const revealLogo = document.getElementById("revealLogo");
@@ -29,7 +31,6 @@
 
     idleOutlineAlpha: 0.040,
     idleCoreAlpha: 0.012,
-    idleGlowAlpha: 0.020,
 
     wave1Amp: 0.020,
     wave2Amp: 0.012,
@@ -39,20 +40,19 @@
     shatterDuration: 1200,
     convergeDuration: 1100,
     logoDelay: 420,
+    logoDurationBeforeNavigate: 900,
 
-    shardCount: 120,
-    shardMinSize: 1.2,
-    shardMaxSize: 8.5,
+    shardCount: 140,
+    shardMinSize: 1.4,
+    shardMaxSize: 8.8,
 
     crackCount: 18,
 
     explodeDistanceMin: 0.95,
-    explodeDistanceMax: 1.55,
+    explodeDistanceMax: 1.75,
 
     convergeSnapStrength: 0.050,
-    convergeDrag: 0.86,
-
-    logoDurationBeforeNavigate: 900
+    convergeDrag: 0.86
   };
 
   function nowMs() {
@@ -81,13 +81,17 @@
       : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
+  function safe(n, fallback = 0) {
+    return Number.isFinite(n) ? n : fallback;
+  }
+
   function resize() {
-    w = window.innerWidth;
-    h = window.innerHeight;
+    w = Math.max(1, window.innerWidth || 1);
+    h = Math.max(1, window.innerHeight || 1);
     dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    canvas.width = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
+    canvas.width = Math.max(1, Math.floor(w * dpr));
+    canvas.height = Math.max(1, Math.floor(h * dpr));
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
 
@@ -95,12 +99,21 @@
   }
 
   function getCenter() {
-    return { x: w * 0.5, y: h * 0.5 };
+    return {
+      x: safe(w * 0.5, 0),
+      y: safe(h * 0.5, 0)
+    };
   }
 
   function getOrbRadius() {
-    const base = clamp(Math.min(w, h) * CONFIG.orbScale, CONFIG.orbMin, CONFIG.orbMax);
-    return base * (1 + Math.sin(time * 0.16) * 0.010);
+    if (!w || !h) return 120;
+
+    const base = Math.min(w, h) * CONFIG.orbScale;
+    const r = clamp(base, CONFIG.orbMin, CONFIG.orbMax);
+    const breathing = 1 + Math.sin(time * 0.16) * 0.010;
+    const result = r * breathing;
+
+    return Number.isFinite(result) ? result : 120;
   }
 
   function radiusAt(theta, baseR, t) {
@@ -109,7 +122,9 @@
     const wave3 = Math.sin(theta * 5.0 + t * 0.24 - 1.2) * baseR * CONFIG.wave3Amp;
     const wave4 = Math.sin(theta * 8.0 - t * 0.16 + 2.1) * baseR * CONFIG.wave4Amp;
     const breath = Math.sin(t * 0.12) * baseR * 0.006;
-    return baseR + wave1 + wave2 + wave3 + wave4 + breath;
+
+    const rr = baseR + wave1 + wave2 + wave3 + wave4 + breath;
+    return Number.isFinite(rr) ? rr : baseR;
   }
 
   function buildOrbPath(cx, cy, baseR, t, scale = 1) {
@@ -120,10 +135,12 @@
       const theta = (i / steps) * Math.PI * 2;
       const r = radiusAt(theta, baseR, t) * scale;
       pts.push({
-        x: cx + Math.cos(theta) * r,
-        y: cy + Math.sin(theta) * r
+        x: safe(cx + Math.cos(theta) * r, cx),
+        y: safe(cy + Math.sin(theta) * r, cy)
       });
     }
+
+    if (!pts.length) return;
 
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
@@ -154,12 +171,12 @@
     const driftY = Math.cos(t * 0.14) * r * 0.03;
 
     const g = ctx.createRadialGradient(
-      cx + driftX,
-      cy + driftY,
-      r * 0.12,
-      cx,
-      cy,
-      r * 2.4
+      safe(cx + driftX, cx),
+      safe(cy + driftY, cy),
+      safe(Math.max(0.0001, r * 0.12), 1),
+      safe(cx, cx),
+      safe(cy, cy),
+      safe(Math.max(0.0001, r * 2.5), r * 2.5)
     );
 
     g.addColorStop(0, `rgba(255,255,255,${0.010 * alphaMul})`);
@@ -169,18 +186,18 @@
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 2.5, 0, Math.PI * 2);
+    ctx.arc(cx, cy, Math.max(1, r * 2.5), 0, Math.PI * 2);
     ctx.fill();
   }
 
   function drawShadow(cx, cy, r, alphaMul = 1) {
     const g = ctx.createRadialGradient(
-      cx,
-      cy + r * 0.34,
-      r * 0.15,
-      cx,
-      cy + r * 0.34,
-      r * 1.0
+      safe(cx, cx),
+      safe(cy + r * 0.34, cy),
+      safe(Math.max(0.0001, r * 0.15), 1),
+      safe(cx, cx),
+      safe(cy + r * 0.34, cy),
+      safe(Math.max(0.0001, r * 1.0), r)
     );
 
     g.addColorStop(0, `rgba(0,0,0,${0.16 * alphaMul})`);
@@ -196,12 +213,12 @@
     buildOrbPath(cx, cy, r, t, scale);
 
     const body = ctx.createRadialGradient(
-      cx - r * 0.24,
-      cy - r * 0.28,
-      r * 0.05,
-      cx,
-      cy,
-      r * 1.15
+      safe(cx - r * 0.24, cx),
+      safe(cy - r * 0.28, cy),
+      safe(Math.max(0.0001, r * 0.05), 1),
+      safe(cx, cx),
+      safe(cy, cy),
+      safe(Math.max(0.0001, r * 1.15), r)
     );
 
     body.addColorStop(0, `rgba(255,255,255,${0.055 * alphaMul})`);
@@ -236,7 +253,7 @@
         const nx = (px - cx) / (r * scale);
         const ny = (py - cy) / (r * scale);
         const dist = Math.sqrt(nx * nx + ny * ny);
-        if (dist > 1.02) continue;
+        if (!Number.isFinite(dist) || dist > 1.02) continue;
 
         const v =
           Math.sin(nx * 5.8 + t * 0.72) +
@@ -245,7 +262,7 @@
           Math.sin((nx - ny) * 3.8 - t * 0.22);
 
         const alpha = ((v + 4) / 8) * 0.010 * alphaMul;
-        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.fillStyle = `rgba(255,255,255,${Math.max(0, alpha)})`;
         ctx.fillRect(px, py, cellW + 0.35, cellH + 0.35);
       }
     }
@@ -258,8 +275,12 @@
     const hy = cy - r * 0.31 * scale + Math.cos(t * 0.30) * r * 0.015;
 
     const g = ctx.createRadialGradient(
-      hx, hy, r * 0.01,
-      hx, hy, r * 0.24 * scale
+      safe(hx, cx),
+      safe(hy, cy),
+      safe(Math.max(0.0001, r * 0.01), 1),
+      safe(hx, cx),
+      safe(hy, cy),
+      safe(Math.max(0.0001, r * 0.24 * scale), r * 0.2)
     );
 
     g.addColorStop(0, `rgba(255,255,255,${0.06 * alphaMul})`);
@@ -269,7 +290,7 @@
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(hx, hy, r * 0.24 * scale, 0, Math.PI * 2);
+    ctx.arc(hx, hy, Math.max(1, r * 0.24 * scale), 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -283,10 +304,12 @@
 
   function createCrackLines(cx, cy, r) {
     crackLines = [];
+
     for (let i = 0; i < CONFIG.crackCount; i++) {
       const baseAngle = (Math.PI * 2 * i) / CONFIG.crackCount + (Math.random() - 0.5) * 0.16;
       const segments = 4 + Math.floor(Math.random() * 3);
       const pts = [{ x: cx, y: cy }];
+
       for (let s = 1; s <= segments; s++) {
         const rr = r * (0.18 + (s / segments) * (0.78 + Math.random() * 0.18));
         const aa = baseAngle + (Math.random() - 0.5) * 0.30;
@@ -295,6 +318,7 @@
           y: cy + Math.sin(aa) * rr
         });
       }
+
       crackLines.push(pts);
     }
   }
@@ -304,20 +328,20 @@
     const maxSide = Math.max(w, h);
 
     for (let i = 0; i < CONFIG.shardCount; i++) {
-      const angle = (Math.PI * 2 * i) / CONFIG.shardCount + (Math.random() - 0.5) * 0.22;
-      const speedMul = 0.75 + Math.random() * 0.9;
+      const angle = (Math.PI * 2 * i) / CONFIG.shardCount + (Math.random() - 0.5) * 0.26;
+      const speedMul = 0.8 + Math.random() * 1.0;
       const distNorm = CONFIG.explodeDistanceMin + Math.random() * (CONFIG.explodeDistanceMax - CONFIG.explodeDistanceMin);
       const targetDist = maxSide * distNorm * speedMul;
 
-      const sx = cx + Math.cos(angle) * r * (0.10 + Math.random() * 0.10);
-      const sy = cy + Math.sin(angle) * r * (0.10 + Math.random() * 0.10);
+      const sx = cx + Math.cos(angle) * r * (0.08 + Math.random() * 0.12);
+      const sy = cy + Math.sin(angle) * r * (0.08 + Math.random() * 0.12);
 
       const tx = cx + Math.cos(angle) * targetDist;
       const ty = cy + Math.sin(angle) * targetDist;
 
       const size = CONFIG.shardMinSize + Math.random() * (CONFIG.shardMaxSize - CONFIG.shardMinSize);
-      const spin = (Math.random() - 0.5) * 0.28;
-      const aspect = 0.8 + Math.random() * 2.4;
+      const spin = (Math.random() - 0.5) * 0.32;
+      const aspect = 0.7 + Math.random() * 2.8;
 
       shards.push({
         startX: sx,
@@ -332,8 +356,9 @@
         aspect,
         rot: Math.random() * Math.PI * 2,
         spin,
-        alpha: 0.14 + Math.random() * 0.18,
-        targetIndex: 0
+        alpha: 0.12 + Math.random() * 0.20,
+        logoTargetX: cx,
+        logoTargetY: cy
       });
     }
   }
@@ -346,7 +371,7 @@
     ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
     ctx.lineWidth = 1;
 
-    crackLines.forEach(line => {
+    crackLines.forEach((line) => {
       ctx.beginPath();
       ctx.moveTo(line[0].x, line[0].y);
 
@@ -361,80 +386,107 @@
     ctx.restore();
   }
 
+  function drawGlassShard(x, y, size, aspect, rot, alpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+
+    ctx.beginPath();
+    ctx.moveTo(-size * 1.2 * aspect, -size * 0.15);
+    ctx.lineTo(-size * 0.15, -size * 1.0);
+    ctx.lineTo(size * 1.1 * aspect, -size * 0.10);
+    ctx.lineTo(size * 0.30, size * 0.95);
+    ctx.lineTo(-size * 0.95 * aspect, size * 0.35);
+    ctx.closePath();
+
+    ctx.fillStyle = `rgba(255,255,255,${alpha * 0.45})`;
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.55 * aspect, -size * 0.08);
+    ctx.lineTo(size * 0.70 * aspect, -size * 0.02);
+    ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.65})`;
+    ctx.lineWidth = 0.7;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
   function drawShardsExplode(progress) {
-    // 近くは素早く、遠くほど終盤が遅く見えるようなカーブ
     const move = 1 - Math.pow(1 - progress, 5);
 
-    shards.forEach(s => {
-      const x = lerp(s.startX, s.targetX, move);
-      const y = lerp(s.startY, s.targetY, move);
-
-      s.x = x;
-      s.y = y;
+    shards.forEach((s) => {
+      s.x = lerp(s.startX, s.targetX, move);
+      s.y = lerp(s.startY, s.targetY, move);
       s.rot += s.spin;
 
-      const alpha = s.alpha * (1 - progress * 0.28);
-
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(s.rot);
-
-      ctx.beginPath();
-      ctx.ellipse(0, 0, s.size * s.aspect, s.size, 0, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      ctx.fill();
-
-      ctx.restore();
+      const alpha = s.alpha * (1 - progress * 0.25);
+      drawGlassShard(s.x, s.y, s.size, s.aspect, s.rot, alpha);
     });
   }
 
   function buildLogoTargets() {
-    // 画面中央付近に「憂き世」っぽい密度ブロックを作る簡易ターゲット
-    // フォントアウトライン取得なしで、収束感を優先
     const cx = w * 0.5;
     const cy = h * 0.5;
     const gap = Math.min(w, h) * 0.095;
-    const scale = Math.min(w, h) * 0.0075;
+    const scale = Math.min(w, h) * 0.0078;
 
     const glyphs = [
-      { ox: -gap, oy: 0, matrix: [
-        "  xxx ",
-        " x   x",
-        "xxxxx ",
-        "x xxx ",
-        "x x x ",
-        "xxxxx ",
-        "x   x ",
-        "x   x "
-      ]},
-      { ox: 0, oy: 0, matrix: [
-        " xxx  ",
-        "   x  ",
-        " xxxx ",
-        " x  x ",
-        " xxxx ",
-        " x    ",
-        " xxxx ",
-        "      "
-      ]},
-      { ox: gap, oy: 0, matrix: [
-        "xxxxx ",
-        "  x   ",
-        "xxxxx ",
-        "x  xx ",
-        "x   x ",
-        "xxxxx ",
-        "      ",
-        "      "
-      ]}
+      {
+        ox: -gap,
+        oy: 0,
+        matrix: [
+          "  xxx ",
+          " x   x",
+          "xxxxx ",
+          "x xxx ",
+          "x x x ",
+          "xxxxx ",
+          "x   x ",
+          "x   x "
+        ]
+      },
+      {
+        ox: 0,
+        oy: 0,
+        matrix: [
+          " xxx  ",
+          "   x  ",
+          " xxxx ",
+          " x  x ",
+          " xxxx ",
+          " x    ",
+          " xxxx ",
+          "      "
+        ]
+      },
+      {
+        ox: gap,
+        oy: 0,
+        matrix: [
+          "xxxxx ",
+          "  x   ",
+          "xxxxx ",
+          "x  xx ",
+          "x   x ",
+          "xxxxx ",
+          "      ",
+          "      "
+        ]
+      }
     ];
 
     const targets = [];
 
-    glyphs.forEach(g => {
+    glyphs.forEach((g) => {
       g.matrix.forEach((row, iy) => {
         for (let ix = 0; ix < row.length; ix++) {
           if (row[ix] !== "x") continue;
+
           const baseX = cx + g.ox + (ix - row.length / 2) * scale * 1.7;
           const baseY = cy + g.oy + (iy - g.matrix.length / 2) * scale * 2.0;
 
@@ -456,47 +508,35 @@
     if (!targets.length) return;
 
     shards.forEach((s, i) => {
-      s.targetIndex = i % targets.length;
-      s.logoTargetX = targets[s.targetIndex].x;
-      s.logoTargetY = targets[s.targetIndex].y;
+      const target = targets[i % targets.length];
+      s.logoTargetX = target.x;
+      s.logoTargetY = target.y;
     });
   }
 
   function drawShardsConverge(progress) {
-    // 戻る瞬間ほど速く。最初は遠くで漂い、終盤に強く吸われる。
     const pull = easeInCubic(progress);
 
-    shards.forEach(s => {
-      const ax = (s.logoTargetX - s.x) * (CONFIG.convergeSnapStrength * (0.35 + pull * 2.4));
-      const ay = (s.logoTargetY - s.y) * (CONFIG.convergeSnapStrength * (0.35 + pull * 2.4));
+    shards.forEach((s) => {
+      const ax = (s.logoTargetX - s.x) * (CONFIG.convergeSnapStrength * (0.35 + pull * 2.5));
+      const ay = (s.logoTargetY - s.y) * (CONFIG.convergeSnapStrength * (0.35 + pull * 2.5));
 
       s.vx += ax;
       s.vy += ay;
 
-      // 遠くでは緩く、終盤だけドラッグを弱めて急加速っぽく見せる
       const dynamicDrag = lerp(0.93, CONFIG.convergeDrag, pull);
       s.vx *= dynamicDrag;
       s.vy *= dynamicDrag;
 
       s.x += s.vx;
       s.y += s.vy;
-      s.rot += s.spin * (0.4 + (1 - pull) * 0.8);
+      s.rot += s.spin * (0.35 + (1 - pull) * 0.85);
 
-      const alpha = lerp(0.05, 0.28, pull);
-
-      ctx.save();
-      ctx.translate(s.x, s.y);
-      ctx.rotate(s.rot);
-
-      const finalSize = lerp(s.size * 0.72, 1.8, pull);
+      const alpha = lerp(0.04, 0.30, pull);
+      const finalSize = lerp(s.size * 0.70, 1.6, pull);
       const finalAspect = lerp(s.aspect, 1.0, pull);
 
-      ctx.beginPath();
-      ctx.ellipse(0, 0, finalSize * finalAspect, finalSize, 0, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      ctx.fill();
-
-      ctx.restore();
+      drawGlassShard(s.x, s.y, finalSize, finalAspect, s.rot, alpha);
     });
   }
 
@@ -544,7 +584,7 @@
 
     const { x: cx, y: cy } = getCenter();
     const r = getOrbRadius();
-    const t = time * CONFIG.speed;
+    const t = time * 0.48;
 
     if (state === "idle") {
       drawIdleOrb(cx, cy, r, t);
@@ -572,14 +612,12 @@
 
     if (state === "converge") {
       const p = clamp((now - stateStart) / CONFIG.convergeDuration, 0, 1);
-
       drawAmbientVoid(cx, cy, r, t, 0.12 * (1 - p));
       drawShardsConverge(p);
       return;
     }
 
     if (state === "logo") {
-      // ロゴが出た後も少しだけ残粒子
       drawShardsConverge(1);
     }
   }
@@ -599,7 +637,7 @@
     tick();
   }
 
-  langLinks.forEach(link => {
+  langLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
       startTransition(link.getAttribute("href"));
@@ -614,5 +652,6 @@
     motionQuery.addListener(start);
   }
 
-  start();
+  resize();
+  tick();
 })();
