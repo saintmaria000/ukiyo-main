@@ -1402,6 +1402,11 @@ body.view-right .inner-shell{
   /* overlap方式は廃止 */
   .about-stack{
     margin-top:0;
+    padding:
+    var(--about-stack-pad)
+    var(--about-stack-pad)
+    calc(var(--about-stack-pad) + 30px)
+    var(--about-stack-pad);
   }
 
   .about-stack > :first-child{
