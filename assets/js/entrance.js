@@ -5,7 +5,6 @@
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const langLinks = document.querySelectorAll(".lang-link");
   const langSelect = document.querySelector(".lang-select");
 
   let w = 0;
@@ -17,12 +16,14 @@
   let state = "idle"; // idle | shatter | converge | bloom | logo
   let stateStart = 0;
   let nextHref = null;
+  let hasTriggered = false;
 
   let shards = [];
   let bloomParticles = [];
   let finalLogoEl = null;
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const ENTER_HREF = "./ja/index.html";
 
   const CONFIG = {
     orbScale: 0.155,
@@ -32,17 +33,16 @@
     idleOutlineAlpha: 0.042,
     idleCoreAlpha: 0.014,
 
-    // 水滴の揺らめきを少し強める
     wave1Amp: 0.034,
     wave2Amp: 0.020,
     wave3Amp: 0.013,
     wave4Amp: 0.008,
     idlePulseAmp: 0.020,
 
-    shatterDuration: 2100,
+    shatterDuration: 1500,
     convergeDuration: 1650,
-    bloomDuration: 820,
-    logoHoldDuration: 1200,
+    bloomDuration: 560,
+    logoHoldDuration: 900,
 
     shardCountLarge: 95,
     shardCountSmall: 220,
@@ -120,7 +120,7 @@
       }
 
       .js-final-logo__inner{
-        transform:translateY(-42px) scale(.988);
+        transform:translateY(-34px) scale(.992);
         opacity:0;
       }
 
@@ -129,7 +129,7 @@
       }
 
       .js-final-logo.is-visible .js-final-logo__inner{
-        animation:jsFinalLogoDrop 1180ms cubic-bezier(.19,.82,.22,1) forwards;
+        animation:jsFinalLogoDrop 760ms cubic-bezier(.22,.88,.22,1) forwards;
       }
 
       .js-final-logo__main{
@@ -151,13 +151,13 @@
       @keyframes jsFinalLogoDrop{
         0%{
           opacity:0;
-          transform:translateY(-42px) scale(.988);
+          transform:translateY(-34px) scale(.992);
         }
-        58%{
+        52%{
           opacity:1;
-          transform:translateY(5px) scale(1);
+          transform:translateY(4px) scale(1);
         }
-        78%{
+        72%{
           opacity:1;
           transform:translateY(-1px) scale(1);
         }
@@ -426,11 +426,24 @@
       const explodeLength = lerp(CONFIG.explodeRadiusMin, CONFIG.explodeRadiusMax, Math.random());
       const spreadBoost = isSmall ? lerp(1.0, 1.55, Math.random()) : lerp(0.9, 1.2, Math.random());
 
-      const targetX = cx + dir.x * explodeLength * spreadBoost;
-      const targetY = cy + dir.y * explodeLength * spreadBoost;
-      const targetZ = dir.z * explodeLength * spreadBoost;
-
       const frontness = (dir.z + 1) * 0.5;
+      const stayFront = frontness > 0.74;
+
+      let targetX;
+      let targetY;
+      let targetZ;
+
+      if (stayFront) {
+        const floatRadius = lerp(r * 1.0, Math.min(w, h) * 0.34, Math.random());
+        targetX = cx + dir.x * floatRadius;
+        targetY = cy + dir.y * floatRadius * lerp(0.85, 1.15, Math.random());
+        targetZ = lerp(260, 980, Math.random());
+      } else {
+        targetX = cx + dir.x * explodeLength * spreadBoost;
+        targetY = cy + dir.y * explodeLength * spreadBoost;
+        targetZ = dir.z * explodeLength * spreadBoost;
+      }
+
       const sizeMin = isSmall ? CONFIG.shardSmallMin : CONFIG.shardLargeMin;
       const sizeMax = isSmall ? CONFIG.shardSmallMax : CONFIG.shardLargeMax;
       const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.4, frontness);
@@ -474,9 +487,10 @@
         centerTargetZ: 0,
         distFromCenterNorm: 1,
         frontness,
-
-        // 手前ほど少し滞空
-        hoverDelay: lerp(0, 260, frontness) + Math.random() * 180
+        stayFront,
+        hoverDelay: stayFront
+          ? lerp(380, 760, Math.random())
+          : lerp(0, 240, frontness) + Math.random() * 140
       });
     }
 
@@ -559,9 +573,20 @@
     const drawList = [];
 
     shards.forEach((s) => {
-      s.x = lerp(s.startX, s.targetX, move);
-      s.y = lerp(s.startY, s.targetY, move);
-      s.z = lerp(s.startZ, s.targetZ, move);
+      const localMove = s.stayFront
+        ? easeOutCubic(clamp(progress * 0.88, 0, 1))
+        : move;
+
+      s.x = lerp(s.startX, s.targetX, localMove);
+      s.y = lerp(s.startY, s.targetY, localMove);
+      s.z = lerp(s.startZ, s.targetZ, localMove);
+
+      if (s.stayFront) {
+        const drift = 1 - progress;
+        s.x += Math.sin(s.rot * 1.17 + time * 1.6) * (0.8 + s.frontness * 1.8) * drift;
+        s.y += Math.cos(s.rot * 0.91 + time * 1.2) * (0.6 + s.frontness * 1.4) * drift;
+      }
+
       s.rot += s.spin;
       drawList.push(s);
     });
@@ -569,8 +594,21 @@
     drawList.sort((a, b) => a.z - b.z);
 
     drawList.forEach((s) => {
-      const alpha = s.alpha * (1 - progress * 0.14);
-      drawGlassShard3D(s.x, s.y, s.z, s.size, s.aspect, s.rot, alpha, s.frontness, s.isSmall);
+      const alpha = s.stayFront
+        ? s.alpha * (1 - progress * 0.05)
+        : s.alpha * (1 - progress * 0.14);
+
+      drawGlassShard3D(
+        s.x,
+        s.y,
+        s.z,
+        s.size,
+        s.aspect,
+        s.rot,
+        alpha,
+        s.frontness,
+        s.isSmall
+      );
     });
   }
 
@@ -627,16 +665,17 @@
 
     shards.forEach((s) => {
       const elapsedMs = progress * CONFIG.convergeDuration;
-      const holdRatio = clamp(s.hoverDelay / CONFIG.convergeDuration, 0, 0.45);
-      const localProgress = clamp((elapsedMs - s.hoverDelay) / Math.max(1, CONFIG.convergeDuration - s.hoverDelay), 0, 1);
+      const localProgress = clamp(
+        (elapsedMs - s.hoverDelay) / Math.max(1, CONFIG.convergeDuration - s.hoverDelay),
+        0,
+        1
+      );
 
       const dist = Math.hypot(s.x - cx, s.y - cy);
       const maxDist = Math.max(Math.hypot(w * 0.5, h * 0.5), 1);
       s.distFromCenterNorm = clamp(dist / maxDist, 0, 1);
 
       const outerBias = s.distFromCenterNorm;
-      const innerBias = 1 - outerBias;
-
       const pull = easeInCubic(localProgress);
       const shapedPull = easeInOutCubic(localProgress);
 
@@ -656,11 +695,10 @@
         s.y += Math.cos(s.rot * 0.92 + hoverT * 2.8) * (0.10 + s.frontness * 0.20);
         s.z += hoverWave * lerp(1.8, 10.0, s.frontness);
       } else {
-        const speedBias = lerp(1.28, 0.56, outerBias); // 内側速く / 外側遅く
+        const speedBias = lerp(1.28, 0.56, outerBias);
         snap = CONFIG.convergeSnapStrength * speedBias * (0.22 + shapedPull * 3.1);
         snapZ = CONFIG.convergeZStrength * speedBias * (0.18 + shapedPull * 2.7);
 
-        // 終盤は強く drag をかけて跳ね返りを殺す
         drag = lerp(
           0.93,
           lerp(0.84, 0.89, outerBias),
@@ -696,9 +734,7 @@
 
       drawList.push({
         ...s,
-        localProgress,
-        holdRatio,
-        innerBias
+        localProgress
       });
     });
 
@@ -764,8 +800,6 @@
       return;
     }
 
-    // bloom の終わりで即ロゴではなく少し間を置きつつ、
-    // まだ吸い込まれている最中にロゴへ移る
     if (state === "bloom" && elapsed >= CONFIG.bloomDuration) {
       state = "logo";
       stateStart = now;
@@ -823,14 +857,11 @@
       const p = clamp((now - stateStart) / CONFIG.bloomDuration, 0, 1);
       drawCentralBloom(p);
       drawBloomParticles(p);
-
-      // bloom 中もまだ中央に吸わせ続ける
       drawShardsConverge(0.88 + p * 0.12);
       return;
     }
 
     if (state === "logo") {
-      // ロゴを見せつつ、ごく短く収束の残像感だけ残す
       const p = clamp((now - stateStart) / Math.max(1, CONFIG.logoHoldDuration * 0.42), 0, 1);
       if (p < 1) {
         drawShardsConverge(0.97 + p * 0.03);
@@ -855,23 +886,26 @@
     tick();
   }
 
-const ENTER_HREF = "./ja/index.html";
+  function handleScreenTrigger(e) {
+    if (state !== "idle" || hasTriggered) return;
+    hasTriggered = true;
 
-function handleScreenTrigger(e) {
-  if (state !== "idle") return;
-  if (e && e.preventDefault) e.preventDefault();
-  startTransition(ENTER_HREF);
-}
-window.addEventListener("pointerdown", handleScreenTrigger, { passive:false });
+    if (e && e.preventDefault) e.preventDefault();
+    startTransition(ENTER_HREF);
+  }
 
-window.addEventListener("resize", resize);
+  document.addEventListener("pointerdown", handleScreenTrigger, { passive: false });
+  document.addEventListener("touchstart", handleScreenTrigger, { passive: false });
+  document.addEventListener("click", handleScreenTrigger, { passive: false });
 
-if (motionQuery.addEventListener) {
-  motionQuery.addEventListener("change", start);
-} else if (motionQuery.addListener) {
-  motionQuery.addListener(start);
-}
+  window.addEventListener("resize", resize);
 
-resize();
-tick();
+  if (motionQuery.addEventListener) {
+    motionQuery.addEventListener("change", start);
+  } else if (motionQuery.addListener) {
+    motionQuery.addListener(start);
+  }
+
+  resize();
+  tick();
 })();
