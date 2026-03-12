@@ -2,6 +2,12 @@
 (() => {
   "use strict";
 
+  /* =========================================================
+     01. DOM / Base
+     - このファイルはエントランス専用
+     - 構造は維持しつつ、見た目の質感だけ調整した完成版
+     - セクターごとに張り替えやすいよう区切ってある
+  ========================================================= */
   const canvas = document.getElementById("particle-canvas");
   if (!canvas) return;
 
@@ -12,14 +18,28 @@
   const revealLogo = document.getElementById("revealLogo");
   const entranceGate = document.getElementById("entranceGate");
 
+  /* =========================================================
+     02. Config / 可変値
+     - 見た目を触るならまずここ
+     - 数字の意味を横に書いてある
+  ========================================================= */
   const CONFIG = {
     bg: "#000000",
 
+    // -------------------------------------------------------
     // 地平線
+    // 0 = 画面上端 / 1 = 画面下端
+    // 0.58〜0.62 は「中央より少し下」
+    // -------------------------------------------------------
     horizonYMin: 0.58,
     horizonYMax: 0.62,
 
+    // -------------------------------------------------------
     // 水滴
+    // radius   : ベース半径
+    // wobbleAmp: 揺らめき量
+    // floatY   : 画面中央からの上下位置（マイナスで上）
+    // -------------------------------------------------------
     droplet: {
       radius: 104,
       wobbleAmp: 0.115,
@@ -28,7 +48,15 @@
       floatY: -54
     },
 
-    // 時間
+    // -------------------------------------------------------
+    // フェーズ時間
+    // hint  : 割れる前の予兆
+    // burst : 爆散
+    // drift : 滞空
+    // gather: 収束
+    // flash : 圧縮発光
+    // logo  : 憂き世表示
+    // -------------------------------------------------------
     phase: {
       hint: 0.15,
       burst: 1.0,
@@ -38,20 +66,37 @@
       logo: 0.8
     },
 
-    // 破片
+    // -------------------------------------------------------
+    // 破片量
+    // -------------------------------------------------------
     shardCount: 160,
     shardNearRatio: 0.16,
     shardMidRatio: 0.60,
     shardFarRatio: 0.24,
     gravityInflowCount: 36,
 
+    // -------------------------------------------------------
     // 飛散
+    // spreadBoost   : 全体の広がり
+    // offscreenBoost: 画面外まで保持する範囲
+    // centerRetention: 内側に残る破片割合
+    // midRetention   : 中距離帯の割合
+    // -------------------------------------------------------
     spreadBoost: 1.9,
     offscreenBoost: 1.45,
     centerRetention: 0.42,
     midRetention: 0.28,
 
+    // -------------------------------------------------------
     // 収束
+    // gatherMaxPull    : 既存破片の最大吸引力
+    // gatherInflowPull : 画面外流入片の最大吸引力
+    // gatherSteer      : xy方向の吸引追従
+    // gatherZSteer     : z方向の吸引追従
+    // gatherSnapRadius : 中央近傍で一気に核へ落ち込む距離
+    // vanishRadius     : 中央到達で消す半径
+    // vanishZ          : zも十分中央に寄ったら消す
+    // -------------------------------------------------------
     gatherMaxPull: 2350,
     gatherInflowPull: 2650,
     gatherSteer: 5.4,
@@ -64,9 +109,15 @@
     vanishZInflow: 12
   };
 
+  /* =========================================================
+     03. Media Query
+  ========================================================= */
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const coarsePortraitQuery = window.matchMedia("(pointer: coarse) and (orientation: portrait)");
 
+  /* =========================================================
+     04. Runtime State
+  ========================================================= */
   let w = 0;
   let h = 0;
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -96,6 +147,9 @@
     entranceDoneFired: false
   };
 
+  /* =========================================================
+     05. Utils
+  ========================================================= */
   function clamp(v, min, max) {
     return Math.max(min, Math.min(max, v));
   }
@@ -132,6 +186,9 @@
     return arr[(Math.random() * arr.length) | 0];
   }
 
+  /* =========================================================
+     06. Resize / Layout
+  ========================================================= */
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     w = window.innerWidth;
@@ -151,6 +208,9 @@
     if (!started) createShardField();
   }
 
+  /* =========================================================
+     07. Shards / Generate
+  ========================================================= */
   function createShardField() {
     state.shards.length = 0;
     state.inflow.length = 0;
@@ -201,7 +261,6 @@
 
     const baseSpeed = lerp(180, 1280, depth) * CONFIG.spreadBoost;
     const speed = baseSpeed * spreadMul;
-
     const vz = rand(-1.15, 1.45) * (depth > 0.6 ? 1.35 : 1.0);
 
     return {
@@ -269,6 +328,9 @@
     };
   }
 
+  /* =========================================================
+     08. Phase
+  ========================================================= */
   function getPhase(t) {
     if (t < T_HINT) return "hint";
     if (t < T_BURST) return "burst";
@@ -279,6 +341,9 @@
     return "done";
   }
 
+  /* =========================================================
+     09. Water Droplet
+  ========================================================= */
   function getDropletMorph(time, hintK) {
     const base = CONFIG.droplet.radius * Math.min(w / 1200, h / 900, 1.12);
     const wobble =
@@ -301,85 +366,6 @@
     };
   }
 
-  function drawBackground(time) {
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = CONFIG.bg;
-    ctx.fillRect(0, 0, w, h);
-
-    drawHalo(time);
-    drawHorizon();
-    drawWater(time);
-  }
-
-  function drawHalo(time) {
-    const pulse = 0.93 + Math.sin(time * 1.1) * 0.03;
-    const r = Math.max(w, h) * 0.16 * pulse;
-    const g = ctx.createRadialGradient(cx, cy - 10, 0, cx, cy - 10, r);
-    g.addColorStop(0, "rgba(255,255,255,0.12)");
-    g.addColorStop(0.33, "rgba(255,255,255,0.05)");
-    g.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(cx, cy - 10, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  function drawHorizon() {
-    const lineW = w * 0.44;
-    const g = ctx.createLinearGradient(cx - lineW * 0.5, 0, cx + lineW * 0.5, 0);
-    g.addColorStop(0, "rgba(255,255,255,0)");
-    g.addColorStop(0.18, "rgba(255,255,255,0.045)");
-    g.addColorStop(0.5, "rgba(255,255,255,0.1)");
-    g.addColorStop(0.82, "rgba(255,255,255,0.045)");
-    g.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.strokeStyle = g;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(cx - lineW * 0.5, horizonY);
-    ctx.lineTo(cx + lineW * 0.5, horizonY);
-    ctx.stroke();
-  }
-
-  function drawWater(time) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, horizonY, w, h - horizonY);
-    ctx.clip();
-
-    const g = ctx.createLinearGradient(0, horizonY, 0, h);
-    g.addColorStop(0, "rgba(8,8,8,1)");
-    g.addColorStop(0.08, "rgba(4,4,4,1)");
-    g.addColorStop(1, "rgba(0,0,0,1)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, horizonY, w, h - horizonY);
-
-    const lineCount = 10;
-    for (let i = 0; i < lineCount; i++) {
-      const y = horizonY + 6 + i * 8;
-      const a = 0.018 * (1 - i / lineCount);
-      const wave = Math.sin(time * 0.8 + i * 0.9) * 8;
-      const grad = ctx.createLinearGradient(0, 0, w, 0);
-      grad.addColorStop(0, "rgba(255,255,255,0)");
-      grad.addColorStop(0.2, `rgba(255,255,255,${a * 0.35})`);
-      grad.addColorStop(0.5, `rgba(255,255,255,${a})`);
-      grad.addColorStop(0.8, `rgba(255,255,255,${a * 0.35})`);
-      grad.addColorStop(1, "rgba(255,255,255,0)");
-
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = 0; x <= w; x += 22) {
-        const yy = y + Math.sin(x * 0.012 + wave) * 0.8;
-        if (x === 0) ctx.moveTo(x, yy);
-        else ctx.lineTo(x, yy);
-      }
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  }
-
   function buildDropletPath(time, hintK = 0) {
     const m = getDropletMorph(time, hintK);
     const pts = [];
@@ -391,6 +377,7 @@
       const n2 = Math.sin(a * 5 - time * 2.4 + 0.6) * m.warpB * 0.08;
       const n3 = Math.cos(a * 2 + time * 1.1 - 0.8) * 0.03;
       const rr = 1 + n1 + n2 + n3;
+
       pts.push({
         x: cx + Math.cos(a) * m.rx * rr,
         y: cy + Math.sin(a) * m.ry * rr
@@ -452,6 +439,109 @@
     ctx.restore();
   }
 
+  /* =========================================================
+     10. Background / Halo / Horizon / Water
+  ========================================================= */
+  function drawBackground(time) {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = CONFIG.bg;
+    ctx.fillRect(0, 0, w, h);
+
+    drawHalo(time);
+    drawHorizon(time);
+    drawWater(time);
+  }
+
+  function drawHalo(time) {
+    const pulse = 0.93 + Math.sin(time * 1.1) * 0.03;
+    const r = Math.max(w, h) * 0.16 * pulse;
+    const g = ctx.createRadialGradient(cx, cy - 10, 0, cx, cy - 10, r);
+    g.addColorStop(0, "rgba(255,255,255,0.12)");
+    g.addColorStop(0.33, "rgba(255,255,255,0.05)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy - 10, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawHorizon(time) {
+    const lineW = w * 0.44;
+    const amp = 0.8;
+    const yBase = horizonY;
+
+    const g = ctx.createLinearGradient(cx - lineW * 0.5, 0, cx + lineW * 0.5, 0);
+    g.addColorStop(0, "rgba(255,255,255,0)");
+    g.addColorStop(0.18, "rgba(255,255,255,0.028)");
+    g.addColorStop(0.5, "rgba(255,255,255,0.075)");
+    g.addColorStop(0.82, "rgba(255,255,255,0.028)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+
+    const startX = cx - lineW * 0.5;
+    const endX = cx + lineW * 0.5;
+
+    for (let x = startX; x <= endX; x += 8) {
+      const local = (x - startX) / lineW;
+      const centerWeight = 1 - Math.abs(local - 0.5) * 2;
+      const y =
+        yBase +
+        Math.sin(time * 0.45 + x * 0.01) * amp * 0.5 * centerWeight +
+        Math.sin(time * 0.22 + x * 0.004) * amp * 0.35;
+
+      if (x === startX) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    ctx.stroke();
+  }
+
+  function drawWater(time) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, horizonY, w, h - horizonY);
+    ctx.clip();
+
+    const g = ctx.createLinearGradient(0, horizonY, 0, h);
+    g.addColorStop(0, "rgba(8,8,8,1)");
+    g.addColorStop(0.08, "rgba(4,4,4,1)");
+    g.addColorStop(1, "rgba(0,0,0,1)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, horizonY, w, h - horizonY);
+
+    const lineCount = 10;
+    for (let i = 0; i < lineCount; i++) {
+      const y = horizonY + 6 + i * 8;
+      const a = 0.018 * (1 - i / lineCount);
+      const wave = Math.sin(time * 0.8 + i * 0.9) * 8;
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, "rgba(255,255,255,0)");
+      grad.addColorStop(0.2, `rgba(255,255,255,${a * 0.35})`);
+      grad.addColorStop(0.5, `rgba(255,255,255,${a})`);
+      grad.addColorStop(0.8, `rgba(255,255,255,${a * 0.35})`);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += 22) {
+        const yy = y + Math.sin(x * 0.012 + wave) * 0.8;
+        if (x === 0) ctx.moveTo(x, yy);
+        else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  /* =========================================================
+     11. Reflection / 水面反射
+     - 構造は変えず、水滴全体がちゃんと映る版
+  ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
 
@@ -520,6 +610,11 @@
     ctx.restore();
   }
 
+  /* =========================================================
+     12. Shards / Update
+     - 収束は「見えたまま中央へ」
+     - 途中で消さず、中央到達で消す
+  ========================================================= */
   function getSnapRadius(s) {
     return s.depthBand === "near" ? CONFIG.gatherSnapRadiusNear : CONFIG.gatherSnapRadius;
   }
@@ -575,7 +670,6 @@
     s.z += s.dz * dt;
     s.rot += s.spin * dt * 0.62;
 
-    // 消すのは最後の最後だけ
     if (tk > 0.97) {
       s.alpha *= 0.997;
       s.fillAlpha *= 0.994;
@@ -654,6 +748,9 @@
     }
   }
 
+  /* =========================================================
+     13. Shards / Draw
+  ========================================================= */
   function projectScale(z) {
     return 1 + z / 420;
   }
@@ -759,6 +856,9 @@
     }
   }
 
+  /* =========================================================
+     14. Compression Flash
+  ========================================================= */
   function drawCompressionFlash() {
     if (state.flash <= 0.001) return;
 
@@ -786,6 +886,11 @@
     ctx.restore();
   }
 
+  /* =========================================================
+     15. Brand / Reveal Logo
+     - 初期ロゴは広がって薄くなる
+     - 憂き世は上から落ちて1回だけ軽くバウンド
+  ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
     brand.style.opacity = String(clamp(opacity, 0, 1));
@@ -794,10 +899,23 @@
 
   function setRevealOpacity(opacity) {
     if (!revealLogo) return;
-    revealLogo.style.opacity = String(clamp(opacity, 0, 1));
-    revealLogo.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
+
+    const k = clamp(opacity, 0, 1);
+
+    revealLogo.style.opacity = String(k);
+    revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
+
+    let y;
+    if (k < 0.65) {
+      const drop = k / 0.65;
+      y = lerp(-120, 8, easeOutCubic(drop));
+    } else {
+      const bounce = (k - 0.65) / 0.35;
+      y = 8 - Math.sin(bounce * Math.PI) * 8;
+    }
+
     revealLogo.style.transform =
-      `translate(-50%, -50%) translateY(${lerp(10, 0, opacity)}px) scale(${lerp(0.985, 1, opacity)})`;
+      `translate(-50%, -50%) translateY(${y}px) scale(${lerp(0.96, 1, k)})`;
   }
 
   function prepareLogos() {
@@ -819,7 +937,7 @@
       revealLogo.style.left = revealLogo.style.left || "50%";
       revealLogo.style.top = revealLogo.style.top || "50%";
       revealLogo.style.zIndex = "25";
-      revealLogo.style.transform = "translate(-50%, -50%) translateY(10px) scale(0.985)";
+      revealLogo.style.transform = "translate(-50%, -50%) translateY(-120px) scale(0.96)";
     }
   }
 
@@ -829,6 +947,9 @@
     revealLogo.style.visibility = "visible";
   }
 
+  /* =========================================================
+     16. Gate / 完了イベント
+  ========================================================= */
   function openEntranceGateFallback() {
     if (!entranceGate) return;
 
@@ -848,11 +969,12 @@
     state.entranceDoneFired = true;
 
     window.dispatchEvent(new Event("entrance:done"));
-
-    // gate.js が拾えない場合の保険
     window.setTimeout(openEntranceGateFallback, 30);
   }
 
+  /* =========================================================
+     17. Render
+  ========================================================= */
   function render(ts) {
     const now = ts * 0.001;
     if (!lastTs) lastTs = now;
@@ -876,15 +998,31 @@
     }
 
     if (phase === "hint") {
-      setBrandOpacity(1 - hintK * 0.72);
+      // 早く消えすぎない
+      setBrandOpacity(1 - hintK * 0.38);
       setRevealOpacity(0);
       drawDroplet(now, hintK);
       drawReflection(now, hintK);
+
     } else if (phase === "burst" || phase === "drift" || phase === "gather") {
-      setBrandOpacity(phase === "burst" ? 0.28 : 0);
+
+      if (phase === "burst") {
+        const burstK = clamp((t - T_HINT) / P.burst, 0, 1);
+        setBrandOpacity(1 - easeOutCubic(burstK));
+
+        // 少し広がって薄くなる
+        if (brand) {
+          const spread = 1 + burstK * 0.035;
+          brand.style.transform = `translate(-50%, -50%) scale(${spread})`;
+        }
+      } else {
+        setBrandOpacity(0);
+      }
+
       setRevealOpacity(0);
       updateShards(dt, t);
       drawShards(t);
+
     } else if (phase === "flash") {
       setBrandOpacity(0);
       setRevealOpacity(0);
@@ -892,6 +1030,7 @@
       drawShards(t);
       state.flash = 1 - clamp((t - T_GATHER) / P.flash, 0, 1);
       drawCompressionFlash();
+
     } else if (phase === "logo" || phase === "done") {
       setBrandOpacity(0);
       updateShards(dt, t);
@@ -915,8 +1054,13 @@
     rafId = requestAnimationFrame(render);
   }
 
+  /* =========================================================
+     18. Start / Trigger
+  ========================================================= */
   function startEntrance() {
     if (started) return;
+
+    document.body.classList.add("is-transitioning");
 
     if (motionQuery.matches) {
       started = true;
@@ -949,6 +1093,9 @@
     startEntrance();
   }
 
+  /* =========================================================
+     19. Boot / Events
+  ========================================================= */
   function boot() {
     resize();
     createShardField();
