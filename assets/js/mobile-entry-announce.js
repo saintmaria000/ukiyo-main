@@ -4,7 +4,7 @@
 
   const CONFIG = {
     jaUrl: "../ja/index.html",
-    enUrl: "../en/index.html",
+    enUrl: "../en/english.html",
 
     // 同一セッション内で一度選んだら再表示しない
     oncePerSession: true,
