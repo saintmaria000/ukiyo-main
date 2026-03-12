@@ -5,10 +5,6 @@
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  // =========================================
-  // DOM参照
-  // - 既存HTMLのロゴとUIを使う
-  // =========================================
   const langSelect = document.querySelector(".lang-select");
   const idleRomanEl = document.querySelector(".brand");
   const finalLogoEl = document.getElementById("revealLogo");
@@ -27,12 +23,6 @@
   let nextHref = null;
   let hasTriggered = false;
 
-  // =========================================
-  // パーティクル配列
-  // - shards: 元の水滴から砕ける破片
-  // - inboundShards: 収束時に画面外から追加で流入する破片
-  // - bloomParticles: 最終発光の微粒子
-  // =========================================
   let shards = [];
   let inboundShards = [];
   let bloomParticles = [];
@@ -42,58 +32,48 @@
 
   // =========================================
   // 演出設定
-  // - ここを触ると全体テンポや密度を調整しやすい
+  // 飛散1秒 / 滞空0.5秒 / 収束1秒
   // =========================================
   const CONFIG = {
     orbScale: 0.155,
     orbMin: 110,
     orbMax: 250,
 
-    idleOutlineAlpha: 0.044,
-    idleCoreAlpha: 0.016,
+    idleOutlineAlpha: 0.032,
+    idleCoreAlpha: 0.010,
 
-    // 水滴の揺らぎ
     wave1Amp: 0.034,
     wave2Amp: 0.020,
     wave3Amp: 0.013,
     wave4Amp: 0.008,
     idlePulseAmp: 0.020,
 
-    // 各ステート時間
-    shatterDuration: 1000,  // ガラス化して飛散
-    driftDuration: 650,     // 宇宙っぽい慣性滞空
-    convergeDuration: 500,  // 一気に収束
-    bloomDuration: 300,     // 圧縮エネルギー発光
-    logoHoldDuration: 820,  // ロゴ表示後遷移まで
+    shatterDuration: 1000,
+    driftDuration: 500,
+    convergeDuration: 1000,
+    bloomDuration: 180,
+    logoHoldDuration: 820,
 
-    // 破片数
     shardCountLarge: 130,
     shardCountSmall: 340,
     inboundShardCountLarge: 52,
     inboundShardCountSmall: 140,
 
-    // 破片サイズ
-    shardLargeMin: 2.0,
-    shardLargeMax: 14.0,
-    shardSmallMin: 0.7,
-    shardSmallMax: 3.2,
+    shardLargeMin: 1.8,
+    shardLargeMax: 10.0,
+    shardSmallMin: 0.55,
+    shardSmallMax: 2.2,
 
-    // 飛散レンジ
-    explodeRadiusMin: 220,
-    explodeRadiusMax: 3400,
-
-    // 3D投影
     camera: 760,
     zNearLimit: -1300,
     zFarLimit: 3200,
 
-    // 収束力
-    convergeSnapStrength: 0.090,
-    convergeZStrength: 0.080
+    convergeSnapStrength: 0.072,
+    convergeZStrength: 0.064
   };
 
   // =========================================
-  // 汎用関数
+  // 汎用
   // =========================================
   function nowMs() {
     return performance.now();
@@ -136,9 +116,7 @@
   }
 
   // =========================================
-  // 既存HTMLロゴ制御
-  // - 初期ローマ字ロゴは .brand
-  // - 最終漢字ロゴは #revealLogo
+  // DOMロゴ制御
   // =========================================
   function showFinalLogo() {
     if (!finalLogoEl) return;
@@ -167,9 +145,6 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // =========================================
-  // 座標系
-  // =========================================
   function getCenter() {
     return {
       x: safe(w * 0.5, 0),
@@ -177,28 +152,20 @@
     };
   }
 
-  // =========================================
-  // 地平線位置
-  // - もっと遠くに見せるため下寄り
-  // =========================================
   function getHorizonY() {
     return h * 0.695;
   }
 
-  // =========================================
-  // 水滴サイズ
-  // =========================================
   function getOrbRadius() {
     if (!w || !h) return 120;
     const base = Math.min(w, h) * CONFIG.orbScale;
     const r = clamp(base, CONFIG.orbMin, CONFIG.orbMax);
     const breathing = 1 + Math.sin(time * 0.18) * CONFIG.idlePulseAmp;
-    const result = r * breathing;
-    return Number.isFinite(result) ? result : 120;
+    return r * breathing;
   }
 
   // =========================================
-  // 水滴輪郭の揺らぎ
+  // 水滴輪郭
   // =========================================
   function radiusAt(theta, baseR, t) {
     const wave1 = Math.sin(theta * 2.0 + t * 0.95) * baseR * CONFIG.wave1Amp;
@@ -206,23 +173,19 @@
     const wave3 = Math.sin(theta * 5.6 + t * 0.38 - 1.2) * baseR * CONFIG.wave3Amp;
     const wave4 = Math.sin(theta * 8.8 - t * 0.28 + 2.1) * baseR * CONFIG.wave4Amp;
     const breath = Math.sin(t * 0.18) * baseR * 0.010;
-    const rr = baseR + wave1 + wave2 + wave3 + wave4 + breath;
-    return Number.isFinite(rr) ? rr : baseR;
+    return baseR + wave1 + wave2 + wave3 + wave4 + breath;
   }
 
-  // =========================================
-  // 水滴パス生成
-  // =========================================
   function buildOrbPath(cx, cy, baseR, t, scale = 1) {
     const steps = 220;
     const pts = [];
 
     for (let i = 0; i <= steps; i++) {
       const theta = (i / steps) * Math.PI * 2;
-      const r = radiusAt(theta, baseR, t) * scale;
+      const rr = radiusAt(theta, baseR, t) * scale;
       pts.push({
-        x: safe(cx + Math.cos(theta) * r, cx),
-        y: safe(cy + Math.sin(theta) * r, cy)
+        x: safe(cx + Math.cos(theta) * rr, cx),
+        y: safe(cy + Math.sin(theta) * rr, cy)
       });
     }
 
@@ -248,7 +211,7 @@
   }
 
   // =========================================
-  // 背景黒
+  // 背景
   // =========================================
   function drawBackground() {
     ctx.fillStyle = "#000";
@@ -256,122 +219,8 @@
   }
 
   // =========================================
-  // 地平線 + 水面
-  // - 一番奥の細い地平線
-  // - 手前は黒い水面
-  // =========================================
-  function drawHorizonAndWater(cx, cy, r, t, alphaMul = 1) {
-    const horizonY = getHorizonY();
-
-    const skyGlow = ctx.createRadialGradient(
-      cx,
-      horizonY - h * 0.08,
-      0,
-      cx,
-      horizonY - h * 0.08,
-      Math.max(w * 0.42, h * 0.22)
-    );
-    skyGlow.addColorStop(0, `rgba(255,255,255,${0.010 * alphaMul})`);
-    skyGlow.addColorStop(0.35, `rgba(255,255,255,${0.004 * alphaMul})`);
-    skyGlow.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.fillStyle = skyGlow;
-    ctx.fillRect(0, 0, w, h);
-
-    const lineGrad = ctx.createLinearGradient(0, horizonY, w, horizonY);
-    lineGrad.addColorStop(0, "rgba(255,255,255,0)");
-    lineGrad.addColorStop(0.18, `rgba(255,255,255,${0.028 * alphaMul})`);
-    lineGrad.addColorStop(0.5, `rgba(255,255,255,${0.085 * alphaMul})`);
-    lineGrad.addColorStop(0.82, `rgba(255,255,255,${0.028 * alphaMul})`);
-    lineGrad.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.strokeStyle = lineGrad;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, horizonY + 0.5);
-    ctx.lineTo(w, horizonY + 0.5);
-    ctx.stroke();
-
-    const waterGrad = ctx.createLinearGradient(0, horizonY, 0, h);
-    waterGrad.addColorStop(0, `rgba(255,255,255,${0.010 * alphaMul})`);
-    waterGrad.addColorStop(0.05, `rgba(255,255,255,${0.004 * alphaMul})`);
-    waterGrad.addColorStop(0.18, `rgba(255,255,255,${0.002 * alphaMul})`);
-    waterGrad.addColorStop(1, "rgba(0,0,0,0)");
-
-    ctx.fillStyle = waterGrad;
-    ctx.fillRect(0, horizonY, w, h - horizonY);
-
-    const mist = ctx.createRadialGradient(
-      cx,
-      horizonY + (h - horizonY) * 0.06,
-      0,
-      cx,
-      horizonY + (h - horizonY) * 0.06,
-      Math.max(w * 0.46, h * 0.18)
-    );
-    mist.addColorStop(0, `rgba(255,255,255,${0.008 * alphaMul})`);
-    mist.addColorStop(0.45, `rgba(255,255,255,${0.0025 * alphaMul})`);
-    mist.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.fillStyle = mist;
-    ctx.fillRect(0, horizonY, w, h - horizonY);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, horizonY, w, h - horizonY);
-    ctx.clip();
-
-    for (let i = 0; i < 18; i++) {
-      const yy = horizonY + (i / 17) * (h - horizonY);
-      const fade = 1 - (i / 17);
-      const wobble = Math.sin(t * 0.7 + i * 0.9) * 8;
-
-      const g = ctx.createLinearGradient(0, yy, w, yy);
-      g.addColorStop(0, "rgba(255,255,255,0)");
-      g.addColorStop(0.5, `rgba(255,255,255,${0.006 * fade * alphaMul})`);
-      g.addColorStop(1, "rgba(255,255,255,0)");
-
-      ctx.strokeStyle = g;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, yy + wobble * 0.03);
-      ctx.lineTo(w, yy - wobble * 0.03);
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  }
-
-  // =========================================
-  // 周辺の空気光
-  // =========================================
-  function drawAmbientVoid(cx, cy, r, t, alphaMul = 1) {
-    const driftX = Math.sin(t * 0.24) * r * 0.04;
-    const driftY = Math.cos(t * 0.19) * r * 0.04;
-
-    const g = ctx.createRadialGradient(
-      safe(cx + driftX, cx),
-      safe(cy + driftY, cy),
-      safe(Math.max(0.0001, r * 0.12), 1),
-      safe(cx, cx),
-      safe(cy, cy),
-      safe(Math.max(0.0001, r * 2.7), r * 2.7)
-    );
-
-    g.addColorStop(0, `rgba(255,255,255,${0.013 * alphaMul})`);
-    g.addColorStop(0.35, `rgba(255,255,255,${0.0052 * alphaMul})`);
-    g.addColorStop(0.7, `rgba(255,255,255,${0.0018 * alphaMul})`);
-    g.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(cx, cy, Math.max(1, r * 2.7), 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // =========================================
-  // 逆光
-  // - 水滴の後ろからうっすら照らす
+  // 後光
+  // レイヤー最奥
   // =========================================
   function drawBackLight(cx, cy, r, t, alphaMul = 1) {
     const backX = cx;
@@ -398,7 +247,101 @@
   }
 
   // =========================================
-  // 水滴の接地影
+  // 地平線 + 水面
+  // レイヤー中段
+  // 後光の前、水滴の後ろ
+  // =========================================
+  function drawHorizonAndWater(cx, cy, r, t, alphaMul = 1) {
+    const horizonY = getHorizonY();
+
+    const skyGlow = ctx.createRadialGradient(
+      cx,
+      horizonY - h * 0.06,
+      0,
+      cx,
+      horizonY - h * 0.06,
+      Math.max(w * 0.36, h * 0.18)
+    );
+    skyGlow.addColorStop(0, `rgba(255,255,255,${0.004 * alphaMul})`);
+    skyGlow.addColorStop(0.45, `rgba(255,255,255,${0.0015 * alphaMul})`);
+    skyGlow.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = skyGlow;
+    ctx.fillRect(0, 0, w, h);
+
+    const lineGrad = ctx.createLinearGradient(0, horizonY, w, horizonY);
+    lineGrad.addColorStop(0, "rgba(255,255,255,0)");
+    lineGrad.addColorStop(0.5, `rgba(255,255,255,${0.05 * alphaMul})`);
+    lineGrad.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.strokeStyle = lineGrad;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY + 0.5);
+    ctx.lineTo(w, horizonY + 0.5);
+    ctx.stroke();
+
+    const waterGrad = ctx.createLinearGradient(0, horizonY, 0, h);
+    waterGrad.addColorStop(0, "rgba(8,8,8,0.96)");
+    waterGrad.addColorStop(0.08, "rgba(6,6,6,0.98)");
+    waterGrad.addColorStop(1, "rgba(0,0,0,1)");
+
+    ctx.fillStyle = waterGrad;
+    ctx.fillRect(0, horizonY, w, h - horizonY);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, horizonY, w, h - horizonY);
+    ctx.clip();
+
+    for (let i = 0; i < 14; i++) {
+      const yy = horizonY + (i / 13) * (h - horizonY);
+      const fade = 1 - i / 13;
+
+      const g = ctx.createLinearGradient(0, yy, w, yy);
+      g.addColorStop(0, "rgba(255,255,255,0)");
+      g.addColorStop(0.5, `rgba(255,255,255,${0.003 * fade * alphaMul})`);
+      g.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, yy);
+      ctx.lineTo(w, yy);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  // =========================================
+  // 周辺のわずかな空気
+  // =========================================
+  function drawAmbientVoid(cx, cy, r, t, alphaMul = 1) {
+    const driftX = Math.sin(t * 0.24) * r * 0.04;
+    const driftY = Math.cos(t * 0.19) * r * 0.04;
+
+    const g = ctx.createRadialGradient(
+      safe(cx + driftX, cx),
+      safe(cy + driftY, cy),
+      safe(Math.max(0.0001, r * 0.12), 1),
+      safe(cx, cx),
+      safe(cy, cy),
+      safe(Math.max(0.0001, r * 2.7), r * 2.7)
+    );
+
+    g.addColorStop(0, `rgba(255,255,255,${0.006 * alphaMul})`);
+    g.addColorStop(0.35, `rgba(255,255,255,${0.0022 * alphaMul})`);
+    g.addColorStop(0.7, `rgba(255,255,255,${0.001 * alphaMul})`);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(1, r * 2.7), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // =========================================
+  // 水滴の影
   // =========================================
   function drawShadow(cx, cy, r, alphaMul = 1) {
     const g = ctx.createRadialGradient(
@@ -410,7 +353,7 @@
       safe(Math.max(0.0001, r * 1.0), r)
     );
 
-    g.addColorStop(0, `rgba(0,0,0,${0.16 * alphaMul})`);
+    g.addColorStop(0, `rgba(0,0,0,${0.18 * alphaMul})`);
     g.addColorStop(1, "rgba(0,0,0,0)");
 
     ctx.fillStyle = g;
@@ -421,36 +364,33 @@
 
   // =========================================
   // 水滴本体
+  // レイヤー最前
   // =========================================
   function drawOrbBody(cx, cy, r, t, alphaMul = 1, scale = 1) {
     buildOrbPath(cx, cy, r, t, scale);
 
     const body = ctx.createRadialGradient(
-      safe(cx - r * 0.24, cx),
-      safe(cy - r * 0.28, cy),
+      safe(cx - r * 0.18, cx),
+      safe(cy - r * 0.22, cy),
       safe(Math.max(0.0001, r * 0.05), 1),
       safe(cx, cx),
       safe(cy, cy),
-      safe(Math.max(0.0001, r * 1.15), r)
+      safe(Math.max(0.0001, r * 1.1), r)
     );
 
-    body.addColorStop(0, `rgba(255,255,255,${0.068 * alphaMul})`);
-    body.addColorStop(0.28, `rgba(255,255,255,${0.028 * alphaMul})`);
-    body.addColorStop(0.56, `rgba(255,255,255,${0.016 * alphaMul})`);
-    body.addColorStop(0.8, `rgba(255,255,255,${CONFIG.idleCoreAlpha * alphaMul})`);
-    body.addColorStop(1, `rgba(255,255,255,${0.006 * alphaMul})`);
+    body.addColorStop(0, `rgba(255,255,255,${0.030 * alphaMul})`);
+    body.addColorStop(0.24, `rgba(255,255,255,${0.014 * alphaMul})`);
+    body.addColorStop(0.55, `rgba(255,255,255,${0.008 * alphaMul})`);
+    body.addColorStop(1, `rgba(255,255,255,${0.003 * alphaMul})`);
 
     ctx.fillStyle = body;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${CONFIG.idleOutlineAlpha * alphaMul})`;
+    ctx.strokeStyle = `rgba(255,255,255,${0.030 * alphaMul})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 
-  // =========================================
-  // 水滴内部テクスチャ
-  // =========================================
   function drawInteriorTexture(cx, cy, r, t, alphaMul = 1, scale = 1) {
     ctx.save();
     buildOrbPath(cx, cy, r, t, scale);
@@ -477,7 +417,7 @@
           Math.sin((nx + ny) * 4.9 + t * 0.48) +
           Math.sin((nx - ny) * 4.2 - t * 0.34);
 
-        const alpha = ((v + 4) / 8) * 0.012 * alphaMul;
+        const alpha = ((v + 4) / 8) * 0.005 * alphaMul;
         ctx.fillStyle = `rgba(255,255,255,${Math.max(0, alpha)})`;
         ctx.fillRect(px, py, cellW + 0.35, cellH + 0.35);
       }
@@ -486,9 +426,6 @@
     ctx.restore();
   }
 
-  // =========================================
-  // 水滴ハイライト
-  // =========================================
   function drawHighlight(cx, cy, r, t, alphaMul = 1, scale = 1) {
     const hx = cx - r * 0.26 * scale + Math.sin(t * 0.56) * r * 0.020;
     const hy = cy - r * 0.31 * scale + Math.cos(t * 0.40) * r * 0.020;
@@ -502,9 +439,9 @@
       safe(Math.max(0.0001, r * 0.24 * scale), r * 0.2)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.068 * alphaMul})`);
-    g.addColorStop(0.24, `rgba(255,255,255,${0.024 * alphaMul})`);
-    g.addColorStop(0.58, `rgba(255,255,255,${0.008 * alphaMul})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.045 * alphaMul})`);
+    g.addColorStop(0.24, `rgba(255,255,255,${0.016 * alphaMul})`);
+    g.addColorStop(0.58, `rgba(255,255,255,${0.005 * alphaMul})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = g;
@@ -515,7 +452,7 @@
 
   // =========================================
   // 水面反射
-  // - 真下鏡像ではなく水面の揺れに崩した反射
+  // 地平線の下の水面にだけ映す
   // =========================================
   function drawOrbReflection(cx, cy, r, t, alphaMul = 1) {
     const horizonY = getHorizonY();
@@ -526,66 +463,37 @@
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
 
-    const fade = ctx.createLinearGradient(0, horizonY, 0, h);
-    fade.addColorStop(0, `rgba(255,255,255,${0.18 * alphaMul})`);
-    fade.addColorStop(0.12, `rgba(255,255,255,${0.10 * alphaMul})`);
-    fade.addColorStop(0.28, `rgba(255,255,255,${0.045 * alphaMul})`);
-    fade.addColorStop(0.58, `rgba(255,255,255,${0.012 * alphaMul})`);
-    fade.addColorStop(1, "rgba(255,255,255,0)");
+    const rippleX = Math.sin(t * 1.2) * 2.5;
 
-    const slices = 36;
-    for (let i = 0; i < slices; i++) {
-      const y0 = horizonY + ((h - horizonY) / slices) * i;
-      const y1 = horizonY + ((h - horizonY) / slices) * (i + 1);
-      const localT = i / Math.max(1, slices - 1);
+    ctx.translate(cx + rippleX, reflectedCy);
+    ctx.scale(1.02, -0.62);
+    ctx.translate(-cx, -cy);
 
-      const rippleX =
-        Math.sin(t * 1.2 + i * 0.42) * (1.2 + localT * 6.0) +
-        Math.sin(t * 0.54 + i * 0.85) * (0.6 + localT * 2.4);
-
-      const rippleScaleX = 1 + Math.sin(t * 0.7 + i * 0.33) * 0.012;
-      const rippleScaleY = 0.82 - localT * 0.28;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, y0, w, Math.max(1, y1 - y0));
-      ctx.clip();
-
-      ctx.translate(cx + rippleX, reflectedCy);
-      ctx.scale(rippleScaleX, -rippleScaleY);
-      ctx.translate(-cx, -cy);
-
-      drawOrbBody(cx, cy, r, t, 0.20 * alphaMul * (1 - localT * 0.72), 1);
-      drawInteriorTexture(cx, cy, r, t, 0.09 * alphaMul * (1 - localT * 0.78), 1);
-      drawHighlight(cx, cy, r, t, 0.05 * alphaMul * (1 - localT * 0.82), 1);
-
-      ctx.restore();
-    }
-
-    const darkFade = ctx.createLinearGradient(0, horizonY, 0, h);
-    darkFade.addColorStop(0, "rgba(0,0,0,0)");
-    darkFade.addColorStop(0.12, "rgba(0,0,0,0.16)");
-    darkFade.addColorStop(0.45, "rgba(0,0,0,0.48)");
-    darkFade.addColorStop(1, "rgba(0,0,0,0.82)");
-
-    ctx.globalCompositeOperation = "destination-in";
-    ctx.fillStyle = fade;
-    ctx.fillRect(0, horizonY, w, h - horizonY);
-
-    ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = darkFade;
-    ctx.fillRect(0, horizonY, w, h - horizonY);
+    drawOrbBody(cx, cy, r, t, 0.16 * alphaMul, 1);
+    drawInteriorTexture(cx, cy, r, t, 0.05 * alphaMul, 1);
+    drawHighlight(cx, cy, r, t, 0.03 * alphaMul, 1);
 
     ctx.restore();
+
+    const fade = ctx.createLinearGradient(0, horizonY, 0, h);
+    fade.addColorStop(0, `rgba(0,0,0,0)`);
+    fade.addColorStop(0.18, `rgba(0,0,0,0.18)`);
+    fade.addColorStop(0.48, `rgba(0,0,0,0.52)`);
+    fade.addColorStop(1, `rgba(0,0,0,0.92)`);
+
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, horizonY, w, h - horizonY);
   }
 
   // =========================================
-  // アイドル時の全体描画
+  // アイドル描画
+  // レイヤー順:
+  // 後光 → 地平線/水面 → 水滴
   // =========================================
   function drawIdleOrb(cx, cy, r, t) {
+    drawBackLight(cx, cy, r, t, 1);
     drawHorizonAndWater(cx, cy, r, t, 1);
     drawAmbientVoid(cx, cy, r, t, 1);
-    drawBackLight(cx, cy, r, t, 1);
     drawShadow(cx, cy, r, 0.58);
     drawOrbBody(cx, cy, r, t, 1, 1);
     drawInteriorTexture(cx, cy, r, t, 1, 1);
@@ -594,7 +502,7 @@
   }
 
   // =========================================
-  // ランダム3D方向ベクトル
+  // ランダム3D方向
   // =========================================
   function randomUnitVector3() {
     const u = Math.random() * 2 - 1;
@@ -609,8 +517,6 @@
 
   // =========================================
   // 初期破片生成
-  // - 水滴から砕ける
-  // - 一部は画面外、一部は空間内滞空
   // =========================================
   function createShards(cx, cy, r) {
     shards = [];
@@ -647,20 +553,20 @@
 
       const sizeMin = isSmall ? CONFIG.shardSmallMin : CONFIG.shardLargeMin;
       const sizeMax = isSmall ? CONFIG.shardSmallMax : CONFIG.shardLargeMax;
-      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.45, frontness);
+      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.35, frontness);
 
       const alpha = isSmall
-        ? lerp(0.05, 0.19, frontness)
-        : lerp(0.11, 0.31, frontness);
+        ? lerp(0.04, 0.14, frontness)
+        : lerp(0.07, 0.20, frontness);
 
       const aspect = isSmall
-        ? 0.8 + Math.random() * 1.8
-        : 0.8 + Math.random() * 2.5;
+        ? 1.6 + Math.random() * 2.2
+        : 1.8 + Math.random() * 3.0;
 
       const spin = (Math.random() - 0.5) * (
         isSmall
-          ? lerp(0.14, 0.42, frontness)
-          : lerp(0.08, 0.28, frontness)
+          ? lerp(0.12, 0.34, frontness)
+          : lerp(0.08, 0.22, frontness)
       );
 
       const hoverAmp = lerp(0.3, 2.0, Math.random()) * lerp(0.8, 1.5, frontness);
@@ -710,7 +616,6 @@
 
   // =========================================
   // 外部流入破片生成
-  // - 収束時に本来なかった破片が画面外から入る
   // =========================================
   function createInboundShards(cx, cy) {
     inboundShards = [];
@@ -741,20 +646,20 @@
 
       const sizeMin = isSmall ? CONFIG.shardSmallMin : CONFIG.shardLargeMin;
       const sizeMax = isSmall ? CONFIG.shardSmallMax : CONFIG.shardLargeMax;
-      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.8, 1.25, frontness);
+      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.8, 1.15, frontness);
 
       const alpha = isSmall
-        ? lerp(0.04, 0.14, frontness)
-        : lerp(0.08, 0.22, frontness);
+        ? lerp(0.03, 0.10, frontness)
+        : lerp(0.05, 0.14, frontness);
 
       const aspect = isSmall
-        ? 0.8 + Math.random() * 1.8
-        : 0.8 + Math.random() * 2.4;
+        ? 1.6 + Math.random() * 2.2
+        : 1.8 + Math.random() * 2.8;
 
       const spin = (Math.random() - 0.5) * (
         isSmall
-          ? lerp(0.12, 0.36, frontness)
-          : lerp(0.08, 0.22, frontness)
+          ? lerp(0.10, 0.28, frontness)
+          : lerp(0.06, 0.18, frontness)
       );
 
       const offsetX = (Math.random() - 0.5) * lerp(8, 46, Math.random());
@@ -809,71 +714,54 @@
   }
 
   // =========================================
-  // ガラス破片描画
+  // 薄板ガラス破片
   // =========================================
   function drawGlassShard3D(x, y, z, size, aspect, rot, alpha, frontness, isSmall) {
     const proj = project3D(x, y, z);
     if (!proj.visible) return;
 
     const drawSize = size * proj.scale;
-    const drawAlpha = alpha * clamp(proj.scale * 0.95, 0.10, 2.2);
+    const drawAlpha = alpha * clamp(proj.scale * 0.9, 0.10, 1.8);
 
     ctx.save();
     ctx.translate(proj.x, proj.y);
     ctx.rotate(rot);
 
-    if (isSmall) {
-      ctx.beginPath();
-      ctx.moveTo(-drawSize * 0.95 * aspect, -drawSize * 0.10);
-      ctx.lineTo(-drawSize * 0.08, -drawSize * 0.82);
-      ctx.lineTo(drawSize * 0.88 * aspect, -drawSize * 0.06);
-      ctx.lineTo(drawSize * 0.18, drawSize * 0.75);
-      ctx.lineTo(-drawSize * 0.72 * aspect, drawSize * 0.26);
-      ctx.closePath();
+    const len = isSmall ? drawSize * 1.8 * aspect : drawSize * 2.4 * aspect;
+    const thin = isSmall ? drawSize * 0.22 : drawSize * 0.30;
 
-      ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.22, 0.48, frontness)})`;
-      ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-len, -thin * 0.35);
+    ctx.lineTo(-len * 0.12, -thin);
+    ctx.lineTo(len, -thin * 0.20);
+    ctx.lineTo(len * 0.18, thin);
+    ctx.lineTo(-len, thin * 0.28);
+    ctx.closePath();
 
-      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.56, 0.92, frontness)})`;
-      ctx.lineWidth = clamp(0.28 * proj.scale, 0.20, 0.9);
-      ctx.stroke();
-    } else {
-      ctx.beginPath();
-      ctx.moveTo(-drawSize * 1.2 * aspect, -drawSize * 0.18);
-      ctx.lineTo(-drawSize * 0.20, -drawSize * 1.05);
-      ctx.lineTo(drawSize * 1.02 * aspect, -drawSize * 0.12);
-      ctx.lineTo(drawSize * 0.35, drawSize * 0.98);
-      ctx.lineTo(-drawSize * 0.95 * aspect, drawSize * 0.38);
-      ctx.closePath();
+    ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.05, 0.14, frontness)})`;
+    ctx.fill();
 
-      ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.28, 0.56, frontness)})`;
-      ctx.fill();
+    ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.34, 0.72, frontness)})`;
+    ctx.lineWidth = clamp(0.22 * proj.scale, 0.16, 0.8);
+    ctx.stroke();
 
-      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.68, 1.0, frontness)})`;
-      ctx.lineWidth = clamp(0.42 * proj.scale, 0.28, 1.7);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(-drawSize * 0.52 * aspect, -drawSize * 0.05);
-      ctx.lineTo(drawSize * 0.70 * aspect, -drawSize * 0.02);
-      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.30, 0.92, frontness)})`;
-      ctx.lineWidth = clamp(0.24 * proj.scale, 0.18, 0.9);
-      ctx.stroke();
-    }
+    ctx.beginPath();
+    ctx.moveTo(-len * 0.76, -thin * 0.10);
+    ctx.lineTo(len * 0.72, -thin * 0.06);
+    ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.16, 0.34, frontness)})`;
+    ctx.lineWidth = clamp(0.14 * proj.scale, 0.10, 0.45);
+    ctx.stroke();
 
     ctx.restore();
   }
 
   // =========================================
-  // 飛散イージング
+  // 飛散
   // =========================================
   function shatterMotion(progress) {
     return 1 - Math.pow(1 - progress, 4.6);
   }
 
-  // =========================================
-  // 飛散描画
-  // =========================================
   function drawShardsExplode(progress) {
     const move = shatterMotion(progress);
     const drawList = [];
@@ -895,8 +783,7 @@
   }
 
   // =========================================
-  // 慣性滞空
-  // - 宇宙っぽい惰性漂流
+  // 滞空
   // =========================================
   function drawShardsDrift(progress) {
     const drawList = [];
@@ -950,7 +837,7 @@
   }
 
   // =========================================
-  // ブルーム微粒子生成
+  // ブルーム粒子
   // =========================================
   function createBloomParticles() {
     const { x: cx, y: cy } = getCenter();
@@ -969,8 +856,7 @@
   }
 
   // =========================================
-  // 収束エネルギー光
-  // - ぽわぽわではなく一点圧縮発光
+  // 収束光
   // =========================================
   function drawCentralBloom(progress) {
     const { x: cx, y: cy } = getCenter();
@@ -1005,9 +891,6 @@
     ctx.fill();
   }
 
-  // =========================================
-  // ブルーム微粒子描画
-  // =========================================
   function drawBloomParticles(progress) {
     const p = easeOutCubic(progress);
     bloomParticles.forEach((bp) => {
@@ -1019,8 +902,7 @@
   }
 
   // =========================================
-  // 収束描画
-  // - 元の破片 + 外部流入破片を一点へ吸う
+  // 収束
   // =========================================
   function drawShardsConverge(progress) {
     const drawList = [];
@@ -1053,14 +935,14 @@
         s.y += Math.cos(phase * 0.91) * (0.08 + s.frontness * 0.20);
         s.z += Math.sin(phase * 0.64) * lerp(1.2, 6.0, s.frontness);
       } else {
-        const speedBias = lerp(1.40, 0.56, outerBias);
+        const speedBias = lerp(1.18, 0.56, outerBias);
 
         snap = CONFIG.convergeSnapStrength * speedBias * (0.10 + gravityRise * 4.6);
         snapZ = CONFIG.convergeZStrength * speedBias * (0.08 + gravityRise * 3.9);
 
         drag = lerp(
           0.958,
-          lerp(0.80, 0.87, outerBias),
+          lerp(0.82, 0.88, outerBias),
           gravityRise
         );
 
@@ -1105,14 +987,14 @@
     drawList.forEach((s) => {
       const alphaFade = 1 - easeOutQuart(s.localProgress);
       const alphaBase = s.isInbound
-        ? (s.isSmall ? 0.18 : 0.24)
-        : (s.isSmall ? 0.22 : 0.30);
+        ? (s.isSmall ? 0.10 : 0.14)
+        : (s.isSmall ? 0.14 : 0.20);
 
       const alpha = Math.max(0, alphaBase * alphaFade + 0.01 * (1 - s.localProgress));
 
       const finalSize = lerp(
         s.baseSize * 0.82,
-        s.isSmall ? 0.26 : 0.46,
+        s.isSmall ? 0.20 : 0.34,
         easeOutCubic(s.localProgress)
       );
 
@@ -1154,7 +1036,7 @@
   }
 
   // =========================================
-  // ステート遷移管理
+  // ステート遷移
   // =========================================
   function maybeAdvanceState(now) {
     const elapsed = now - stateStart;
@@ -1194,6 +1076,8 @@
 
   // =========================================
   // 全描画
+  // レイヤー順を統一:
+  // 後光 → 地平線/水面 → 水滴/破片
   // =========================================
   function render(now) {
     drawBackground();
@@ -1215,43 +1099,42 @@
       const orbAlpha = Math.max(0, 1 - easeOutCubic(p) * 1.08);
       const orbScale = lerp(1, 0.90, p);
 
+      drawBackLight(cx, cy, r, t, 1 - p * 0.10);
       drawHorizonAndWater(cx, cy, r, t, 1 - p * 0.12);
       drawAmbientVoid(cx, cy, r, t, orbAlpha * 0.55);
-      drawBackLight(cx, cy, r, t, 1 - p * 0.10);
       drawShadow(cx, cy, r, orbAlpha * 0.48);
       drawOrbBody(cx, cy, r, t, orbAlpha, orbScale);
       drawInteriorTexture(cx, cy, r, t, orbAlpha, orbScale);
       drawHighlight(cx, cy, r, t, orbAlpha, orbScale);
       drawOrbReflection(cx, cy, r, t, orbAlpha * 0.7);
-
       drawShardsExplode(p);
       return;
     }
 
     if (state === "drift") {
       const p = clamp((now - stateStart) / CONFIG.driftDuration, 0, 1);
+      drawBackLight(cx, cy, r, t, 0.82 * (1 - p * 0.2));
       drawHorizonAndWater(cx, cy, r, t, 1 - p * 0.18);
       drawAmbientVoid(cx, cy, r, t, 0.08 * (1 - p));
-      drawBackLight(cx, cy, r, t, 0.82 * (1 - p * 0.2));
       drawShardsDrift(p);
       return;
     }
 
     if (state === "converge") {
       const p = clamp((now - stateStart) / CONFIG.convergeDuration, 0, 1);
+      drawBackLight(cx, cy, r, t, 0.72 * (1 - p * 0.35));
       drawHorizonAndWater(cx, cy, r, t, 0.92 * (1 - p * 0.2));
       drawAmbientVoid(cx, cy, r, t, 0.13 * (1 - p));
-      drawBackLight(cx, cy, r, t, 0.72 * (1 - p * 0.35));
       drawShardsConverge(p);
 
-      const preGlow = Math.max(0, (p - 0.48) / 0.52);
+      const preGlow = Math.max(0, (p - 0.70) / 0.30);
       if (preGlow > 0) drawCentralBloom(preGlow);
-
       return;
     }
 
     if (state === "bloom") {
       const p = clamp((now - stateStart) / CONFIG.bloomDuration, 0, 1);
+      drawBackLight(cx, cy, r, t, 0.32 * (1 - p * 0.6));
       drawHorizonAndWater(cx, cy, r, t, 0.70 * (1 - p * 0.25));
       drawCentralBloom(p);
       drawBloomParticles(p * 0.55);
@@ -1261,11 +1144,11 @@
 
     if (state === "logo") {
       const p = clamp((now - stateStart) / Math.max(1, CONFIG.logoHoldDuration * 0.42), 0, 1);
+      drawBackLight(cx, cy, r, t, 0.18 * (1 - p * 0.8));
       drawHorizonAndWater(cx, cy, r, t, 0.52 * (1 - p * 0.4));
       if (p < 1) {
         drawCentralBloom(0.82 + p * 0.18);
       }
-      return;
     }
   }
 
@@ -1281,9 +1164,6 @@
     rafId = requestAnimationFrame(tick);
   }
 
-  // =========================================
-  // 再起動
-  // =========================================
   function start() {
     cancelAnimationFrame(rafId);
     resize();
@@ -1291,7 +1171,7 @@
   }
 
   // =========================================
-  // タップ / クリックで開始
+  // 入力
   // =========================================
   function handleScreenTrigger(e) {
     if (state !== "idle" || hasTriggered) return;

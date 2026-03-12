@@ -6,10 +6,12 @@
     jaUrl: "../ja/index.html",
     enUrl: "../en/english.html",
 
-    // 同一セッション内で一度選んだら再表示しない
     oncePerSession: true,
     sessionKeyDone: "ukiyo_lang_gate_done",
     sessionKeyLang: "ukiyo_lang_gate_lang",
+
+    entranceQueryKey: "from",
+    entranceQueryValue: "entrance",
 
     labels: {
       ja: "JA",
@@ -35,7 +37,30 @@
     return isCoarsePointer() && (mobileUA || smallSide);
   }
 
+  function cameFromEntrance() {
+    try {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(CONFIG.entranceQueryKey) === CONFIG.entranceQueryValue;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function cleanEntranceQuery() {
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get(CONFIG.entranceQueryKey) !== CONFIG.entranceQueryValue) return;
+
+      url.searchParams.delete(CONFIG.entranceQueryKey);
+      const nextUrl = url.pathname + url.search + url.hash;
+      window.history.replaceState({}, "", nextUrl);
+    } catch (_) {}
+  }
+
   function shouldSkip() {
+    // エントランスから来た場合は必ず表示
+    if (cameFromEntrance()) return false;
+
     if (!CONFIG.oncePerSession) return false;
 
     try {
@@ -267,6 +292,9 @@
     document.body.appendChild(gate);
     bind(gate);
     updatePanels(gate);
+
+    // 一度表示できたら URL の ?from=entrance は消してよい
+    cleanEntranceQuery();
   }
 
   if (document.readyState === "loading") {
