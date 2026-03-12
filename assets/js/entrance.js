@@ -862,68 +862,146 @@ function initAuxDroplets() {
     ctx.restore();
   }
 
-    /* =========================================================
+  /* =========================================================
      12. Reflection
-     ※ フェードさせない素直な水面反射
+     ※ 水面下に反射全体を映す / フェードなし
   ========================================================= */
-/* =========================================================
-   12. Reflection
-   全面ミラー反射
-========================================================= */
-function drawReflection(time, hintK) {
+  function drawReflection(time, hintK) {
+    ctx.save();
 
-  // 主滴
-  const mainPts = buildDropletPathAt(
-    cx,
-    cy,
-    getDropletMorph(time, hintK),
-    time,
-    0,
-    null
-  );
+    // 水平線より下だけに描画
+    ctx.beginPath();
+    ctx.rect(0, horizonY, w, h - horizonY);
+    ctx.clip();
 
-  drawMirrorShape(mainPts, time, 0.08);
-
-  // 補助滴
-  for (const d of state.auxDroplets) {
-
-    const m = getAuxMorph(d, time);
-
-    const pts = buildDropletPathAt(
-      d.x,
-      d.y,
-      m,
+    // 主滴
+    const mainPts = buildDropletPathAt(
+      cx,
+      cy,
+      getDropletMorph(time, hintK * 0.72),
       time,
-      d.seed,
+      0,
       null
     );
 
-    drawMirrorShape(pts, time + d.seed * 0.001, 0.05 * d.alpha);
+    drawReflectionShape(
+      mainPts,
+      time,
+      {
+        bodyAlpha: 0.10,
+        strokeAlpha: 0.045,
+        squashY: 0.60,
+        rippleAmp: 0.9,
+        rippleFreq: 0.018,
+        rippleSpeed: 1.2
+      }
+    );
+
+    // 補助滴
+    for (const d of state.auxDroplets) {
+      const m = getAuxMorph(d, time);
+      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, null);
+
+      drawReflectionShape(
+        pts,
+        time + d.seed * 0.0008,
+        {
+          bodyAlpha: 0.062 * d.alpha,
+          strokeAlpha: 0.028 * d.alpha,
+          squashY: 0.58,
+          rippleAmp: Math.max(0.35, m.r * 0.018),
+          rippleFreq: 0.02,
+          rippleSpeed: 1.1
+        }
+      );
+    }
+
+    ctx.restore();
   }
-}
 
-function drawMirrorShape(pts, time, alpha) {
+  function drawReflectionShape(pts, time, opt) {
+    const {
+      bodyAlpha,
+      strokeAlpha,
+      squashY,
+      rippleAmp,
+      rippleFreq,
+      rippleSpeed
+    } = opt;
 
-  const reflected = pts.map(p => {
+    // 元の輪郭全体をそのまま鏡写し
+    const reflected = pts.map((p) => {
+      const mirroredY = horizonY + (horizonY - p.y);
 
-    const dy = p.y - cy;
+      const waveX =
+        Math.sin(p.y * rippleFreq + time * rippleSpeed) * rippleAmp +
+        Math.sin(p.y * rippleFreq * 0.46 + time * rippleSpeed * 0.62) * rippleAmp * 0.28;
 
-    return {
-      x: p.x + Math.sin(p.y * 0.02 + time * 1.1) * 0.6,
-      y: cy + dy * -1
-    };
+      return {
+        x: p.x + waveX,
+        y: horizonY + (mirroredY - horizonY) * squashY
+      };
+    });
 
-  });
+    tracePath(reflected);
 
-  tracePath(reflected);
+    const topY = Math.min(...reflected.map((p) => p.y));
+    const bottomY = Math.max(...reflected.map((p) => p.y));
 
-  ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-  ctx.fill();
+    // フェードさせず、反射全体をそのまま見せる
+    const fillGrad = ctx.createLinearGradient(0, topY, 0, bottomY);
+    fillGrad.addColorStop(0, `rgba(255,255,255,${bodyAlpha})`);
+    fillGrad.addColorStop(0.45, `rgba(255,255,255,${bodyAlpha * 0.9})`);
+    fillGrad.addColorStop(1, `rgba(255,255,255,${bodyAlpha * 0.82})`);
 
-  ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.6})`;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-}
+    ctx.fillStyle = fillGrad;
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(255,255,255,${strokeAlpha})`;
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+
+    drawReflectionSheen(topY, bottomY, time, bodyAlpha);
+  }
+
+  function drawReflectionSheen(topY, bottomY, time, alphaBase) {
+    const lines = 4;
+    const span = Math.max(16, bottomY - topY);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, horizonY, w, h - horizonY);
+    ctx.clip();
+
+    for (let i = 0; i < lines; i++) {
+      const yy = topY + span * (0.18 + i / (lines + 2));
+      const alpha = alphaBase * (0.10 - i * 0.014);
+
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, "rgba(255,255,255,0)");
+      grad.addColorStop(0.2, `rgba(255,255,255,${alpha * 0.42})`);
+      grad.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
+      grad.addColorStop(0.8, `rgba(255,255,255,${alpha * 0.42})`);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1;
+
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += 20) {
+        const y =
+          yy +
+          Math.sin(x * 0.011 + time * 1.0 + i * 0.75) * 0.28 +
+          Math.sin(x * 0.004 + time * 0.52 + i * 0.28) * 0.14;
+
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
   /* =========================================================
      13. Shards / Update
   ========================================================= */
