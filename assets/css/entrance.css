@@ -89,16 +89,20 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  width:max-content;
+  justify-content:center;
 
   pointer-events:none;
   opacity:1;
   visibility:visible;
   transform:translate(-50%, -50%);
+  text-align:center;
+
   transition:
     opacity 700ms ease,
     transform 900ms cubic-bezier(.22,.7,.16,1),
     filter 900ms ease;
+
+  animation:brandFloat 5.6s ease-in-out infinite;
 }
 
 .brand::before{
@@ -123,12 +127,16 @@ body{
 .brand-main{
   position:relative;
   z-index:1;
-  align-items:center;
+  display:block;
+  width:max-content;
+  margin:0 auto;
+
   font-size:clamp(3.8rem, 8.8vw, 7.8rem);
   font-weight:240;
   line-height:.9;
   letter-spacing:.46em;
   text-transform:none;
+  text-align:center;
   color:rgba(255,255,255,.89);
 
   text-shadow:
@@ -145,15 +153,16 @@ body{
 .brand-sub{
   position:relative;
   z-index:1;
-
-  margin-top:14px;
-  align-self:center;
+  display:block;
+  width:max-content;
+  margin:14px auto 0;
 
   font-size:clamp(.86rem, 1.45vw, 1.02rem);
   font-weight:300;
   line-height:1;
   letter-spacing:10.3em;
   text-transform:none;
+  text-align:center;
   color:rgba(255,255,255,.44);
 
   text-shadow:
@@ -184,10 +193,6 @@ body{
   }
 }
 
-.brand{
-  animation:brandFloat 5.6s ease-in-out infinite;
-}
-
 /* ほどけて広がって消える */
 body.is-transitioning .brand{
   opacity:0;
@@ -204,12 +209,10 @@ body.is-transitioning .brand-main{
 }
 
 body.is-transitioning .brand-sub{
-  letter-spacing:.40em;
   transform:translateY(4px) scale(1.02);
   opacity:0;
   filter:blur(1.2px);
 }
-
 
 /* ==============================
    Final reveal logo
@@ -242,6 +245,7 @@ body.is-transitioning .brand-sub{
   font-size:clamp(2.8rem, 10vw, 7rem);
   line-height:1;
   letter-spacing:.16em;
+  text-align:center;
 }
 
 .reveal-logo-sub{
@@ -250,6 +254,7 @@ body.is-transitioning .brand-sub{
   font-size:clamp(.72rem, 1.35vw, 1rem);
   letter-spacing:.30em;
   text-transform:uppercase;
+  text-align:center;
 }
 
 /* ==============================
@@ -337,23 +342,23 @@ body.is-transitioning .brand-sub{
   opacity:.34;
   user-select:none;
 }
+
 @media (max-width:640px){
   .brand{
     top:54%;
   }
 
   .brand-main{
+    font-size:clamp(3.1rem, 12vw, 5.6rem);
     letter-spacing:.24em;
-    padding-left:.24em;
   }
 
   .brand-sub{
     margin-top:12px;
-    margin-left:.9em;
     font-size:clamp(.78rem, 1.8vw, .92rem);
     letter-spacing:.22em;
-    padding-left:.22em;
   }
+
   .reveal-logo-main{
     letter-spacing:.12em;
   }
