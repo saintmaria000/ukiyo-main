@@ -835,9 +835,9 @@
     ctx.restore();
   }
 
-  /* =========================================================
+    /* =========================================================
      12. Reflection
-     ※ ぷつぷつしない滑らかな水面反射
+     ※ フェードさせない素直な水面反射
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
@@ -859,13 +859,12 @@
       mainPts,
       time,
       {
-        bodyAlpha: 0.115,
-        strokeAlpha: 0.05,
+        bodyAlpha: 0.10,
+        strokeAlpha: 0.045,
         squashY: 0.60,
-        rippleAmp: 1.25,
+        rippleAmp: 1.1,
         rippleFreq: 0.018,
-        rippleSpeed: 1.35,
-        fadeDepth: getMainBaseRadius() * 0.95
+        rippleSpeed: 1.3
       }
     );
 
@@ -878,13 +877,12 @@
         pts,
         time + d.seed * 0.0008,
         {
-          bodyAlpha: 0.072 * d.alpha,
-          strokeAlpha: 0.032 * d.alpha,
+          bodyAlpha: 0.062 * d.alpha,
+          strokeAlpha: 0.028 * d.alpha,
           squashY: 0.58,
-          rippleAmp: Math.max(0.5, m.r * 0.028),
+          rippleAmp: Math.max(0.42, m.r * 0.022),
           rippleFreq: 0.02,
-          rippleSpeed: 1.2,
-          fadeDepth: m.r * 1.15
+          rippleSpeed: 1.16
         }
       );
     }
@@ -899,27 +897,20 @@
       squashY,
       rippleAmp,
       rippleFreq,
-      rippleSpeed,
-      fadeDepth
+      rippleSpeed
     } = opt;
 
-    // 反射元の輪郭範囲
     const srcTop = Math.min(...pts.map((p) => p.y));
     const srcBottom = Math.max(...pts.map((p) => p.y));
-
-    // 上半分は使わず、下側主体の反射にする
     const cutY = srcTop + (srcBottom - srcTop) * 0.48;
 
     const reflected = pts.map((p) => {
       const py = Math.max(p.y, cutY);
-
-      // 水平線で鏡写し
       const mirroredY = horizonY + (horizonY - py);
 
-      // 輪郭単位のなめらかな横揺れ
       const waveX =
         Math.sin(py * rippleFreq + time * rippleSpeed) * rippleAmp +
-        Math.sin(py * rippleFreq * 0.47 + time * rippleSpeed * 0.62) * rippleAmp * 0.38;
+        Math.sin(py * rippleFreq * 0.46 + time * rippleSpeed * 0.62) * rippleAmp * 0.32;
 
       return {
         x: p.x + waveX,
@@ -929,47 +920,28 @@
 
     tracePath(reflected);
 
+    // 本体はフェードなしの薄い一定グラデ
     const topY = Math.min(...reflected.map((p) => p.y));
-    const bottomY = Math.max(...reflected.map((p) => p.y)) + fadeDepth;
+    const bottomY = Math.max(...reflected.map((p) => p.y));
 
-    // 本体の淡い反射
     const fillGrad = ctx.createLinearGradient(0, topY, 0, bottomY);
     fillGrad.addColorStop(0, `rgba(255,255,255,${bodyAlpha})`);
-    fillGrad.addColorStop(0.18, `rgba(255,255,255,${bodyAlpha * 0.48})`);
-    fillGrad.addColorStop(0.42, `rgba(255,255,255,${bodyAlpha * 0.18})`);
-    fillGrad.addColorStop(0.7, `rgba(255,255,255,${bodyAlpha * 0.06})`);
-    fillGrad.addColorStop(1, "rgba(255,255,255,0)");
+    fillGrad.addColorStop(0.45, `rgba(255,255,255,${bodyAlpha * 0.88})`);
+    fillGrad.addColorStop(1, `rgba(255,255,255,${bodyAlpha * 0.72})`);
 
     ctx.fillStyle = fillGrad;
     ctx.fill();
 
-    // 輪郭
     ctx.strokeStyle = `rgba(255,255,255,${strokeAlpha})`;
     ctx.lineWidth = 0.9;
     ctx.stroke();
 
-    // 下に向かって自然消滅
-    ctx.save();
-    ctx.globalCompositeOperation = "destination-in";
-
-    const maskGrad = ctx.createLinearGradient(0, horizonY - 1, 0, bottomY);
-    maskGrad.addColorStop(0, "rgba(255,255,255,0.92)");
-    maskGrad.addColorStop(0.12, "rgba(255,255,255,0.72)");
-    maskGrad.addColorStop(0.34, "rgba(255,255,255,0.28)");
-    maskGrad.addColorStop(0.62, "rgba(255,255,255,0.08)");
-    maskGrad.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.fillStyle = maskGrad;
-    ctx.fillRect(0, horizonY - 1, w, bottomY - horizonY + 4);
-    ctx.restore();
-
-    // 水面の薄い横筋を上からかぶせて馴染ませる
     drawReflectionSheen(topY, bottomY, time, bodyAlpha);
   }
 
   function drawReflectionSheen(topY, bottomY, time, alphaBase) {
-    const lines = 5;
-    const span = Math.max(18, bottomY - topY);
+    const lines = 4;
+    const span = Math.max(16, bottomY - topY);
 
     ctx.save();
     ctx.beginPath();
@@ -977,14 +949,14 @@
     ctx.clip();
 
     for (let i = 0; i < lines; i++) {
-      const yy = topY + span * (0.12 + i / (lines + 1));
-      const alpha = alphaBase * (0.16 - i * 0.02);
+      const yy = topY + span * (0.18 + i / (lines + 2));
+      const alpha = alphaBase * (0.11 - i * 0.015);
 
       const grad = ctx.createLinearGradient(0, 0, w, 0);
       grad.addColorStop(0, "rgba(255,255,255,0)");
-      grad.addColorStop(0.2, `rgba(255,255,255,${alpha * 0.45})`);
+      grad.addColorStop(0.2, `rgba(255,255,255,${alpha * 0.42})`);
       grad.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
-      grad.addColorStop(0.8, `rgba(255,255,255,${alpha * 0.45})`);
+      grad.addColorStop(0.8, `rgba(255,255,255,${alpha * 0.42})`);
       grad.addColorStop(1, "rgba(255,255,255,0)");
 
       ctx.strokeStyle = grad;
@@ -994,8 +966,8 @@
       for (let x = 0; x <= w; x += 20) {
         const y =
           yy +
-          Math.sin(x * 0.011 + time * 1.05 + i * 0.8) * 0.45 +
-          Math.sin(x * 0.004 + time * 0.55 + i * 0.3) * 0.22;
+          Math.sin(x * 0.011 + time * 1.0 + i * 0.75) * 0.36 +
+          Math.sin(x * 0.004 + time * 0.52 + i * 0.28) * 0.18;
 
         if (x === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
