@@ -921,49 +921,84 @@ function applyMainSurfaceTension(dt, mainR) {
     ctx.restore();
   }
 
-  function drawAuxDroplets(time) {
-    for (const d of state.auxDroplets) {
-      const m = getAuxMorph(d, time);
-      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed);
+function drawAuxDroplets(time) {
+  // 主滴との首
+  for (const d of state.auxDroplets) {
+    const m = getAuxMorph(d, time);
+    drawBridgeBetween(
+      cx, cy, getMainBaseRadius(),
+      d.x, d.y, m.r,
+      d.bridgeToMain,
+      d.alpha
+    );
+  }
 
-      ctx.save();
+  // 補助滴同士の首
+  for (let i = 0; i < state.auxDroplets.length; i++) {
+    const a = state.auxDroplets[i];
+    const ma = getAuxMorph(a, time);
 
-      const g = ctx.createRadialGradient(
-        d.x - m.r * 0.18,
-        d.y - m.r * 0.22,
-        1,
-        d.x,
-        d.y,
-        m.r * 1.15
+    for (let j = i + 1; j < state.auxDroplets.length; j++) {
+      const b = state.auxDroplets[j];
+      const mb = getAuxMorph(b, time);
+
+      const bridgeK = Math.min(a.bridge, b.bridge);
+      if (bridgeK <= 0.001) continue;
+
+      drawBridgeBetween(
+        a.x, a.y, ma.r,
+        b.x, b.y, mb.r,
+        bridgeK,
+        Math.min(a.alpha, b.alpha)
       );
-      g.addColorStop(0, `rgba(255,255,255,${0.1 * d.alpha})`);
-      g.addColorStop(0.45, `rgba(255,255,255,${0.045 * d.alpha})`);
-      g.addColorStop(1, "rgba(255,255,255,0.008)");
-
-      tracePath(pts);
-      ctx.fillStyle = g;
-      ctx.fill();
-
-      ctx.strokeStyle = `rgba(255,255,255,${0.15 * d.alpha})`;
-      ctx.lineWidth = d.kind === "medium" ? 0.95 : 0.82;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.ellipse(
-        d.x - m.r * 0.18,
-        d.y - m.r * 0.22,
-        Math.max(1.5, m.r * 0.18),
-        Math.max(2.4, m.r * 0.25),
-        -0.34,
-        0,
-        Math.PI * 2
-      );
-      ctx.fillStyle = `rgba(255,255,255,${0.04 * d.alpha})`;
-      ctx.fill();
-
-      ctx.restore();
     }
   }
+
+  // 本体
+  for (const d of state.auxDroplets) {
+    const m = getAuxMorph(d, time);
+    const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed);
+
+    ctx.save();
+
+    const g = ctx.createRadialGradient(
+      d.x - m.r * 0.18,
+      d.y - m.r * 0.22,
+      1,
+      d.x,
+      d.y,
+      m.r * 1.15
+    );
+    g.addColorStop(0, `rgba(255,255,255,${0.10 * d.alpha})`);
+    g.addColorStop(0.45, `rgba(255,255,255,${0.045 * d.alpha})`);
+    g.addColorStop(1, "rgba(255,255,255,0.008)");
+
+    tracePath(pts);
+    ctx.fillStyle = g;
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(255,255,255,${0.15 * d.alpha})`;
+    ctx.lineWidth =
+      d.kind === "large" ? 1.02 :
+      d.kind === "medium" ? 0.92 : 0.78;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(
+      d.x - m.r * 0.18,
+      d.y - m.r * 0.22,
+      Math.max(1.3, m.r * 0.18),
+      Math.max(2.0, m.r * 0.25),
+      -0.34,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = `rgba(255,255,255,${0.04 * d.alpha})`;
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
 
   /* =========================================================
      11. Background / Halo / Horizon / Water
@@ -1679,4 +1714,4 @@ function applyMainSurfaceTension(dt, mainR) {
 
   boot();
 })();
-// ddd
+// cccc
