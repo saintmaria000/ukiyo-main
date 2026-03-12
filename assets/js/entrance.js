@@ -29,11 +29,7 @@
       wobbleAmp: 0.105,
       wobbleSpeedA: 0.92,
       wobbleSpeedB: 1.42,
-      floatY: -54,
-
-      // 既存互換で保持
-      absorbPulseAmp: 0.0,
-      absorbPulseDecay: 1.35
+      floatY: -54
     },
 
     auxDroplets: {
@@ -44,14 +40,6 @@
       sizeRatioMedium: 0.236,
       sizeRatioSmall: 0.092,
       maxRadiusRatioToMain: 0.5,
-
-      /* -------------------------------------------------------
-         個数
-      ------------------------------------------------------- */
-      minTotalCount: 2,
-      maxTotalCount: 4,
-      minAuxCount: 1,
-      maxAuxCount: 3,
 
       /* -------------------------------------------------------
          初期構成
@@ -69,7 +57,7 @@
 
       /* -------------------------------------------------------
          浮遊
-         ※ 独立して漂うだけ
+         ※ 独立漂遊のみ
       ------------------------------------------------------- */
       driftForce: 2.12,
       driftDamping: 0.993,
@@ -78,26 +66,26 @@
       maxSpeed: 18.0,
 
       /* -------------------------------------------------------
-         初期配置 / 適正距離
+         初期距離
       ------------------------------------------------------- */
       stableDistLarge: 1.72,
       stableDistMedium: 1.48,
       stableDistSmall: 1.28,
-      stableDistJitter: 0.08,
-
-      /* -------------------------------------------------------
-         接合（見た目だけ）
-         ※ 力は与えない
-      ------------------------------------------------------- */
-      contactStartMul: 1.78,
-      contactFullMul: 1.08,
-      mainContactMax: 1,
 
       /* -------------------------------------------------------
          壁反射
       ------------------------------------------------------- */
       wallBounce: 0.92,
-      wallDamping: 0.86
+      wallDamping: 0.86,
+
+      /* -------------------------------------------------------
+         メタボール接合
+         ※ 引っ張りなし / 近づいた時だけ1面化
+      ------------------------------------------------------- */
+      metaballJoinMul: 1.62,
+      metaballThreshold: 132,
+      metaballBlur: 14,
+      metaballPad: 34
     },
 
     phase: {
@@ -112,10 +100,7 @@
     logoHoldAfterReveal: 1.42,
 
     reveal: {
-      dropFromY: -148,
-      dropOvershoot: 22,
-      bounceAmp: 16,
-      wobbleCycles: 2.1
+      dropFromY: -148
     },
 
     shardCount: 160,
@@ -180,8 +165,11 @@
     entranceDoneFired: false,
 
     auxDroplets: [],
-    mainAbsorbPulse: 0
+
+    metaballCanvas: document.createElement("canvas"),
+    metaballCtx: null
   };
+  state.metaballCtx = state.metaballCanvas.getContext("2d", { willReadFrequently: true });
 
   /* =========================================================
      05. Utils
@@ -401,7 +389,7 @@
 
   /* =========================================================
      08. Aux Droplets / Model
-     ※ 独立浮遊 + 初期配置ランダム
+     ※ ランダム配置 / 独立浮遊
   ========================================================= */
   function getAuxBaseRadius(kind) {
     const mainR = getMainBaseRadius();
@@ -415,29 +403,17 @@
     return clamp(r, mainR * 0.06, mainR * CONFIG.auxDroplets.maxRadiusRatioToMain);
   }
 
-  function getStableDistanceForKind(kind) {
-    const mainR = getMainBaseRadius();
-    const C = CONFIG.auxDroplets;
-    const mul =
-      kind === "large" ? C.stableDistLarge :
-      kind === "medium" ? C.stableDistMedium :
-      C.stableDistSmall;
-
-    return mainR * (mul + rand(-C.stableDistJitter, C.stableDistJitter));
-  }
-
   function initAuxDroplets() {
     state.auxDroplets.length = 0;
-    state.mainAbsorbPulse = 0;
 
     const kinds = CONFIG.auxDroplets.initialPattern;
     const bounds = getFloatBounds();
 
     for (let i = 0; i < kinds.length; i++) {
+      const kind = kinds[i];
       const angle = Math.random() * Math.PI * 2;
-
-      const minDist = getMainBaseRadius() * 0.9;
-      const maxDist = getMainBaseRadius() * 1.8;
+      const minDist = getMainBaseRadius() * 0.72;
+      const maxDist = getMainBaseRadius() * 1.35;
       const dist = rand(minDist, maxDist);
 
       let x = cx + Math.cos(angle) * dist;
@@ -449,8 +425,8 @@
       const tangent = angle + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
 
       state.auxDroplets.push({
-        kind: kinds[i],
-        r: clampAuxRadius(getAuxBaseRadius(kinds[i])),
+        kind,
+        r: clampAuxRadius(getAuxBaseRadius(kind)),
         x,
         y,
         vx: Math.cos(tangent) * rand(3, 5),
@@ -542,110 +518,10 @@
   }
 
   /* =========================================================
-     10. Water Droplet / Visual Contact
-     ※ 接合は見た目だけ
-  ========================================================= */
-  function getPairContactK(ax, ay, ar, bx, by, br) {
-    const d = dist2(ax, ay, bx, by);
-    const rr = ar + br;
-
-    const start = rr * CONFIG.auxDroplets.contactStartMul;
-    const full = rr * CONFIG.auxDroplets.contactFullMul;
-
-    if (d >= start) return 0;
-    return clamp((start - d) / Math.max(start - full, 1), 0, 1);
-  }
-
-  function getMainVisualContactForAux(d) {
-    const k = getPairContactK(
-      d.x, d.y, d.r * d.scale,
-      cx, cy, getMainBaseRadius()
-    );
-
-    if (k <= 0) return null;
-
-    return {
-      pullX: cx - d.x,
-      pullY: cy - d.y,
-      pullStrength: k * 0.92,
-      squash: k * 0.52,
-      neckWidth: k * 0.95
-    };
-  }
-
-  function getAuxVisualContactForAux(d) {
-    let best = null;
-    let bestK = 0;
-
-    for (const other of state.auxDroplets) {
-      if (other === d) continue;
-
-      const k = getPairContactK(
-        d.x, d.y, d.r * d.scale,
-        other.x, other.y, other.r * other.scale
-      );
-
-      if (k > bestK) {
-        bestK = k;
-        best = other;
-      }
-    }
-
-    if (!best || bestK <= 0) return null;
-
-    return {
-      pullX: best.x - d.x,
-      pullY: best.y - d.y,
-      pullStrength: bestK * 0.96,
-      squash: bestK * 0.56,
-      neckWidth: bestK * 0.98
-    };
-  }
-
-  function getVisualDeformationForAux(d) {
-    const mainDef = getMainVisualContactForAux(d);
-    const pairDef = getAuxVisualContactForAux(d);
-
-    if (!mainDef && !pairDef) return null;
-    if (mainDef && !pairDef) return mainDef;
-    if (!mainDef && pairDef) return pairDef;
-
-    return mainDef.pullStrength >= pairDef.pullStrength ? mainDef : pairDef;
-  }
-
-  function getVisualDeformationForMain() {
-    let best = null;
-    let bestK = 0;
-
-    for (const d of state.auxDroplets) {
-      const k = getPairContactK(
-        cx, cy, getMainBaseRadius(),
-        d.x, d.y, d.r * d.scale
-      );
-
-      if (k > bestK) {
-        bestK = k;
-        best = d;
-      }
-    }
-
-    if (!best || bestK <= 0) return null;
-
-    return {
-      pullX: best.x - cx,
-      pullY: best.y - cy,
-      pullStrength: bestK * 0.9,
-      squash: bestK * 0.48,
-      neckWidth: bestK * 0.92
-    };
-  }
-
-  /* =========================================================
-     11. Water Droplet / Draw
+     10. Water Droplet / Organic Shape
   ========================================================= */
   function getDropletMorph(time, hintK) {
     const base = getMainBaseRadius();
-    const absorbPulse = state.mainAbsorbPulse * CONFIG.droplet.absorbPulseAmp;
 
     const wobble =
       Math.sin(time * CONFIG.droplet.wobbleSpeedA) * 0.55 +
@@ -655,7 +531,7 @@
       Math.sin(time * 3.2 + 0.7) * 0.4 +
       Math.sin(time * 4.9 - 0.9) * 0.23;
 
-    const amp = CONFIG.droplet.wobbleAmp * (1 + 0.22 * wobble) + absorbPulse;
+    const amp = CONFIG.droplet.wobbleAmp * (1 + 0.22 * wobble);
     const shiver = hintK * 0.05;
 
     return {
@@ -684,43 +560,20 @@
     };
   }
 
-  function buildDropletPathAt(x, y, m, time, seed = 0, deformation = null) {
+  function buildDropletPathAt(x, y, m, time, seed = 0) {
     const pts = [];
     const n = 72;
-
-    const def = deformation || {};
-    const pullX = def.pullX || 0;
-    const pullY = def.pullY || 0;
-    const pullStrength = def.pullStrength || 0;
-    const squash = def.squash || 0;
-    const neckWidth = def.neckWidth || 0;
-
-    const pullLen = Math.hypot(pullX, pullY) || 1;
-    const pnx = pullX / pullLen;
-    const pny = pullY / pullLen;
-
-    const calm = 1 - clamp(pullStrength * 0.6, 0, 0.6);
 
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2;
       const ux = Math.cos(a);
       const uy = Math.sin(a);
 
-      const n1 = Math.sin(a * 3 + time * 1.7 + seed) * m.warpA * 0.12 * calm;
-      const n2 = Math.sin(a * 5 - time * 2.4 + 0.6 + seed * 0.7) * m.warpB * 0.08 * calm;
-      const n3 = Math.cos(a * 2 + time * 1.1 - 0.8 + seed * 0.3) * 0.03 * (0.75 + calm * 0.25);
+      const n1 = Math.sin(a * 3 + time * 1.7 + seed) * m.warpA * 0.12;
+      const n2 = Math.sin(a * 5 - time * 2.4 + 0.6 + seed * 0.7) * m.warpB * 0.08;
+      const n3 = Math.cos(a * 2 + time * 1.1 - 0.8 + seed * 0.3) * 0.03;
 
-      let rr = 1 + n1 + n2 + n3;
-
-      const along = ux * pnx + uy * pny;
-      const frontPull = Math.max(0, along);
-      const backPull = Math.max(0, -along);
-      const side = 1 - Math.abs(along);
-
-      rr += frontPull * frontPull * pullStrength * 0.48;
-      rr -= backPull * squash * 0.10;
-      rr -= side * neckWidth * 0.11;
-      rr += side * pullStrength * 0.02;
+      const rr = 1 + n1 + n2 + n3;
 
       pts.push({
         x: x + ux * m.rx * rr,
@@ -748,101 +601,278 @@
     ctx.closePath();
   }
 
-  function drawDroplet(time, hintK) {
-    const deformation = getVisualDeformationForMain();
+  /* =========================================================
+     11. Water Droplet / Metaball Helpers
+     ※ 引っ張りなし / 近い時だけ1面化
+  ========================================================= */
+  function getMainRenderDroplet(time, hintK) {
+    const m = getDropletMorph(time, hintK);
+    return {
+      id: "main",
+      type: "main",
+      x: cx,
+      y: cy,
+      r: m.r,
+      rx: m.rx,
+      ry: m.ry,
+      alpha: 1,
+      seed: 0
+    };
+  }
 
-    const pts = buildDropletPathAt(
-      cx,
-      cy,
-      getDropletMorph(time, hintK),
-      time,
-      0,
-      deformation
-    );
+  function getAuxRenderDroplets(time) {
+    return state.auxDroplets.map((d, i) => {
+      const m = getAuxMorph(d, time);
+      return {
+        id: `aux-${i}`,
+        type: "aux",
+        source: d,
+        x: d.x,
+        y: d.y,
+        r: m.r,
+        rx: m.rx,
+        ry: m.ry,
+        alpha: d.alpha,
+        seed: d.seed
+      };
+    });
+  }
+
+  function shouldMetaballJoin(a, b) {
+    const d = dist2(a.x, a.y, b.x, b.y);
+    const rr = a.r + b.r;
+    return d <= rr * CONFIG.auxDroplets.metaballJoinMul;
+  }
+
+  function buildDropletGroups(items) {
+    const n = items.length;
+    const visited = new Array(n).fill(false);
+    const groups = [];
+
+    for (let i = 0; i < n; i++) {
+      if (visited[i]) continue;
+
+      const stack = [i];
+      visited[i] = true;
+      const group = [];
+
+      while (stack.length) {
+        const idx = stack.pop();
+        const a = items[idx];
+        group.push(a);
+
+        for (let j = 0; j < n; j++) {
+          if (visited[j]) continue;
+          const b = items[j];
+          if (shouldMetaballJoin(a, b)) {
+            visited[j] = true;
+            stack.push(j);
+          }
+        }
+      }
+
+      groups.push(group);
+    }
+
+    return groups;
+  }
+
+  function drawSingleOrganicDroplet(item, time, hintK) {
+    const m = item.type === "main"
+      ? getDropletMorph(time, hintK)
+      : getAuxMorph(item.source, time);
+
+    const pts = buildDropletPathAt(item.x, item.y, m, time, item.seed || 0);
 
     ctx.save();
 
     const body = ctx.createRadialGradient(
-      cx - 18,
-      cy - 22,
-      5,
-      cx,
-      cy,
-      getMainBaseRadius() * 1.1
+      item.x - m.r * 0.18,
+      item.y - m.r * 0.22,
+      1,
+      item.x,
+      item.y,
+      m.r * 1.18
+    );
+
+    if (item.type === "main") {
+      body.addColorStop(0, "rgba(255,255,255,0.12)");
+      body.addColorStop(0.38, "rgba(255,255,255,0.055)");
+      body.addColorStop(0.72, "rgba(255,255,255,0.028)");
+      body.addColorStop(1, "rgba(255,255,255,0.01)");
+    } else {
+      body.addColorStop(0, `rgba(255,255,255,${0.10 * item.alpha})`);
+      body.addColorStop(0.42, `rgba(255,255,255,${0.046 * item.alpha})`);
+      body.addColorStop(1, "rgba(255,255,255,0.008)");
+    }
+
+    tracePath(pts);
+    ctx.fillStyle = body;
+    ctx.fill();
+
+    ctx.strokeStyle =
+      item.type === "main"
+        ? `rgba(255,255,255,${0.17 + hintK * 0.08})`
+        : `rgba(255,255,255,${0.15 * item.alpha})`;
+
+    ctx.lineWidth =
+      item.type === "main" ? 1.05 :
+      item.source.kind === "large" ? 1.02 :
+      item.source.kind === "medium" ? 0.92 : 0.78;
+
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(
+      item.x - m.r * 0.18,
+      item.y - m.r * 0.22,
+      Math.max(1.4, m.r * 0.18),
+      Math.max(2.2, m.r * 0.25),
+      -0.34,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = item.type === "main"
+      ? "rgba(255,255,255,0.05)"
+      : `rgba(255,255,255,${0.04 * item.alpha})`;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function getGroupBounds(group) {
+    const pad = CONFIG.auxDroplets.metaballPad + CONFIG.auxDroplets.metaballBlur;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const d of group) {
+      minX = Math.min(minX, d.x - d.rx - pad);
+      minY = Math.min(minY, d.y - d.ry - pad);
+      maxX = Math.max(maxX, d.x + d.rx + pad);
+      maxY = Math.max(maxY, d.y + d.ry + pad);
+    }
+
+    return {
+      minX: Math.floor(minX),
+      minY: Math.floor(minY),
+      maxX: Math.ceil(maxX),
+      maxY: Math.ceil(maxY),
+      w: Math.max(1, Math.ceil(maxX - minX)),
+      h: Math.max(1, Math.ceil(maxY - minY))
+    };
+  }
+
+  function buildMetaballMask(group) {
+    const off = state.metaballCanvas;
+    const octx = state.metaballCtx;
+    const blur = CONFIG.auxDroplets.metaballBlur;
+    const threshold = CONFIG.auxDroplets.metaballThreshold;
+    const b = getGroupBounds(group);
+
+    off.width = b.w;
+    off.height = b.h;
+
+    octx.clearRect(0, 0, b.w, b.h);
+    octx.save();
+    octx.fillStyle = "#fff";
+    octx.filter = `blur(${blur}px)`;
+
+    for (const d of group) {
+      octx.beginPath();
+      octx.ellipse(
+        d.x - b.minX,
+        d.y - b.minY,
+        d.rx,
+        d.ry,
+        0,
+        0,
+        Math.PI * 2
+      );
+      octx.fill();
+    }
+
+    octx.restore();
+
+    const img = octx.getImageData(0, 0, b.w, b.h);
+    const data = img.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const a = data[i + 3];
+      if (a >= threshold) {
+        data[i] = 255;
+        data[i + 1] = 255;
+        data[i + 2] = 255;
+        data[i + 3] = 255;
+      } else {
+        data[i + 3] = 0;
+      }
+    }
+
+    octx.putImageData(img, 0, 0);
+    return b;
+  }
+
+  function drawMetaballGroup(group, time, hintK) {
+    const bounds = buildMetaballMask(group);
+
+    ctx.save();
+
+    const centerX = (bounds.minX + bounds.maxX) * 0.5;
+    const centerY = (bounds.minY + bounds.maxY) * 0.5;
+    const radius = Math.max(bounds.w, bounds.h) * 0.58;
+
+    const body = ctx.createRadialGradient(
+      centerX - radius * 0.18,
+      centerY - radius * 0.22,
+      4,
+      centerX,
+      centerY,
+      radius
     );
     body.addColorStop(0, "rgba(255,255,255,0.12)");
     body.addColorStop(0.38, "rgba(255,255,255,0.055)");
     body.addColorStop(0.72, "rgba(255,255,255,0.028)");
     body.addColorStop(1, "rgba(255,255,255,0.01)");
 
-    tracePath(pts);
+    ctx.drawImage(state.metaballCanvas, bounds.minX, bounds.minY);
+
+    ctx.globalCompositeOperation = "source-in";
     ctx.fillStyle = body;
-    ctx.fill();
+    ctx.fillRect(bounds.minX, bounds.minY, bounds.w, bounds.h);
 
-    const mainContactBoost = deformation ? deformation.pullStrength : 0;
-    ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + mainContactBoost * 0.08})`;
-    ctx.lineWidth = 1.05;
-    ctx.stroke();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 0.18 + hintK * 0.05;
+    ctx.drawImage(state.metaballCanvas, bounds.minX, bounds.minY);
 
-    ctx.beginPath();
-    ctx.ellipse(cx - 18, cy - 22, 9, 16, -0.4, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.ellipse(cx + 6, cy + 8, 28, 17, 0.42, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.035)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.08;
+    for (const d of group) {
+      ctx.beginPath();
+      ctx.ellipse(
+        d.x - d.rx * 0.18,
+        d.y - d.ry * 0.22,
+        Math.max(1.5, d.rx * 0.18),
+        Math.max(2.2, d.ry * 0.24),
+        -0.35,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      ctx.fill();
+    }
 
     ctx.restore();
   }
 
-  function drawAuxDroplets(time) {
-    for (const d of state.auxDroplets) {
-      const m = getAuxMorph(d, time);
-      const deformation = getVisualDeformationForAux(d);
-      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, deformation);
+  function drawDropletSystem(time, hintK) {
+    const items = [getMainRenderDroplet(time, hintK), ...getAuxRenderDroplets(time)];
+    const groups = buildDropletGroups(items);
 
-      ctx.save();
-
-      const g = ctx.createRadialGradient(
-        d.x - m.r * 0.18,
-        d.y - m.r * 0.22,
-        1,
-        d.x,
-        d.y,
-        m.r * 1.18
-      );
-      g.addColorStop(0, `rgba(255,255,255,${0.10 * d.alpha})`);
-      g.addColorStop(0.42, `rgba(255,255,255,${0.046 * d.alpha})`);
-      g.addColorStop(1, "rgba(255,255,255,0.008)");
-
-      tracePath(pts);
-      ctx.fillStyle = g;
-      ctx.fill();
-
-      const contactBoost = deformation ? deformation.pullStrength : 0;
-      ctx.strokeStyle = `rgba(255,255,255,${(0.15 + contactBoost * 0.08) * d.alpha})`;
-      ctx.lineWidth =
-        d.kind === "large" ? 1.02 :
-        d.kind === "medium" ? 0.92 : 0.78;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.ellipse(
-        d.x - m.r * 0.18,
-        d.y - m.r * 0.22,
-        Math.max(1.3, m.r * 0.18),
-        Math.max(2.0, m.r * 0.25),
-        -0.34,
-        0,
-        Math.PI * 2
-      );
-      ctx.fillStyle = `rgba(255,255,255,${0.04 * d.alpha})`;
-      ctx.fill();
-
-      ctx.restore();
+    for (const group of groups) {
+      if (group.length === 1) drawSingleOrganicDroplet(group[0], time, hintK);
+      else drawMetaballGroup(group, time, hintK);
     }
   }
 
@@ -947,7 +977,7 @@
 
   /* =========================================================
      13. Reflection
-     ※ 水面下に反射全体を映す / フェードなし
+     ※ メタボール面をそのまま水面下へ反射
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
@@ -956,57 +986,39 @@
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
 
-    const mainPts = buildDropletPathAt(
-      cx,
-      cy,
-      getDropletMorph(time, hintK * 0.72),
-      time,
-      0,
-      getVisualDeformationForMain()
-    );
+    const items = [getMainRenderDroplet(time, hintK * 0.72), ...getAuxRenderDroplets(time)];
+    const groups = buildDropletGroups(items);
 
-    drawReflectionShape(
-      mainPts,
-      time,
-      {
-        bodyAlpha: 0.10,
-        strokeAlpha: 0.045,
-        squashY: 0.60,
-        rippleAmp: 0.9,
-        rippleFreq: 0.018,
-        rippleSpeed: 1.2
-      }
-    );
-
-    for (const d of state.auxDroplets) {
-      const m = getAuxMorph(d, time);
-      const pts = buildDropletPathAt(
-        d.x,
-        d.y,
-        m,
-        time,
-        d.seed,
-        getVisualDeformationForAux(d)
-      );
-
-      drawReflectionShape(
-        pts,
-        time + d.seed * 0.0008,
-        {
-          bodyAlpha: 0.062 * d.alpha,
-          strokeAlpha: 0.028 * d.alpha,
-          squashY: 0.58,
-          rippleAmp: Math.max(0.35, m.r * 0.018),
-          rippleFreq: 0.02,
-          rippleSpeed: 1.1
-        }
-      );
+    for (const group of groups) {
+      if (group.length === 1) drawSingleReflection(group[0], time, hintK);
+      else drawMetaballReflection(group, time);
     }
 
     ctx.restore();
   }
 
-  function drawReflectionShape(pts, time, opt) {
+  function drawSingleReflection(item, time, hintK) {
+    const m = item.type === "main"
+      ? getDropletMorph(time, hintK * 0.72)
+      : getAuxMorph(item.source, time);
+
+    const pts = buildDropletPathAt(item.x, item.y, m, time, item.seed || 0);
+
+    drawReflectionShapeFromPoints(
+      pts,
+      time + (item.seed || 0) * 0.0008,
+      {
+        bodyAlpha: item.type === "main" ? 0.10 : 0.062 * item.alpha,
+        strokeAlpha: item.type === "main" ? 0.045 : 0.028 * item.alpha,
+        squashY: item.type === "main" ? 0.60 : 0.58,
+        rippleAmp: item.type === "main" ? 0.9 : Math.max(0.35, m.r * 0.018),
+        rippleFreq: item.type === "main" ? 0.018 : 0.02,
+        rippleSpeed: item.type === "main" ? 1.2 : 1.1
+      }
+    );
+  }
+
+  function drawReflectionShapeFromPoints(pts, time, opt) {
     const {
       bodyAlpha,
       strokeAlpha,
@@ -1047,6 +1059,42 @@
     ctx.stroke();
 
     drawReflectionSheen(topY, bottomY, time, bodyAlpha);
+  }
+
+  function drawMetaballReflection(group, time) {
+    const bounds = buildMetaballMask(group);
+
+    const squashY = 0.58;
+    const slices = 16;
+    const sliceH = Math.max(2, Math.ceil(bounds.h / slices));
+    const flow =
+      Math.sin(time * 0.72) * 0.8 +
+      Math.sin(time * 0.34 + 1.2) * 0.45;
+
+    ctx.save();
+    ctx.globalAlpha = 0.11;
+
+    for (let i = 0; i < slices; i++) {
+      const sy = i * sliceH;
+      const sh = Math.min(sliceH, bounds.h - sy);
+      if (sh <= 0) continue;
+
+      const srcY = bounds.minY + sy;
+      const reflectedY = horizonY + (horizonY - (srcY + sh)) * squashY;
+
+      const waveX =
+        Math.sin((srcY + sy) * 0.018 + time * 1.14) * 0.9 +
+        Math.sin((srcY + sy) * 0.008 + time * 0.62) * 0.32 +
+        flow;
+
+      ctx.drawImage(
+        state.metaballCanvas,
+        0, sy, bounds.w, sh,
+        bounds.minX + waveX, reflectedY, bounds.w, sh * squashY
+      );
+    }
+
+    ctx.restore();
   }
 
   function drawReflectionSheen(topY, bottomY, time, alphaBase) {
@@ -1476,8 +1524,7 @@
       setBrandOpacity(1);
       setRevealOpacity(0);
       drawReflection(now, 0);
-      drawDroplet(now, 0);
-      drawAuxDroplets(now);
+      drawDropletSystem(now, 0);
       rafId = requestAnimationFrame(render);
       return;
     }
@@ -1486,8 +1533,7 @@
       setBrandOpacity(1 - hintK * 0.38);
       setRevealOpacity(0);
       drawReflection(now, hintK);
-      drawDroplet(now, hintK);
-      drawAuxDroplets(now);
+      drawDropletSystem(now, hintK);
       rafId = requestAnimationFrame(render);
       return;
     }
@@ -1603,7 +1649,6 @@
     state.flash = 0;
     state.revealShown = false;
     state.entranceDoneFired = false;
-    state.mainAbsorbPulse = 0;
 
     resize();
     createShardField();
