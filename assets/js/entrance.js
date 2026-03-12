@@ -35,7 +35,7 @@
     horizonYMax: 0.62,
 
     // -------------------------------------------------------
-    // 水滴
+    // 主滴
     // radius   : ベース半径
     // wobbleAmp: 揺らめき量
     // floatY   : 画面中央からの上下位置（マイナスで上）
@@ -46,6 +46,53 @@
       wobbleSpeedA: 1.05,
       wobbleSpeedB: 1.68,
       floatY: -54
+    },
+
+    // -------------------------------------------------------
+    // 補助水滴ロゴ構造
+    // - 主滴を含む総数は最大4
+    // - 補助滴は2〜3個のみ
+    // - パターンは指定の3種類のみ
+    // - 補助滴は130〜210pxのリング内でのみ存在
+    // -------------------------------------------------------
+    auxDroplets: {
+      minDistance: 130,
+      maxDistance: 210,
+
+      mediumRadiusMin: 14,
+      mediumRadiusMax: 18,
+      smallRadiusMin: 6,
+      smallRadiusMax: 9,
+
+      spawnScaleFrom: 0.68,
+      spawnFadeIn: 0.42,
+
+      driftDurationMin: 1.9,
+      driftDurationMax: 3.2,
+
+      approachDurationMin: 0.95,
+      approachDurationMax: 1.45,
+
+      respawnDelayMin: 0.05,
+      respawnDelayMax: 0.22,
+
+      orbitDriftAmp: 12,
+      orbitDriftSpeedMin: 0.45,
+      orbitDriftSpeedMax: 0.95,
+
+      localWobbleAmp: 0.11,
+      localWobbleSpeedA: 1.4,
+      localWobbleSpeedB: 2.15,
+
+      mergeRadiusPad: 7,
+      mergeFlashMax: 0.23,
+
+      // 3つの構成だけに限定
+      patterns: [
+        ["medium", "small"],
+        ["medium", "medium"],
+        ["medium", "small", "small"]
+      ]
     },
 
     // -------------------------------------------------------
@@ -68,16 +115,11 @@
 
     // -------------------------------------------------------
     // 終盤の余韻
-    // 憂き世が着地して弾み切ってから言語選択へ移るまでの静止時間
     // -------------------------------------------------------
     logoHoldAfterReveal: 1.42,
 
     // -------------------------------------------------------
     // revealLogo の落下 / 弾み
-    // dropFromY     : 出現開始の高さ
-    // dropOvershoot : 一度どこまで下へ入るか
-    // bounceAmp     : 最初の跳ね返り量
-    // wobbleCycles  : 自然な減衰回数
     // -------------------------------------------------------
     reveal: {
       dropFromY: -148,
@@ -97,10 +139,6 @@
 
     // -------------------------------------------------------
     // 飛散
-    // spreadBoost   : 全体の広がり
-    // offscreenBoost: 画面外まで保持する範囲
-    // centerRetention: 内側に残る破片割合
-    // midRetention   : 中距離帯の割合
     // -------------------------------------------------------
     spreadBoost: 1.9,
     offscreenBoost: 1.45,
@@ -109,13 +147,6 @@
 
     // -------------------------------------------------------
     // 収束
-    // gatherMaxPull    : 既存破片の最大吸引力
-    // gatherInflowPull : 画面外流入片の最大吸引力
-    // gatherSteer      : xy方向の吸引追従
-    // gatherZSteer     : z方向の吸引追従
-    // gatherSnapRadius : 中央近傍で一気に核へ落ち込む距離
-    // vanishRadius     : 中央到達で消す半径
-    // vanishZ          : zも十分中央に寄ったら消す
     // -------------------------------------------------------
     gatherMaxPull: 2350,
     gatherInflowPull: 2650,
@@ -165,7 +196,12 @@
     inflow: [],
     flash: 0,
     revealShown: false,
-    entranceDoneFired: false
+    entranceDoneFired: false,
+
+    // 補助滴群
+    auxPattern: [],
+    auxDroplets: [],
+    auxMergePulse: 0
   };
 
   /* =========================================================
@@ -232,7 +268,10 @@
     cy = h * 0.5 + CONFIG.droplet.floatY;
     horizonY = h * lerp(CONFIG.horizonYMin, CONFIG.horizonYMax, 0.5);
 
-    if (!started) createShardField();
+    if (!started) {
+      createShardField();
+      initAuxDropletField();
+    }
   }
 
   /* =========================================================
@@ -356,7 +395,203 @@
   }
 
   /* =========================================================
-     08. Phase
+     08. Auxiliary Droplets / Generate
+     - 主滴を中心にした補助滴構造
+     - 常時 2〜3 個のみ
+     - 生成 → 漂い → 接近 → 融合 のみ
+  ========================================================= */
+  function initAuxDropletField() {
+    const pattern = choose(CONFIG.auxDroplets.patterns).slice();
+    state.auxPattern = pattern;
+    state.auxDroplets = pattern.map((sizeType, index) => createAuxDroplet(sizeType, index));
+    state.auxMergePulse = 0;
+  }
+
+  function createAuxDroplet(sizeType, index = 0) {
+    const C = CONFIG.auxDroplets;
+    const radius =
+      sizeType === "medium"
+        ? rand(C.mediumRadiusMin, C.mediumRadiusMax)
+        : rand(C.smallRadiusMin, C.smallRadiusMax);
+
+    const baseAngle = rand(-Math.PI, Math.PI);
+    const dist = rand(C.minDistance, C.maxDistance);
+    const spawnBias = index / Math.max(state.auxPattern.length, 1);
+
+    const x = cx + Math.cos(baseAngle) * dist;
+    const y = cy + Math.sin(baseAngle) * dist * rand(0.9, 1.06);
+
+    return {
+      sizeType,
+      r: radius,
+
+      baseAngle,
+      driftAngle: baseAngle + rand(-0.42, 0.42),
+      angleSpeed: rand(C.orbitDriftSpeedMin, C.orbitDriftSpeedMax) * choose([-1, 1]),
+
+      dist,
+      distTarget: clamp(dist + rand(-22, 22), C.minDistance, C.maxDistance),
+
+      x,
+      y,
+
+      alpha: 0,
+      scale: C.spawnScaleFrom,
+
+      phase: "spawn", // spawn | drift | approach
+      phaseTime: 0,
+      phaseDuration: rand(C.spawnFadeIn * 0.85, C.spawnFadeIn * 1.25),
+
+      seed: rand(0, 1000),
+      driftYSeed: rand(0, 1000),
+      wobbleBias: rand(-0.25, 0.25),
+      spawnBias,
+
+      targetX: cx,
+      targetY: cy
+    };
+  }
+
+  function recycleAuxDroplet(d, index) {
+    const fresh = createAuxDroplet(d.sizeType, index);
+    Object.assign(d, fresh);
+  }
+
+  function updateAuxDroplets(dt, time) {
+    if (started) return;
+
+    const C = CONFIG.auxDroplets;
+    const mainBaseR = getMainBaseRadius();
+
+    state.auxMergePulse = Math.max(0, state.auxMergePulse - dt * 0.95);
+
+    for (let i = 0; i < state.auxDroplets.length; i++) {
+      const d = state.auxDroplets[i];
+      d.phaseTime += dt;
+
+      if (d.phase === "spawn") {
+        const k = clamp(d.phaseTime / d.phaseDuration, 0, 1);
+        d.alpha = easeOutCubic(k) * 0.92;
+        d.scale = lerp(C.spawnScaleFrom, 1, easeOutBack(k, 1.12));
+
+        const appearDrift = 1 - easeOutCubic(k);
+        d.x = cx + Math.cos(d.baseAngle) * (d.dist + appearDrift * 8);
+        d.y = cy + Math.sin(d.baseAngle) * (d.dist + appearDrift * 8) * 0.98;
+
+        if (k >= 1) {
+          d.phase = "drift";
+          d.phaseTime = 0;
+          d.phaseDuration = rand(C.driftDurationMin, C.driftDurationMax);
+          d.alpha = 0.92;
+          d.scale = 1;
+        }
+        continue;
+      }
+
+      if (d.phase === "drift") {
+        const k = clamp(d.phaseTime / d.phaseDuration, 0, 1);
+        const orbitAmp = C.orbitDriftAmp * (d.sizeType === "medium" ? 1 : 0.85);
+
+        const angle =
+          d.driftAngle +
+          d.angleSpeed * d.phaseTime * 0.45 +
+          Math.sin(time * 0.52 + d.seed) * 0.12;
+
+        const ringShift =
+          Math.sin(time * 0.9 + d.seed) * orbitAmp +
+          Math.sin(time * 1.35 + d.seed * 0.63) * orbitAmp * 0.42;
+
+        const currentDist = clamp(
+          lerp(d.dist, d.distTarget, easeInOutSoft(k)) + ringShift,
+          C.minDistance,
+          C.maxDistance
+        );
+
+        d.x = cx + Math.cos(angle) * currentDist;
+        d.y = cy + Math.sin(angle) * currentDist * 0.96 + Math.sin(time * 1.4 + d.driftYSeed) * 3.2;
+
+        d.alpha = 0.92;
+        d.scale = 1;
+
+        if (k >= 1) {
+          d.phase = "approach";
+          d.phaseTime = 0;
+          d.phaseDuration = rand(C.approachDurationMin, C.approachDurationMax);
+          d.targetX = cx;
+          d.targetY = cy;
+          d.dist = currentDist;
+        }
+        continue;
+      }
+
+      if (d.phase === "approach") {
+        const k = clamp(d.phaseTime / d.phaseDuration, 0, 1);
+        const approachK = easeInCubic(k);
+
+        const fromAngle =
+          d.driftAngle +
+          Math.sin(time * 0.4 + d.seed) * 0.08;
+
+        const fromDist = clamp(d.dist, C.minDistance, C.maxDistance);
+        const liveDist = lerp(fromDist, mainBaseR + d.r + 4, approachK);
+
+        d.x = lerp(
+          cx + Math.cos(fromAngle) * fromDist,
+          cx + Math.cos(fromAngle) * (mainBaseR + d.r + 4),
+          approachK
+        );
+        d.y = lerp(
+          cy + Math.sin(fromAngle) * fromDist * 0.96,
+          cy + Math.sin(fromAngle) * (mainBaseR + d.r + 4) * 0.96,
+          approachK
+        );
+
+        d.alpha = lerp(0.92, 0.24, k);
+        d.scale = lerp(1, 0.82, k * 0.9);
+
+        const distToMain = Math.hypot(d.x - cx, d.y - cy);
+        if (distToMain <= mainBaseR + d.r + C.mergeRadiusPad || k >= 1) {
+          state.auxMergePulse = Math.min(1, state.auxMergePulse + C.mergeFlashMax);
+
+          const delay = rand(C.respawnDelayMin, C.respawnDelayMax);
+          recycleAuxDropletDeferred(d, i, delay);
+        }
+
+        void liveDist;
+      }
+    }
+  }
+
+  function recycleAuxDropletDeferred(d, index, delay) {
+    d.phase = "hidden";
+    d.phaseTime = 0;
+    d.phaseDuration = delay;
+    d.alpha = 0;
+    d.scale = 0.82;
+
+    d.updateHidden = true;
+    d.hiddenIndex = index;
+  }
+
+  function updateHiddenAuxDroplets(dt) {
+    for (const d of state.auxDroplets) {
+      if (d.phase !== "hidden") continue;
+      d.phaseTime += dt;
+      if (d.phaseTime >= d.phaseDuration) {
+        recycleAuxDroplet(d, d.hiddenIndex || 0);
+      }
+    }
+  }
+
+  function easeInOutSoft(t) {
+    t = clamp(t, 0, 1);
+    return t < 0.5
+      ? 2 * t * t
+      : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  /* =========================================================
+     09. Phase
   ========================================================= */
   function getPhase(t) {
     if (t < T_HINT) return "hint";
@@ -369,10 +604,17 @@
   }
 
   /* =========================================================
-     09. Water Droplet
+     10. Water Droplet / Morph
+     - 主滴と補助滴を同じロジック系で描けるように整理
   ========================================================= */
+  function getMainBaseRadius() {
+    return CONFIG.droplet.radius * Math.min(w / 1200, h / 900, 1.12);
+  }
+
   function getDropletMorph(time, hintK) {
-    const base = CONFIG.droplet.radius * Math.min(w / 1200, h / 900, 1.12);
+    const base = getMainBaseRadius();
+    const mergeBoost = state.auxMergePulse * 0.032;
+
     const wobble =
       Math.sin(time * CONFIG.droplet.wobbleSpeedA) * 0.55 +
       Math.sin(time * CONFIG.droplet.wobbleSpeedB + 1.4) * 0.45;
@@ -381,8 +623,8 @@
       Math.sin(time * 3.2 + 0.7) * 0.4 +
       Math.sin(time * 4.9 - 0.9) * 0.23;
 
-    const amp = CONFIG.droplet.wobbleAmp * (1 + 0.22 * wobble);
-    const shiver = hintK * 0.06;
+    const amp = CONFIG.droplet.wobbleAmp * (1 + 0.22 * wobble) + mergeBoost;
+    const shiver = hintK * 0.06 + mergeBoost * 0.75;
 
     return {
       r: base,
@@ -393,44 +635,49 @@
     };
   }
 
-  function buildDropletPath(time, hintK = 0) {
-    const m = getDropletMorph(time, hintK);
+  function getAuxDropletMorph(d, time) {
+    const C = CONFIG.auxDroplets;
+    const localA =
+      Math.sin(time * C.localWobbleSpeedA + d.seed) * 0.55 +
+      Math.sin(time * C.localWobbleSpeedB + d.seed * 0.6) * 0.45;
+
+    const amp = C.localWobbleAmp * (1 + d.wobbleBias + localA * 0.18);
+    const rr = d.r * d.scale;
+
+    return {
+      r: rr,
+      rx: rr * (1 + amp * 0.32),
+      ry: rr * (1.07 - amp * 0.24),
+      warpA: amp * 0.78,
+      warpB: amp * 0.55
+    };
+  }
+
+  function buildDropletPathAt(x, y, morph, time, seed = 0) {
     const pts = [];
     const n = 56;
 
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2;
-      const n1 = Math.sin(a * 3 + time * 1.7) * m.warpA * 0.12;
-      const n2 = Math.sin(a * 5 - time * 2.4 + 0.6) * m.warpB * 0.08;
-      const n3 = Math.cos(a * 2 + time * 1.1 - 0.8) * 0.03;
+      const n1 = Math.sin(a * 3 + time * 1.7 + seed) * morph.warpA * 0.12;
+      const n2 = Math.sin(a * 5 - time * 2.4 + 0.6 + seed * 0.7) * morph.warpB * 0.08;
+      const n3 = Math.cos(a * 2 + time * 1.1 - 0.8 + seed * 0.2) * 0.03;
       const rr = 1 + n1 + n2 + n3;
 
       pts.push({
-        x: cx + Math.cos(a) * m.rx * rr,
-        y: cy + Math.sin(a) * m.ry * rr
+        x: x + Math.cos(a) * morph.rx * rr,
+        y: y + Math.sin(a) * morph.ry * rr
       });
     }
     return pts;
   }
 
-  function drawDroplet(time, hintK) {
-    const pts = buildDropletPath(time, hintK);
+  function buildDropletPath(time, hintK = 0) {
+    const m = getDropletMorph(time, hintK);
+    return buildDropletPathAt(cx, cy, m, time, 0);
+  }
 
-    ctx.save();
-
-    const body = ctx.createRadialGradient(
-      cx - 18,
-      cy - 22,
-      5,
-      cx,
-      cy,
-      CONFIG.droplet.radius * 1.1
-    );
-    body.addColorStop(0, "rgba(255,255,255,0.12)");
-    body.addColorStop(0.38, "rgba(255,255,255,0.055)");
-    body.addColorStop(0.72, "rgba(255,255,255,0.028)");
-    body.addColorStop(1, "rgba(255,255,255,0.01)");
-
+  function traceClosedPath(pts) {
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for (let i = 1; i < pts.length - 2; i++) {
@@ -444,11 +691,31 @@
       pts[0].x,
       pts[0].y
     );
+  }
 
+  function drawDroplet(time, hintK) {
+    const pts = buildDropletPath(time, hintK);
+
+    ctx.save();
+
+    const body = ctx.createRadialGradient(
+      cx - 18,
+      cy - 22,
+      5,
+      cx,
+      cy,
+      getMainBaseRadius() * 1.1
+    );
+    body.addColorStop(0, "rgba(255,255,255,0.12)");
+    body.addColorStop(0.38, "rgba(255,255,255,0.055)");
+    body.addColorStop(0.72, "rgba(255,255,255,0.028)");
+    body.addColorStop(1, "rgba(255,255,255,0.01)");
+
+    traceClosedPath(pts);
     ctx.fillStyle = body;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08})`;
+    ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + state.auxMergePulse * 0.12})`;
     ctx.lineWidth = 1.05;
     ctx.stroke();
 
@@ -463,11 +730,66 @@
     ctx.lineWidth = 1;
     ctx.stroke();
 
+    if (state.auxMergePulse > 0.001) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, getMainBaseRadius() * lerp(0.96, 1.08, state.auxMergePulse), 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${state.auxMergePulse * 0.08})`;
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+    }
+
     ctx.restore();
   }
 
+  function drawAuxDroplets(time) {
+    for (const d of state.auxDroplets) {
+      if (d.phase === "hidden") continue;
+      if (d.alpha <= 0.001) continue;
+
+      const m = getAuxDropletMorph(d, time);
+      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed);
+
+      ctx.save();
+
+      const g = ctx.createRadialGradient(
+        d.x - m.r * 0.22,
+        d.y - m.r * 0.28,
+        1,
+        d.x,
+        d.y,
+        m.r * 1.2
+      );
+      g.addColorStop(0, `rgba(255,255,255,${0.11 * d.alpha})`);
+      g.addColorStop(0.4, `rgba(255,255,255,${0.05 * d.alpha})`);
+      g.addColorStop(1, "rgba(255,255,255,0.008)");
+
+      traceClosedPath(pts);
+      ctx.fillStyle = g;
+      ctx.fill();
+
+      ctx.strokeStyle = `rgba(255,255,255,${0.16 * d.alpha})`;
+      ctx.lineWidth = d.sizeType === "medium" ? 0.95 : 0.82;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.ellipse(
+        d.x - m.r * 0.18,
+        d.y - m.r * 0.24,
+        Math.max(1.8, m.r * 0.18),
+        Math.max(2.8, m.r * 0.28),
+        -0.35,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = `rgba(255,255,255,${0.042 * d.alpha})`;
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
+
   /* =========================================================
-     10. Background / Halo / Horizon / Water
+     11. Background / Halo / Horizon / Water
   ========================================================= */
   function drawBackground(time) {
     ctx.clearRect(0, 0, w, h);
@@ -566,8 +888,8 @@
   }
 
   /* =========================================================
-     11. Reflection / 水面反射
-     - 構造は変えず、水滴全体がちゃんと映る版
+     12. Reflection / 水面反射
+     - 主滴 + 補助滴も反映
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
@@ -576,8 +898,35 @@
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
 
-    const pts = buildDropletPath(time + 0.08, hintK * 0.72);
+    drawSingleDropletReflection(
+      buildDropletPath(time + 0.08, hintK * 0.72),
+      time,
+      hintK,
+      CONFIG.droplet.radius * 0.7,
+      0.12,
+      0.06
+    );
 
+    for (const d of state.auxDroplets) {
+      if (d.phase === "hidden") continue;
+      if (d.alpha <= 0.001) continue;
+
+      const m = getAuxDropletMorph(d, time + 0.05);
+      const pts = buildDropletPathAt(d.x, d.y, m, time + 0.05, d.seed);
+      drawSingleDropletReflection(
+        pts,
+        time + d.seed * 0.001,
+        0,
+        m.r * 0.95,
+        0.08 * d.alpha,
+        0.045 * d.alpha
+      );
+    }
+
+    ctx.restore();
+  }
+
+  function drawSingleDropletReflection(pts, time, hintK, extraBottom, fillA, strokeA) {
     const mirroredPts = pts.map((p, i) => {
       const driftX =
         Math.sin(time * 1.7 + i * 0.22) * 1.8 +
@@ -591,39 +940,26 @@
       };
     });
 
-    ctx.beginPath();
-    ctx.moveTo(mirroredPts[0].x, mirroredPts[0].y);
-    for (let i = 1; i < mirroredPts.length - 2; i++) {
-      const xc = (mirroredPts[i].x + mirroredPts[i + 1].x) / 2;
-      const yc =
-        (mirroredPts[i].y + mirroredPts[i + 1].y) / 2 +
-        Math.sin(time * 2.0 + i * 0.35) * 0.9;
-      ctx.quadraticCurveTo(mirroredPts[i].x, mirroredPts[i].y, xc, yc);
-    }
-    ctx.quadraticCurveTo(
-      mirroredPts[mirroredPts.length - 1].x,
-      mirroredPts[mirroredPts.length - 1].y,
-      mirroredPts[0].x,
-      mirroredPts[0].y
-    );
+    traceClosedPath(mirroredPts);
 
     const reflectBottom =
-      Math.max(...mirroredPts.map((p) => p.y)) + CONFIG.droplet.radius * 0.7;
+      Math.max(...mirroredPts.map((p) => p.y)) + extraBottom;
 
     const g = ctx.createLinearGradient(0, horizonY, 0, reflectBottom);
-    g.addColorStop(0, "rgba(255,255,255,0.12)");
-    g.addColorStop(0.16, "rgba(255,255,255,0.06)");
-    g.addColorStop(0.38, "rgba(255,255,255,0.026)");
-    g.addColorStop(0.72, "rgba(255,255,255,0.010)");
+    g.addColorStop(0, `rgba(255,255,255,${fillA})`);
+    g.addColorStop(0.16, `rgba(255,255,255,${fillA * 0.5})`);
+    g.addColorStop(0.38, `rgba(255,255,255,${fillA * 0.22})`);
+    g.addColorStop(0.72, `rgba(255,255,255,${fillA * 0.08})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = g;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${0.06 + hintK * 0.025})`;
+    ctx.strokeStyle = `rgba(255,255,255,${strokeA + hintK * 0.02})`;
     ctx.lineWidth = 0.9;
     ctx.stroke();
 
+    ctx.save();
     ctx.globalCompositeOperation = "destination-in";
     const fade = ctx.createLinearGradient(0, horizonY - 2, 0, reflectBottom);
     fade.addColorStop(0, "rgba(255,255,255,0.9)");
@@ -633,12 +969,11 @@
     fade.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = fade;
     ctx.fillRect(0, horizonY - 2, w, reflectBottom - horizonY + 4);
-
     ctx.restore();
   }
 
   /* =========================================================
-     12. Shards / Update
+     13. Shards / Update
      - 収束は「見えたまま中央へ」
      - 途中で消さず、中央到達で消す
   ========================================================= */
@@ -776,7 +1111,7 @@
   }
 
   /* =========================================================
-     13. Shards / Draw
+     14. Shards / Draw
   ========================================================= */
   function projectScale(z) {
     return 1 + z / 420;
@@ -884,7 +1219,7 @@
   }
 
   /* =========================================================
-     14. Compression Flash
+     15. Compression Flash
   ========================================================= */
   function drawCompressionFlash() {
     if (state.flash <= 0.001) return;
@@ -914,9 +1249,7 @@
   }
 
   /* =========================================================
-     15. Brand / Reveal Logo
-     - 初期ロゴは広がって薄くなる
-     - 憂き世は上から落ちて、自然減衰で複数回やわらかく弾む
+     16. Brand / Reveal Logo
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
@@ -924,35 +1257,33 @@
     brand.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
   }
 
-function setRevealOpacity(opacity) {
-  if (!revealLogo) return;
+  function setRevealOpacity(opacity) {
+    if (!revealLogo) return;
 
-  const k = clamp(opacity, 0, 1);
+    const k = clamp(opacity, 0, 1);
 
-  revealLogo.style.opacity = String(k);
-  revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
+    revealLogo.style.opacity = String(k);
+    revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
 
-  let y;
-  let scale;
+    let y;
+    let scale;
 
-  if (k < 0.62) {
-    // 上からしっかり落下
-    const drop = k / 0.62;
-    y = lerp(-150, 20, easeOutCubic(drop));
-    scale = lerp(0.93, 1.03, easeOutCubic(drop));
-  } else {
-    // 着地後、減衰しながら自然に複数回バウンド
-    const settle = (k - 0.62) / 0.38;
-    const damp = Math.exp(-3.2 * settle);
-    const wave = Math.cos(settle * Math.PI * 3.6);
+    if (k < 0.62) {
+      const drop = k / 0.62;
+      y = lerp(-150, 20, easeOutCubic(drop));
+      scale = lerp(0.93, 1.03, easeOutCubic(drop));
+    } else {
+      const settle = (k - 0.62) / 0.38;
+      const damp = Math.exp(-3.2 * settle);
+      const wave = Math.cos(settle * Math.PI * 3.6);
 
-    y = wave * 18 * damp;
-    scale = 1 + Math.cos(settle * Math.PI * 2.2) * 0.012 * damp;
+      y = wave * 18 * damp;
+      scale = 1 + Math.cos(settle * Math.PI * 2.2) * 0.012 * damp;
+    }
+
+    revealLogo.style.transform =
+      `translate(-50%, -50%) translateY(${y}px) scale(${scale})`;
   }
-
-  revealLogo.style.transform =
-    `translate(-50%, -50%) translateY(${y}px) scale(${scale})`;
-}
 
   function prepareLogos() {
     if (brand) {
@@ -986,7 +1317,7 @@ function setRevealOpacity(opacity) {
   }
 
   /* =========================================================
-     16. Gate / 完了イベント
+     17. Gate / 完了イベント
   ========================================================= */
   function openEntranceGateFallback() {
     if (!entranceGate) return;
@@ -1011,7 +1342,7 @@ function setRevealOpacity(opacity) {
   }
 
   /* =========================================================
-     17. Render
+     18. Render
   ========================================================= */
   function render(ts) {
     const now = ts * 0.001;
@@ -1027,10 +1358,13 @@ function setRevealOpacity(opacity) {
     const hintK = phase === "hint" ? easeOutCubic(t / P.hint) : 0;
 
     if (!started) {
+      updateAuxDroplets(dt, now);
+      updateHiddenAuxDroplets(dt);
       setBrandOpacity(1);
       setRevealOpacity(0);
-      drawDroplet(now, 0);
       drawReflection(now, 0);
+      drawDroplet(now, 0);
+      drawAuxDroplets(now);
       rafId = requestAnimationFrame(render);
       return;
     }
@@ -1038,8 +1372,9 @@ function setRevealOpacity(opacity) {
     if (phase === "hint") {
       setBrandOpacity(1 - hintK * 0.38);
       setRevealOpacity(0);
-      drawDroplet(now, hintK);
       drawReflection(now, hintK);
+      drawDroplet(now, hintK);
+      drawAuxDroplets(now);
       rafId = requestAnimationFrame(render);
       return;
     }
@@ -1087,8 +1422,8 @@ function setRevealOpacity(opacity) {
         showRevealLogo();
       }
 
-        const logoK = clamp((t - T_FLASH) / P.logo, 0, 1);
-        setRevealOpacity(logoK);
+      const logoK = clamp((t - T_FLASH) / P.logo, 0, 1);
+      setRevealOpacity(logoK);
 
       if (phase === "done" && !finished) {
         finished = true;
@@ -1102,7 +1437,7 @@ function setRevealOpacity(opacity) {
   }
 
   /* =========================================================
-     18. Start / Trigger
+     19. Start / Trigger
   ========================================================= */
   function startEntrance() {
     if (started) return;
@@ -1141,7 +1476,7 @@ function setRevealOpacity(opacity) {
   }
 
   /* =========================================================
-     19. Boot / Events
+     20. Boot / Events
   ========================================================= */
   function boot() {
     window.clearTimeout(doneTimer);
@@ -1158,6 +1493,7 @@ function setRevealOpacity(opacity) {
 
     resize();
     createShardField();
+    initAuxDropletField();
     prepareLogos();
 
     cancelAnimationFrame(rafId);
