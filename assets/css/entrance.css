@@ -79,122 +79,98 @@ body{
 
 /* ==============================
    Initial logo
+   浮世のニュアンスを強めた版
 ============================== */
 .brand{
-  align-self:center;
-  justify-self:center;
-  text-align:center;
+  position:fixed;
+  left:50%;
+  top:50%;
+  z-index:22;
+  width:max-content;
+  text-align:left;
+  pointer-events:none;
   opacity:1;
   visibility:visible;
-  transform:translateY(0);
+  transform:translate(-50%, -50%) translateY(18px);
   transition:
     opacity 500ms ease,
     transform 500ms ease;
-  pointer-events:none;
-  position:relative;
-  z-index:22;
 }
 
 .brand-main{
-  font-size:var(--logo-main-size);
-  font-weight:300;
-  line-height:.92;
-  letter-spacing:.28em;
+  font-size:clamp(3rem, 7.4vw, 6.4rem);
+  font-weight:250;
+  line-height:.9;
+  letter-spacing:.24em;
   text-transform:lowercase;
-  color:rgba(255,255,255,.88);
-  padding-left:.28em;
+  color:rgba(255,255,255,.86);
+  padding-left:.24em;
+  text-shadow:
+    0 0 10px rgba(255,255,255,.03),
+    0 0 26px rgba(120,150,255,.025);
 }
 
 .brand-sub{
-  margin-top:10px;
-  font-size:var(--logo-sub-size);
-  line-height:1.2;
+  position:absolute;
+  top:.28em;
+  left:100%;
+  margin-top:0;
+  margin-left:1.4em;
+  font-size:clamp(.56rem, .78vw, .76rem);
+  line-height:1;
   letter-spacing:.42em;
   text-transform:uppercase;
   color:rgba(255,255,255,.42);
   padding-left:.42em;
+  white-space:nowrap;
 }
 
-/* 旧lang-selectを残すなら前面に */
-.lang-select{
-  align-self:end;
-  justify-self:center;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  opacity:1;
-  transform:translateY(0);
-  transition:
-    opacity 500ms ease,
-    transform 500ms ease;
-  pointer-events:auto;
-  position:relative;
-  z-index:22;
-}
-
-.lang-select.is-disabled{
-  pointer-events:none;
-  opacity:.35;
-}
-
-.lang-link{
-  position:relative;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:56px;
-  min-height:40px;
-  padding:10px 12px;
-  text-decoration:none;
-  color:rgba(255,255,255,.72);
-  font-size:var(--lang-size);
-  letter-spacing:.28em;
-  text-transform:uppercase;
-  transition:
-    color .28s ease,
-    transform .28s ease,
-    opacity .28s ease;
-  cursor:pointer;
-}
-
-.lang-link::after{
+/* ロゴ全体を少しだけ“水滴の下”に感じさせる */
+.brand::before{
   content:"";
   position:absolute;
-  left:12px;
-  right:12px;
-  bottom:8px;
-  height:1px;
-  background:rgba(255,255,255,.5);
-  transform:scaleX(0);
-  transform-origin:center;
-  transition:transform .28s ease;
+  left:50%;
+  top:50%;
+  width:140%;
+  height:180%;
+  transform:translate(-50%, -56%);
+  pointer-events:none;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(255,255,255,.035) 0%,
+      rgba(255,255,255,.012) 34%,
+      rgba(255,255,255,0) 72%
+    );
+  filter:blur(12px);
 }
 
-.lang-link:hover,
-.lang-link:focus-visible{
-  color:rgba(255,255,255,.95);
-  transform:translateY(-1px);
-  outline:none;
+/* 少しだけ呼吸するような静かな存在感 */
+@keyframes brandBreath {
+  0%{
+    transform:translate(-50%, -50%) translateY(18px);
+    opacity:1;
+  }
+  50%{
+    transform:translate(-50%, -50%) translateY(16px);
+    opacity:.985;
+  }
+  100%{
+    transform:translate(-50%, -50%) translateY(18px);
+    opacity:1;
+  }
 }
 
-.lang-link:hover::after,
-.lang-link:focus-visible::after{
-  transform:scaleX(1);
+.brand{
+  animation:brandBreath 4.8s ease-in-out infinite;
 }
 
-.lang-sep{
-  color:rgba(255,255,255,.26);
-  letter-spacing:.1em;
-  user-select:none;
-}
-
-body.is-transitioning .brand,
-body.is-transitioning .lang-select{
+/* JSでtransformを触るので、transition時はanimationを邪魔しないように */
+body.is-transitioning .brand{
   opacity:0;
-  transform:translateY(8px);
+  transform:translate(-50%, -50%) translateY(26px);
+  animation:none;
 }
-
 /* ==============================
    Final reveal logo
 ============================== */
