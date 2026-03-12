@@ -168,14 +168,14 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  gap:10.3em;
+  gap:16.3em;
 
   margin:14px 0 0;
   padding:0;
 
   font-size:clamp(.86rem, 1.45vw, 1.02rem);
   font-weight:300;
-  line-height:1;
+  line-height:2;
   text-transform:none;
   color:rgba(255,255,255,.44);
 
