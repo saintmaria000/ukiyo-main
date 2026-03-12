@@ -11,6 +11,10 @@
 
   --safe-x:clamp(20px, 4vw, 40px);
   --safe-y:clamp(22px, 4vh, 42px);
+
+  /* 視覚中央補正用 */
+  --brand-main-ls:.46em;
+  --brand-sub-ls:10.3em;
 }
 
 *{
@@ -127,16 +131,19 @@ body{
 .brand-main{
   position:relative;
   z-index:1;
-  display:block;
-  width:max-content;
-  margin:0 auto;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:.46em;
+
+  margin:0;
+  padding:0;
 
   font-size:clamp(3.8rem, 8.8vw, 7.8rem);
   font-weight:240;
   line-height:.9;
-  letter-spacing:.46em;
   text-transform:none;
-  text-align:center;
   color:rgba(255,255,255,.89);
 
   text-shadow:
@@ -146,23 +153,30 @@ body{
   transition:
     opacity 700ms ease,
     transform 950ms cubic-bezier(.2,.7,.15,1),
-    letter-spacing 950ms cubic-bezier(.2,.7,.15,1),
+    gap 950ms cubic-bezier(.2,.7,.15,1),
     filter 950ms ease;
+}
+
+.brand-main span{
+  display:block;
 }
 
 .brand-sub{
   position:relative;
   z-index:1;
-  display:block;
-  width:max-content;
-  margin:14px auto 0;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10.3em;
+
+  margin:14px 0 0;
+  padding:0;
 
   font-size:clamp(.86rem, 1.45vw, 1.02rem);
   font-weight:300;
   line-height:1;
-  letter-spacing:10.3em;
   text-transform:none;
-  text-align:center;
   color:rgba(255,255,255,.44);
 
   text-shadow:
@@ -172,10 +186,14 @@ body{
   transition:
     opacity 760ms ease,
     transform 980ms cubic-bezier(.2,.7,.15,1),
-    letter-spacing 980ms cubic-bezier(.2,.7,.15,1),
+    gap 980ms cubic-bezier(.2,.7,.15,1),
     filter 980ms ease;
 
   transition-delay:40ms;
+}
+
+.brand-sub span{
+  display:block;
 }
 
 @keyframes brandFloat {
@@ -202,13 +220,14 @@ body.is-transitioning .brand{
 }
 
 body.is-transitioning .brand-main{
-  letter-spacing:.60em;
+  gap:.60em;
   transform:scaleX(1.035) translateY(-1px);
   opacity:0;
   filter:blur(1.6px);
 }
 
 body.is-transitioning .brand-sub{
+  gap:.40em;
   transform:translateY(4px) scale(1.02);
   opacity:0;
   filter:blur(1.2px);
@@ -344,19 +363,24 @@ body.is-transitioning .brand-sub{
 }
 
 @media (max-width:640px){
+  :root{
+    --brand-main-ls:.24em;
+    --brand-sub-ls:.22em;
+  }
+
   .brand{
     top:54%;
   }
 
   .brand-main{
     font-size:clamp(3.1rem, 12vw, 5.6rem);
-    letter-spacing:.24em;
+    gap:.24em;
   }
 
   .brand-sub{
     margin-top:12px;
     font-size:clamp(.78rem, 1.8vw, .92rem);
-    letter-spacing:.22em;
+    gap:.22em;
   }
 
   .reveal-logo-main{
@@ -395,4 +419,3 @@ body.is-transitioning .brand-sub{
     transition:none;
   }
 }
-/* a */

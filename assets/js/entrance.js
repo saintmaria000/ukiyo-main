@@ -924,46 +924,35 @@
     brand.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
   }
 
-  function setRevealOpacity(opacity) {
-    if (!revealLogo) return;
+function setRevealOpacity(opacity) {
+  if (!revealLogo) return;
 
-    const k = clamp(opacity, 0, 1);
+  const k = clamp(opacity, 0, 1);
 
-    revealLogo.style.opacity = String(k);
-    revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
+  revealLogo.style.opacity = String(k);
+  revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
 
-    let y = 0;
-    let scale = 1;
+  let y;
+  let scale;
 
-    if (k < 0.64) {
-      // 上からしっかり落ちる
-      const drop = k / 0.64;
-      y = lerp(
-        CONFIG.reveal.dropFromY,
-        CONFIG.reveal.dropOvershoot,
-        easeOutCubic(drop)
-      );
-      scale = lerp(0.93, 1.022, easeOutCubic(drop));
+  if (k < 0.62) {
+    // 上からしっかり落下
+    const drop = k / 0.62;
+    y = lerp(-150, 20, easeOutCubic(drop));
+    scale = lerp(0.93, 1.03, easeOutCubic(drop));
+  } else {
+    // 着地後、減衰しながら自然に複数回バウンド
+    const settle = (k - 0.62) / 0.38;
+    const damp = Math.exp(-3.2 * settle);
+    const wave = Math.cos(settle * Math.PI * 3.6);
 
-    } else {
-      // 着地後は減衰する自然な弾み
-      const settle = (k - 0.64) / 0.36;
-      const settleEase = easeOutCubic(settle);
-      const damp = Math.exp(-3.6 * settle);
-      const wave = Math.cos(settle * Math.PI * CONFIG.reveal.wobbleCycles);
-
-      y =
-        lerp(CONFIG.reveal.dropOvershoot, 0, settleEase) +
-        wave * CONFIG.reveal.bounceAmp * damp;
-
-      scale =
-        lerp(1.022, 1, settleEase) +
-        Math.cos(settle * Math.PI * 1.75) * 0.012 * damp;
-    }
-
-    revealLogo.style.transform =
-      `translate(-50%, -50%) translateY(${y}px) scale(${scale})`;
+    y = wave * 18 * damp;
+    scale = 1 + Math.cos(settle * Math.PI * 2.2) * 0.012 * damp;
   }
+
+  revealLogo.style.transform =
+    `translate(-50%, -50%) translateY(${y}px) scale(${scale})`;
+}
 
   function prepareLogos() {
     if (brand) {
@@ -1098,8 +1087,8 @@
         showRevealLogo();
       }
 
-      const logoK = easeOutCubic(clamp((t - T_FLASH) / P.logo, 0, 1));
-      setRevealOpacity(logoK);
+        const logoK = clamp((t - T_FLASH) / P.logo, 0, 1);
+        setRevealOpacity(logoK);
 
       if (phase === "done" && !finished) {
         finished = true;
