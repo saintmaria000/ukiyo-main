@@ -31,7 +31,7 @@
       wobbleSpeedB: 1.42,
       floatY: -54,
 
-      // 主滴は基本固定。既存描画互換のため保持
+      // 既存互換で保持
       absorbPulseAmp: 0.0,
       absorbPulseDecay: 1.35
     },
@@ -47,7 +47,6 @@
 
       /* -------------------------------------------------------
          個数
-         総数 = 主滴 + 補助滴
       ------------------------------------------------------- */
       minTotalCount: 2,
       maxTotalCount: 4,
@@ -56,13 +55,11 @@
 
       /* -------------------------------------------------------
          初期構成
-         主 + 中 + 小
       ------------------------------------------------------- */
       initialPattern: ["medium", "small"],
 
       /* -------------------------------------------------------
          可動範囲
-         brand基準
       ------------------------------------------------------- */
       bounds: {
         sideInset: 18,
@@ -72,8 +69,7 @@
 
       /* -------------------------------------------------------
          浮遊
-         ※ 変な引力や接合感は消し、
-            ノイズ + 慣性 + 壁反射だけで漂う
+         ※ 独立して漂うだけ
       ------------------------------------------------------- */
       driftForce: 2.12,
       driftDamping: 0.993,
@@ -88,6 +84,14 @@
       stableDistMedium: 1.48,
       stableDistSmall: 1.28,
       stableDistJitter: 0.08,
+
+      /* -------------------------------------------------------
+         接合（見た目だけ）
+         ※ 力は与えない
+      ------------------------------------------------------- */
+      contactStartMul: 1.78,
+      contactFullMul: 1.08,
+      mainContactMax: 1,
 
       /* -------------------------------------------------------
          壁反射
@@ -245,7 +249,7 @@
 
     if (!started) {
       createShardField();
-      initAuxDroplets(0);
+      initAuxDroplets();
     }
   }
 
@@ -397,7 +401,7 @@
 
   /* =========================================================
      08. Aux Droplets / Model
-     ※ 独立浮遊版
+     ※ 独立浮遊 + 初期配置ランダム
   ========================================================= */
   function getAuxBaseRadius(kind) {
     const mainR = getMainBaseRadius();
@@ -422,66 +426,42 @@
     return mainR * (mul + rand(-C.stableDistJitter, C.stableDistJitter));
   }
 
-  function createAuxDroplet(kind, angle, distance) {
+  function initAuxDroplets() {
+    state.auxDroplets.length = 0;
+    state.mainAbsorbPulse = 0;
+
+    const kinds = CONFIG.auxDroplets.initialPattern;
     const bounds = getFloatBounds();
-    const x = clamp(cx + Math.cos(angle) * distance, bounds.minX, bounds.maxX);
-    const y = clamp(cy + Math.sin(angle) * distance, bounds.minY, bounds.maxY);
 
-    const tangentAngle = angle + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+    for (let i = 0; i < kinds.length; i++) {
+      const angle = Math.random() * Math.PI * 2;
 
-    return {
-      kind,
-      r: clampAuxRadius(getAuxBaseRadius(kind)),
-      x,
-      y,
-      vx: Math.cos(tangentAngle) * rand(3.0, 5.4),
-      vy: Math.sin(tangentAngle) * rand(2.2, 4.2),
-      alpha: 0.9,
-      scale: 1,
-      life: 0,
-      seed: rand(0, 1000)
-    };
+      const minDist = getMainBaseRadius() * 0.9;
+      const maxDist = getMainBaseRadius() * 1.8;
+      const dist = rand(minDist, maxDist);
+
+      let x = cx + Math.cos(angle) * dist;
+      let y = cy + Math.sin(angle) * dist;
+
+      x = clamp(x, bounds.minX, bounds.maxX);
+      y = clamp(y, bounds.minY, bounds.maxY);
+
+      const tangent = angle + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+
+      state.auxDroplets.push({
+        kind: kinds[i],
+        r: clampAuxRadius(getAuxBaseRadius(kinds[i])),
+        x,
+        y,
+        vx: Math.cos(tangent) * rand(3, 5),
+        vy: Math.sin(tangent) * rand(2, 4),
+        alpha: 0.9,
+        scale: 1,
+        life: 0,
+        seed: rand(0, 1000)
+      });
+    }
   }
-function initAuxDroplets() {
-  state.auxDroplets.length = 0;
-  state.mainAbsorbPulse = 0;
-
-  const kinds = CONFIG.auxDroplets.initialPattern;
-  const bounds = getFloatBounds();
-
-  for (let i = 0; i < kinds.length; i++) {
-
-    // 完全ランダム角度
-    const angle = Math.random() * Math.PI * 2;
-
-    // 主滴からの距離もランダム
-    const minDist = getMainBaseRadius() * 0.9;
-    const maxDist = getMainBaseRadius() * 1.8;
-    const dist = rand(minDist, maxDist);
-
-    let x = cx + Math.cos(angle) * dist;
-    let y = cy + Math.sin(angle) * dist;
-
-    // 可動範囲内に収める
-    x = clamp(x, bounds.minX, bounds.maxX);
-    y = clamp(y, bounds.minY, bounds.maxY);
-
-    const tangent = angle + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
-
-    state.auxDroplets.push({
-      kind: kinds[i],
-      r: clampAuxRadius(getAuxBaseRadius(kinds[i])),
-      x,
-      y,
-      vx: Math.cos(tangent) * rand(3, 5),
-      vy: Math.sin(tangent) * rand(2, 4),
-      alpha: 0.9,
-      scale: 1,
-      life: 0,
-      seed: rand(0, 1000)
-    });
-  }
-}
 
   function limitDropletSpeed(d) {
     const maxV = CONFIG.auxDroplets.maxSpeed;
@@ -562,8 +542,106 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     10. Water Droplet / Draw
-     ※ 引っ張り変形なし
+     10. Water Droplet / Visual Contact
+     ※ 接合は見た目だけ
+  ========================================================= */
+  function getPairContactK(ax, ay, ar, bx, by, br) {
+    const d = dist2(ax, ay, bx, by);
+    const rr = ar + br;
+
+    const start = rr * CONFIG.auxDroplets.contactStartMul;
+    const full = rr * CONFIG.auxDroplets.contactFullMul;
+
+    if (d >= start) return 0;
+    return clamp((start - d) / Math.max(start - full, 1), 0, 1);
+  }
+
+  function getMainVisualContactForAux(d) {
+    const k = getPairContactK(
+      d.x, d.y, d.r * d.scale,
+      cx, cy, getMainBaseRadius()
+    );
+
+    if (k <= 0) return null;
+
+    return {
+      pullX: cx - d.x,
+      pullY: cy - d.y,
+      pullStrength: k * 0.92,
+      squash: k * 0.52,
+      neckWidth: k * 0.95
+    };
+  }
+
+  function getAuxVisualContactForAux(d) {
+    let best = null;
+    let bestK = 0;
+
+    for (const other of state.auxDroplets) {
+      if (other === d) continue;
+
+      const k = getPairContactK(
+        d.x, d.y, d.r * d.scale,
+        other.x, other.y, other.r * other.scale
+      );
+
+      if (k > bestK) {
+        bestK = k;
+        best = other;
+      }
+    }
+
+    if (!best || bestK <= 0) return null;
+
+    return {
+      pullX: best.x - d.x,
+      pullY: best.y - d.y,
+      pullStrength: bestK * 0.96,
+      squash: bestK * 0.56,
+      neckWidth: bestK * 0.98
+    };
+  }
+
+  function getVisualDeformationForAux(d) {
+    const mainDef = getMainVisualContactForAux(d);
+    const pairDef = getAuxVisualContactForAux(d);
+
+    if (!mainDef && !pairDef) return null;
+    if (mainDef && !pairDef) return mainDef;
+    if (!mainDef && pairDef) return pairDef;
+
+    return mainDef.pullStrength >= pairDef.pullStrength ? mainDef : pairDef;
+  }
+
+  function getVisualDeformationForMain() {
+    let best = null;
+    let bestK = 0;
+
+    for (const d of state.auxDroplets) {
+      const k = getPairContactK(
+        cx, cy, getMainBaseRadius(),
+        d.x, d.y, d.r * d.scale
+      );
+
+      if (k > bestK) {
+        bestK = k;
+        best = d;
+      }
+    }
+
+    if (!best || bestK <= 0) return null;
+
+    return {
+      pullX: best.x - cx,
+      pullY: best.y - cy,
+      pullStrength: bestK * 0.9,
+      squash: bestK * 0.48,
+      neckWidth: bestK * 0.92
+    };
+  }
+
+  /* =========================================================
+     11. Water Droplet / Draw
   ========================================================= */
   function getDropletMorph(time, hintK) {
     const base = getMainBaseRadius();
@@ -671,13 +749,15 @@ function initAuxDroplets() {
   }
 
   function drawDroplet(time, hintK) {
+    const deformation = getVisualDeformationForMain();
+
     const pts = buildDropletPathAt(
       cx,
       cy,
       getDropletMorph(time, hintK),
       time,
       0,
-      null
+      deformation
     );
 
     ctx.save();
@@ -699,7 +779,8 @@ function initAuxDroplets() {
     ctx.fillStyle = body;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + state.mainAbsorbPulse * 0.08})`;
+    const mainContactBoost = deformation ? deformation.pullStrength : 0;
+    ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + mainContactBoost * 0.08})`;
     ctx.lineWidth = 1.05;
     ctx.stroke();
 
@@ -720,7 +801,8 @@ function initAuxDroplets() {
   function drawAuxDroplets(time) {
     for (const d of state.auxDroplets) {
       const m = getAuxMorph(d, time);
-      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, null);
+      const deformation = getVisualDeformationForAux(d);
+      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, deformation);
 
       ctx.save();
 
@@ -740,7 +822,8 @@ function initAuxDroplets() {
       ctx.fillStyle = g;
       ctx.fill();
 
-      ctx.strokeStyle = `rgba(255,255,255,${0.15 * d.alpha})`;
+      const contactBoost = deformation ? deformation.pullStrength : 0;
+      ctx.strokeStyle = `rgba(255,255,255,${(0.15 + contactBoost * 0.08) * d.alpha})`;
       ctx.lineWidth =
         d.kind === "large" ? 1.02 :
         d.kind === "medium" ? 0.92 : 0.78;
@@ -764,7 +847,7 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     11. Background / Halo / Horizon / Water
+     12. Background / Halo / Horizon / Water
   ========================================================= */
   function drawBackground(time) {
     ctx.clearRect(0, 0, w, h);
@@ -863,25 +946,23 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     12. Reflection
+     13. Reflection
      ※ 水面下に反射全体を映す / フェードなし
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
 
-    // 水平線より下だけに描画
     ctx.beginPath();
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
 
-    // 主滴
     const mainPts = buildDropletPathAt(
       cx,
       cy,
       getDropletMorph(time, hintK * 0.72),
       time,
       0,
-      null
+      getVisualDeformationForMain()
     );
 
     drawReflectionShape(
@@ -897,10 +978,16 @@ function initAuxDroplets() {
       }
     );
 
-    // 補助滴
     for (const d of state.auxDroplets) {
       const m = getAuxMorph(d, time);
-      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, null);
+      const pts = buildDropletPathAt(
+        d.x,
+        d.y,
+        m,
+        time,
+        d.seed,
+        getVisualDeformationForAux(d)
+      );
 
       drawReflectionShape(
         pts,
@@ -929,7 +1016,6 @@ function initAuxDroplets() {
       rippleSpeed
     } = opt;
 
-    // 元の輪郭全体をそのまま鏡写し
     const reflected = pts.map((p) => {
       const mirroredY = horizonY + (horizonY - p.y);
 
@@ -948,7 +1034,6 @@ function initAuxDroplets() {
     const topY = Math.min(...reflected.map((p) => p.y));
     const bottomY = Math.max(...reflected.map((p) => p.y));
 
-    // フェードさせず、反射全体をそのまま見せる
     const fillGrad = ctx.createLinearGradient(0, topY, 0, bottomY);
     fillGrad.addColorStop(0, `rgba(255,255,255,${bodyAlpha})`);
     fillGrad.addColorStop(0.45, `rgba(255,255,255,${bodyAlpha * 0.9})`);
@@ -1002,8 +1087,9 @@ function initAuxDroplets() {
 
     ctx.restore();
   }
+
   /* =========================================================
-     13. Shards / Update
+     14. Shards / Update
   ========================================================= */
   function getSnapRadius(s) {
     return s.depthBand === "near" ? CONFIG.gatherSnapRadiusNear : CONFIG.gatherSnapRadius;
@@ -1139,7 +1225,7 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     14. Shards / Draw
+     15. Shards / Draw
   ========================================================= */
   function projectScale(z) {
     return 1 + z / 420;
@@ -1247,7 +1333,7 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     15. Compression Flash
+     16. Compression Flash
   ========================================================= */
   function drawCompressionFlash() {
     if (state.flash <= 0.001) return;
@@ -1277,7 +1363,7 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     16. Brand / Reveal Logo
+     17. Brand / Reveal Logo
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
@@ -1345,7 +1431,7 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     17. Gate
+     18. Gate
   ========================================================= */
   function openEntranceGateFallback() {
     if (!entranceGate) return;
@@ -1370,7 +1456,7 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     18. Render
+     19. Render
   ========================================================= */
   function render(ts) {
     const now = ts * 0.001;
@@ -1464,7 +1550,7 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     19. Start / Trigger
+     20. Start / Trigger
   ========================================================= */
   function startEntrance() {
     if (started) return;
@@ -1503,7 +1589,7 @@ function initAuxDroplets() {
   }
 
   /* =========================================================
-     20. Boot / Events
+     21. Boot / Events
   ========================================================= */
   function boot() {
     window.clearTimeout(doneTimer);
