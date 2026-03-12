@@ -2,11 +2,7 @@
 (() => {
   "use strict";
 
-  const canvas =
-    document.getElementById("particle-canvas") ||
-    document.getElementById("entrance-canvas") ||
-    document.querySelector("canvas");
-
+  const canvas = document.getElementById("particle-canvas");
   if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
@@ -23,7 +19,7 @@
 
     droplet: {
       radius: 66,
-      wobbleAmp: 0.115, // 以前より強め
+      wobbleAmp: 0.115,
       wobbleSpeedA: 1.05,
       wobbleSpeedB: 1.68,
       floatY: -54
@@ -38,13 +34,17 @@
       logo: 0.8
     },
 
-    shardCount: 150,
-    shardNearRatio: 0.14,
-    shardMidRatio: 0.62,
+    shardCount: 160,
+    shardNearRatio: 0.16,
+    shardMidRatio: 0.60,
     shardFarRatio: 0.24,
 
-    gravityInflowCount: 24,
+    gravityInflowCount: 30,
     redirectDelayMs: 780,
+
+    // 広がり強化
+    spreadBoost: 1.9,
+    offscreenBoost: 1.45,
 
     targetHref:
       document.body?.dataset?.enterHref ||
@@ -101,11 +101,6 @@
     return t * t * t;
   }
 
-  function easeInOutCubic(t) {
-    t = clamp(t, 0, 1);
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  }
-
   function easeOutExpo(t) {
     t = clamp(t, 0, 1);
     return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
@@ -135,9 +130,7 @@
     cy = h * 0.5 + CONFIG.droplet.floatY;
     horizonY = h * lerp(CONFIG.horizonYMin, CONFIG.horizonYMax, 0.5);
 
-    if (!started) {
-      createShardField();
-    }
+    if (!started) createShardField();
   }
 
   function createShardField() {
@@ -165,30 +158,25 @@
                              rand(0.08, 0.27);
 
     const isFlat = Math.random() < rand(0.22, 0.3);
-    const scale = lerp(0.45, 1.75, depth);
+    const scale = lerp(0.45, 1.85, depth);
 
     let len, wid;
     if (isFlat) {
-      len = rand(18, 44) * scale;
+      len = rand(18, 48) * scale;
       wid = rand(7, 18) * scale;
     } else {
-      len = rand(12, 34) * scale;
+      len = rand(12, 36) * scale;
       wid = rand(2.2, 7.2) * scale;
     }
 
     const angle = rand(-Math.PI, Math.PI);
-    const spread = rand(0.18, 1.0);
-    const speed = lerp(80, 760, depth) * rand(0.75, 1.2) * spread;
-    const vz = rand(-0.8, 1.1) * (depth > 0.6 ? 1.25 : 1.0);
 
-    const dx = Math.cos(angle) * speed * rand(0.65, 1.25);
-    const dy = Math.sin(angle) * speed * rand(0.58, 1.22);
+    // ここをかなり強化
+    const speed = lerp(180, 1280, depth) * rand(0.9, 1.45) * CONFIG.spreadBoost;
+    const vz = rand(-1.15, 1.45) * (depth > 0.6 ? 1.35 : 1.0);
 
-    const spin = rand(-3.2, 3.2);
-    const tilt = rand(-0.9, 0.9);
-
-    const driftNoise = rand(0.25, 1.0);
-    const visibleKeep = Math.random() < (depthBand === "near" ? 0.9 : depthBand === "mid" ? 0.78 : 0.48);
+    const dx = Math.cos(angle) * speed * rand(0.75, 1.35);
+    const dy = Math.sin(angle) * speed * rand(0.72, 1.32);
 
     return {
       type: isFlat ? "flat" : "needle",
@@ -196,39 +184,37 @@
       depth,
       x: cx,
       y: cy,
-      z: depth * 280,
+      z: depth * 320,
       dx,
       dy,
-      dz: vz * 160,
+      dz: vz * 200,
       len,
       wid,
       rot: rand(-Math.PI, Math.PI),
-      spin,
-      tilt,
-      driftNoise,
-      visibleKeep,
+      spin: rand(-3.2, 3.2),
+      driftNoise: rand(0.25, 1.0),
       edgeSeed: rand(0, 1000),
-      alpha: lerp(0.28, 0.9, depth),
-      fillAlpha: rand(0.02, 0.08),
-      returned: false
+      alpha: lerp(0.28, 0.92, depth),
+      fillAlpha: rand(0.02, 0.08)
     };
   }
 
   function createInflowShard() {
     const side = choose(["top", "bottom", "left", "right"]);
     let x, y;
+
     if (side === "top") {
-      x = rand(-0.2 * w, 1.2 * w);
-      y = -rand(40, 240);
+      x = rand(-0.35 * w, 1.35 * w);
+      y = -rand(60, 320);
     } else if (side === "bottom") {
-      x = rand(-0.2 * w, 1.2 * w);
-      y = h + rand(40, 240);
+      x = rand(-0.35 * w, 1.35 * w);
+      y = h + rand(60, 320);
     } else if (side === "left") {
-      x = -rand(40, 260);
-      y = rand(-0.1 * h, 1.1 * h);
+      x = -rand(60, 340);
+      y = rand(-0.2 * h, 1.2 * h);
     } else {
-      x = w + rand(40, 260);
-      y = rand(-0.1 * h, 1.1 * h);
+      x = w + rand(60, 340);
+      y = rand(-0.2 * h, 1.2 * h);
     }
 
     const depth = rand(0.18, 0.82);
@@ -241,7 +227,7 @@
       depth,
       x,
       y,
-      z: depth * 200,
+      z: depth * 220,
       dx: 0,
       dy: 0,
       dz: 0,
@@ -249,14 +235,9 @@
       wid: (isFlat ? rand(6, 16) : rand(2.2, 6.4)) * scale,
       rot: rand(-Math.PI, Math.PI),
       spin: rand(-3, 3),
-      tilt: rand(-0.8, 0.8),
-      driftNoise: rand(0.2, 1.0),
-      visibleKeep: true,
       edgeSeed: rand(0, 1000),
       alpha: lerp(0.18, 0.78, depth),
-      fillAlpha: rand(0.015, 0.06),
-      returned: false,
-      inflow: true
+      fillAlpha: rand(0.015, 0.06)
     };
   }
 
@@ -428,7 +409,6 @@
     ctx.lineWidth = 1.05;
     ctx.stroke();
 
-    // 控えめハイライト
     ctx.beginPath();
     ctx.ellipse(cx - 18, cy - 22, 9, 16, -0.4, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(255,255,255,0.05)";
@@ -483,7 +463,6 @@
   function updateShards(dt, t) {
     const phase = getPhase(t);
 
-    // 飛散・滞空・収束
     for (const s of state.shards) {
       if (phase === "hint") {
         s.rot += s.spin * dt * 0.16;
@@ -492,26 +471,27 @@
 
       if (phase === "burst") {
         const k = easeOutExpo((t - T_HINT) / P.burst);
-        const noiseX = Math.sin(t * 5.3 + s.edgeSeed) * 2.8 * s.driftNoise;
-        const noiseY = Math.cos(t * 4.7 + s.edgeSeed * 0.7) * 2.8 * s.driftNoise;
-        s.x += (s.dx * dt) * (0.74 + 0.26 * k) + noiseX * dt;
-        s.y += (s.dy * dt) * (0.74 + 0.26 * k) + noiseY * dt;
+        const noiseX = Math.sin(t * 5.3 + s.edgeSeed) * 4.5 * s.driftNoise;
+        const noiseY = Math.cos(t * 4.7 + s.edgeSeed * 0.7) * 4.5 * s.driftNoise;
+
+        s.x += (s.dx * dt) * (0.88 + 0.38 * k) + noiseX * dt;
+        s.y += (s.dy * dt) * (0.88 + 0.38 * k) + noiseY * dt;
         s.z += s.dz * dt;
         s.rot += s.spin * dt;
         continue;
       }
 
       if (phase === "drift") {
-        s.x += s.dx * dt * 0.22 + Math.sin(t * 2.6 + s.edgeSeed) * 4 * dt;
-        s.y += s.dy * dt * 0.22 + Math.cos(t * 2.2 + s.edgeSeed * 0.9) * 4 * dt;
-        s.z += s.dz * dt * 0.15;
+        s.x += s.dx * dt * 0.3 + Math.sin(t * 2.6 + s.edgeSeed) * 5 * dt;
+        s.y += s.dy * dt * 0.3 + Math.cos(t * 2.2 + s.edgeSeed * 0.9) * 5 * dt;
+        s.z += s.dz * dt * 0.18;
         s.rot += s.spin * dt * 0.38;
         continue;
       }
 
       if (phase === "gather" || phase === "flash" || phase === "logo" || phase === "done") {
         const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-        const pull = lerp(10, 1480, easeInCubic(tk));
+        const pull = lerp(10, 1600, easeInCubic(tk));
         const toX = cx - s.x;
         const toY = cy - s.y;
         const dist = Math.hypot(toX, toY) || 1;
@@ -538,7 +518,7 @@
       if (phase !== "gather" && phase !== "flash" && phase !== "logo" && phase !== "done") continue;
 
       const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-      const pull = lerp(120, 1800, easeInCubic(tk));
+      const pull = lerp(120, 1900, easeInCubic(tk));
       const toX = cx - s.x;
       const toY = cy - s.y;
       const dist = Math.hypot(toX, toY) || 1;
@@ -555,13 +535,6 @@
         s.alpha *= 0.95;
         s.fillAlpha *= 0.92;
       }
-    }
-
-    if (phase === "flash") {
-      const k = 1 - clamp((t - T_GATHER) / P.flash, 0, 1);
-      state.flash = Math.pow(k, 0.6);
-    } else {
-      state.flash = 0;
     }
   }
 
@@ -596,6 +569,11 @@
     const sc = projectScale(s.z * 0.35);
     const alpha = clamp(s.alpha * fadeMul, 0, 1);
     if (alpha < 0.01) return;
+
+    // 画面外にかなり逃がす
+    const padX = w * 0.55 * CONFIG.offscreenBoost;
+    const padY = h * 0.55 * CONFIG.offscreenBoost;
+    if (s.x < -padX || s.x > w + padX || s.y < -padY || s.y > h + padY) return;
 
     const shape = buildShardShape(s);
 
@@ -690,23 +668,44 @@
   function setBrandOpacity(opacity) {
     if (!brand) return;
     brand.style.opacity = String(clamp(opacity, 0, 1));
+    brand.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
   }
 
   function setRevealOpacity(opacity) {
     if (!revealLogo) return;
     revealLogo.style.opacity = String(clamp(opacity, 0, 1));
-    revealLogo.style.transform = `translate(-50%, -50%) translateY(${lerp(10, 0, opacity)}px) scale(${lerp(0.985, 1, opacity)})`;
+    revealLogo.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
+    revealLogo.style.transform =
+      `translate(-50%, -50%) translateY(${lerp(10, 0, opacity)}px) scale(${lerp(0.985, 1, opacity)})`;
+  }
+
+  function prepareLogos() {
+    if (brand) {
+      brand.style.display = "flex";
+      brand.style.opacity = "1";
+      brand.style.visibility = "visible";
+      brand.style.pointerEvents = "none";
+      brand.style.position = brand.style.position || "absolute";
+      brand.style.zIndex = "20";
+    }
+
+    if (revealLogo) {
+      revealLogo.style.display = "block";
+      revealLogo.style.opacity = "0";
+      revealLogo.style.visibility = "hidden";
+      revealLogo.style.pointerEvents = "none";
+      revealLogo.style.position = revealLogo.style.position || "absolute";
+      revealLogo.style.left = revealLogo.style.left || "50%";
+      revealLogo.style.top = revealLogo.style.top || "50%";
+      revealLogo.style.zIndex = "25";
+      revealLogo.style.transform = "translate(-50%, -50%) translateY(10px) scale(0.985)";
+    }
   }
 
   function showRevealLogo() {
     if (!revealLogo) return;
     revealLogo.style.display = "block";
-    revealLogo.style.pointerEvents = "none";
-    revealLogo.style.position = revealLogo.style.position || "absolute";
-    revealLogo.style.left = revealLogo.style.left || "50%";
-    revealLogo.style.top = revealLogo.style.top || "50%";
-    revealLogo.style.opacity = "0";
-    revealLogo.style.transform = "translate(-50%, -50%) translateY(10px) scale(0.985)";
+    revealLogo.style.visibility = "visible";
   }
 
   function redirectIfNeeded() {
@@ -733,22 +732,36 @@
 
     const hintK = phase === "hint" ? easeOutCubic(t / P.hint) : 0;
 
+    if (!started) {
+      setBrandOpacity(1);
+      setRevealOpacity(0);
+      drawDroplet(now, 0);
+      drawReflection(now, 0);
+      rafId = requestAnimationFrame(render);
+      return;
+    }
+
     if (phase === "hint") {
       setBrandOpacity(1 - hintK * 0.72);
+      setRevealOpacity(0);
       drawDroplet(now, hintK);
       drawReflection(now, hintK);
     } else if (phase === "burst" || phase === "drift" || phase === "gather") {
       setBrandOpacity(phase === "burst" ? 0.28 : 0);
+      setRevealOpacity(0);
       updateShards(dt, t);
       drawShards(t);
     } else if (phase === "flash") {
       setBrandOpacity(0);
+      setRevealOpacity(0);
       updateShards(dt, t);
       drawShards(t);
+      state.flash = 1 - clamp((t - T_GATHER) / P.flash, 0, 1);
       drawCompressionFlash();
     } else if (phase === "logo" || phase === "done") {
       setBrandOpacity(0);
       updateShards(dt, t);
+      state.flash = 0;
       drawCompressionFlash();
 
       if (!state.revealShown) {
@@ -762,10 +775,6 @@
       if (phase === "done") {
         redirectIfNeeded();
       }
-    } else {
-      setBrandOpacity(1);
-      drawDroplet(now, 0);
-      drawReflection(now, 0);
     }
 
     rafId = requestAnimationFrame(render);
@@ -773,31 +782,19 @@
 
   function startEntrance() {
     if (started) return;
-    started = true;
 
     if (motionQuery.matches) {
-      if (brand) brand.style.opacity = "0";
-      if (revealLogo) {
-        showRevealLogo();
-        setRevealOpacity(1);
-      }
+      started = true;
+      setBrandOpacity(0);
+      showRevealLogo();
+      setRevealOpacity(1);
       redirectIfNeeded();
       return;
     }
 
+    started = true;
     startTime = performance.now() * 0.001;
     lastTs = 0;
-
-    if (brand) {
-      brand.style.willChange = "opacity, transform";
-      brand.style.transition = "none";
-    }
-
-    if (revealLogo) {
-      revealLogo.style.willChange = "opacity, transform";
-      revealLogo.style.display = "block";
-      revealLogo.style.opacity = "0";
-    }
   }
 
   function handleTrigger(e) {
@@ -819,16 +816,7 @@
   function boot() {
     resize();
     createShardField();
-
-    if (brand) {
-      brand.style.opacity = "1";
-    }
-
-    if (revealLogo) {
-      revealLogo.style.display = "block";
-      revealLogo.style.opacity = "0";
-      revealLogo.style.pointerEvents = "none";
-    }
+    prepareLogos();
 
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(render);
@@ -839,13 +827,9 @@
   window.addEventListener("keydown", handleTrigger);
 
   if (motionQuery.addEventListener) {
-    motionQuery.addEventListener("change", () => {
-      if (!started) boot();
-    });
+    motionQuery.addEventListener("change", boot);
   } else if (motionQuery.addListener) {
-    motionQuery.addListener(() => {
-      if (!started) boot();
-    });
+    motionQuery.addListener(boot);
   }
 
   boot();
