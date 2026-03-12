@@ -78,12 +78,12 @@ body{
 /* ==============================
    Initial logo
    U   k   i   y   o
-        F   i   l   m
+        F i l m
 ============================== */
 .brand{
   position:fixed;
   left:50%;
-  top:52%;
+  top:53%;
   z-index:22;
 
   display:flex;
@@ -96,52 +96,51 @@ body{
   visibility:visible;
   transform:translate(-50%, -50%);
   transition:
-    opacity 520ms ease,
-    transform 520ms ease,
-    filter 520ms ease;
+    opacity 700ms ease,
+    transform 900ms cubic-bezier(.22,.7,.16,1),
+    filter 900ms ease;
 }
 
-/* ロゴ周辺のごく薄い湿度 */
 .brand::before{
   content:"";
   position:absolute;
   left:50%;
   top:50%;
-  width:150%;
-  height:180%;
+  width:155%;
+  height:185%;
   transform:translate(-50%, -54%);
   pointer-events:none;
   background:
     radial-gradient(
       ellipse at center,
-      rgba(255,255,255,.030) 0%,
-      rgba(255,255,255,.010) 34%,
-      rgba(255,255,255,0) 74%
+      rgba(255,255,255,.032) 0%,
+      rgba(255,255,255,.012) 36%,
+      rgba(255,255,255,0) 75%
     );
-  filter:blur(12px);
+  filter:blur(14px);
 }
 
 .brand-main{
   position:relative;
   z-index:1;
 
-  font-size:var(--logo-main-size);
-  font-weight:250;
+  font-size:clamp(3.8rem, 8.8vw, 7.8rem);
+  font-weight:240;
   line-height:.9;
-  letter-spacing:.54em;
+  letter-spacing:.46em;
   text-transform:none;
-  color:rgba(255,255,255,.88);
-  padding-left:.54em;
+  color:rgba(255,255,255,.89);
+  padding-left:.46em;
 
   text-shadow:
-    0 0 10px rgba(255,255,255,.03),
+    0 0 10px rgba(255,255,255,.035),
     0 0 30px rgba(120,150,255,.02);
 
   transition:
-    opacity 520ms ease,
-    transform 520ms ease,
-    letter-spacing 520ms ease,
-    filter 520ms ease;
+    opacity 700ms ease,
+    transform 950ms cubic-bezier(.2,.7,.15,1),
+    letter-spacing 950ms cubic-bezier(.2,.7,.15,1),
+    filter 950ms ease;
 }
 
 .brand-sub{
@@ -149,31 +148,30 @@ body{
   z-index:1;
 
   margin-top:14px;
-  margin-left:2.7em;
+  margin-left:1.55em;
   align-self:center;
 
-  font-size:var(--logo-sub-size);
+  font-size:clamp(.86rem, 1.05vw, 1.02rem);
   font-weight:300;
   line-height:1;
-  letter-spacing:.42em;
+  letter-spacing:.30em;
   text-transform:none;
-  color:rgba(255,255,255,.42);
-  padding-left:.42em;
+  color:rgba(255,255,255,.44);
+  padding-left:.30em;
 
   text-shadow:
     0 0 8px rgba(255,255,255,.02),
-    0 0 24px rgba(120,150,255,.015);
+    0 0 22px rgba(120,150,255,.012);
 
   transition:
-    opacity 520ms ease,
-    transform 520ms ease,
-    letter-spacing 520ms ease,
-    filter 520ms ease;
+    opacity 760ms ease,
+    transform 980ms cubic-bezier(.2,.7,.15,1),
+    letter-spacing 980ms cubic-bezier(.2,.7,.15,1),
+    filter 980ms ease;
 
   transition-delay:40ms;
 }
 
-/* 静かな呼吸 */
 @keyframes brandFloat {
   0%{
     transform:translate(-50%, -50%);
@@ -190,28 +188,31 @@ body{
 }
 
 .brand{
-  animation:brandFloat 5.2s ease-in-out infinite;
+  animation:brandFloat 5.6s ease-in-out infinite;
 }
 
-/* ほどけるように消える */
+/* ほどけて広がって消える */
 body.is-transitioning .brand{
   opacity:0;
-  transform:translate(-50%, calc(-50% - 8px));
-  filter:blur(2px);
+  transform:translate(-50%, calc(-50% - 4px)) scale(1.015);
+  filter:blur(2.4px);
   animation:none;
 }
 
 body.is-transitioning .brand-main{
-  letter-spacing:.62em;
-  transform:translateY(-2px);
+  letter-spacing:.60em;
+  transform:scaleX(1.035) translateY(-1px);
   opacity:0;
+  filter:blur(1.6px);
 }
 
 body.is-transitioning .brand-sub{
-  letter-spacing:.52em;
-  transform:translateY(2px);
+  letter-spacing:.40em;
+  transform:translateY(4px) scale(1.02);
   opacity:0;
+  filter:blur(1.2px);
 }
+
 
 /* ==============================
    Final reveal logo
@@ -339,24 +340,23 @@ body.is-transitioning .brand-sub{
   opacity:.34;
   user-select:none;
 }
-
 @media (max-width:640px){
   .brand{
-    top:53%;
+    top:54%;
   }
 
   .brand-main{
-    letter-spacing:.28em;
-    padding-left:.28em;
+    letter-spacing:.24em;
+    padding-left:.24em;
   }
 
   .brand-sub{
     margin-top:12px;
-    margin-left:1.7em;
-    letter-spacing:.30em;
-    padding-left:.30em;
+    margin-left:.9em;
+    font-size:clamp(.78rem, 1.8vw, .92rem);
+    letter-spacing:.22em;
+    padding-left:.22em;
   }
-
   .reveal-logo-main{
     letter-spacing:.12em;
   }
