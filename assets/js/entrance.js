@@ -19,6 +19,7 @@
   let hasTriggered = false;
 
   let shards = [];
+  let inboundShards = [];
   let bloomParticles = [];
   let finalLogoEl = null;
   let idleRomanEl = null;
@@ -41,13 +42,16 @@
     idlePulseAmp: 0.020,
 
     shatterDuration: 1000,
-    driftDuration: 500,
-    convergeDuration: 1300,
-    bloomDuration: 560,
-    logoHoldDuration: 900,
+    driftDuration: 650,
+    convergeDuration: 500,
+    bloomDuration: 300,
+    logoHoldDuration: 820,
 
-    shardCountLarge: 90,
-    shardCountSmall: 220,
+    shardCountLarge: 130,
+    shardCountSmall: 340,
+
+    inboundShardCountLarge: 52,
+    inboundShardCountSmall: 140,
 
     shardLargeMin: 2.0,
     shardLargeMax: 14.0,
@@ -61,8 +65,8 @@
     zNearLimit: -1300,
     zFarLimit: 3200,
 
-    convergeSnapStrength: 0.058,
-    convergeZStrength: 0.052
+    convergeSnapStrength: 0.090,
+    convergeZStrength: 0.080
   };
 
   function nowMs() {
@@ -162,8 +166,9 @@
       }
 
       .js-final-logo__inner{
-        transform:translateY(-28px) scale(.992);
+        transform:translateY(0) scale(.985);
         opacity:0;
+        filter:blur(8px);
       }
 
       .js-final-logo.is-visible{
@@ -171,7 +176,7 @@
       }
 
       .js-final-logo.is-visible .js-final-logo__inner{
-        animation:jsFinalLogoDrop 760ms cubic-bezier(.22,.88,.22,1) forwards;
+        animation:jsFinalLogoReveal 520ms cubic-bezier(.18,.82,.22,1) forwards;
       }
 
       .js-final-logo__main{
@@ -190,22 +195,21 @@
         text-transform:none;
       }
 
-      @keyframes jsFinalLogoDrop{
+      @keyframes jsFinalLogoReveal{
         0%{
           opacity:0;
-          transform:translateY(-28px) scale(.992);
+          transform:translateY(0) scale(.985);
+          filter:blur(8px);
         }
-        52%{
+        38%{
           opacity:1;
-          transform:translateY(4px) scale(1);
-        }
-        72%{
-          opacity:1;
-          transform:translateY(-1px) scale(1);
+          transform:translateY(0) scale(1.01);
+          filter:blur(2px);
         }
         100%{
           opacity:1;
           transform:translateY(0) scale(1);
+          filter:blur(0);
         }
       }
     `;
@@ -258,6 +262,10 @@
     return Number.isFinite(result) ? result : 120;
   }
 
+  function getHorizonY() {
+    return h * 0.64;
+  }
+
   function radiusAt(theta, baseR, t) {
     const wave1 = Math.sin(theta * 2.0 + t * 0.95) * baseR * CONFIG.wave1Amp;
     const wave2 = Math.sin(theta * 3.2 - t * 0.66 + 0.9) * baseR * CONFIG.wave2Amp;
@@ -307,6 +315,48 @@
     ctx.fillRect(0, 0, w, h);
   }
 
+  function drawHorizonAndGround(cx, cy, r, t, alphaMul = 1) {
+    const horizonY = getHorizonY();
+
+    const groundGrad = ctx.createLinearGradient(0, horizonY - 10, 0, h);
+    groundGrad.addColorStop(0, `rgba(255,255,255,${0.018 * alphaMul})`);
+    groundGrad.addColorStop(0.10, `rgba(255,255,255,${0.010 * alphaMul})`);
+    groundGrad.addColorStop(0.35, `rgba(255,255,255,${0.004 * alphaMul})`);
+    groundGrad.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = groundGrad;
+    ctx.fillRect(0, horizonY, w, h - horizonY);
+
+    const lineGrad = ctx.createLinearGradient(0, horizonY, w, horizonY);
+    lineGrad.addColorStop(0, "rgba(255,255,255,0)");
+    lineGrad.addColorStop(0.18, `rgba(255,255,255,${0.10 * alphaMul})`);
+    lineGrad.addColorStop(0.5, `rgba(255,255,255,${0.18 * alphaMul})`);
+    lineGrad.addColorStop(0.82, `rgba(255,255,255,${0.10 * alphaMul})`);
+    lineGrad.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.strokeStyle = lineGrad;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY + 0.5);
+    ctx.lineTo(w, horizonY + 0.5);
+    ctx.stroke();
+
+    const mist = ctx.createRadialGradient(
+      cx,
+      horizonY + (h - horizonY) * 0.12,
+      0,
+      cx,
+      horizonY + (h - horizonY) * 0.12,
+      Math.max(w * 0.42, h * 0.18)
+    );
+    mist.addColorStop(0, `rgba(255,255,255,${0.016 * alphaMul})`);
+    mist.addColorStop(0.4, `rgba(255,255,255,${0.006 * alphaMul})`);
+    mist.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = mist;
+    ctx.fillRect(0, horizonY, w, h - horizonY);
+  }
+
   function drawAmbientVoid(cx, cy, r, t, alphaMul = 1) {
     const driftX = Math.sin(t * 0.24) * r * 0.04;
     const driftY = Math.cos(t * 0.19) * r * 0.04;
@@ -328,6 +378,30 @@
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(cx, cy, Math.max(1, r * 2.7), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBackLight(cx, cy, r, t, alphaMul = 1) {
+    const backX = cx;
+    const backY = cy - r * 0.06;
+
+    const g = ctx.createRadialGradient(
+      backX,
+      backY,
+      r * 0.12,
+      backX,
+      backY,
+      r * 2.9
+    );
+
+    g.addColorStop(0, `rgba(255,255,255,${0.070 * alphaMul})`);
+    g.addColorStop(0.18, `rgba(255,255,255,${0.030 * alphaMul})`);
+    g.addColorStop(0.45, `rgba(255,255,255,${0.010 * alphaMul})`);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(backX, backY, r * 2.9, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -435,12 +509,44 @@
     ctx.fill();
   }
 
+  function drawOrbReflection(cx, cy, r, t, alphaMul = 1) {
+    const horizonY = getHorizonY();
+    const mirrorY = horizonY + (horizonY - cy);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, horizonY, w, h - horizonY);
+    ctx.clip();
+
+    ctx.translate(0, mirrorY * 2);
+    ctx.scale(1, -1);
+    ctx.translate(0, cy * 0.16);
+
+    drawOrbBody(cx, cy, r, t, 0.16 * alphaMul, 0.94);
+    drawInteriorTexture(cx, cy, r, t, 0.08 * alphaMul, 0.94);
+    drawHighlight(cx, cy, r, t, 0.06 * alphaMul, 0.94);
+
+    ctx.restore();
+
+    const fade = ctx.createLinearGradient(0, horizonY, 0, h);
+    fade.addColorStop(0, `rgba(0,0,0,${0.10})`);
+    fade.addColorStop(0.12, `rgba(0,0,0,${0.26})`);
+    fade.addColorStop(0.45, `rgba(0,0,0,${0.58})`);
+    fade.addColorStop(1, `rgba(0,0,0,${0.88})`);
+
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, horizonY, w, h - horizonY);
+  }
+
   function drawIdleOrb(cx, cy, r, t) {
+    drawHorizonAndGround(cx, cy, r, t, 1);
     drawAmbientVoid(cx, cy, r, t, 1);
-    drawShadow(cx, cy, r, 1);
+    drawBackLight(cx, cy, r, t, 1);
+    drawShadow(cx, cy, r, 0.85);
     drawOrbBody(cx, cy, r, t, 1, 1);
     drawInteriorTexture(cx, cy, r, t, 1, 1);
     drawHighlight(cx, cy, r, t, 1, 1);
+    drawOrbReflection(cx, cy, r, t, 1);
   }
 
   function randomUnitVector3() {
@@ -539,14 +645,95 @@
         centerTargetX: cx,
         centerTargetY: cy,
         centerTargetZ: 0,
-        hoverDelay: willExitScreen
-          ? 0
-          : lerp(30, 170, Math.random())
+        hoverDelay: willExitScreen ? 0 : lerp(30, 170, Math.random()),
+        offsetX: 0,
+        offsetY: 0,
+        offsetZ: 0
       });
     }
 
     for (let i = 0; i < CONFIG.shardCountLarge; i++) makeShard(false);
     for (let i = 0; i < CONFIG.shardCountSmall; i++) makeShard(true);
+  }
+
+  function createInboundShards(cx, cy) {
+    inboundShards = [];
+
+    function makeInbound(isSmall) {
+      const side = Math.floor(Math.random() * 4);
+      let startX = 0;
+      let startY = 0;
+
+      const pad = Math.max(w, h) * lerp(0.10, 0.32, Math.random());
+
+      if (side === 0) {
+        startX = Math.random() * w;
+        startY = -pad;
+      } else if (side === 1) {
+        startX = w + pad;
+        startY = Math.random() * h;
+      } else if (side === 2) {
+        startX = Math.random() * w;
+        startY = h + pad;
+      } else {
+        startX = -pad;
+        startY = Math.random() * h;
+      }
+
+      const startZ = lerp(-240, 1400, Math.random());
+      const frontness = clamp((startZ + 240) / 1640, 0, 1);
+
+      const sizeMin = isSmall ? CONFIG.shardSmallMin : CONFIG.shardLargeMin;
+      const sizeMax = isSmall ? CONFIG.shardSmallMax : CONFIG.shardLargeMax;
+      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.8, 1.25, frontness);
+
+      const alpha = isSmall
+        ? lerp(0.04, 0.14, frontness)
+        : lerp(0.08, 0.22, frontness);
+
+      const aspect = isSmall
+        ? 0.8 + Math.random() * 1.8
+        : 0.8 + Math.random() * 2.4;
+
+      const spin = (Math.random() - 0.5) * (
+        isSmall
+          ? lerp(0.12, 0.36, frontness)
+          : lerp(0.08, 0.22, frontness)
+      );
+
+      const offsetX = (Math.random() - 0.5) * lerp(8, 46, Math.random());
+      const offsetY = (Math.random() - 0.5) * lerp(8, 46, Math.random());
+      const offsetZ = (Math.random() - 0.5) * lerp(12, 120, Math.random());
+
+      inboundShards.push({
+        isSmall,
+        startX,
+        startY,
+        startZ,
+        x: startX,
+        y: startY,
+        z: startZ,
+        vx: 0,
+        vy: 0,
+        vz: 0,
+        size,
+        baseSize: size,
+        alpha,
+        aspect,
+        rot: Math.random() * Math.PI * 2,
+        spin,
+        frontness,
+        offsetX,
+        offsetY,
+        offsetZ,
+        centerTargetX: cx,
+        centerTargetY: cy,
+        centerTargetZ: 0
+      });
+    }
+
+    for (let i = 0; i < CONFIG.inboundShardCountLarge; i++) makeInbound(false);
+    for (let i = 0; i < CONFIG.inboundShardCountSmall; i++) makeInbound(true);
   }
 
   function project3D(x, y, z) {
@@ -627,7 +814,6 @@
       s.x = lerp(s.startX, s.targetX, move);
       s.y = lerp(s.startY, s.targetY, move);
       s.z = lerp(s.startZ, s.targetZ, move);
-
       s.rot += s.spin;
       drawList.push(s);
     });
@@ -645,23 +831,28 @@
     const driftEase = easeOutCubic(progress);
 
     shards.forEach((s, idx) => {
-      if (s.willExitScreen) {
-        const offT = driftEase;
-        s.x = s.targetX + s.driftX * offT * 0.8;
-        s.y = s.targetY + s.driftY * offT * 0.8;
-        s.z = s.targetZ + s.driftZ * offT;
-      } else {
-        const phase = idx * 0.31 + time * 1.6;
-        const wave = Math.sin(phase) * s.hoverAmp;
-        const wave2 = Math.cos(phase * 0.82 + 0.7) * s.hoverAmp * 0.8;
-        const wave3 = Math.sin(phase * 0.57 + 1.9) * s.hoverAmp * 18;
+      const phase = idx * 0.23 + time * 0.75;
 
-        s.x = s.targetX + wave + s.driftX * driftEase * 0.18;
-        s.y = s.targetY + wave2 + s.driftY * driftEase * 0.18;
-        s.z = s.targetZ + wave3 + s.driftZ * driftEase * 0.08;
+      if (s.willExitScreen) {
+        const inertia = 1 + driftEase * 0.42;
+        s.x = s.targetX + s.driftX * inertia;
+        s.y = s.targetY + s.driftY * inertia;
+        s.z = s.targetZ + s.driftZ * inertia;
+      } else {
+        const inertialX = s.driftX * (0.22 + driftEase * 0.58);
+        const inertialY = s.driftY * (0.22 + driftEase * 0.58);
+        const inertialZ = s.driftZ * (0.10 + driftEase * 0.30);
+
+        const orbitX = Math.sin(phase * 1.07) * s.hoverAmp * 1.2;
+        const orbitY = Math.cos(phase * 0.81 + 0.6) * s.hoverAmp * 1.0;
+        const orbitZ = Math.sin(phase * 0.54 + 2.0) * s.hoverAmp * 28;
+
+        s.x = s.targetX + inertialX + orbitX;
+        s.y = s.targetY + inertialY + orbitY;
+        s.z = s.targetZ + inertialZ + orbitZ;
       }
 
-      s.rot += s.spin * 0.32;
+      s.rot += s.spin * 0.28;
       drawList.push(s);
     });
 
@@ -669,8 +860,8 @@
 
     drawList.forEach((s) => {
       const alpha = s.willExitScreen
-        ? s.alpha * (1 - progress * 0.18)
-        : s.alpha * (1 - progress * 0.04);
+        ? s.alpha * (1 - progress * 0.20)
+        : s.alpha * (1 - progress * 0.03);
 
       drawGlassShard3D(
         s.x,
@@ -704,22 +895,34 @@
 
   function drawCentralBloom(progress) {
     const { x: cx, y: cy } = getCenter();
-    const base = Math.min(w, h) * 0.09;
-    const p = easeOutBack(clamp(progress, 0, 1));
+
+    const compress = Math.pow(clamp(progress, 0, 1), 1.9);
+    const flare = Math.sin(compress * Math.PI);
+    const base = Math.min(w, h) * lerp(0.020, 0.120, compress);
 
     const g = ctx.createRadialGradient(
       cx, cy, 0,
-      cx, cy, base * (0.55 + p * 1.95)
+      cx, cy, base * (0.6 + flare * 2.6)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.34 * (1 - progress)})`);
-    g.addColorStop(0.18, `rgba(255,255,255,${0.18 * (1 - progress)})`);
-    g.addColorStop(0.55, `rgba(255,255,255,${0.05 * (1 - progress)})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.72 * (1 - progress * 0.2)})`);
+    g.addColorStop(0.08, `rgba(255,255,255,${0.40 * (1 - progress * 0.28)})`);
+    g.addColorStop(0.24, `rgba(255,255,255,${0.14 * (1 - progress * 0.42)})`);
+    g.addColorStop(0.52, `rgba(255,255,255,${0.05 * (1 - progress * 0.62)})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, base * (0.55 + p * 1.95), 0, Math.PI * 2);
+    ctx.arc(cx, cy, base * (0.6 + flare * 2.6), 0, Math.PI * 2);
+    ctx.fill();
+
+    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, base * 0.7);
+    core.addColorStop(0, `rgba(255,255,255,${0.92 * (1 - progress * 0.25)})`);
+    core.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = core;
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(2, base * 0.7), 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -737,61 +940,58 @@
     const drawList = [];
     const { x: cx, y: cy } = getCenter();
 
-    shards.forEach((s, idx) => {
+    function updateShard(s, idx, isInbound = false) {
       const elapsedMs = progress * CONFIG.convergeDuration;
-      const localProgress = clamp(
-        (elapsedMs - s.hoverDelay) / Math.max(1, CONFIG.convergeDuration - s.hoverDelay),
-        0,
-        1
-      );
+      const localProgress = clamp(elapsedMs / Math.max(1, CONFIG.convergeDuration), 0, 1);
 
       const dist = Math.hypot(s.x - cx, s.y - cy);
       const maxDist = Math.max(Math.hypot(w * 0.5, h * 0.5), 1);
       const outerBias = clamp(dist / maxDist, 0, 1);
 
+      const gravityRise = Math.pow(localProgress, 1.7);
       const pull = easeInCubic(localProgress);
-      const shapedPull = easeInOutCubic(localProgress);
 
       let snap = 0;
       let snapZ = 0;
-      let drag = 0.94;
+      let drag = 0.95;
 
-      if (elapsedMs < s.hoverDelay) {
-        const hoverT = clamp(elapsedMs / Math.max(1, s.hoverDelay), 0, 1);
+      if (localProgress < 0.22 && !isInbound) {
+        const hoverT = clamp(localProgress / 0.22, 0, 1);
         const phase = idx * 0.37 + hoverT * 4.0 + time * 0.6;
+
         s.vx *= 0.965;
         s.vy *= 0.965;
         s.vz *= 0.965;
 
-        s.x += Math.sin(phase * 1.13) * (0.12 + s.frontness * 0.30);
-        s.y += Math.cos(phase * 0.91) * (0.10 + s.frontness * 0.22);
-        s.z += Math.sin(phase * 0.64) * lerp(1.5, 8.0, s.frontness);
+        s.x += Math.sin(phase * 1.13) * (0.10 + s.frontness * 0.26);
+        s.y += Math.cos(phase * 0.91) * (0.08 + s.frontness * 0.20);
+        s.z += Math.sin(phase * 0.64) * lerp(1.2, 6.0, s.frontness);
       } else {
-        const speedBias = lerp(1.30, 0.58, outerBias);
-        snap = CONFIG.convergeSnapStrength * speedBias * (0.22 + shapedPull * 3.2);
-        snapZ = CONFIG.convergeZStrength * speedBias * (0.18 + shapedPull * 2.8);
+        const speedBias = lerp(1.40, 0.56, outerBias);
+
+        snap = CONFIG.convergeSnapStrength * speedBias * (0.10 + gravityRise * 4.6);
+        snapZ = CONFIG.convergeZStrength * speedBias * (0.08 + gravityRise * 3.9);
 
         drag = lerp(
-          0.93,
-          lerp(0.84, 0.89, outerBias),
-          shapedPull
+          0.958,
+          lerp(0.80, 0.87, outerBias),
+          gravityRise
         );
 
-        if (localProgress > 0.78) {
-          drag *= 0.92;
-          snap *= 1.12;
+        if (localProgress > 0.68) {
+          snap *= 1.08;
           snapZ *= 1.08;
         }
 
-        if (localProgress > 0.90) {
-          drag *= 0.88;
-          snap *= 1.18;
-          snapZ *= 1.14;
+        if (localProgress > 0.84) {
+          drag *= 0.92;
+          snap *= 1.14;
+          snapZ *= 1.12;
         }
 
-        s.vx += (s.centerTargetX - s.x) * snap;
-        s.vy += (s.centerTargetY - s.y) * snap;
-        s.vz += (s.centerTargetZ - s.z) * snapZ;
+        s.vx = safe(s.vx, 0) + (s.centerTargetX - s.x + (s.offsetX || 0) * (1 - localProgress) * 0.06) * snap;
+        s.vy = safe(s.vy, 0) + (s.centerTargetY - s.y + (s.offsetY || 0) * (1 - localProgress) * 0.06) * snap;
+        s.vz = safe(s.vz, 0) + (s.centerTargetZ - s.z + (s.offsetZ || 0) * (1 - localProgress) * 0.04) * snapZ;
 
         s.vx *= drag;
         s.vy *= drag;
@@ -802,24 +1002,31 @@
         s.z += s.vz;
       }
 
-      s.rot += s.spin * (0.10 + (1 - pull) * 0.48);
+      s.rot += s.spin * (0.10 + (1 - pull) * 0.38);
 
       drawList.push({
         ...s,
-        localProgress
+        localProgress,
+        isInbound
       });
-    });
+    }
+
+    shards.forEach((s, idx) => updateShard(s, idx, false));
+    inboundShards.forEach((s, idx) => updateShard(s, idx + shards.length, true));
 
     drawList.sort((a, b) => a.z - b.z);
 
     drawList.forEach((s) => {
       const alphaFade = 1 - easeOutQuart(s.localProgress);
-      const alphaBase = s.isSmall ? 0.22 : 0.30;
-      const alpha = Math.max(0, alphaBase * alphaFade + 0.02 * (1 - s.localProgress));
+      const alphaBase = s.isInbound
+        ? (s.isSmall ? 0.18 : 0.24)
+        : (s.isSmall ? 0.22 : 0.30);
+
+      const alpha = Math.max(0, alphaBase * alphaFade + 0.01 * (1 - s.localProgress));
 
       const finalSize = lerp(
-        s.baseSize * 0.76,
-        s.isSmall ? 0.34 : 0.58,
+        s.baseSize * 0.82,
+        s.isSmall ? 0.26 : 0.46,
         easeOutCubic(s.localProgress)
       );
 
@@ -854,6 +1061,7 @@
     const r = getOrbRadius();
 
     createShards(x, y, r);
+    inboundShards = [];
     ensureFinalLogo();
   }
 
@@ -869,6 +1077,8 @@
     if (state === "drift" && elapsed >= CONFIG.driftDuration) {
       state = "converge";
       stateStart = now;
+      const { x, y } = getCenter();
+      createInboundShards(x, y);
       return;
     }
 
@@ -911,11 +1121,14 @@
       const orbAlpha = Math.max(0, 1 - easeOutCubic(p) * 1.08);
       const orbScale = lerp(1, 0.90, p);
 
+      drawHorizonAndGround(cx, cy, r, t, 1 - p * 0.12);
       drawAmbientVoid(cx, cy, r, t, orbAlpha * 0.55);
+      drawBackLight(cx, cy, r, t, 1 - p * 0.10);
       drawShadow(cx, cy, r, orbAlpha * 0.75);
       drawOrbBody(cx, cy, r, t, orbAlpha, orbScale);
       drawInteriorTexture(cx, cy, r, t, orbAlpha, orbScale);
       drawHighlight(cx, cy, r, t, orbAlpha, orbScale);
+      drawOrbReflection(cx, cy, r, t, orbAlpha * 0.7);
 
       drawShardsExplode(p);
       return;
@@ -923,36 +1136,42 @@
 
     if (state === "drift") {
       const p = clamp((now - stateStart) / CONFIG.driftDuration, 0, 1);
+      drawHorizonAndGround(cx, cy, r, t, 1 - p * 0.18);
       drawAmbientVoid(cx, cy, r, t, 0.08 * (1 - p));
+      drawBackLight(cx, cy, r, t, 0.82 * (1 - p * 0.2));
       drawShardsDrift(p);
       return;
     }
 
     if (state === "converge") {
       const p = clamp((now - stateStart) / CONFIG.convergeDuration, 0, 1);
+      drawHorizonAndGround(cx, cy, r, t, 0.92 * (1 - p * 0.2));
       drawAmbientVoid(cx, cy, r, t, 0.13 * (1 - p));
+      drawBackLight(cx, cy, r, t, 0.72 * (1 - p * 0.35));
       drawShardsConverge(p);
 
-      const preGlow = Math.max(0, (p - 0.70) / 0.30);
-      if (preGlow > 0) drawCentralBloom(preGlow * 0.72);
+      const preGlow = Math.max(0, (p - 0.48) / 0.52);
+      if (preGlow > 0) drawCentralBloom(preGlow);
 
       return;
     }
 
     if (state === "bloom") {
       const p = clamp((now - stateStart) / CONFIG.bloomDuration, 0, 1);
+      drawHorizonAndGround(cx, cy, r, t, 0.70 * (1 - p * 0.25));
       drawCentralBloom(p);
-      drawBloomParticles(p);
-      drawShardsConverge(0.90 + p * 0.10);
+      drawBloomParticles(p * 0.55);
+      drawShardsConverge(0.985 + p * 0.015);
       return;
     }
 
     if (state === "logo") {
       const p = clamp((now - stateStart) / Math.max(1, CONFIG.logoHoldDuration * 0.42), 0, 1);
+      drawHorizonAndGround(cx, cy, r, t, 0.52 * (1 - p * 0.4));
       if (p < 1) {
-        drawShardsConverge(0.98 + p * 0.02);
-        drawCentralBloom(0.74 + p * 0.26);
+        drawCentralBloom(0.82 + p * 0.18);
       }
+      return;
     }
   }
 
