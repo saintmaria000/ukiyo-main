@@ -837,6 +837,7 @@
 
   /* =========================================================
      12. Reflection
+     ※ ぷつぷつしない滑らかな水面反射
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
@@ -845,74 +846,165 @@
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
 
+    // 主滴
     const mainPts = buildDropletPathAt(
       cx,
       cy,
-      getDropletMorph(time + 0.08, hintK * 0.72),
-      time + 0.08,
+      getDropletMorph(time, hintK * 0.72),
+      time,
       0,
       null
     );
-    drawReflectionShape(mainPts, time, CONFIG.droplet.radius * 0.7, 0.12, 0.06 + hintK * 0.02);
+    drawReflectionShape(
+      mainPts,
+      time,
+      {
+        bodyAlpha: 0.115,
+        strokeAlpha: 0.05,
+        squashY: 0.60,
+        rippleAmp: 1.25,
+        rippleFreq: 0.018,
+        rippleSpeed: 1.35,
+        fadeDepth: getMainBaseRadius() * 0.95
+      }
+    );
 
+    // 補助滴
     for (const d of state.auxDroplets) {
-      const m = getAuxMorph(d, time + 0.05);
-      const p = buildDropletPathAt(d.x, d.y, m, time + 0.05, d.seed, null);
-      drawReflectionShape(p, time + d.seed * 0.001, m.r * 0.95, 0.07 * d.alpha, 0.035 * d.alpha);
+      const m = getAuxMorph(d, time);
+      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, null);
+
+      drawReflectionShape(
+        pts,
+        time + d.seed * 0.0008,
+        {
+          bodyAlpha: 0.072 * d.alpha,
+          strokeAlpha: 0.032 * d.alpha,
+          squashY: 0.58,
+          rippleAmp: Math.max(0.5, m.r * 0.028),
+          rippleFreq: 0.02,
+          rippleSpeed: 1.2,
+          fadeDepth: m.r * 1.15
+        }
+      );
     }
 
     ctx.restore();
   }
 
-  function drawReflectionShape(pts, time, extraBottom, fillA, strokeA) {
+  function drawReflectionShape(pts, time, opt) {
+    const {
+      bodyAlpha,
+      strokeAlpha,
+      squashY,
+      rippleAmp,
+      rippleFreq,
+      rippleSpeed,
+      fadeDepth
+    } = opt;
+
+    // 反射元の輪郭範囲
     const srcTop = Math.min(...pts.map((p) => p.y));
     const srcBottom = Math.max(...pts.map((p) => p.y));
-    const halfCut = srcTop + (srcBottom - srcTop) * 0.5;
 
-    const filtered = pts.map((p, i) => {
-      const driftX =
-        Math.sin(time * 1.7 + i * 0.22) * 1.8 +
-        Math.sin(time * 0.9 + i * 0.11) * 0.8;
+    // 上半分は使わず、下側主体の反射にする
+    const cutY = srcTop + (srcBottom - srcTop) * 0.48;
 
-      const py = Math.max(p.y, halfCut);
+    const reflected = pts.map((p) => {
+      const py = Math.max(p.y, cutY);
+
+      // 水平線で鏡写し
       const mirroredY = horizonY + (horizonY - py);
 
+      // 輪郭単位のなめらかな横揺れ
+      const waveX =
+        Math.sin(py * rippleFreq + time * rippleSpeed) * rippleAmp +
+        Math.sin(py * rippleFreq * 0.47 + time * rippleSpeed * 0.62) * rippleAmp * 0.38;
+
       return {
-        x: p.x + driftX,
-        y: horizonY + (mirroredY - horizonY) * 0.58
+        x: p.x + waveX,
+        y: horizonY + (mirroredY - horizonY) * squashY
       };
     });
 
-    tracePath(filtered);
+    tracePath(reflected);
 
-    const reflectBottom =
-      Math.max(...filtered.map((p) => p.y)) + extraBottom * 0.55;
+    const topY = Math.min(...reflected.map((p) => p.y));
+    const bottomY = Math.max(...reflected.map((p) => p.y)) + fadeDepth;
 
-    const g = ctx.createLinearGradient(0, horizonY, 0, reflectBottom);
-    g.addColorStop(0, `rgba(255,255,255,${fillA * 0.92})`);
-    g.addColorStop(0.18, `rgba(255,255,255,${fillA * 0.42})`);
-    g.addColorStop(0.42, `rgba(255,255,255,${fillA * 0.16})`);
-    g.addColorStop(1, "rgba(255,255,255,0)");
+    // 本体の淡い反射
+    const fillGrad = ctx.createLinearGradient(0, topY, 0, bottomY);
+    fillGrad.addColorStop(0, `rgba(255,255,255,${bodyAlpha})`);
+    fillGrad.addColorStop(0.18, `rgba(255,255,255,${bodyAlpha * 0.48})`);
+    fillGrad.addColorStop(0.42, `rgba(255,255,255,${bodyAlpha * 0.18})`);
+    fillGrad.addColorStop(0.7, `rgba(255,255,255,${bodyAlpha * 0.06})`);
+    fillGrad.addColorStop(1, "rgba(255,255,255,0)");
 
-    ctx.fillStyle = g;
+    ctx.fillStyle = fillGrad;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${strokeA * 0.82})`;
+    // 輪郭
+    ctx.strokeStyle = `rgba(255,255,255,${strokeAlpha})`;
     ctx.lineWidth = 0.9;
     ctx.stroke();
 
+    // 下に向かって自然消滅
     ctx.save();
     ctx.globalCompositeOperation = "destination-in";
-    const fade = ctx.createLinearGradient(0, horizonY - 2, 0, reflectBottom);
-    fade.addColorStop(0, "rgba(255,255,255,0.88)");
-    fade.addColorStop(0.16, "rgba(255,255,255,0.56)");
-    fade.addColorStop(0.44, "rgba(255,255,255,0.18)");
-    fade.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = fade;
-    ctx.fillRect(0, horizonY - 2, w, reflectBottom - horizonY + 4);
+
+    const maskGrad = ctx.createLinearGradient(0, horizonY - 1, 0, bottomY);
+    maskGrad.addColorStop(0, "rgba(255,255,255,0.92)");
+    maskGrad.addColorStop(0.12, "rgba(255,255,255,0.72)");
+    maskGrad.addColorStop(0.34, "rgba(255,255,255,0.28)");
+    maskGrad.addColorStop(0.62, "rgba(255,255,255,0.08)");
+    maskGrad.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = maskGrad;
+    ctx.fillRect(0, horizonY - 1, w, bottomY - horizonY + 4);
     ctx.restore();
+
+    // 水面の薄い横筋を上からかぶせて馴染ませる
+    drawReflectionSheen(topY, bottomY, time, bodyAlpha);
   }
 
+  function drawReflectionSheen(topY, bottomY, time, alphaBase) {
+    const lines = 5;
+    const span = Math.max(18, bottomY - topY);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, horizonY, w, h - horizonY);
+    ctx.clip();
+
+    for (let i = 0; i < lines; i++) {
+      const yy = topY + span * (0.12 + i / (lines + 1));
+      const alpha = alphaBase * (0.16 - i * 0.02);
+
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, "rgba(255,255,255,0)");
+      grad.addColorStop(0.2, `rgba(255,255,255,${alpha * 0.45})`);
+      grad.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
+      grad.addColorStop(0.8, `rgba(255,255,255,${alpha * 0.45})`);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1;
+
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += 20) {
+        const y =
+          yy +
+          Math.sin(x * 0.011 + time * 1.05 + i * 0.8) * 0.45 +
+          Math.sin(x * 0.004 + time * 0.55 + i * 0.3) * 0.22;
+
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
   /* =========================================================
      13. Shards / Update
   ========================================================= */
