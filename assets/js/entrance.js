@@ -13,7 +13,7 @@
   let rafId = 0;
   let time = 0;
 
-  let state = "idle"; // idle | shatter | converge | bloom | logo
+  let state = "idle"; // idle | shatter | drift | converge | bloom | logo
   let stateStart = 0;
   let nextHref = null;
   let hasTriggered = false;
@@ -21,6 +21,7 @@
   let shards = [];
   let bloomParticles = [];
   let finalLogoEl = null;
+  let idleRomanEl = null;
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const ENTER_HREF = "./ja/index.html";
@@ -30,8 +31,8 @@
     orbMin: 110,
     orbMax: 250,
 
-    idleOutlineAlpha: 0.042,
-    idleCoreAlpha: 0.014,
+    idleOutlineAlpha: 0.044,
+    idleCoreAlpha: 0.016,
 
     wave1Amp: 0.034,
     wave2Amp: 0.020,
@@ -39,28 +40,29 @@
     wave4Amp: 0.008,
     idlePulseAmp: 0.020,
 
-    shatterDuration: 1500,
-    convergeDuration: 1650,
+    shatterDuration: 1000,
+    driftDuration: 500,
+    convergeDuration: 1300,
     bloomDuration: 560,
     logoHoldDuration: 900,
 
-    shardCountLarge: 95,
+    shardCountLarge: 90,
     shardCountSmall: 220,
 
     shardLargeMin: 2.0,
     shardLargeMax: 14.0,
     shardSmallMin: 0.7,
-    shardSmallMax: 3.0,
+    shardSmallMax: 3.2,
 
-    explodeRadiusMin: 1200,
-    explodeRadiusMax: 3200,
+    explodeRadiusMin: 220,
+    explodeRadiusMax: 3400,
 
     camera: 760,
-    zNearLimit: -1100,
-    zFarLimit: 2600,
+    zNearLimit: -1300,
+    zFarLimit: 3200,
 
-    convergeSnapStrength: 0.060,
-    convergeZStrength: 0.050
+    convergeSnapStrength: 0.058,
+    convergeZStrength: 0.052
   };
 
   function nowMs() {
@@ -103,6 +105,46 @@
     return Number.isFinite(n) ? n : fallback;
   }
 
+  function ensureIdleRomanLogo() {
+    if (idleRomanEl) return idleRomanEl;
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .js-idle-roman{
+        position:fixed;
+        inset:0;
+        z-index:11;
+        display:grid;
+        place-items:center;
+        pointer-events:none;
+        opacity:1;
+        transition:opacity 260ms ease;
+      }
+
+      .js-idle-roman.is-hidden{
+        opacity:0;
+      }
+
+      .js-idle-roman__text{
+        color:rgba(255,255,255,.92);
+        font-size:clamp(1.05rem, 2vw, 1.55rem);
+        letter-spacing:.34em;
+        text-transform:none;
+        white-space:nowrap;
+        transform:translateY(0);
+      }
+    `;
+    document.head.appendChild(style);
+
+    idleRomanEl = document.createElement("div");
+    idleRomanEl.className = "js-idle-roman";
+    idleRomanEl.setAttribute("aria-hidden", "true");
+    idleRomanEl.innerHTML = `<div class="js-idle-roman__text">ukiyo Film</div>`;
+    document.body.appendChild(idleRomanEl);
+
+    return idleRomanEl;
+  }
+
   function ensureFinalLogo() {
     if (finalLogoEl) return finalLogoEl;
 
@@ -120,7 +162,7 @@
       }
 
       .js-final-logo__inner{
-        transform:translateY(-34px) scale(.992);
+        transform:translateY(-28px) scale(.992);
         opacity:0;
       }
 
@@ -142,16 +184,16 @@
 
       .js-final-logo__sub{
         margin-top:14px;
-        color:rgba(255,255,255,.36);
+        color:rgba(255,255,255,.42);
         font-size:clamp(.72rem, 1.35vw, 1rem);
         letter-spacing:.30em;
-        text-transform:uppercase;
+        text-transform:none;
       }
 
       @keyframes jsFinalLogoDrop{
         0%{
           opacity:0;
-          transform:translateY(-34px) scale(.992);
+          transform:translateY(-28px) scale(.992);
         }
         52%{
           opacity:1;
@@ -278,9 +320,9 @@
       safe(Math.max(0.0001, r * 2.7), r * 2.7)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.012 * alphaMul})`);
-    g.addColorStop(0.35, `rgba(255,255,255,${0.0048 * alphaMul})`);
-    g.addColorStop(0.7, `rgba(255,255,255,${0.0017 * alphaMul})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.013 * alphaMul})`);
+    g.addColorStop(0.35, `rgba(255,255,255,${0.0052 * alphaMul})`);
+    g.addColorStop(0.7, `rgba(255,255,255,${0.0018 * alphaMul})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = g;
@@ -320,11 +362,11 @@
       safe(Math.max(0.0001, r * 1.15), r)
     );
 
-    body.addColorStop(0, `rgba(255,255,255,${0.062 * alphaMul})`);
-    body.addColorStop(0.28, `rgba(255,255,255,${0.026 * alphaMul})`);
-    body.addColorStop(0.56, `rgba(255,255,255,${0.015 * alphaMul})`);
+    body.addColorStop(0, `rgba(255,255,255,${0.068 * alphaMul})`);
+    body.addColorStop(0.28, `rgba(255,255,255,${0.028 * alphaMul})`);
+    body.addColorStop(0.56, `rgba(255,255,255,${0.016 * alphaMul})`);
     body.addColorStop(0.8, `rgba(255,255,255,${CONFIG.idleCoreAlpha * alphaMul})`);
-    body.addColorStop(1, `rgba(255,255,255,${0.0055 * alphaMul})`);
+    body.addColorStop(1, `rgba(255,255,255,${0.006 * alphaMul})`);
 
     ctx.fillStyle = body;
     ctx.fill();
@@ -382,8 +424,8 @@
       safe(Math.max(0.0001, r * 0.24 * scale), r * 0.2)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.062 * alphaMul})`);
-    g.addColorStop(0.24, `rgba(255,255,255,${0.023 * alphaMul})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.068 * alphaMul})`);
+    g.addColorStop(0.24, `rgba(255,255,255,${0.024 * alphaMul})`);
     g.addColorStop(0.58, `rgba(255,255,255,${0.008 * alphaMul})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
@@ -417,40 +459,41 @@
 
     function makeShard(isSmall) {
       const dir = randomUnitVector3();
+      const frontness = (dir.z + 1) * 0.5;
 
       const startRadius = r * (0.72 + Math.random() * 0.32);
       const startX = cx + dir.x * startRadius;
       const startY = cy + dir.y * startRadius;
       const startZ = dir.z * r * 1.0;
 
-      const explodeLength = lerp(CONFIG.explodeRadiusMin, CONFIG.explodeRadiusMax, Math.random());
-      const spreadBoost = isSmall ? lerp(1.0, 1.55, Math.random()) : lerp(0.9, 1.2, Math.random());
+      const outerRadius = Math.hypot(w * 0.5, h * 0.5);
+      const randomRadius = lerp(r * 1.15, outerRadius * 1.5, Math.random());
+      const offscreenChance = 0.42 + (1 - frontness) * 0.18;
+      const willExitScreen = Math.random() < offscreenChance;
 
-      const frontness = (dir.z + 1) * 0.5;
-      const stayFront = frontness > 0.74;
-
-      let targetX;
-      let targetY;
+      let targetRadius;
       let targetZ;
 
-      if (stayFront) {
-        const floatRadius = lerp(r * 1.0, Math.min(w, h) * 0.34, Math.random());
-        targetX = cx + dir.x * floatRadius;
-        targetY = cy + dir.y * floatRadius * lerp(0.85, 1.15, Math.random());
-        targetZ = lerp(260, 980, Math.random());
+      if (willExitScreen) {
+        targetRadius = lerp(outerRadius * 1.02, outerRadius * 1.85, Math.random());
+        targetZ = lerp(-260, 900, Math.random());
       } else {
-        targetX = cx + dir.x * explodeLength * spreadBoost;
-        targetY = cy + dir.y * explodeLength * spreadBoost;
-        targetZ = dir.z * explodeLength * spreadBoost;
+        targetRadius = randomRadius;
+        targetZ = frontness > 0.72
+          ? lerp(220, 1180, Math.random())
+          : lerp(-180, 820, Math.random());
       }
+
+      const targetX = cx + dir.x * targetRadius;
+      const targetY = cy + dir.y * targetRadius;
 
       const sizeMin = isSmall ? CONFIG.shardSmallMin : CONFIG.shardLargeMin;
       const sizeMax = isSmall ? CONFIG.shardSmallMax : CONFIG.shardLargeMax;
-      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.4, frontness);
+      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.45, frontness);
 
       const alpha = isSmall
-        ? lerp(0.05, 0.18, frontness)
-        : lerp(0.10, 0.30, frontness);
+        ? lerp(0.05, 0.19, frontness)
+        : lerp(0.11, 0.31, frontness);
 
       const aspect = isSmall
         ? 0.8 + Math.random() * 1.8
@@ -461,6 +504,11 @@
           ? lerp(0.14, 0.42, frontness)
           : lerp(0.08, 0.28, frontness)
       );
+
+      const hoverAmp = lerp(0.3, 2.0, Math.random()) * lerp(0.8, 1.5, frontness);
+      const driftX = (Math.random() - 0.5) * lerp(8, 32, Math.random());
+      const driftY = (Math.random() - 0.5) * lerp(8, 32, Math.random());
+      const driftZ = (Math.random() - 0.5) * lerp(10, 90, Math.random());
 
       shards.push({
         isSmall,
@@ -482,15 +530,18 @@
         aspect,
         rot: Math.random() * Math.PI * 2,
         spin,
+        frontness,
+        willExitScreen,
+        hoverAmp,
+        driftX,
+        driftY,
+        driftZ,
         centerTargetX: cx,
         centerTargetY: cy,
         centerTargetZ: 0,
-        distFromCenterNorm: 1,
-        frontness,
-        stayFront,
-        hoverDelay: stayFront
-          ? lerp(380, 760, Math.random())
-          : lerp(0, 240, frontness) + Math.random() * 140
+        hoverDelay: willExitScreen
+          ? 0
+          : lerp(30, 170, Math.random())
       });
     }
 
@@ -506,7 +557,7 @@
     return {
       x,
       y,
-      scale: clamp(p, 0.16, 5.0),
+      scale: clamp(p, 0.16, 5.2),
       visible: cam + zz > 1
     };
   }
@@ -516,7 +567,7 @@
     if (!proj.visible) return;
 
     const drawSize = size * proj.scale;
-    const drawAlpha = alpha * clamp(proj.scale * 0.95, 0.10, 2.0);
+    const drawAlpha = alpha * clamp(proj.scale * 0.95, 0.10, 2.2);
 
     ctx.save();
     ctx.translate(proj.x, proj.y);
@@ -534,7 +585,7 @@
       ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.22, 0.48, frontness)})`;
       ctx.fill();
 
-      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.56, 0.90, frontness)})`;
+      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.56, 0.92, frontness)})`;
       ctx.lineWidth = clamp(0.28 * proj.scale, 0.20, 0.9);
       ctx.stroke();
     } else {
@@ -546,7 +597,7 @@
       ctx.lineTo(-drawSize * 0.95 * aspect, drawSize * 0.38);
       ctx.closePath();
 
-      ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.28, 0.55, frontness)})`;
+      ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.28, 0.56, frontness)})`;
       ctx.fill();
 
       ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.68, 1.0, frontness)})`;
@@ -556,7 +607,7 @@
       ctx.beginPath();
       ctx.moveTo(-drawSize * 0.52 * aspect, -drawSize * 0.05);
       ctx.lineTo(drawSize * 0.70 * aspect, -drawSize * 0.02);
-      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.30, 0.90, frontness)})`;
+      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.30, 0.92, frontness)})`;
       ctx.lineWidth = clamp(0.24 * proj.scale, 0.18, 0.9);
       ctx.stroke();
     }
@@ -565,7 +616,7 @@
   }
 
   function shatterMotion(progress) {
-    return 1 - Math.pow(1 - progress, 4.8);
+    return 1 - Math.pow(1 - progress, 4.6);
   }
 
   function drawShardsExplode(progress) {
@@ -573,19 +624,9 @@
     const drawList = [];
 
     shards.forEach((s) => {
-      const localMove = s.stayFront
-        ? easeOutCubic(clamp(progress * 0.88, 0, 1))
-        : move;
-
-      s.x = lerp(s.startX, s.targetX, localMove);
-      s.y = lerp(s.startY, s.targetY, localMove);
-      s.z = lerp(s.startZ, s.targetZ, localMove);
-
-      if (s.stayFront) {
-        const drift = 1 - progress;
-        s.x += Math.sin(s.rot * 1.17 + time * 1.6) * (0.8 + s.frontness * 1.8) * drift;
-        s.y += Math.cos(s.rot * 0.91 + time * 1.2) * (0.6 + s.frontness * 1.4) * drift;
-      }
+      s.x = lerp(s.startX, s.targetX, move);
+      s.y = lerp(s.startY, s.targetY, move);
+      s.z = lerp(s.startZ, s.targetZ, move);
 
       s.rot += s.spin;
       drawList.push(s);
@@ -594,9 +635,42 @@
     drawList.sort((a, b) => a.z - b.z);
 
     drawList.forEach((s) => {
-      const alpha = s.stayFront
-        ? s.alpha * (1 - progress * 0.05)
-        : s.alpha * (1 - progress * 0.14);
+      const alpha = s.alpha * (1 - progress * 0.10);
+      drawGlassShard3D(s.x, s.y, s.z, s.size, s.aspect, s.rot, alpha, s.frontness, s.isSmall);
+    });
+  }
+
+  function drawShardsDrift(progress) {
+    const drawList = [];
+    const driftEase = easeOutCubic(progress);
+
+    shards.forEach((s, idx) => {
+      if (s.willExitScreen) {
+        const offT = driftEase;
+        s.x = s.targetX + s.driftX * offT * 0.8;
+        s.y = s.targetY + s.driftY * offT * 0.8;
+        s.z = s.targetZ + s.driftZ * offT;
+      } else {
+        const phase = idx * 0.31 + time * 1.6;
+        const wave = Math.sin(phase) * s.hoverAmp;
+        const wave2 = Math.cos(phase * 0.82 + 0.7) * s.hoverAmp * 0.8;
+        const wave3 = Math.sin(phase * 0.57 + 1.9) * s.hoverAmp * 18;
+
+        s.x = s.targetX + wave + s.driftX * driftEase * 0.18;
+        s.y = s.targetY + wave2 + s.driftY * driftEase * 0.18;
+        s.z = s.targetZ + wave3 + s.driftZ * driftEase * 0.08;
+      }
+
+      s.rot += s.spin * 0.32;
+      drawList.push(s);
+    });
+
+    drawList.sort((a, b) => a.z - b.z);
+
+    drawList.forEach((s) => {
+      const alpha = s.willExitScreen
+        ? s.alpha * (1 - progress * 0.18)
+        : s.alpha * (1 - progress * 0.04);
 
       drawGlassShard3D(
         s.x,
@@ -618,10 +692,10 @@
 
     for (let i = 0; i < 100; i++) {
       const a = Math.random() * Math.PI * 2;
-      const r = Math.random() * Math.min(w, h) * 0.045;
+      const rr = Math.random() * Math.min(w, h) * 0.045;
       bloomParticles.push({
-        x: cx + Math.cos(a) * r,
-        y: cy + Math.sin(a) * r,
+        x: cx + Math.cos(a) * rr,
+        y: cy + Math.sin(a) * rr,
         size: 0.8 + Math.random() * 3.2,
         alpha: 0.08 + Math.random() * 0.14
       });
@@ -638,8 +712,8 @@
       cx, cy, base * (0.55 + p * 1.95)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.32 * (1 - progress)})`);
-    g.addColorStop(0.18, `rgba(255,255,255,${0.17 * (1 - progress)})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.34 * (1 - progress)})`);
+    g.addColorStop(0.18, `rgba(255,255,255,${0.18 * (1 - progress)})`);
     g.addColorStop(0.55, `rgba(255,255,255,${0.05 * (1 - progress)})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
@@ -663,7 +737,7 @@
     const drawList = [];
     const { x: cx, y: cy } = getCenter();
 
-    shards.forEach((s) => {
+    shards.forEach((s, idx) => {
       const elapsedMs = progress * CONFIG.convergeDuration;
       const localProgress = clamp(
         (elapsedMs - s.hoverDelay) / Math.max(1, CONFIG.convergeDuration - s.hoverDelay),
@@ -673,9 +747,8 @@
 
       const dist = Math.hypot(s.x - cx, s.y - cy);
       const maxDist = Math.max(Math.hypot(w * 0.5, h * 0.5), 1);
-      s.distFromCenterNorm = clamp(dist / maxDist, 0, 1);
+      const outerBias = clamp(dist / maxDist, 0, 1);
 
-      const outerBias = s.distFromCenterNorm;
       const pull = easeInCubic(localProgress);
       const shapedPull = easeInOutCubic(localProgress);
 
@@ -685,19 +758,18 @@
 
       if (elapsedMs < s.hoverDelay) {
         const hoverT = clamp(elapsedMs / Math.max(1, s.hoverDelay), 0, 1);
-        const hoverWave = Math.sin(hoverT * Math.PI) * 0.20;
-
+        const phase = idx * 0.37 + hoverT * 4.0 + time * 0.6;
         s.vx *= 0.965;
         s.vy *= 0.965;
         s.vz *= 0.965;
 
-        s.x += Math.sin(s.rot * 1.13 + hoverT * 3.4) * (0.14 + s.frontness * 0.24);
-        s.y += Math.cos(s.rot * 0.92 + hoverT * 2.8) * (0.10 + s.frontness * 0.20);
-        s.z += hoverWave * lerp(1.8, 10.0, s.frontness);
+        s.x += Math.sin(phase * 1.13) * (0.12 + s.frontness * 0.30);
+        s.y += Math.cos(phase * 0.91) * (0.10 + s.frontness * 0.22);
+        s.z += Math.sin(phase * 0.64) * lerp(1.5, 8.0, s.frontness);
       } else {
-        const speedBias = lerp(1.28, 0.56, outerBias);
-        snap = CONFIG.convergeSnapStrength * speedBias * (0.22 + shapedPull * 3.1);
-        snapZ = CONFIG.convergeZStrength * speedBias * (0.18 + shapedPull * 2.7);
+        const speedBias = lerp(1.30, 0.58, outerBias);
+        snap = CONFIG.convergeSnapStrength * speedBias * (0.22 + shapedPull * 3.2);
+        snapZ = CONFIG.convergeZStrength * speedBias * (0.18 + shapedPull * 2.8);
 
         drag = lerp(
           0.93,
@@ -746,7 +818,7 @@
       const alpha = Math.max(0, alphaBase * alphaFade + 0.02 * (1 - s.localProgress));
 
       const finalSize = lerp(
-        s.baseSize * 0.74,
+        s.baseSize * 0.76,
         s.isSmall ? 0.34 : 0.58,
         easeOutCubic(s.localProgress)
       );
@@ -776,6 +848,7 @@
 
     document.body.classList.add("is-transitioning");
     if (langSelect) langSelect.classList.add("is-disabled");
+    if (idleRomanEl) idleRomanEl.classList.add("is-hidden");
 
     const { x, y } = getCenter();
     const r = getOrbRadius();
@@ -788,6 +861,12 @@
     const elapsed = now - stateStart;
 
     if (state === "shatter" && elapsed >= CONFIG.shatterDuration) {
+      state = "drift";
+      stateStart = now;
+      return;
+    }
+
+    if (state === "drift" && elapsed >= CONFIG.driftDuration) {
       state = "converge";
       stateStart = now;
       return;
@@ -842,12 +921,19 @@
       return;
     }
 
+    if (state === "drift") {
+      const p = clamp((now - stateStart) / CONFIG.driftDuration, 0, 1);
+      drawAmbientVoid(cx, cy, r, t, 0.08 * (1 - p));
+      drawShardsDrift(p);
+      return;
+    }
+
     if (state === "converge") {
       const p = clamp((now - stateStart) / CONFIG.convergeDuration, 0, 1);
       drawAmbientVoid(cx, cy, r, t, 0.13 * (1 - p));
       drawShardsConverge(p);
 
-      const preGlow = Math.max(0, (p - 0.72) / 0.28);
+      const preGlow = Math.max(0, (p - 0.70) / 0.30);
       if (preGlow > 0) drawCentralBloom(preGlow * 0.72);
 
       return;
@@ -857,17 +943,16 @@
       const p = clamp((now - stateStart) / CONFIG.bloomDuration, 0, 1);
       drawCentralBloom(p);
       drawBloomParticles(p);
-      drawShardsConverge(0.88 + p * 0.12);
+      drawShardsConverge(0.90 + p * 0.10);
       return;
     }
 
     if (state === "logo") {
       const p = clamp((now - stateStart) / Math.max(1, CONFIG.logoHoldDuration * 0.42), 0, 1);
       if (p < 1) {
-        drawShardsConverge(0.97 + p * 0.03);
-        drawCentralBloom(0.72 + p * 0.28);
+        drawShardsConverge(0.98 + p * 0.02);
+        drawCentralBloom(0.74 + p * 0.26);
       }
-      return;
     }
   }
 
@@ -907,5 +992,7 @@
   }
 
   resize();
+  ensureIdleRomanLogo();
+  ensureFinalLogo();
   tick();
 })();
