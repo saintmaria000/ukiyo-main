@@ -10,13 +10,16 @@
 
   const brand = document.querySelector(".brand");
   const revealLogo = document.getElementById("revealLogo");
+  const entranceGate = document.getElementById("entranceGate");
 
   const CONFIG = {
     bg: "#000000",
 
+    // 地平線
     horizonYMin: 0.58,
     horizonYMax: 0.62,
 
+    // 水滴
     droplet: {
       radius: 104,
       wobbleAmp: 0.115,
@@ -25,42 +28,44 @@
       floatY: -54
     },
 
+    // 時間
     phase: {
       hint: 0.15,
       burst: 1.0,
       drift: 0.5,
-      gather: 1.0,
+      gather: 1.08,
       flash: 0.22,
       logo: 0.8
     },
 
+    // 破片
     shardCount: 160,
     shardNearRatio: 0.16,
     shardMidRatio: 0.60,
     shardFarRatio: 0.24,
+    gravityInflowCount: 36,
 
-    gravityInflowCount: 30,
-
-    // 広がりの外周上限は維持
+    // 飛散
     spreadBoost: 1.9,
     offscreenBoost: 1.45,
-
-    // 中央〜中距離に残すための補正
     centerRetention: 0.42,
     midRetention: 0.28,
 
-    // 中央到達で消す判定
-    vanishRadius: 14,
-    vanishRadiusNear: 18,
-
-    targetHref:
-      document.body?.dataset?.enterHref ||
-      document.querySelector(".lang-link.is-selected")?.getAttribute("href") ||
-      document.querySelector(".lang-link")?.getAttribute("href") ||
-      null
+    // 収束
+    gatherMaxPull: 2350,
+    gatherInflowPull: 2650,
+    gatherSteer: 5.4,
+    gatherZSteer: 4.0,
+    gatherSnapRadius: 30,
+    gatherSnapRadiusNear: 38,
+    vanishRadius: 5,
+    vanishRadiusNear: 7,
+    vanishZ: 6,
+    vanishZInflow: 12
   };
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const coarsePortraitQuery = window.matchMedia("(pointer: coarse) and (orientation: portrait)");
 
   let w = 0;
   let h = 0;
@@ -107,6 +112,11 @@
   function easeInCubic(t) {
     t = clamp(t, 0, 1);
     return t * t * t;
+  }
+
+  function easeInExpo(t) {
+    t = clamp(t, 0, 1);
+    return t === 0 ? 0 : Math.pow(2, 10 * t - 10);
   }
 
   function easeOutExpo(t) {
@@ -179,24 +189,20 @@
 
     const angle = rand(-Math.PI, Math.PI);
 
-    // 外周は維持しつつ、中央側にも残るように速度帯を広く持たせる
     const spreadClass = Math.random();
     let spreadMul;
     if (spreadClass < CONFIG.centerRetention) {
-      spreadMul = rand(0.26, 0.62); // 内側残留
+      spreadMul = rand(0.26, 0.62);
     } else if (spreadClass < CONFIG.centerRetention + CONFIG.midRetention) {
-      spreadMul = rand(0.62, 0.95); // 中距離主帯
+      spreadMul = rand(0.62, 0.95);
     } else {
-      spreadMul = rand(0.95, 1.45); // 外周帯
+      spreadMul = rand(0.95, 1.45);
     }
 
     const baseSpeed = lerp(180, 1280, depth) * CONFIG.spreadBoost;
     const speed = baseSpeed * spreadMul;
 
     const vz = rand(-1.15, 1.45) * (depth > 0.6 ? 1.35 : 1.0);
-
-    const dx = Math.cos(angle) * speed * rand(0.78, 1.28);
-    const dy = Math.sin(angle) * speed * rand(0.74, 1.26);
 
     return {
       type: isFlat ? "flat" : "needle",
@@ -205,8 +211,8 @@
       x: cx,
       y: cy,
       z: depth * 320,
-      dx,
-      dy,
+      dx: Math.cos(angle) * speed * rand(0.78, 1.28),
+      dy: Math.sin(angle) * speed * rand(0.74, 1.26),
       dz: vz * 200,
       len,
       wid,
@@ -385,9 +391,10 @@
       const n2 = Math.sin(a * 5 - time * 2.4 + 0.6) * m.warpB * 0.08;
       const n3 = Math.cos(a * 2 + time * 1.1 - 0.8) * 0.03;
       const rr = 1 + n1 + n2 + n3;
-      const x = cx + Math.cos(a) * m.rx * rr;
-      const y = cy + Math.sin(a) * m.ry * rr;
-      pts.push({ x, y });
+      pts.push({
+        x: cx + Math.cos(a) * m.rx * rr,
+        y: cy + Math.sin(a) * m.ry * rr
+      });
     }
     return pts;
   }
@@ -447,39 +454,74 @@
 
   function drawReflection(time, hintK) {
     ctx.save();
+
     ctx.beginPath();
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
 
-    const pts = buildDropletPath(time + 0.15, hintK * 0.65);
-    const reflectTop = horizonY + Math.max(8, cy - horizonY + 24);
+    const pts = buildDropletPath(time + 0.08, hintK * 0.72);
 
-    ctx.translate(0, reflectTop + (reflectTop - cy));
-    ctx.scale(1, -0.64);
+    const mirroredPts = pts.map((p, i) => {
+      const driftX =
+        Math.sin(time * 1.7 + i * 0.22) * 1.8 +
+        Math.sin(time * 0.9 + i * 0.11) * 0.8;
+
+      const mirroredY = horizonY + (horizonY - p.y);
+
+      return {
+        x: p.x + driftX,
+        y: horizonY + (mirroredY - horizonY) * 0.58
+      };
+    });
 
     ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length - 2; i++) {
-      const xc = (pts[i].x + pts[i + 1].x) / 2;
-      const yc = (pts[i].y + pts[i + 1].y) / 2 + Math.sin(i * 0.4 + time * 2.1) * 1.2;
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+    ctx.moveTo(mirroredPts[0].x, mirroredPts[0].y);
+    for (let i = 1; i < mirroredPts.length - 2; i++) {
+      const xc = (mirroredPts[i].x + mirroredPts[i + 1].x) / 2;
+      const yc =
+        (mirroredPts[i].y + mirroredPts[i + 1].y) / 2 +
+        Math.sin(time * 2.0 + i * 0.35) * 0.9;
+      ctx.quadraticCurveTo(mirroredPts[i].x, mirroredPts[i].y, xc, yc);
     }
     ctx.quadraticCurveTo(
-      pts[pts.length - 1].x,
-      pts[pts.length - 1].y,
-      pts[0].x,
-      pts[0].y
+      mirroredPts[mirroredPts.length - 1].x,
+      mirroredPts[mirroredPts.length - 1].y,
+      mirroredPts[0].x,
+      mirroredPts[0].y
     );
 
-    const g = ctx.createLinearGradient(cx, reflectTop - 30, cx, reflectTop + 150);
-    g.addColorStop(0, "rgba(255,255,255,0.11)");
-    g.addColorStop(0.2, "rgba(255,255,255,0.05)");
-    g.addColorStop(0.55, "rgba(255,255,255,0.018)");
+    const reflectBottom =
+      Math.max(...mirroredPts.map((p) => p.y)) + CONFIG.droplet.radius * 0.7;
+
+    const g = ctx.createLinearGradient(0, horizonY, 0, reflectBottom);
+    g.addColorStop(0, "rgba(255,255,255,0.12)");
+    g.addColorStop(0.16, "rgba(255,255,255,0.06)");
+    g.addColorStop(0.38, "rgba(255,255,255,0.026)");
+    g.addColorStop(0.72, "rgba(255,255,255,0.010)");
     g.addColorStop(1, "rgba(255,255,255,0)");
+
     ctx.fillStyle = g;
     ctx.fill();
 
+    ctx.strokeStyle = `rgba(255,255,255,${0.06 + hintK * 0.025})`;
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+
+    ctx.globalCompositeOperation = "destination-in";
+    const fade = ctx.createLinearGradient(0, horizonY - 2, 0, reflectBottom);
+    fade.addColorStop(0, "rgba(255,255,255,0.9)");
+    fade.addColorStop(0.15, "rgba(255,255,255,0.65)");
+    fade.addColorStop(0.45, "rgba(255,255,255,0.22)");
+    fade.addColorStop(0.75, "rgba(255,255,255,0.06)");
+    fade.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, horizonY - 2, w, reflectBottom - horizonY + 4);
+
     ctx.restore();
+  }
+
+  function getSnapRadius(s) {
+    return s.depthBand === "near" ? CONFIG.gatherSnapRadiusNear : CONFIG.gatherSnapRadius;
   }
 
   function getVanishRadius(s) {
@@ -506,31 +548,41 @@
 
   function updateShardGather(s, dt, t) {
     const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-    const pull = lerp(10, 1600, easeInCubic(tk));
+    const pull = lerp(18, CONFIG.gatherMaxPull, easeInExpo(tk));
     const toX = cx - s.x;
     const toY = cy - s.y;
     const dist = Math.hypot(toX, toY) || 1;
     const nx = toX / dist;
     const ny = toY / dist;
 
-    s.dx = lerp(s.dx, nx * pull, dt * 3.8);
-    s.dy = lerp(s.dy, ny * pull, dt * 3.8);
-    s.dz = lerp(s.dz, -s.z * 7.2, dt * 3.0);
+    s.dx = lerp(s.dx, nx * pull, dt * CONFIG.gatherSteer);
+    s.dy = lerp(s.dy, ny * pull, dt * CONFIG.gatherSteer);
+    s.dz = lerp(s.dz, -s.z * 10.0, dt * CONFIG.gatherZSteer);
+
+    const snapR = getSnapRadius(s);
+    if (dist < snapR) {
+      const snapT = 1 - dist / snapR;
+      const snap = snapT * snapT;
+      s.dx = lerp(s.dx, nx * pull * 1.7, snap * 0.32);
+      s.dy = lerp(s.dy, ny * pull * 1.7, snap * 0.32);
+      s.x = lerp(s.x, cx, snap * 0.18);
+      s.y = lerp(s.y, cy, snap * 0.18);
+      s.z = lerp(s.z, 0, snap * 0.18);
+    }
 
     s.x += s.dx * dt;
     s.y += s.dy * dt;
     s.z += s.dz * dt;
     s.rot += s.spin * dt * 0.62;
 
-    // ここが重要: 途中で薄くしすぎない
-    if (tk > 0.9) {
-      s.alpha *= 0.992;
-      s.fillAlpha *= 0.988;
+    // 消すのは最後の最後だけ
+    if (tk > 0.97) {
+      s.alpha *= 0.997;
+      s.fillAlpha *= 0.994;
     }
 
-    // 中央到達で消す
     const vanishR = getVanishRadius(s);
-    if (dist < vanishR && Math.abs(s.z) < 16) {
+    if (dist < vanishR && Math.abs(s.z) < CONFIG.vanishZ) {
       s.dead = true;
       s.alpha = 0;
       s.fillAlpha = 0;
@@ -568,25 +620,33 @@
       if (phase !== "gather" && phase !== "flash" && phase !== "logo" && phase !== "done") continue;
 
       const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-      const pull = lerp(120, 1900, easeInCubic(tk));
+      const pull = lerp(160, CONFIG.gatherInflowPull, easeInExpo(tk));
       const toX = cx - s.x;
       const toY = cy - s.y;
       const dist = Math.hypot(toX, toY) || 1;
       const nx = toX / dist;
       const ny = toY / dist;
 
-      s.dx += nx * pull * dt;
-      s.dy += ny * pull * dt;
+      s.dx = lerp(s.dx, nx * pull, dt * 5.2);
+      s.dy = lerp(s.dy, ny * pull, dt * 5.2);
+
+      if (dist < CONFIG.gatherSnapRadius) {
+        const snapT = 1 - dist / CONFIG.gatherSnapRadius;
+        const snap = snapT * snapT;
+        s.x = lerp(s.x, cx, snap * 0.22);
+        s.y = lerp(s.y, cy, snap * 0.22);
+      }
+
       s.x += s.dx * dt;
       s.y += s.dy * dt;
       s.rot += s.spin * dt * 0.8;
 
-      if (tk > 0.92) {
-        s.alpha *= 0.992;
-        s.fillAlpha *= 0.988;
+      if (tk > 0.975) {
+        s.alpha *= 0.997;
+        s.fillAlpha *= 0.994;
       }
 
-      if (dist < CONFIG.vanishRadius && Math.abs(s.z) < 28) {
+      if (dist < CONFIG.vanishRadius && Math.abs(s.z) < CONFIG.vanishZInflow) {
         s.dead = true;
         s.alpha = 0;
         s.fillAlpha = 0;
@@ -769,10 +829,28 @@
     revealLogo.style.visibility = "visible";
   }
 
+  function openEntranceGateFallback() {
+    if (!entranceGate) return;
+
+    entranceGate.classList.add("is-visible");
+    entranceGate.setAttribute("aria-hidden", "false");
+
+    const rotatePanel = entranceGate.querySelector('[data-gate-panel="rotate"]');
+    const languagePanel = entranceGate.querySelector('[data-gate-panel="language"]');
+    const isPortraitPhone = coarsePortraitQuery.matches;
+
+    if (rotatePanel) rotatePanel.classList.toggle("is-active", isPortraitPhone);
+    if (languagePanel) languagePanel.classList.toggle("is-active", !isPortraitPhone);
+  }
+
   function fireEntranceDone() {
     if (state.entranceDoneFired) return;
     state.entranceDoneFired = true;
+
     window.dispatchEvent(new Event("entrance:done"));
+
+    // gate.js が拾えない場合の保険
+    window.setTimeout(openEntranceGateFallback, 30);
   }
 
   function render(ts) {
@@ -888,6 +966,16 @@
     motionQuery.addEventListener("change", boot);
   } else if (motionQuery.addListener) {
     motionQuery.addListener(boot);
+  }
+
+  if (coarsePortraitQuery.addEventListener) {
+    coarsePortraitQuery.addEventListener("change", () => {
+      if (state.entranceDoneFired) openEntranceGateFallback();
+    });
+  } else if (coarsePortraitQuery.addListener) {
+    coarsePortraitQuery.addListener(() => {
+      if (state.entranceDoneFired) openEntranceGateFallback();
+    });
   }
 
   boot();
