@@ -62,15 +62,29 @@
       burst: 1.0,
       drift: 0.5,
       gather: 1.08,
-      flash: 0.30,
-      logo: 0.96
+      flash: 0.34,
+      logo: 1.28
     },
 
     // -------------------------------------------------------
     // 終盤の余韻
-    // 憂き世が出切ってから言語選択へ移るまでの静止時間
+    // 憂き世が着地して弾み切ってから言語選択へ移るまでの静止時間
     // -------------------------------------------------------
-    logoHoldAfterReveal: 0.96,
+    logoHoldAfterReveal: 1.42,
+
+    // -------------------------------------------------------
+    // revealLogo の落下 / 弾み
+    // dropFromY     : 出現開始の高さ
+    // dropOvershoot : 一度どこまで下へ入るか
+    // bounceAmp     : 最初の跳ね返り量
+    // wobbleCycles  : 自然な減衰回数
+    // -------------------------------------------------------
+    reveal: {
+      dropFromY: -148,
+      dropOvershoot: 22,
+      bounceAmp: 16,
+      wobbleCycles: 2.1
+    },
 
     // -------------------------------------------------------
     // 破片量
@@ -183,6 +197,12 @@
   function easeOutExpo(t) {
     t = clamp(t, 0, 1);
     return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  }
+
+  function easeOutBack(t, s = 1.70158) {
+    t = clamp(t, 0, 1);
+    const p = t - 1;
+    return 1 + (s + 1) * p * p * p + s * p * p;
   }
 
   function rand(min, max) {
@@ -896,7 +916,7 @@
   /* =========================================================
      15. Brand / Reveal Logo
      - 初期ロゴは広がって薄くなる
-     - 憂き世は上から入って1回だけ軽くバウンド
+     - 憂き世は上から落ちて、自然減衰で複数回やわらかく弾む
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
@@ -912,17 +932,37 @@
     revealLogo.style.opacity = String(k);
     revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
 
-    let y;
-    if (k < 0.78) {
-      const enter = k / 0.78;
-      y = lerp(-34, 0, easeOutCubic(enter));
+    let y = 0;
+    let scale = 1;
+
+    if (k < 0.64) {
+      // 上からしっかり落ちる
+      const drop = k / 0.64;
+      y = lerp(
+        CONFIG.reveal.dropFromY,
+        CONFIG.reveal.dropOvershoot,
+        easeOutCubic(drop)
+      );
+      scale = lerp(0.93, 1.022, easeOutCubic(drop));
+
     } else {
-      const bounce = (k - 0.78) / 0.22;
-      y = -Math.sin(bounce * Math.PI) * 4 * (1 - bounce);
+      // 着地後は減衰する自然な弾み
+      const settle = (k - 0.64) / 0.36;
+      const settleEase = easeOutCubic(settle);
+      const damp = Math.exp(-3.6 * settle);
+      const wave = Math.cos(settle * Math.PI * CONFIG.reveal.wobbleCycles);
+
+      y =
+        lerp(CONFIG.reveal.dropOvershoot, 0, settleEase) +
+        wave * CONFIG.reveal.bounceAmp * damp;
+
+      scale =
+        lerp(1.022, 1, settleEase) +
+        Math.cos(settle * Math.PI * 1.75) * 0.012 * damp;
     }
 
     revealLogo.style.transform =
-      `translate(-50%, -50%) translateY(${y}px) scale(${lerp(0.985, 1, k)})`;
+      `translate(-50%, -50%) translateY(${y}px) scale(${scale})`;
   }
 
   function prepareLogos() {
@@ -933,6 +973,7 @@
       brand.style.pointerEvents = "none";
       brand.style.position = brand.style.position || "absolute";
       brand.style.zIndex = "20";
+      brand.style.transform = "translate(-50%, -50%)";
     }
 
     if (revealLogo) {
@@ -944,7 +985,8 @@
       revealLogo.style.left = revealLogo.style.left || "50%";
       revealLogo.style.top = revealLogo.style.top || "50%";
       revealLogo.style.zIndex = "25";
-      revealLogo.style.transform = "translate(-50%, -50%) translateY(-34px) scale(0.985)";
+      revealLogo.style.transform =
+        `translate(-50%, -50%) translateY(${CONFIG.reveal.dropFromY}px) scale(0.93)`;
     }
   }
 
@@ -1009,9 +1051,11 @@
       setRevealOpacity(0);
       drawDroplet(now, hintK);
       drawReflection(now, hintK);
+      rafId = requestAnimationFrame(render);
+      return;
+    }
 
-    } else if (phase === "burst" || phase === "drift" || phase === "gather") {
-
+    if (phase === "burst" || phase === "drift" || phase === "gather") {
       if (phase === "burst") {
         const burstK = clamp((t - T_HINT) / P.burst, 0, 1);
         setBrandOpacity(1 - easeOutCubic(burstK));
@@ -1028,7 +1072,11 @@
       updateShards(dt, t);
       drawShards(t);
 
-    } else if (phase === "flash") {
+      rafId = requestAnimationFrame(render);
+      return;
+    }
+
+    if (phase === "flash") {
       setBrandOpacity(0);
       setRevealOpacity(0);
       updateShards(dt, t);
@@ -1036,11 +1084,14 @@
       state.flash = 1 - clamp((t - T_GATHER) / P.flash, 0, 1);
       drawCompressionFlash();
 
-    } else if (phase === "logo" || phase === "done") {
+      rafId = requestAnimationFrame(render);
+      return;
+    }
+
+    if (phase === "logo" || phase === "done") {
       setBrandOpacity(0);
       updateShards(dt, t);
       state.flash = 0;
-      drawCompressionFlash();
 
       if (!state.revealShown) {
         state.revealShown = true;
@@ -1056,9 +1107,9 @@
           fireEntranceDone();
         }, CONFIG.logoHoldAfterReveal * 1000);
       }
-    }
 
-    rafId = requestAnimationFrame(render);
+      rafId = requestAnimationFrame(render);
+    }
   }
 
   /* =========================================================
