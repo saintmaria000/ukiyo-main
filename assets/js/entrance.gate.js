@@ -1,26 +1,25 @@
-// assets/js/mobile-entry-announce.js
+// assets/js/entrance.gate.js
 (function () {
   "use strict";
 
   const CONFIG = {
-    jaUrl: "../ja/index.html",
-    enUrl: "../en/english.html",
+    jaUrl: "./ja/index.html",
+    enUrl: "./en/english.html",
 
     oncePerSession: true,
     sessionKeyDone: "ukiyo_lang_gate_done",
     sessionKeyLang: "ukiyo_lang_gate_lang",
 
     entranceQueryKey: "from",
-    entranceQueryValue: "entrance",
-
-    labels: {
-      ja: "JA",
-      en: "EN",
-      rotateJa: "Please rotate your device horizontally.",
-      rotateEn: "横画面にしてお進みください。",
-      continue: "Continue"
-    }
+    entranceQueryValue: "entrance"
   };
+
+  const gate = document.getElementById("entranceGate");
+  if (!gate) return;
+
+  const rotatePanel = gate.querySelector('[data-gate-panel="rotate"]');
+  const languagePanel = gate.querySelector('[data-gate-panel="language"]');
+  const langButtons = gate.querySelectorAll(".entrance-gate__link[data-lang]");
 
   function isCoarsePointer() {
     return window.matchMedia("(pointer: coarse)").matches;
@@ -58,9 +57,7 @@
   }
 
   function shouldSkip() {
-    // エントランスから来た場合は必ず表示
     if (cameFromEntrance()) return false;
-
     if (!CONFIG.oncePerSession) return false;
 
     try {
@@ -85,216 +82,70 @@
     window.location.href = url;
   }
 
-  function injectStyle() {
-    if (document.getElementById("lang-gate-style")) return;
-
-    const style = document.createElement("style");
-    style.id = "lang-gate-style";
-    style.textContent = `
-      .lang-gate {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background: rgba(0, 0, 0, 0.92);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
-      }
-
-      .lang-gate__inner {
-        width: min(88vw, 420px);
-        text-align: center;
-        padding: 24px 20px;
-      }
-
-      .lang-gate__panel {
-        display: none;
-      }
-
-      .lang-gate__panel.is-active {
-        display: block;
-      }
-
-      .lang-gate__title {
-        margin: 0 0 18px;
-        font-size: 0.72rem;
-        line-height: 1.8;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.82);
-      }
-
-      .lang-gate__links {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        flex-wrap: wrap;
-      }
-
-      .lang-gate__link,
-      .lang-gate__btn {
-        appearance: none;
-        border: 0;
-        background: transparent;
-        color: #fff;
-        padding: 0;
-        margin: 0;
-        font: inherit;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        cursor: pointer;
-        opacity: 0.88;
-        transition: opacity 0.2s ease;
-      }
-
-      .lang-gate__link:hover,
-      .lang-gate__btn:hover,
-      .lang-gate__link:focus-visible,
-      .lang-gate__btn:focus-visible {
-        opacity: 1;
-        outline: none;
-      }
-
-      .lang-gate__sep {
-        opacity: 0.35;
-        user-select: none;
-      }
-
-      .lang-gate__note {
-        margin: 0 0 18px;
-        font-size: 0.72rem;
-        line-height: 1.9;
-        letter-spacing: 0.14em;
-        color: rgba(255,255,255,0.8);
-      }
-
-      .lang-gate__continue {
-        margin-top: 8px;
-      }
-
-      @media (max-width: 480px) {
-        .lang-gate__inner {
-          width: min(90vw, 340px);
-          padding: 20px 16px;
-        }
-
-        .lang-gate__link,
-        .lang-gate__btn {
-          font-size: 0.88rem;
-          letter-spacing: 0.18em;
-        }
-
-        .lang-gate__note,
-        .lang-gate__title {
-          font-size: 0.68rem;
-        }
-      }
-    `;
-    document.head.appendChild(style);
+  function setActivePanel(name) {
+    if (rotatePanel) {
+      rotatePanel.classList.toggle("is-active", name === "rotate");
+    }
+    if (languagePanel) {
+      languagePanel.classList.toggle("is-active", name === "language");
+    }
   }
 
-  function createGate() {
-    const root = document.createElement("div");
-    root.className = "lang-gate";
-    root.setAttribute("role", "dialog");
-    root.setAttribute("aria-modal", "true");
-    root.setAttribute("aria-label", "Language selection");
-
-    const mobile = isSmartphoneLike();
-
-    root.innerHTML = `
-      <div class="lang-gate__inner">
-
-        <div class="lang-gate__panel ${mobile && !isLandscape() ? "is-active" : ""}" data-panel="rotate">
-          <p class="lang-gate__note">
-            ${CONFIG.labels.rotateJa}<br>
-            ${CONFIG.labels.rotateEn}
-          </p>
-          <div class="lang-gate__continue">
-            <button type="button" class="lang-gate__btn" data-action="continue">
-              ${CONFIG.labels.continue}
-            </button>
-          </div>
-        </div>
-
-        <div class="lang-gate__panel ${!mobile || isLandscape() ? "is-active" : ""}" data-panel="lang">
-          <p class="lang-gate__title">Language</p>
-          <div class="lang-gate__links">
-            <button type="button" class="lang-gate__link" data-lang="ja">JA</button>
-            <span class="lang-gate__sep">/</span>
-            <button type="button" class="lang-gate__link" data-lang="en">EN</button>
-          </div>
-        </div>
-
-      </div>
-    `;
-
-    return root;
-  }
-
-  function setActivePanel(root, name) {
-    const panels = root.querySelectorAll(".lang-gate__panel");
-    panels.forEach((panel) => {
-      panel.classList.toggle("is-active", panel.getAttribute("data-panel") === name);
-    });
-  }
-
-  function updatePanels(root) {
+  function updatePanels() {
     if (!isSmartphoneLike()) {
-      setActivePanel(root, "lang");
+      setActivePanel("language");
       return;
     }
 
     if (isLandscape()) {
-      setActivePanel(root, "lang");
+      setActivePanel("language");
     } else {
-      setActivePanel(root, "rotate");
+      setActivePanel("rotate");
     }
   }
 
-  function bind(root) {
-    root.addEventListener("click", function (event) {
-      const langBtn = event.target.closest("[data-lang]");
-      if (langBtn) {
-        goToLanguage(langBtn.getAttribute("data-lang"));
-        return;
-      }
+  function openGate() {
+    gate.classList.add("is-visible");
+    gate.setAttribute("aria-hidden", "false");
+    updatePanels();
+    cleanEntranceQuery();
+  }
 
-      const continueBtn = event.target.closest('[data-action="continue"]');
-      if (continueBtn) {
-        if (isLandscape()) {
-          setActivePanel(root, "lang");
-        }
-      }
+  function closeGate() {
+    gate.classList.remove("is-visible");
+    gate.setAttribute("aria-hidden", "true");
+  }
+
+  function bind() {
+    langButtons.forEach((btn) => {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const lang = btn.getAttribute("data-lang");
+        if (!lang) return;
+        closeGate();
+        goToLanguage(lang);
+      });
     });
 
-    const onChange = function () {
-      updatePanels(root);
-    };
+    window.addEventListener("resize", updatePanels, { passive: true });
+    window.addEventListener("orientationchange", updatePanels, { passive: true });
 
-    root.__onChange__ = onChange;
-
-    window.addEventListener("resize", onChange, { passive: true });
-    window.addEventListener("orientationchange", onChange, { passive: true });
+    window.addEventListener("entrance:done", openGate);
   }
 
   function init() {
-    if (shouldSkip()) return;
+    bind();
 
-    injectStyle();
+    // entrance.js の保険表示で既に開いている場合にも対応
+    if (gate.classList.contains("is-visible")) {
+      updatePanels();
+    }
 
-    const gate = createGate();
-    document.body.appendChild(gate);
-    bind(gate);
-    updatePanels(gate);
-
-    // 一度表示できたら URL の ?from=entrance は消してよい
-    cleanEntranceQuery();
+    // 入口を経由していない通常アクセス時に使いたいならこれを有効化
+    if (!shouldSkip() && cameFromEntrance()) {
+      openGate();
+    }
   }
 
   if (document.readyState === "loading") {
