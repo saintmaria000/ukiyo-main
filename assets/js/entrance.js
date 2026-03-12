@@ -9,16 +9,13 @@
   const idleRomanEl = document.querySelector(".brand");
   const finalLogoEl = document.getElementById("revealLogo");
 
-  // =========================================
-  // 基本状態
-  // =========================================
   let w = 0;
   let h = 0;
   let dpr = 1;
   let rafId = 0;
   let time = 0;
 
-  let state = "idle"; // idle | shatter | drift | converge | bloom | logo
+  let state = "idle"; // idle | prebreak | shatter | drift | converge | bloom | logo
   let stateStart = 0;
   let nextHref = null;
   let hasTriggered = false;
@@ -30,51 +27,58 @@
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const ENTER_HREF = "./ja/index.html";
 
-  // =========================================
-  // 演出設定
-  // 飛散1秒 / 滞空0.5秒 / 収束1秒
-  // =========================================
   const CONFIG = {
+    // 水滴サイズ
     orbScale: 0.155,
     orbMin: 110,
     orbMax: 250,
 
+    // 水滴の見え方
     idleOutlineAlpha: 0.032,
     idleCoreAlpha: 0.010,
 
-    wave1Amp: 0.034,
-    wave2Amp: 0.020,
-    wave3Amp: 0.013,
-    wave4Amp: 0.008,
-    idlePulseAmp: 0.020,
+    // 揺らめき（以前より約30%強め）
+    wave1Amp: 0.044,
+    wave2Amp: 0.026,
+    wave3Amp: 0.017,
+    wave4Amp: 0.010,
+    idlePulseAmp: 0.026,
 
-    shatterDuration: 1000,
-    driftDuration: 500,
-    convergeDuration: 1000,
-    bloomDuration: 180,
-    logoHoldDuration: 820,
+    // 時間設計
+    prebreakDuration: 150, // ロゴが消え、水滴が割れ始める予兆
+    shatterDuration: 1000, // 飛散
+    driftDuration: 500,    // 滞空
+    convergeDuration: 1000,// 収束
+    bloomDuration: 180,    // 圧縮発光
+    logoHoldDuration: 820, // ロゴ表示後
 
-    shardCountLarge: 130,
-    shardCountSmall: 340,
-    inboundShardCountLarge: 52,
-    inboundShardCountSmall: 140,
+    // 破片数
+    shardCountLarge: 36,
+    shardCountMedium: 96,
+    shardCountSmall: 300,
 
-    shardLargeMin: 1.8,
-    shardLargeMax: 10.0,
-    shardSmallMin: 0.55,
-    shardSmallMax: 2.2,
+    inboundShardCountLarge: 18,
+    inboundShardCountMedium: 54,
+    inboundShardCountSmall: 120,
 
+    // 破片サイズ
+    shardLargeMin: 5.0,
+    shardLargeMax: 13.0,
+    shardMediumMin: 2.4,
+    shardMediumMax: 7.0,
+    shardSmallMin: 0.65,
+    shardSmallMax: 2.0,
+
+    // 3D空間
     camera: 760,
-    zNearLimit: -1300,
-    zFarLimit: 3200,
+    zNearLimit: -1400,
+    zFarLimit: 3400,
 
-    convergeSnapStrength: 0.072,
-    convergeZStrength: 0.064
+    // 収束の強さ
+    convergeSnapStrength: 0.074,
+    convergeZStrength: 0.066
   };
 
-  // =========================================
-  // 汎用
-  // =========================================
   function nowMs() {
     return performance.now();
   }
@@ -95,14 +99,14 @@
     return t * t * t;
   }
 
-  function easeOutQuart(t) {
-    return 1 - Math.pow(1 - t, 4);
-  }
-
   function easeInOutCubic(t) {
     return t < 0.5
       ? 4 * t * t * t
       : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function easeOutQuart(t) {
+    return 1 - Math.pow(1 - t, 4);
   }
 
   function easeOutBack(t) {
@@ -115,23 +119,25 @@
     return Number.isFinite(n) ? n : fallback;
   }
 
-  // =========================================
-  // DOMロゴ制御
-  // =========================================
-  function showFinalLogo() {
-    if (!finalLogoEl) return;
-    finalLogoEl.classList.add("is-visible");
+  function getCenter() {
+    return {
+      x: safe(w * 0.5, 0),
+      y: safe(h * 0.5, 0)
+    };
   }
 
-  function hideInitialLogo() {
-    if (!document.body.classList.contains("is-transitioning")) {
-      document.body.classList.add("is-transitioning");
-    }
+  function getHorizonY() {
+    return h * 0.705;
   }
 
-  // =========================================
-  // リサイズ
-  // =========================================
+  function getOrbRadius() {
+    if (!w || !h) return 120;
+    const base = Math.min(w, h) * CONFIG.orbScale;
+    const r = clamp(base, CONFIG.orbMin, CONFIG.orbMax);
+    const breathing = 1 + Math.sin(time * 0.18) * CONFIG.idlePulseAmp;
+    return r * breathing;
+  }
+
   function resize() {
     w = Math.max(1, window.innerWidth || 1);
     h = Math.max(1, window.innerHeight || 1);
@@ -145,28 +151,106 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  function getCenter() {
-    return {
-      x: safe(w * 0.5, 0),
-      y: safe(h * 0.5, 0)
-    };
+  function showFinalLogo() {
+    if (!finalLogoEl) return;
+    finalLogoEl.classList.add("is-visible");
   }
 
-  function getHorizonY() {
-    return h * 0.695;
+  function hideInitialLogo() {
+    document.body.classList.add("is-transitioning");
+    if (langSelect) langSelect.classList.add("is-disabled");
   }
 
-  function getOrbRadius() {
-    if (!w || !h) return 120;
-    const base = Math.min(w, h) * CONFIG.orbScale;
-    const r = clamp(base, CONFIG.orbMin, CONFIG.orbMax);
-    const breathing = 1 + Math.sin(time * 0.18) * CONFIG.idlePulseAmp;
-    return r * breathing;
+  function resetLogoState() {
+    document.body.classList.remove("is-transitioning");
+    if (langSelect) langSelect.classList.remove("is-disabled");
+    if (finalLogoEl) finalLogoEl.classList.remove("is-visible");
+    if (idleRomanEl) {
+      idleRomanEl.style.opacity = "";
+      idleRomanEl.style.transform = "";
+    }
   }
 
-  // =========================================
-  // 水滴輪郭
-  // =========================================
+  // -----------------------------------------
+  // 背景
+  // -----------------------------------------
+  function drawBackground() {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  function drawBackLight(cx, cy, r, alphaMul = 1) {
+    const backX = cx;
+    const backY = cy - r * 0.02;
+
+    const g = ctx.createRadialGradient(
+      backX, backY, r * 0.12,
+      backX, backY, r * 3.6
+    );
+
+    g.addColorStop(0, `rgba(255,255,255,${0.075 * alphaMul})`);
+    g.addColorStop(0.16, `rgba(255,255,255,${0.028 * alphaMul})`);
+    g.addColorStop(0.40, `rgba(255,255,255,${0.009 * alphaMul})`);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(backX, backY, r * 3.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawHorizonAndWater(alphaMul = 1) {
+    const horizonY = getHorizonY();
+
+    const lineGrad = ctx.createLinearGradient(0, horizonY, w, horizonY);
+    lineGrad.addColorStop(0, "rgba(255,255,255,0)");
+    lineGrad.addColorStop(0.5, `rgba(255,255,255,${0.048 * alphaMul})`);
+    lineGrad.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.strokeStyle = lineGrad;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY + 0.5);
+    ctx.lineTo(w, horizonY + 0.5);
+    ctx.stroke();
+
+    const waterGrad = ctx.createLinearGradient(0, horizonY, 0, h);
+    waterGrad.addColorStop(0, "rgba(8,8,8,0.98)");
+    waterGrad.addColorStop(0.10, "rgba(6,6,6,0.99)");
+    waterGrad.addColorStop(1, "rgba(0,0,0,1)");
+
+    ctx.fillStyle = waterGrad;
+    ctx.fillRect(0, horizonY, w, h - horizonY);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, horizonY, w, h - horizonY);
+    ctx.clip();
+
+    for (let i = 0; i < 14; i++) {
+      const yy = horizonY + (i / 13) * (h - horizonY);
+      const fade = 1 - i / 13;
+      const wobble = Math.sin(time * 0.45 + i * 0.9) * 0.5;
+
+      const g = ctx.createLinearGradient(0, yy, w, yy);
+      g.addColorStop(0, "rgba(255,255,255,0)");
+      g.addColorStop(0.5, `rgba(255,255,255,${0.0025 * fade * alphaMul})`);
+      g.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, yy + wobble);
+      ctx.lineTo(w, yy - wobble);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  // -----------------------------------------
+  // 水滴
+  // -----------------------------------------
   function radiusAt(theta, baseR, t) {
     const wave1 = Math.sin(theta * 2.0 + t * 0.95) * baseR * CONFIG.wave1Amp;
     const wave2 = Math.sin(theta * 3.2 - t * 0.66 + 0.9) * baseR * CONFIG.wave2Amp;
@@ -210,147 +294,32 @@
     ctx.closePath();
   }
 
-  // =========================================
-  // 背景
-  // =========================================
-  function drawBackground() {
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, w, h);
-  }
-
-  // =========================================
-  // 後光
-  // レイヤー最奥
-  // =========================================
-  function drawBackLight(cx, cy, r, t, alphaMul = 1) {
-    const backX = cx;
-    const backY = cy - r * 0.02;
-
-    const g = ctx.createRadialGradient(
-      backX,
-      backY,
-      r * 0.10,
-      backX,
-      backY,
-      r * 3.3
-    );
-
-    g.addColorStop(0, `rgba(255,255,255,${0.085 * alphaMul})`);
-    g.addColorStop(0.16, `rgba(255,255,255,${0.032 * alphaMul})`);
-    g.addColorStop(0.38, `rgba(255,255,255,${0.010 * alphaMul})`);
-    g.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(backX, backY, r * 3.3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // =========================================
-  // 地平線 + 水面
-  // レイヤー中段
-  // 後光の前、水滴の後ろ
-  // =========================================
-  function drawHorizonAndWater(cx, cy, r, t, alphaMul = 1) {
-    const horizonY = getHorizonY();
-
-    const skyGlow = ctx.createRadialGradient(
-      cx,
-      horizonY - h * 0.06,
-      0,
-      cx,
-      horizonY - h * 0.06,
-      Math.max(w * 0.36, h * 0.18)
-    );
-    skyGlow.addColorStop(0, `rgba(255,255,255,${0.004 * alphaMul})`);
-    skyGlow.addColorStop(0.45, `rgba(255,255,255,${0.0015 * alphaMul})`);
-    skyGlow.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = skyGlow;
-    ctx.fillRect(0, 0, w, h);
-
-    const lineGrad = ctx.createLinearGradient(0, horizonY, w, horizonY);
-    lineGrad.addColorStop(0, "rgba(255,255,255,0)");
-    lineGrad.addColorStop(0.5, `rgba(255,255,255,${0.05 * alphaMul})`);
-    lineGrad.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.strokeStyle = lineGrad;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, horizonY + 0.5);
-    ctx.lineTo(w, horizonY + 0.5);
-    ctx.stroke();
-
-    const waterGrad = ctx.createLinearGradient(0, horizonY, 0, h);
-    waterGrad.addColorStop(0, "rgba(8,8,8,0.96)");
-    waterGrad.addColorStop(0.08, "rgba(6,6,6,0.98)");
-    waterGrad.addColorStop(1, "rgba(0,0,0,1)");
-
-    ctx.fillStyle = waterGrad;
-    ctx.fillRect(0, horizonY, w, h - horizonY);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, horizonY, w, h - horizonY);
-    ctx.clip();
-
-    for (let i = 0; i < 14; i++) {
-      const yy = horizonY + (i / 13) * (h - horizonY);
-      const fade = 1 - i / 13;
-
-      const g = ctx.createLinearGradient(0, yy, w, yy);
-      g.addColorStop(0, "rgba(255,255,255,0)");
-      g.addColorStop(0.5, `rgba(255,255,255,${0.003 * fade * alphaMul})`);
-      g.addColorStop(1, "rgba(255,255,255,0)");
-
-      ctx.strokeStyle = g;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, yy);
-      ctx.lineTo(w, yy);
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  }
-
-  // =========================================
-  // 周辺のわずかな空気
-  // =========================================
-  function drawAmbientVoid(cx, cy, r, t, alphaMul = 1) {
-    const driftX = Math.sin(t * 0.24) * r * 0.04;
-    const driftY = Math.cos(t * 0.19) * r * 0.04;
+  function drawAmbientVoid(cx, cy, r, alphaMul = 1) {
+    const driftX = Math.sin(time * 0.24) * r * 0.04;
+    const driftY = Math.cos(time * 0.19) * r * 0.04;
 
     const g = ctx.createRadialGradient(
       safe(cx + driftX, cx),
       safe(cy + driftY, cy),
-      safe(Math.max(0.0001, r * 0.12), 1),
-      safe(cx, cx),
-      safe(cy, cy),
-      safe(Math.max(0.0001, r * 2.7), r * 2.7)
+      Math.max(0.1, r * 0.12),
+      cx, cy,
+      Math.max(0.1, r * 2.8)
     );
 
-    g.addColorStop(0, `rgba(255,255,255,${0.006 * alphaMul})`);
-    g.addColorStop(0.35, `rgba(255,255,255,${0.0022 * alphaMul})`);
-    g.addColorStop(0.7, `rgba(255,255,255,${0.001 * alphaMul})`);
+    g.addColorStop(0, `rgba(255,255,255,${0.005 * alphaMul})`);
+    g.addColorStop(0.35, `rgba(255,255,255,${0.002 * alphaMul})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, Math.max(1, r * 2.7), 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 2.8, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // =========================================
-  // 水滴の影
-  // =========================================
   function drawShadow(cx, cy, r, alphaMul = 1) {
     const g = ctx.createRadialGradient(
-      safe(cx, cx),
-      safe(cy + r * 0.34, cy),
-      safe(Math.max(0.0001, r * 0.15), 1),
-      safe(cx, cx),
-      safe(cy + r * 0.34, cy),
-      safe(Math.max(0.0001, r * 1.0), r)
+      cx, cy + r * 0.34, Math.max(0.1, r * 0.15),
+      cx, cy + r * 0.34, Math.max(0.1, r * 1.0)
     );
 
     g.addColorStop(0, `rgba(0,0,0,${0.18 * alphaMul})`);
@@ -362,20 +331,12 @@
     ctx.fill();
   }
 
-  // =========================================
-  // 水滴本体
-  // レイヤー最前
-  // =========================================
   function drawOrbBody(cx, cy, r, t, alphaMul = 1, scale = 1) {
     buildOrbPath(cx, cy, r, t, scale);
 
     const body = ctx.createRadialGradient(
-      safe(cx - r * 0.18, cx),
-      safe(cy - r * 0.22, cy),
-      safe(Math.max(0.0001, r * 0.05), 1),
-      safe(cx, cx),
-      safe(cy, cy),
-      safe(Math.max(0.0001, r * 1.1), r)
+      cx - r * 0.18, cy - r * 0.22, Math.max(0.1, r * 0.05),
+      cx, cy, Math.max(0.1, r * 1.1)
     );
 
     body.addColorStop(0, `rgba(255,255,255,${0.030 * alphaMul})`);
@@ -431,12 +392,8 @@
     const hy = cy - r * 0.31 * scale + Math.cos(t * 0.40) * r * 0.020;
 
     const g = ctx.createRadialGradient(
-      safe(hx, cx),
-      safe(hy, cy),
-      safe(Math.max(0.0001, r * 0.01), 1),
-      safe(hx, cx),
-      safe(hy, cy),
-      safe(Math.max(0.0001, r * 0.24 * scale), r * 0.2)
+      hx, hy, Math.max(0.1, r * 0.01),
+      hx, hy, Math.max(0.1, r * 0.24 * scale)
     );
 
     g.addColorStop(0, `rgba(255,255,255,${0.045 * alphaMul})`);
@@ -450,10 +407,6 @@
     ctx.fill();
   }
 
-  // =========================================
-  // 水面反射
-  // 地平線の下の水面にだけ映す
-  // =========================================
   function drawOrbReflection(cx, cy, r, t, alphaMul = 1) {
     const horizonY = getHorizonY();
     const reflectedCy = horizonY + (horizonY - cy);
@@ -476,24 +429,19 @@
     ctx.restore();
 
     const fade = ctx.createLinearGradient(0, horizonY, 0, h);
-    fade.addColorStop(0, `rgba(0,0,0,0)`);
-    fade.addColorStop(0.18, `rgba(0,0,0,0.18)`);
-    fade.addColorStop(0.48, `rgba(0,0,0,0.52)`);
-    fade.addColorStop(1, `rgba(0,0,0,0.92)`);
+    fade.addColorStop(0, "rgba(0,0,0,0)");
+    fade.addColorStop(0.18, "rgba(0,0,0,0.18)");
+    fade.addColorStop(0.48, "rgba(0,0,0,0.52)");
+    fade.addColorStop(1, "rgba(0,0,0,0.92)");
 
     ctx.fillStyle = fade;
     ctx.fillRect(0, horizonY, w, h - horizonY);
   }
 
-  // =========================================
-  // アイドル描画
-  // レイヤー順:
-  // 後光 → 地平線/水面 → 水滴
-  // =========================================
   function drawIdleOrb(cx, cy, r, t) {
-    drawBackLight(cx, cy, r, t, 1);
-    drawHorizonAndWater(cx, cy, r, t, 1);
-    drawAmbientVoid(cx, cy, r, t, 1);
+    drawBackLight(cx, cy, r, 1);
+    drawHorizonAndWater(1);
+    drawAmbientVoid(cx, cy, r, 1);
     drawShadow(cx, cy, r, 0.58);
     drawOrbBody(cx, cy, r, t, 1, 1);
     drawInteriorTexture(cx, cy, r, t, 1, 1);
@@ -501,9 +449,9 @@
     drawOrbReflection(cx, cy, r, t, 1);
   }
 
-  // =========================================
-  // ランダム3D方向
-  // =========================================
+  // -----------------------------------------
+  // 破片生成
+  // -----------------------------------------
   function randomUnitVector3() {
     const u = Math.random() * 2 - 1;
     const theta = Math.random() * Math.PI * 2;
@@ -515,56 +463,102 @@
     };
   }
 
-  // =========================================
-  // 初期破片生成
-  // =========================================
+  function makeShardType() {
+    const roll = Math.random();
+    if (roll < 0.10) return "large";
+    if (roll < 0.30) return "medium";
+    return "small";
+  }
+
+  function getShardSizeRange(type) {
+    if (type === "large") return [CONFIG.shardLargeMin, CONFIG.shardLargeMax];
+    if (type === "medium") return [CONFIG.shardMediumMin, CONFIG.shardMediumMax];
+    return [CONFIG.shardSmallMin, CONFIG.shardSmallMax];
+  }
+
   function createShards(cx, cy, r) {
     shards = [];
 
-    function makeShard(isSmall) {
+    function pushShard(type, isInbound = false) {
       const dir = randomUnitVector3();
       const frontness = (dir.z + 1) * 0.5;
 
-      const startRadius = r * (0.72 + Math.random() * 0.32);
-      const startX = cx + dir.x * startRadius;
-      const startY = cy + dir.y * startRadius;
-      const startZ = dir.z * r * 1.0;
+      let startX, startY, startZ;
+
+      if (!isInbound) {
+        const startRadius = r * (0.72 + Math.random() * 0.32);
+        startX = cx + dir.x * startRadius;
+        startY = cy + dir.y * startRadius;
+        startZ = dir.z * r;
+      } else {
+        const side = Math.floor(Math.random() * 4);
+        const pad = Math.max(w, h) * lerp(0.10, 0.34, Math.random());
+
+        if (side === 0) {
+          startX = Math.random() * w;
+          startY = -pad;
+        } else if (side === 1) {
+          startX = w + pad;
+          startY = Math.random() * h;
+        } else if (side === 2) {
+          startX = Math.random() * w;
+          startY = h + pad;
+        } else {
+          startX = -pad;
+          startY = Math.random() * h;
+        }
+        startZ = lerp(-240, 1400, Math.random());
+      }
 
       const outerRadius = Math.hypot(w * 0.5, h * 0.5);
-      const randomRadius = lerp(r * 1.15, outerRadius * 1.5, Math.random());
       const offscreenChance = 0.42 + (1 - frontness) * 0.18;
-      const willExitScreen = Math.random() < offscreenChance;
+      const willExitScreen = !isInbound && Math.random() < offscreenChance;
 
       let targetRadius;
       let targetZ;
 
-      if (willExitScreen) {
-        targetRadius = lerp(outerRadius * 1.02, outerRadius * 1.85, Math.random());
-        targetZ = lerp(-260, 900, Math.random());
+      if (!isInbound) {
+        if (willExitScreen) {
+          targetRadius = lerp(outerRadius * 1.02, outerRadius * 1.85, Math.random());
+          targetZ = lerp(-260, 900, Math.random());
+        } else {
+          targetRadius = lerp(r * 1.15, outerRadius * 1.5, Math.random());
+          targetZ = frontness > 0.72
+            ? lerp(220, 1180, Math.random())
+            : lerp(-180, 820, Math.random());
+        }
       } else {
-        targetRadius = randomRadius;
-        targetZ = frontness > 0.72
-          ? lerp(220, 1180, Math.random())
-          : lerp(-180, 820, Math.random());
+        targetRadius = lerp(r * 0.2, outerRadius * 0.25, Math.random());
+        targetZ = lerp(-60, 260, Math.random());
       }
 
       const targetX = cx + dir.x * targetRadius;
       const targetY = cy + dir.y * targetRadius;
 
-      const sizeMin = isSmall ? CONFIG.shardSmallMin : CONFIG.shardLargeMin;
-      const sizeMax = isSmall ? CONFIG.shardSmallMax : CONFIG.shardLargeMax;
-      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.35, frontness);
+      const [sizeMin, sizeMax] = getShardSizeRange(type);
+      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.32, frontness);
 
-      const alpha = isSmall
-        ? lerp(0.04, 0.14, frontness)
-        : lerp(0.07, 0.20, frontness);
+      const alpha = type === "large"
+        ? lerp(0.07, 0.18, frontness)
+        : type === "medium"
+          ? lerp(0.05, 0.14, frontness)
+          : lerp(0.035, 0.10, frontness);
 
-      const aspect = isSmall
-        ? 1.6 + Math.random() * 2.2
-        : 1.8 + Math.random() * 3.0;
+      // 細長い鋭利片 75% / 平たい板片 25%
+      const isFlatPanel = Math.random() > 0.75;
+
+      let aspect;
+      let thinness;
+      if (isFlatPanel) {
+        aspect = lerp(1.2, 2.4, Math.random());
+        thinness = lerp(0.22, 0.36, Math.random());
+      } else {
+        aspect = lerp(1.9, 4.4, Math.random());
+        thinness = lerp(0.12, 0.24, Math.random());
+      }
 
       const spin = (Math.random() - 0.5) * (
-        isSmall
+        type === "small"
           ? lerp(0.12, 0.34, frontness)
           : lerp(0.08, 0.22, frontness)
       );
@@ -574,8 +568,17 @@
       const driftY = (Math.random() - 0.5) * lerp(8, 32, Math.random());
       const driftZ = (Math.random() - 0.5) * lerp(10, 90, Math.random());
 
-      shards.push({
-        isSmall,
+      const offsetX = (Math.random() - 0.5) * lerp(8, 46, Math.random());
+      const offsetY = (Math.random() - 0.5) * lerp(8, 46, Math.random());
+      const offsetZ = (Math.random() - 0.5) * lerp(12, 120, Math.random());
+
+      const targetArray = isInbound ? inboundShards : shards;
+
+      targetArray.push({
+        type,
+        isInbound,
+        isFlatPanel,
+        willExitScreen,
         startX,
         startY,
         startZ,
@@ -592,10 +595,10 @@
         baseSize: size,
         alpha,
         aspect,
+        thinness,
         rot: Math.random() * Math.PI * 2,
         spin,
         frontness,
-        willExitScreen,
         hoverAmp,
         driftX,
         driftY,
@@ -604,102 +607,142 @@
         centerTargetY: cy,
         centerTargetZ: 0,
         hoverDelay: willExitScreen ? 0 : lerp(30, 170, Math.random()),
-        offsetX: 0,
-        offsetY: 0,
-        offsetZ: 0
-      });
-    }
-
-    for (let i = 0; i < CONFIG.shardCountLarge; i++) makeShard(false);
-    for (let i = 0; i < CONFIG.shardCountSmall; i++) makeShard(true);
-  }
-
-  // =========================================
-  // 外部流入破片生成
-  // =========================================
-  function createInboundShards(cx, cy) {
-    inboundShards = [];
-
-    function makeInbound(isSmall) {
-      const side = Math.floor(Math.random() * 4);
-      let startX = 0;
-      let startY = 0;
-
-      const pad = Math.max(w, h) * lerp(0.10, 0.32, Math.random());
-
-      if (side === 0) {
-        startX = Math.random() * w;
-        startY = -pad;
-      } else if (side === 1) {
-        startX = w + pad;
-        startY = Math.random() * h;
-      } else if (side === 2) {
-        startX = Math.random() * w;
-        startY = h + pad;
-      } else {
-        startX = -pad;
-        startY = Math.random() * h;
-      }
-
-      const startZ = lerp(-240, 1400, Math.random());
-      const frontness = clamp((startZ + 240) / 1640, 0, 1);
-
-      const sizeMin = isSmall ? CONFIG.shardSmallMin : CONFIG.shardLargeMin;
-      const sizeMax = isSmall ? CONFIG.shardSmallMax : CONFIG.shardLargeMax;
-      const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.8, 1.15, frontness);
-
-      const alpha = isSmall
-        ? lerp(0.03, 0.10, frontness)
-        : lerp(0.05, 0.14, frontness);
-
-      const aspect = isSmall
-        ? 1.6 + Math.random() * 2.2
-        : 1.8 + Math.random() * 2.8;
-
-      const spin = (Math.random() - 0.5) * (
-        isSmall
-          ? lerp(0.10, 0.28, frontness)
-          : lerp(0.06, 0.18, frontness)
-      );
-
-      const offsetX = (Math.random() - 0.5) * lerp(8, 46, Math.random());
-      const offsetY = (Math.random() - 0.5) * lerp(8, 46, Math.random());
-      const offsetZ = (Math.random() - 0.5) * lerp(12, 120, Math.random());
-
-      inboundShards.push({
-        isSmall,
-        startX,
-        startY,
-        startZ,
-        x: startX,
-        y: startY,
-        z: startZ,
-        vx: 0,
-        vy: 0,
-        vz: 0,
-        size,
-        baseSize: size,
-        alpha,
-        aspect,
-        rot: Math.random() * Math.PI * 2,
-        spin,
-        frontness,
         offsetX,
         offsetY,
-        offsetZ,
-        centerTargetX: cx,
-        centerTargetY: cy,
-        centerTargetZ: 0
+        offsetZ
       });
     }
 
-    for (let i = 0; i < CONFIG.inboundShardCountLarge; i++) makeInbound(false);
-    for (let i = 0; i < CONFIG.inboundShardCountSmall; i++) makeInbound(true);
+    for (let i = 0; i < CONFIG.shardCountLarge; i++) pushShard("large", false);
+    for (let i = 0; i < CONFIG.shardCountMedium; i++) pushShard("medium", false);
+    for (let i = 0; i < CONFIG.shardCountSmall; i++) pushShard("small", false);
   }
 
-  // =========================================
-  // 3D投影
-  // =========================================
+  function createInboundShards(cx, cy) {
+    inboundShards = [];
+    for (let i = 0; i < CONFIG.inboundShardCountLarge; i++) {
+      createInboundSingle("large", cx, cy);
+    }
+    for (let i = 0; i < CONFIG.inboundShardCountMedium; i++) {
+      createInboundSingle("medium", cx, cy);
+    }
+    for (let i = 0; i < CONFIG.inboundShardCountSmall; i++) {
+      createInboundSingle("small", cx, cy);
+    }
+  }
+
+  function createInboundSingle(type, cx, cy) {
+    const before = inboundShards.length;
+    createShardsInboundBridge(type, cx, cy);
+    return inboundShards.length > before;
+  }
+
+  function createShardsInboundBridge(type, cx, cy) {
+    const saved = shards;
+    shards = [];
+    inboundShards = inboundShards || [];
+    const originalPush = inboundShards.push.bind(inboundShards);
+
+    const dir = randomUnitVector3();
+    const frontness = (Math.random() * 1640 - 240 + 240) / 1640;
+    const side = Math.floor(Math.random() * 4);
+    const pad = Math.max(w, h) * lerp(0.10, 0.34, Math.random());
+
+    let startX = 0;
+    let startY = 0;
+    if (side === 0) {
+      startX = Math.random() * w;
+      startY = -pad;
+    } else if (side === 1) {
+      startX = w + pad;
+      startY = Math.random() * h;
+    } else if (side === 2) {
+      startX = Math.random() * w;
+      startY = h + pad;
+    } else {
+      startX = -pad;
+      startY = Math.random() * h;
+    }
+    const startZ = lerp(-240, 1400, Math.random());
+
+    const outerRadius = Math.hypot(w * 0.5, h * 0.5);
+    const targetRadius = lerp(getOrbRadius() * 0.2, outerRadius * 0.25, Math.random());
+    const targetX = cx + dir.x * targetRadius;
+    const targetY = cy + dir.y * targetRadius;
+    const targetZ = lerp(-60, 260, Math.random());
+
+    const [sizeMin, sizeMax] = getShardSizeRange(type);
+    const size = lerp(sizeMin, sizeMax, Math.random()) * lerp(0.85, 1.22, frontness);
+
+    const alpha = type === "large"
+      ? lerp(0.05, 0.13, frontness)
+      : type === "medium"
+        ? lerp(0.04, 0.10, frontness)
+        : lerp(0.03, 0.07, frontness);
+
+    const isFlatPanel = Math.random() > 0.75;
+    let aspect;
+    let thinness;
+    if (isFlatPanel) {
+      aspect = lerp(1.2, 2.4, Math.random());
+      thinness = lerp(0.22, 0.36, Math.random());
+    } else {
+      aspect = lerp(1.9, 4.4, Math.random());
+      thinness = lerp(0.12, 0.24, Math.random());
+    }
+
+    const spin = (Math.random() - 0.5) * (
+      type === "small" ? lerp(0.10, 0.28, frontness) : lerp(0.06, 0.18, frontness)
+    );
+
+    const offsetX = (Math.random() - 0.5) * lerp(8, 46, Math.random());
+    const offsetY = (Math.random() - 0.5) * lerp(8, 46, Math.random());
+    const offsetZ = (Math.random() - 0.5) * lerp(12, 120, Math.random());
+
+    originalPush({
+      type,
+      isInbound: true,
+      isFlatPanel,
+      willExitScreen: false,
+      startX,
+      startY,
+      startZ,
+      x: startX,
+      y: startY,
+      z: startZ,
+      targetX,
+      targetY,
+      targetZ,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      size,
+      baseSize: size,
+      alpha,
+      aspect,
+      thinness,
+      rot: Math.random() * Math.PI * 2,
+      spin,
+      frontness,
+      hoverAmp: 0,
+      driftX: 0,
+      driftY: 0,
+      driftZ: 0,
+      centerTargetX: cx,
+      centerTargetY: cy,
+      centerTargetZ: 0,
+      hoverDelay: 0,
+      offsetX,
+      offsetY,
+      offsetZ
+    });
+
+    shards = saved;
+  }
+
+  // -----------------------------------------
+  // 3D投影 / 破片描画
+  // -----------------------------------------
   function project3D(x, y, z) {
     const cam = CONFIG.camera;
     const zz = clamp(z, CONFIG.zNearLimit, CONFIG.zFarLimit);
@@ -713,10 +756,7 @@
     };
   }
 
-  // =========================================
-  // 薄板ガラス破片
-  // =========================================
-  function drawGlassShard3D(x, y, z, size, aspect, rot, alpha, frontness, isSmall) {
+  function drawGlassShard3D(x, y, z, size, aspect, thinness, rot, alpha, frontness, isFlatPanel) {
     const proj = project3D(x, y, z);
     if (!proj.visible) return;
 
@@ -727,37 +767,51 @@
     ctx.translate(proj.x, proj.y);
     ctx.rotate(rot);
 
-    const len = isSmall ? drawSize * 1.8 * aspect : drawSize * 2.4 * aspect;
-    const thin = isSmall ? drawSize * 0.22 : drawSize * 0.30;
+    const len = drawSize * aspect;
+    const thin = drawSize * thinness;
 
-    ctx.beginPath();
-    ctx.moveTo(-len, -thin * 0.35);
-    ctx.lineTo(-len * 0.12, -thin);
-    ctx.lineTo(len, -thin * 0.20);
-    ctx.lineTo(len * 0.18, thin);
-    ctx.lineTo(-len, thin * 0.28);
-    ctx.closePath();
+    if (isFlatPanel) {
+      // 中〜大の平たい面片
+      ctx.beginPath();
+      ctx.moveTo(-len * 0.95, -thin * 0.28);
+      ctx.lineTo(-len * 0.24, -thin * 0.95);
+      ctx.lineTo(len * 0.96, -thin * 0.34);
+      ctx.lineTo(len * 0.62, thin * 0.72);
+      ctx.lineTo(-len * 0.88, thin * 0.42);
+      ctx.closePath();
+    } else {
+      // 小〜中の細長い鋭利片
+      ctx.beginPath();
+      ctx.moveTo(-len, -thin * 0.30);
+      ctx.lineTo(-len * 0.42, -thin);
+      ctx.lineTo(len, -thin * 0.18);
+      ctx.lineTo(len * 0.18, thin);
+      ctx.lineTo(-len * 0.94, thin * 0.24);
+      ctx.closePath();
+    }
 
-    ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.05, 0.14, frontness)})`;
+    ctx.fillStyle = `rgba(255,255,255,${drawAlpha * lerp(0.04, 0.12, frontness)})`;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.34, 0.72, frontness)})`;
+    ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.32, 0.72, frontness)})`;
     ctx.lineWidth = clamp(0.22 * proj.scale, 0.16, 0.8);
     ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(-len * 0.76, -thin * 0.10);
-    ctx.lineTo(len * 0.72, -thin * 0.06);
-    ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.16, 0.34, frontness)})`;
-    ctx.lineWidth = clamp(0.14 * proj.scale, 0.10, 0.45);
-    ctx.stroke();
+    if (Math.random() > 0.45) {
+      ctx.beginPath();
+      ctx.moveTo(-len * 0.72, -thin * 0.08);
+      ctx.lineTo(len * 0.68, -thin * 0.04);
+      ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * lerp(0.10, 0.24, frontness)})`;
+      ctx.lineWidth = clamp(0.12 * proj.scale, 0.10, 0.4);
+      ctx.stroke();
+    }
 
     ctx.restore();
   }
 
-  // =========================================
-  // 飛散
-  // =========================================
+  // -----------------------------------------
+  // 破片アニメーション
+  // -----------------------------------------
   function shatterMotion(progress) {
     return 1 - Math.pow(1 - progress, 4.6);
   }
@@ -778,13 +832,14 @@
 
     drawList.forEach((s) => {
       const alpha = s.alpha * (1 - progress * 0.10);
-      drawGlassShard3D(s.x, s.y, s.z, s.size, s.aspect, s.rot, alpha, s.frontness, s.isSmall);
+      drawGlassShard3D(
+        s.x, s.y, s.z,
+        s.size, s.aspect, s.thinness,
+        s.rot, alpha, s.frontness, s.isFlatPanel
+      );
     });
   }
 
-  // =========================================
-  // 滞空
-  // =========================================
   function drawShardsDrift(progress) {
     const drawList = [];
     const driftEase = easeOutCubic(progress);
@@ -823,22 +878,114 @@
         : s.alpha * (1 - progress * 0.03);
 
       drawGlassShard3D(
-        s.x,
-        s.y,
-        s.z,
-        s.size,
-        s.aspect,
-        s.rot,
-        alpha,
-        s.frontness,
-        s.isSmall
+        s.x, s.y, s.z,
+        s.size, s.aspect, s.thinness,
+        s.rot, alpha, s.frontness, s.isFlatPanel
       );
     });
   }
 
-  // =========================================
-  // ブルーム粒子
-  // =========================================
+  function drawShardsConverge(progress) {
+    const drawList = [];
+    const { x: cx, y: cy } = getCenter();
+
+    function updateShard(s, idx, isInbound = false) {
+      const elapsedMs = progress * CONFIG.convergeDuration;
+      const localProgress = clamp(elapsedMs / Math.max(1, CONFIG.convergeDuration), 0, 1);
+
+      const dist = Math.hypot(s.x - cx, s.y - cy);
+      const maxDist = Math.max(Math.hypot(w * 0.5, h * 0.5), 1);
+      const outerBias = clamp(dist / maxDist, 0, 1);
+
+      const gravityRise = Math.pow(localProgress, 1.7);
+      const pull = easeInCubic(localProgress);
+
+      let snap = 0;
+      let snapZ = 0;
+      let drag = 0.95;
+
+      if (localProgress < 0.22 && !isInbound) {
+        const hoverT = clamp(localProgress / 0.22, 0, 1);
+        const phase = idx * 0.37 + hoverT * 4.0 + time * 0.6;
+
+        s.vx *= 0.965;
+        s.vy *= 0.965;
+        s.vz *= 0.965;
+
+        s.x += Math.sin(phase * 1.13) * (0.10 + s.frontness * 0.26);
+        s.y += Math.cos(phase * 0.91) * (0.08 + s.frontness * 0.20);
+        s.z += Math.sin(phase * 0.64) * lerp(1.2, 6.0, s.frontness);
+      } else {
+        const speedBias = lerp(1.18, 0.56, outerBias);
+
+        snap = CONFIG.convergeSnapStrength * speedBias * (0.10 + gravityRise * 4.6);
+        snapZ = CONFIG.convergeZStrength * speedBias * (0.08 + gravityRise * 3.9);
+
+        drag = lerp(0.958, lerp(0.82, 0.88, outerBias), gravityRise);
+
+        if (localProgress > 0.68) {
+          snap *= 1.08;
+          snapZ *= 1.08;
+        }
+
+        if (localProgress > 0.84) {
+          drag *= 0.92;
+          snap *= 1.14;
+          snapZ *= 1.12;
+        }
+
+        s.vx = safe(s.vx, 0) + (s.centerTargetX - s.x + (s.offsetX || 0) * (1 - localProgress) * 0.06) * snap;
+        s.vy = safe(s.vy, 0) + (s.centerTargetY - s.y + (s.offsetY || 0) * (1 - localProgress) * 0.06) * snap;
+        s.vz = safe(s.vz, 0) + (s.centerTargetZ - s.z + (s.offsetZ || 0) * (1 - localProgress) * 0.04) * snapZ;
+
+        s.vx *= drag;
+        s.vy *= drag;
+        s.vz *= drag;
+
+        s.x += s.vx;
+        s.y += s.vy;
+        s.z += s.vz;
+      }
+
+      s.rot += s.spin * (0.10 + (1 - pull) * 0.38);
+
+      drawList.push({
+        ...s,
+        localProgress,
+        isInbound
+      });
+    }
+
+    shards.forEach((s, idx) => updateShard(s, idx, false));
+    inboundShards.forEach((s, idx) => updateShard(s, idx + shards.length, true));
+
+    drawList.sort((a, b) => a.z - b.z);
+
+    drawList.forEach((s) => {
+      const alphaFade = 1 - easeOutQuart(s.localProgress);
+      const alphaBase = s.isInbound
+        ? (s.type === "large" ? 0.12 : s.type === "medium" ? 0.09 : 0.06)
+        : (s.type === "large" ? 0.18 : s.type === "medium" ? 0.13 : 0.09);
+
+      const alpha = Math.max(0, alphaBase * alphaFade + 0.008 * (1 - s.localProgress));
+
+      const finalSize = lerp(
+        s.baseSize * 0.82,
+        s.type === "large" ? 0.34 : s.type === "medium" ? 0.24 : 0.16,
+        easeOutCubic(s.localProgress)
+      );
+
+      drawGlassShard3D(
+        s.x, s.y, s.z,
+        finalSize, s.aspect, s.thinness,
+        s.rot, alpha, s.frontness, s.isFlatPanel
+      );
+    });
+  }
+
+  // -----------------------------------------
+  // 発光
+  // -----------------------------------------
   function createBloomParticles() {
     const { x: cx, y: cy } = getCenter();
     bloomParticles = [];
@@ -855,9 +1002,6 @@
     }
   }
 
-  // =========================================
-  // 収束光
-  // =========================================
   function drawCentralBloom(progress) {
     const { x: cx, y: cy } = getCenter();
 
@@ -901,131 +1045,16 @@
     });
   }
 
-  // =========================================
-  // 収束
-  // =========================================
-  function drawShardsConverge(progress) {
-    const drawList = [];
-    const { x: cx, y: cy } = getCenter();
-
-    function updateShard(s, idx, isInbound = false) {
-      const elapsedMs = progress * CONFIG.convergeDuration;
-      const localProgress = clamp(elapsedMs / Math.max(1, CONFIG.convergeDuration), 0, 1);
-
-      const dist = Math.hypot(s.x - cx, s.y - cy);
-      const maxDist = Math.max(Math.hypot(w * 0.5, h * 0.5), 1);
-      const outerBias = clamp(dist / maxDist, 0, 1);
-
-      const gravityRise = Math.pow(localProgress, 1.7);
-      const pull = easeInCubic(localProgress);
-
-      let snap = 0;
-      let snapZ = 0;
-      let drag = 0.95;
-
-      if (localProgress < 0.22 && !isInbound) {
-        const hoverT = clamp(localProgress / 0.22, 0, 1);
-        const phase = idx * 0.37 + hoverT * 4.0 + time * 0.6;
-
-        s.vx *= 0.965;
-        s.vy *= 0.965;
-        s.vz *= 0.965;
-
-        s.x += Math.sin(phase * 1.13) * (0.10 + s.frontness * 0.26);
-        s.y += Math.cos(phase * 0.91) * (0.08 + s.frontness * 0.20);
-        s.z += Math.sin(phase * 0.64) * lerp(1.2, 6.0, s.frontness);
-      } else {
-        const speedBias = lerp(1.18, 0.56, outerBias);
-
-        snap = CONFIG.convergeSnapStrength * speedBias * (0.10 + gravityRise * 4.6);
-        snapZ = CONFIG.convergeZStrength * speedBias * (0.08 + gravityRise * 3.9);
-
-        drag = lerp(
-          0.958,
-          lerp(0.82, 0.88, outerBias),
-          gravityRise
-        );
-
-        if (localProgress > 0.68) {
-          snap *= 1.08;
-          snapZ *= 1.08;
-        }
-
-        if (localProgress > 0.84) {
-          drag *= 0.92;
-          snap *= 1.14;
-          snapZ *= 1.12;
-        }
-
-        s.vx = safe(s.vx, 0) + (s.centerTargetX - s.x + (s.offsetX || 0) * (1 - localProgress) * 0.06) * snap;
-        s.vy = safe(s.vy, 0) + (s.centerTargetY - s.y + (s.offsetY || 0) * (1 - localProgress) * 0.06) * snap;
-        s.vz = safe(s.vz, 0) + (s.centerTargetZ - s.z + (s.offsetZ || 0) * (1 - localProgress) * 0.04) * snapZ;
-
-        s.vx *= drag;
-        s.vy *= drag;
-        s.vz *= drag;
-
-        s.x += s.vx;
-        s.y += s.vy;
-        s.z += s.vz;
-      }
-
-      s.rot += s.spin * (0.10 + (1 - pull) * 0.38);
-
-      drawList.push({
-        ...s,
-        localProgress,
-        isInbound
-      });
-    }
-
-    shards.forEach((s, idx) => updateShard(s, idx, false));
-    inboundShards.forEach((s, idx) => updateShard(s, idx + shards.length, true));
-
-    drawList.sort((a, b) => a.z - b.z);
-
-    drawList.forEach((s) => {
-      const alphaFade = 1 - easeOutQuart(s.localProgress);
-      const alphaBase = s.isInbound
-        ? (s.isSmall ? 0.10 : 0.14)
-        : (s.isSmall ? 0.14 : 0.20);
-
-      const alpha = Math.max(0, alphaBase * alphaFade + 0.01 * (1 - s.localProgress));
-
-      const finalSize = lerp(
-        s.baseSize * 0.82,
-        s.isSmall ? 0.20 : 0.34,
-        easeOutCubic(s.localProgress)
-      );
-
-      const finalAspect = lerp(s.aspect, 0.96, easeOutCubic(s.localProgress));
-
-      drawGlassShard3D(
-        s.x,
-        s.y,
-        s.z,
-        finalSize,
-        finalAspect,
-        s.rot,
-        alpha,
-        s.frontness,
-        s.isSmall
-      );
-    });
-  }
-
-  // =========================================
-  // 遷移開始
-  // =========================================
+  // -----------------------------------------
+  // 状態遷移
+  // -----------------------------------------
   function startTransition(href) {
     if (state !== "idle") return;
 
     nextHref = href;
-    state = "shatter";
+    state = "prebreak";
     stateStart = nowMs();
-
     hideInitialLogo();
-    if (langSelect) langSelect.classList.add("is-disabled");
 
     const { x, y } = getCenter();
     const r = getOrbRadius();
@@ -1035,11 +1064,14 @@
     if (finalLogoEl) finalLogoEl.classList.remove("is-visible");
   }
 
-  // =========================================
-  // ステート遷移
-  // =========================================
   function maybeAdvanceState(now) {
     const elapsed = now - stateStart;
+
+    if (state === "prebreak" && elapsed >= CONFIG.prebreakDuration) {
+      state = "shatter";
+      stateStart = now;
+      return;
+    }
 
     if (state === "shatter" && elapsed >= CONFIG.shatterDuration) {
       state = "drift";
@@ -1074,11 +1106,9 @@
     }
   }
 
-  // =========================================
-  // 全描画
-  // レイヤー順を統一:
-  // 後光 → 地平線/水面 → 水滴/破片
-  // =========================================
+  // -----------------------------------------
+  // 描画
+  // -----------------------------------------
   function render(now) {
     drawBackground();
 
@@ -1093,16 +1123,29 @@
 
     maybeAdvanceState(now);
 
+    if (state === "prebreak") {
+      const p = clamp((now - stateStart) / CONFIG.prebreakDuration, 0, 1);
+
+      drawBackLight(cx, cy, r, 1);
+      drawHorizonAndWater(1);
+      drawAmbientVoid(cx, cy, r, 1);
+      drawShadow(cx, cy, r, 0.58);
+      drawOrbBody(cx, cy, r, t, 1 - p * 0.10, lerp(1, 0.985, p));
+      drawInteriorTexture(cx, cy, r, t, 1 - p * 0.20, lerp(1, 0.985, p));
+      drawHighlight(cx, cy, r, t, 1 - p * 0.12, lerp(1, 0.985, p));
+      drawOrbReflection(cx, cy, r, t, 1 - p * 0.10);
+      return;
+    }
+
     if (state === "shatter") {
       const p = clamp((now - stateStart) / CONFIG.shatterDuration, 0, 1);
+      const orbAlpha = Math.max(0, 1 - easeOutCubic(p) * 1.12);
+      const orbScale = lerp(0.985, 0.90, p);
 
-      const orbAlpha = Math.max(0, 1 - easeOutCubic(p) * 1.08);
-      const orbScale = lerp(1, 0.90, p);
-
-      drawBackLight(cx, cy, r, t, 1 - p * 0.10);
-      drawHorizonAndWater(cx, cy, r, t, 1 - p * 0.12);
-      drawAmbientVoid(cx, cy, r, t, orbAlpha * 0.55);
-      drawShadow(cx, cy, r, orbAlpha * 0.48);
+      drawBackLight(cx, cy, r, 1 - p * 0.10);
+      drawHorizonAndWater(1 - p * 0.10);
+      drawAmbientVoid(cx, cy, r, orbAlpha * 0.6);
+      drawShadow(cx, cy, r, orbAlpha * 0.45);
       drawOrbBody(cx, cy, r, t, orbAlpha, orbScale);
       drawInteriorTexture(cx, cy, r, t, orbAlpha, orbScale);
       drawHighlight(cx, cy, r, t, orbAlpha, orbScale);
@@ -1113,53 +1156,45 @@
 
     if (state === "drift") {
       const p = clamp((now - stateStart) / CONFIG.driftDuration, 0, 1);
-      drawBackLight(cx, cy, r, t, 0.82 * (1 - p * 0.2));
-      drawHorizonAndWater(cx, cy, r, t, 1 - p * 0.18);
-      drawAmbientVoid(cx, cy, r, t, 0.08 * (1 - p));
+      drawBackLight(cx, cy, r, 0.82 * (1 - p * 0.2));
+      drawHorizonAndWater(1 - p * 0.12);
+      drawAmbientVoid(cx, cy, r, 0.08 * (1 - p));
       drawShardsDrift(p);
       return;
     }
 
     if (state === "converge") {
       const p = clamp((now - stateStart) / CONFIG.convergeDuration, 0, 1);
-      drawBackLight(cx, cy, r, t, 0.72 * (1 - p * 0.35));
-      drawHorizonAndWater(cx, cy, r, t, 0.92 * (1 - p * 0.2));
-      drawAmbientVoid(cx, cy, r, t, 0.13 * (1 - p));
+      drawBackLight(cx, cy, r, 0.72 * (1 - p * 0.35));
+      drawHorizonAndWater(0.92 * (1 - p * 0.12));
+      drawAmbientVoid(cx, cy, r, 0.13 * (1 - p));
       drawShardsConverge(p);
 
-      const preGlow = Math.max(0, (p - 0.70) / 0.30);
+      const preGlow = Math.max(0, (p - 0.72) / 0.28);
       if (preGlow > 0) drawCentralBloom(preGlow);
       return;
     }
 
     if (state === "bloom") {
       const p = clamp((now - stateStart) / CONFIG.bloomDuration, 0, 1);
-      drawBackLight(cx, cy, r, t, 0.32 * (1 - p * 0.6));
-      drawHorizonAndWater(cx, cy, r, t, 0.70 * (1 - p * 0.25));
+      drawBackLight(cx, cy, r, 0.24 * (1 - p * 0.7));
+      drawHorizonAndWater(0.65 * (1 - p * 0.22));
       drawCentralBloom(p);
       drawBloomParticles(p * 0.55);
-      drawShardsConverge(0.985 + p * 0.015);
+      drawShardsConverge(0.992 + p * 0.008);
       return;
     }
 
     if (state === "logo") {
       const p = clamp((now - stateStart) / Math.max(1, CONFIG.logoHoldDuration * 0.42), 0, 1);
-      drawBackLight(cx, cy, r, t, 0.18 * (1 - p * 0.8));
-      drawHorizonAndWater(cx, cy, r, t, 0.52 * (1 - p * 0.4));
-      if (p < 1) {
-        drawCentralBloom(0.82 + p * 0.18);
-      }
+      drawBackLight(cx, cy, r, 0.16 * (1 - p * 0.8));
+      drawHorizonAndWater(0.48 * (1 - p * 0.38));
+      if (p < 1) drawCentralBloom(0.84 + p * 0.16);
     }
   }
 
-  // =========================================
-  // ループ
-  // =========================================
   function tick(now = nowMs()) {
-    if (!motionQuery.matches) {
-      time += 0.016;
-    }
-
+    if (!motionQuery.matches) time += 0.016;
     render(now);
     rafId = requestAnimationFrame(tick);
   }
@@ -1170,9 +1205,9 @@
     tick();
   }
 
-  // =========================================
+  // -----------------------------------------
   // 入力
-  // =========================================
+  // -----------------------------------------
   function handleScreenTrigger(e) {
     if (state !== "idle" || hasTriggered) return;
     hasTriggered = true;
@@ -1193,19 +1228,7 @@
     motionQuery.addListener(start);
   }
 
-  // =========================================
-  // 初期化
-  // =========================================
   resize();
-
-  if (idleRomanEl) {
-    idleRomanEl.style.opacity = "";
-    idleRomanEl.style.transform = "";
-  }
-
-  if (finalLogoEl) {
-    finalLogoEl.classList.remove("is-visible");
-  }
-
+  resetLogoState();
   tick();
 })();
