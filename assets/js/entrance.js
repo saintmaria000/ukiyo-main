@@ -18,7 +18,7 @@
     horizonYMax: 0.62,
 
     droplet: {
-      radius: 74,
+      radius: 84,
       wobbleAmp: 0.115,
       wobbleSpeedA: 1.05,
       wobbleSpeedB: 1.68,
