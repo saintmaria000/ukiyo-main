@@ -14,11 +14,11 @@
   const CONFIG = {
     bg: "#000000",
 
-    horizonYMin: 0.68,
-    horizonYMax: 0.73,
+    horizonYMin: 0.58,
+    horizonYMax: 0.62,
 
     droplet: {
-      radius: 66,
+      radius: 74,
       wobbleAmp: 0.115,
       wobbleSpeedA: 1.05,
       wobbleSpeedB: 1.68,
