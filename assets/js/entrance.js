@@ -793,25 +793,100 @@ function applyMainSurfaceTension(dt, mainR) {
     };
   }
 
-  function buildDropletPathAt(x, y, m, time, seed = 0) {
-    const pts = [];
-    const n = 56;
+function buildDropletPathAt(x, y, m, time, seed = 0, deformation = null) {
+  const pts = [];
+  const n = 72;
 
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2;
-      const n1 = Math.sin(a * 3 + time * 1.7 + seed) * m.warpA * 0.12;
-      const n2 = Math.sin(a * 5 - time * 2.4 + 0.6 + seed * 0.7) * m.warpB * 0.08;
-      const n3 = Math.cos(a * 2 + time * 1.1 - 0.8 + seed * 0.3) * 0.03;
-      const rr = 1 + n1 + n2 + n3;
+  const def = deformation || [];
+  const pullX = def.pullX || 0;
+  const pullY = def.pullY || 0;
+  const pullStrength = def.pullStrength || 0;
+  const squash = def.squash || 0;
 
-      pts.push({
-        x: x + Math.cos(a) * m.rx * rr,
-        y: y + Math.sin(a) * m.ry * rr
-      });
-    }
-    return pts;
+  const pullLen = Math.hypot(pullX, pullY) || 1;
+  const pnx = pullX / pullLen;
+  const pny = pullY / pullLen;
+
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const ux = Math.cos(a);
+    const uy = Math.sin(a);
+
+    const n1 = Math.sin(a * 3 + time * 1.7 + seed) * m.warpA * 0.12;
+    const n2 = Math.sin(a * 5 - time * 2.4 + 0.6 + seed * 0.7) * m.warpB * 0.08;
+    const n3 = Math.cos(a * 2 + time * 1.1 - 0.8 + seed * 0.3) * 0.03;
+
+    // 基本の揺らぎ
+    let rr = 1 + n1 + n2 + n3;
+
+    // 相手方向との内積
+    const along = ux * pnx + uy * pny;
+
+    // 相手側へ伸びる、反対側は少し締まる
+    const frontPull = Math.max(0, along);
+    const backPull = Math.max(0, -along);
+
+    rr += frontPull * frontPull * pullStrength * 0.34;
+    rr -= backPull * squash * 0.12;
+
+    // 首の付け根が自然になるよう横方向も少し膨らます
+    const side = 1 - Math.abs(along);
+    rr += side * pullStrength * 0.05;
+
+    pts.push({
+      x: x + ux * m.rx * rr,
+      y: y + uy * m.ry * rr
+    });
   }
 
+  return pts;
+}
+function getDropletDeformation(d, time) {
+  let bestPull = 0;
+  let pullX = 0;
+  let pullY = 0;
+
+  // 主滴との近接
+  if (d.bridgeToMain > bestPull) {
+    bestPull = d.bridgeToMain;
+    pullX = cx - d.x;
+    pullY = cy - d.y;
+  }
+
+  // 他の補助滴との近接
+  for (const other of state.auxDroplets) {
+    if (other === d) continue;
+    if (other.mode !== "drifting") continue;
+
+    const dx = other.x - d.x;
+    const dy = other.y - d.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const rr = d.r * d.scale + other.r * other.scale;
+    const bridgeStart = rr * CONFIG.auxDroplets.pairBridgeStart;
+    const bridgeFull = rr * CONFIG.auxDroplets.pairBridgeFull;
+
+    if (dist < bridgeStart) {
+      const k = clamp(
+        (bridgeStart - dist) / Math.max(bridgeStart - bridgeFull, 1),
+        0,
+        1
+      );
+
+      if (k > bestPull) {
+        bestPull = k;
+        pullX = dx;
+        pullY = dy;
+      }
+    }
+  }
+
+  return {
+    pullX,
+    pullY,
+    pullStrength: bestPull,
+    squash: bestPull * 0.9
+  };
+}
   function buildDropletPath(time, hintK = 0) {
     const m = getDropletMorph(time, hintK);
     return buildDropletPathAt(cx, cy, m, time, 0);
@@ -832,93 +907,120 @@ function applyMainSurfaceTension(dt, mainR) {
       pts[0].y
     );
   }
-  function drawBridgeBetween(x1, y1, r1, x2, y2, r2, strength, alphaMul = 1) {
-    if (strength <= 0.001) return;
+function applyDropletPairSurfaceTension(dt, time) {
+  const C = CONFIG.auxDroplets;
+  const canMerge = state.auxDroplets.length > C.minAuxCount;
 
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const d = Math.hypot(dx, dy) || 1;
-    const nx = dx / d;
-    const ny = dy / d;
-    const px = -ny;
-    const py = nx;
+  for (let i = 0; i < state.auxDroplets.length; i++) {
+    const a = state.auxDroplets[i];
+    if (a.mode !== "drifting") continue;
 
-    const neck = Math.min(r1, r2) * lerp(0.12, 0.46, strength);
-    const pull = lerp(0.18, 0.42, strength) * d;
+    for (let j = i + 1; j < state.auxDroplets.length; j++) {
+      const b = state.auxDroplets[j];
+      if (b.mode !== "drifting") continue;
 
-    const a1x = x1 + nx * r1 * 0.72;
-    const a1y = y1 + ny * r1 * 0.72;
-    const a2x = x2 - nx * r2 * 0.72;
-    const a2y = y2 - ny * r2 * 0.72;
+      const dir = normalize(b.x - a.x, b.y - a.y);
+      const d = dir.len;
+      const rr = a.r * a.scale + b.r * b.scale;
 
-    const p1x = a1x + px * neck;
-    const p1y = a1y + py * neck;
-    const p2x = a2x + px * neck * 0.92;
-    const p2y = a2y + py * neck * 0.92;
-    const p3x = a2x - px * neck * 0.92;
-    const p3y = a2y - py * neck * 0.92;
-    const p4x = a1x - px * neck;
-    const p4y = a1y - py * neck;
+      if (d < C.pairSenseRadius) {
+        const nearK = clamp(1 - d / C.pairSenseRadius, 0, 1);
 
-    const c1x = (a1x + a2x) * 0.5 - nx * pull * 0.12 + px * neck * 0.65;
-    const c1y = (a1y + a2y) * 0.5 - ny * pull * 0.12 + py * neck * 0.65;
-    const c2x = (a1x + a2x) * 0.5 - nx * pull * 0.12 - px * neck * 0.65;
-    const c2y = (a1y + a2y) * 0.5 - ny * pull * 0.12 - py * neck * 0.65;
+        a.vx += dir.x * C.pairAttractForce * nearK * dt;
+        a.vy += dir.y * C.pairAttractForce * nearK * dt;
+        b.vx -= dir.x * C.pairAttractForce * nearK * dt;
+        b.vy -= dir.y * C.pairAttractForce * nearK * dt;
+      }
 
-    ctx.beginPath();
-    ctx.moveTo(p1x, p1y);
-    ctx.quadraticCurveTo(c1x, c1y, p2x, p2y);
-    ctx.lineTo(p3x, p3y);
-    ctx.quadraticCurveTo(c2x, c2y, p4x, p4y);
-    ctx.closePath();
+      const bridgeStart = rr * C.pairBridgeStart;
+      const bridgeFull = rr * C.pairBridgeFull;
 
-    ctx.fillStyle = `rgba(255,255,255,${0.032 * strength * alphaMul})`;
-    ctx.fill();
+      if (d < bridgeStart) {
+        const bk = clamp(
+          (bridgeStart - d) / Math.max(bridgeStart - bridgeFull, 1),
+          0,
+          1
+        );
+        a.bridge = Math.max(a.bridge, bk);
+        b.bridge = Math.max(b.bridge, bk);
+      }
 
-    ctx.strokeStyle = `rgba(255,255,255,${0.09 * strength * alphaMul})`;
-    ctx.lineWidth = 0.8 + strength * 0.55;
-    ctx.stroke();
+      // 補助滴が最少数のときは、半接合だけで合体しない
+      if (!canMerge) continue;
+
+      if (d <= rr + C.pairMergePadding) {
+        if (Math.random() < C.pairMergeChance * dt * 60) {
+          mergeDropletPair(i, j, time);
+          return;
+        }
+      }
     }
-    
-  function drawDroplet(time, hintK) {
-    const pts = buildDropletPath(time, hintK);
-
-    ctx.save();
-
-    const body = ctx.createRadialGradient(
-      cx - 18,
-      cy - 22,
-      5,
-      cx,
-      cy,
-      getMainBaseRadius() * 1.1
-    );
-    body.addColorStop(0, "rgba(255,255,255,0.12)");
-    body.addColorStop(0.38, "rgba(255,255,255,0.055)");
-    body.addColorStop(0.72, "rgba(255,255,255,0.028)");
-    body.addColorStop(1, "rgba(255,255,255,0.01)");
-
-    tracePath(pts);
-    ctx.fillStyle = body;
-    ctx.fill();
-
-    ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + state.auxMergePulse * 0.1})`;
-    ctx.lineWidth = 1.05;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.ellipse(cx - 18, cy - 22, 9, 16, -0.4, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.ellipse(cx + 6, cy + 8, 28, 17, 0.42, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.035)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.restore();
   }
+}
+    
+function drawDroplet(time, hintK) {
+  let mainPullX = 0;
+  let mainPullY = 0;
+  let mainPull = 0;
+
+  for (const d of state.auxDroplets) {
+    if (d.bridgeToMain > mainPull) {
+      mainPull = d.bridgeToMain;
+      mainPullX = d.x - cx;
+      mainPullY = d.y - cy;
+    }
+  }
+
+  const pts = buildDropletPathAt(
+    cx,
+    cy,
+    getDropletMorph(time, hintK),
+    time,
+    0,
+    {
+      pullX: mainPullX,
+      pullY: mainPullY,
+      pullStrength: mainPull * 0.8,
+      squash: mainPull * 0.55
+    }
+  );
+
+  ctx.save();
+
+  const body = ctx.createRadialGradient(
+    cx - 18,
+    cy - 22,
+    5,
+    cx,
+    cy,
+    getMainBaseRadius() * 1.1
+  );
+  body.addColorStop(0, "rgba(255,255,255,0.12)");
+  body.addColorStop(0.38, "rgba(255,255,255,0.055)");
+  body.addColorStop(0.72, "rgba(255,255,255,0.028)");
+  body.addColorStop(1, "rgba(255,255,255,0.01)");
+
+  tracePath(pts);
+  ctx.fillStyle = body;
+  ctx.fill();
+
+  ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + state.auxMergePulse * 0.1})`;
+  ctx.lineWidth = 1.05;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.ellipse(cx - 18, cy - 22, 9, 16, -0.4, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(cx + 6, cy + 8, 28, 17, 0.42, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.035)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.restore();
+}
 
 function drawAuxDroplets(time) {
   // 主滴との首
