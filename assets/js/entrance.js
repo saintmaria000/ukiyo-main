@@ -40,11 +40,18 @@
     shardFarRatio: 0.24,
 
     gravityInflowCount: 30,
-    redirectDelayMs: 780,
 
-    // 広がり強化
+    // 広がりの外周上限は維持
     spreadBoost: 1.9,
     offscreenBoost: 1.45,
+
+    // 中央〜中距離に残すための補正
+    centerRetention: 0.42,
+    midRetention: 0.28,
+
+    // 中央到達で消す判定
+    vanishRadius: 14,
+    vanishRadiusNear: 18,
 
     targetHref:
       document.body?.dataset?.enterHref ||
@@ -64,6 +71,7 @@
 
   let rafId = 0;
   let started = false;
+  let finished = false;
   let startTime = 0;
   let lastTs = 0;
 
@@ -80,7 +88,7 @@
     inflow: [],
     flash: 0,
     revealShown: false,
-    redirected: false
+    entranceDoneFired: false
   };
 
   function clamp(v, min, max) {
@@ -171,12 +179,24 @@
 
     const angle = rand(-Math.PI, Math.PI);
 
-    // ここをかなり強化
-    const speed = lerp(180, 1280, depth) * rand(0.9, 1.45) * CONFIG.spreadBoost;
+    // 外周は維持しつつ、中央側にも残るように速度帯を広く持たせる
+    const spreadClass = Math.random();
+    let spreadMul;
+    if (spreadClass < CONFIG.centerRetention) {
+      spreadMul = rand(0.26, 0.62); // 内側残留
+    } else if (spreadClass < CONFIG.centerRetention + CONFIG.midRetention) {
+      spreadMul = rand(0.62, 0.95); // 中距離主帯
+    } else {
+      spreadMul = rand(0.95, 1.45); // 外周帯
+    }
+
+    const baseSpeed = lerp(180, 1280, depth) * CONFIG.spreadBoost;
+    const speed = baseSpeed * spreadMul;
+
     const vz = rand(-1.15, 1.45) * (depth > 0.6 ? 1.35 : 1.0);
 
-    const dx = Math.cos(angle) * speed * rand(0.75, 1.35);
-    const dy = Math.sin(angle) * speed * rand(0.72, 1.32);
+    const dx = Math.cos(angle) * speed * rand(0.78, 1.28);
+    const dy = Math.sin(angle) * speed * rand(0.74, 1.26);
 
     return {
       type: isFlat ? "flat" : "needle",
@@ -195,7 +215,8 @@
       driftNoise: rand(0.25, 1.0),
       edgeSeed: rand(0, 1000),
       alpha: lerp(0.28, 0.92, depth),
-      fillAlpha: rand(0.02, 0.08)
+      fillAlpha: rand(0.02, 0.08),
+      dead: false
     };
   }
 
@@ -237,7 +258,8 @@
       spin: rand(-3, 3),
       edgeSeed: rand(0, 1000),
       alpha: lerp(0.18, 0.78, depth),
-      fillAlpha: rand(0.015, 0.06)
+      fillAlpha: rand(0.015, 0.06),
+      dead: false
     };
   }
 
@@ -460,61 +482,89 @@
     ctx.restore();
   }
 
+  function getVanishRadius(s) {
+    return s.depthBand === "near" ? CONFIG.vanishRadiusNear : CONFIG.vanishRadius;
+  }
+
+  function updateShardBurst(s, dt, t) {
+    const k = easeOutExpo((t - T_HINT) / P.burst);
+    const noiseX = Math.sin(t * 5.3 + s.edgeSeed) * 4.5 * s.driftNoise;
+    const noiseY = Math.cos(t * 4.7 + s.edgeSeed * 0.7) * 4.5 * s.driftNoise;
+
+    s.x += (s.dx * dt) * (0.88 + 0.38 * k) + noiseX * dt;
+    s.y += (s.dy * dt) * (0.88 + 0.38 * k) + noiseY * dt;
+    s.z += s.dz * dt;
+    s.rot += s.spin * dt;
+  }
+
+  function updateShardDrift(s, dt, t) {
+    s.x += s.dx * dt * 0.3 + Math.sin(t * 2.6 + s.edgeSeed) * 5 * dt;
+    s.y += s.dy * dt * 0.3 + Math.cos(t * 2.2 + s.edgeSeed * 0.9) * 5 * dt;
+    s.z += s.dz * dt * 0.18;
+    s.rot += s.spin * dt * 0.38;
+  }
+
+  function updateShardGather(s, dt, t) {
+    const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
+    const pull = lerp(10, 1600, easeInCubic(tk));
+    const toX = cx - s.x;
+    const toY = cy - s.y;
+    const dist = Math.hypot(toX, toY) || 1;
+    const nx = toX / dist;
+    const ny = toY / dist;
+
+    s.dx = lerp(s.dx, nx * pull, dt * 3.8);
+    s.dy = lerp(s.dy, ny * pull, dt * 3.8);
+    s.dz = lerp(s.dz, -s.z * 7.2, dt * 3.0);
+
+    s.x += s.dx * dt;
+    s.y += s.dy * dt;
+    s.z += s.dz * dt;
+    s.rot += s.spin * dt * 0.62;
+
+    // ここが重要: 途中で薄くしすぎない
+    if (tk > 0.9) {
+      s.alpha *= 0.992;
+      s.fillAlpha *= 0.988;
+    }
+
+    // 中央到達で消す
+    const vanishR = getVanishRadius(s);
+    if (dist < vanishR && Math.abs(s.z) < 16) {
+      s.dead = true;
+      s.alpha = 0;
+      s.fillAlpha = 0;
+    }
+  }
+
   function updateShards(dt, t) {
     const phase = getPhase(t);
 
     for (const s of state.shards) {
+      if (s.dead) continue;
+
       if (phase === "hint") {
         s.rot += s.spin * dt * 0.16;
         continue;
       }
 
       if (phase === "burst") {
-        const k = easeOutExpo((t - T_HINT) / P.burst);
-        const noiseX = Math.sin(t * 5.3 + s.edgeSeed) * 4.5 * s.driftNoise;
-        const noiseY = Math.cos(t * 4.7 + s.edgeSeed * 0.7) * 4.5 * s.driftNoise;
-
-        s.x += (s.dx * dt) * (0.88 + 0.38 * k) + noiseX * dt;
-        s.y += (s.dy * dt) * (0.88 + 0.38 * k) + noiseY * dt;
-        s.z += s.dz * dt;
-        s.rot += s.spin * dt;
+        updateShardBurst(s, dt, t);
         continue;
       }
 
       if (phase === "drift") {
-        s.x += s.dx * dt * 0.3 + Math.sin(t * 2.6 + s.edgeSeed) * 5 * dt;
-        s.y += s.dy * dt * 0.3 + Math.cos(t * 2.2 + s.edgeSeed * 0.9) * 5 * dt;
-        s.z += s.dz * dt * 0.18;
-        s.rot += s.spin * dt * 0.38;
+        updateShardDrift(s, dt, t);
         continue;
       }
 
       if (phase === "gather" || phase === "flash" || phase === "logo" || phase === "done") {
-        const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-        const pull = lerp(10, 1600, easeInCubic(tk));
-        const toX = cx - s.x;
-        const toY = cy - s.y;
-        const dist = Math.hypot(toX, toY) || 1;
-        const nx = toX / dist;
-        const ny = toY / dist;
-
-        s.dx = lerp(s.dx, nx * pull, dt * 3.8);
-        s.dy = lerp(s.dy, ny * pull, dt * 3.8);
-        s.dz = lerp(s.dz, -s.z * 7.2, dt * 3.0);
-
-        s.x += s.dx * dt;
-        s.y += s.dy * dt;
-        s.z += s.dz * dt;
-        s.rot += s.spin * dt * 0.62;
-
-        if (tk > 0.78) {
-          s.alpha *= 0.962;
-          s.fillAlpha *= 0.94;
-        }
+        updateShardGather(s, dt, t);
       }
     }
 
     for (const s of state.inflow) {
+      if (s.dead) continue;
       if (phase !== "gather" && phase !== "flash" && phase !== "logo" && phase !== "done") continue;
 
       const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
@@ -531,9 +581,15 @@
       s.y += s.dy * dt;
       s.rot += s.spin * dt * 0.8;
 
-      if (tk > 0.84) {
-        s.alpha *= 0.95;
-        s.fillAlpha *= 0.92;
+      if (tk > 0.92) {
+        s.alpha *= 0.992;
+        s.fillAlpha *= 0.988;
+      }
+
+      if (dist < CONFIG.vanishRadius && Math.abs(s.z) < 28) {
+        s.dead = true;
+        s.alpha = 0;
+        s.fillAlpha = 0;
       }
     }
   }
@@ -566,11 +622,12 @@
   }
 
   function drawSingleShard(s, fadeMul = 1) {
+    if (s.dead) return;
+
     const sc = projectScale(s.z * 0.35);
     const alpha = clamp(s.alpha * fadeMul, 0, 1);
     if (alpha < 0.01) return;
 
-    // 画面外にかなり逃がす
     const padX = w * 0.55 * CONFIG.offscreenBoost;
     const padY = h * 0.55 * CONFIG.offscreenBoost;
     if (s.x < -padX || s.x > w + padX || s.y < -padY || s.y > h + padY) return;
@@ -627,6 +684,7 @@
     const near = [];
 
     for (const s of state.shards) {
+      if (s.dead) continue;
       if (s.depthBand === "far") far.push(s);
       else if (s.depthBand === "mid") mid.push(s);
       else near.push(s);
@@ -635,7 +693,10 @@
     for (const s of far) drawSingleShard(s, fadeMul * 0.92);
     for (const s of mid) drawSingleShard(s, fadeMul);
     for (const s of near) drawSingleShard(s, fadeMul * 1.06);
-    for (const s of state.inflow) drawSingleShard(s, fadeMul * 0.9);
+
+    for (const s of state.inflow) {
+      if (!s.dead) drawSingleShard(s, fadeMul * 0.9);
+    }
   }
 
   function drawCompressionFlash() {
@@ -708,15 +769,10 @@
     revealLogo.style.visibility = "visible";
   }
 
-  function redirectIfNeeded() {
-    if (state.redirected) return;
-    state.redirected = true;
-
-    if (CONFIG.targetHref) {
-      window.setTimeout(() => {
-        window.location.href = CONFIG.targetHref;
-      }, CONFIG.redirectDelayMs);
-    }
+  function fireEntranceDone() {
+    if (state.entranceDoneFired) return;
+    state.entranceDoneFired = true;
+    window.dispatchEvent(new Event("entrance:done"));
   }
 
   function render(ts) {
@@ -772,8 +828,9 @@
       const logoK = easeOutCubic(clamp((t - T_FLASH) / P.logo, 0, 1));
       setRevealOpacity(logoK);
 
-      if (phase === "done") {
-        redirectIfNeeded();
+      if (phase === "done" && !finished) {
+        finished = true;
+        fireEntranceDone();
       }
     }
 
@@ -785,10 +842,11 @@
 
     if (motionQuery.matches) {
       started = true;
+      finished = true;
       setBrandOpacity(0);
       showRevealLogo();
       setRevealOpacity(1);
-      redirectIfNeeded();
+      fireEntranceDone();
       return;
     }
 
