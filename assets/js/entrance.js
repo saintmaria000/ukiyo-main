@@ -33,53 +33,94 @@
     },
 
     auxDroplets: {
-      // 可動範囲を前回より約1.5倍へ
-      minDistance: 130,
-      maxDistance: 315,
+    /* =======================================================
+        サイズ設計
+        主滴 = 1 とした時の黄金比寄り
+        大: 1/φ² ≒ 0.382
+        中: 1/φ³ ≒ 0.236
+        小: 1/φ⁵ ≒ 0.090
+        ただし肥大上限は 主滴の 0.5
+    ======================================================= */
+    phi: 1.61803398875,
 
-      mediumRadiusMin: 14,
-      mediumRadiusMax: 18,
-      smallRadiusMin: 6,
-      smallRadiusMax: 9,
+    sizeRatioLarge: 0.382,
+    sizeRatioMedium: 0.236,
+    sizeRatioSmall: 0.092,
 
-      // 最初は必ず 主 + 中 + 小
-      initialPattern: ["medium", "small"],
+    maxRadiusRatioToMain: 0.5,
 
-      // 分裂後も使う候補
-      patterns: [
-        ["medium", "small"],
-        ["medium", "medium"],
-        ["medium", "small", "small"]
-      ],
+    // 可動範囲
+    minDistance: 145,
+    maxDistance: 330,
 
-      driftForce: 7.5,
-      driftDamping: 0.988,
-      driftNoise: 10.5,
-      driftYBias: 0.92,
+    // 最初は必ず 3滴（大・中・小）
+    initialPattern: ["large", "medium", "small"],
 
-      spawnFromMainSpeed: 220,
-      splitGrowTime: 0.62,
+    // 分裂候補
+    splitPatterns: [
+        ["medium"],
+        ["small"],
+        ["medium", "small"]
+    ],
 
-      absorbShrinkTime: 0.28,
-      mergeFlashMax: 0.18,
+    /* =======================================================
+        漂い
+        今の半分の速さよりさらに静かに見せるため、
+        体感で「今の倍遅い」設定
+    ======================================================= */
+    driftForce: 3.4,
+    driftDamping: 0.992,
+    driftNoise: 4.8,
+    driftYBias: 0.88,
+    maxSpeed: 26,
 
-      // 表面張力的な合体
-      pairAttractRadius: 90,
-      pairAttractForce: 18,
-      pairMergePadding: 4,
+    /* =======================================================
+        分裂
+        ポコポコ出さず、数が減ってから少し待って増える
+    ======================================================= */
+    spawnFromMainSpeed: 82,
+    splitGrowTime: 1.15,
+    splitDelayMin: 2.0,
+    splitDelayMax: 3.4,
+    splitCooldownAfterMergeMin: 2.2,
+    splitCooldownAfterMergeMax: 3.8,
 
-      // 主滴との融合
-      mainAttractRadius: 110,
-      mainAttractForce: 22,
-      mainMergePadding: 5,
+    /* =======================================================
+        主滴吸収
+    ======================================================= */
+    absorbShrinkTime: 0.52,
+    mergeFlashMax: 0.14,
 
-      // 分裂の間隔
-      splitDelayMin: 0.65,
-      splitDelayMax: 1.35,
+    /* =======================================================
+        滴同士の近接・接合
+        merge しなくても首だけできる距離帯を持たせる
+    ======================================================= */
+    pairSenseRadius: 120,
+    pairAttractRadius: 78,
+    pairAttractForce: 6.5,
 
-      // 滴の総数（主滴含め最大4）
-      minAuxCount: 2,
-      maxAuxCount: 3
+    pairBridgeStart: 1.7,   // (r1+r2)倍で首を描き始める
+    pairBridgeFull: 1.12,   // かなり近いと首が強くなる
+    pairMergeChance: 0.18,  // 接触しても必ずは合体しない
+    pairMergePadding: 1.5,
+
+    /* =======================================================
+        主滴との半接合
+    ======================================================= */
+    mainSenseRadius: 135,
+    mainAttractRadius: 92,
+    mainAttractForce: 7.8,
+    mainBridgeStart: 1.55,
+    mainBridgeFull: 1.08,
+    mainMergePadding: 2,
+
+    /* =======================================================
+        数制約
+        主滴あわせて 3〜4
+        = 補助滴は 2〜3
+    ======================================================= */
+    minAuxCount: 2,
+    maxAuxCount: 3
     },
 
     phase: {
@@ -361,273 +402,340 @@
     };
   }
 
-  /* =========================================================
-     08. Aux Droplets / Model
-     - 初期は 主 + 中 + 小
-     - 空中生成なし
-     - 中央から分裂 / 中央へ融合
-     - 滴同士も融合
-     - 循環ではなく漂い
-  ========================================================= */
-  function getMainBaseRadius() {
-    return CONFIG.droplet.radius * Math.min(w / 1200, h / 900, 1.12);
+/* =========================================================
+   08. Aux Droplets / Model
+   - 初期は 主 + 大 + 中 + 小
+   - 漂いは遅く、最小変化
+   - 接触時は半接合 → ときどき融合
+   - 融合後すぐ増えず、しばらくしてから分裂
+========================================================= */
+function getMainBaseRadius() {
+  return CONFIG.droplet.radius * Math.min(w / 1200, h / 900, 1.12);
+}
+
+function getAuxBaseRadius(kind) {
+  const C = CONFIG.auxDroplets;
+  const mainR = getMainBaseRadius();
+
+  if (kind === "large")  return mainR * C.sizeRatioLarge;
+  if (kind === "medium") return mainR * C.sizeRatioMedium;
+  return mainR * C.sizeRatioSmall;
+}
+
+function clampAuxRadius(r) {
+  const mainR = getMainBaseRadius();
+  return clamp(r, mainR * 0.06, mainR * CONFIG.auxDroplets.maxRadiusRatioToMain);
+}
+
+function inferKindByRadius(r) {
+  const mainR = getMainBaseRadius();
+  const rr = r / mainR;
+  if (rr >= 0.31) return "large";
+  if (rr >= 0.16) return "medium";
+  return "small";
+}
+
+function initAuxDroplets() {
+  state.auxDroplets.length = 0;
+  state.auxMergePulse = 0;
+  state.splitTimer = rand(
+    CONFIG.auxDroplets.splitDelayMin,
+    CONFIG.auxDroplets.splitDelayMax
+  );
+
+  const initial = CONFIG.auxDroplets.initialPattern;
+  for (let i = 0; i < initial.length; i++) {
+    state.auxDroplets.push(createSplitDroplet(initial[i], i, initial.length, true));
   }
+}
 
-  function getRadiusByType(type) {
-    const C = CONFIG.auxDroplets;
-    if (type === "medium") return rand(C.mediumRadiusMin, C.mediumRadiusMax);
-    return rand(C.smallRadiusMin, C.smallRadiusMax);
+function createSplitDroplet(kind, index = 0, total = 1, startAsDrift = false) {
+  const C = CONFIG.auxDroplets;
+  const mainR = getMainBaseRadius();
+
+  const angleBase =
+    -Math.PI * 0.42 +
+    (index / Math.max(total - 1, 1)) * Math.PI * 0.84 +
+    rand(-0.18, 0.18);
+
+  const dist =
+    startAsDrift
+      ? rand(C.minDistance * 0.92, C.maxDistance * 0.82)
+      : mainR * 0.22;
+
+  const x = cx + Math.cos(angleBase) * dist;
+  const y = cy + Math.sin(angleBase) * dist;
+
+  const r = clampAuxRadius(getAuxBaseRadius(kind));
+
+  return {
+    kind,
+    r,
+    x,
+    y,
+    vx: startAsDrift ? rand(-8, 8) : Math.cos(angleBase) * C.spawnFromMainSpeed * rand(0.82, 0.95),
+    vy: startAsDrift ? rand(-8, 8) : Math.sin(angleBase) * C.spawnFromMainSpeed * rand(0.82, 0.95),
+    targetDist: rand(C.minDistance, C.maxDistance),
+    alpha: 0.9,
+    scale: startAsDrift ? 1 : 0.72,
+    life: 0,
+    mode: startAsDrift ? "drifting" : "splitting",
+    absorbT: 0,
+    seed: rand(0, 1000),
+    bridge: 0,
+    bridgeToMain: 0,
+    justMergedAt: -999
+  };
+}
+
+function scheduleSplitAfterQuiet() {
+  state.splitTimer = rand(
+    CONFIG.auxDroplets.splitCooldownAfterMergeMin,
+    CONFIG.auxDroplets.splitCooldownAfterMergeMax
+  );
+}
+
+function splitFromMain(countNeeded = 1) {
+  const C = CONFIG.auxDroplets;
+  const current = state.auxDroplets.length;
+  const allowed = C.maxAuxCount - current;
+  const count = Math.max(0, Math.min(countNeeded, allowed));
+  if (!count) return;
+
+  const pattern = choose(C.splitPatterns).slice();
+
+  for (let i = 0; i < count; i++) {
+    const kind = pattern[i] || choose(["medium", "small"]);
+    state.auxDroplets.push(createSplitDroplet(kind, i, count, false));
   }
+}
 
-  function initAuxDroplets() {
-    state.auxDroplets.length = 0;
-    state.auxMergePulse = 0;
-    state.splitTimer = rand(
-      CONFIG.auxDroplets.splitDelayMin,
-      CONFIG.auxDroplets.splitDelayMax
-    );
+function maybeScheduleSplit(dt) {
+  const C = CONFIG.auxDroplets;
+  if (state.auxDroplets.length >= C.maxAuxCount) return;
 
-    // 最初は必ず 主 + 中 + 小
-    const initial = CONFIG.auxDroplets.initialPattern;
-    for (let i = 0; i < initial.length; i++) {
-      state.auxDroplets.push(createSplitDroplet(initial[i], i, initial.length));
+  state.splitTimer -= dt;
+  if (state.splitTimer > 0) return;
+
+  splitFromMain(1);
+  state.splitTimer = rand(C.splitDelayMin, C.splitDelayMax);
+}
+
+function limitDropletSpeed(d) {
+  const maxV = CONFIG.auxDroplets.maxSpeed;
+  const len = Math.hypot(d.vx, d.vy);
+  if (len > maxV) {
+    d.vx = (d.vx / len) * maxV;
+    d.vy = (d.vy / len) * maxV;
+  }
+}
+
+function updateAuxDroplets(dt, time) {
+  if (started) return;
+
+  const C = CONFIG.auxDroplets;
+  const mainR = getMainBaseRadius();
+
+  state.auxMergePulse = Math.max(0, state.auxMergePulse - dt * 0.85);
+
+  maybeScheduleSplit(dt);
+
+  for (const d of state.auxDroplets) {
+    d.life += dt;
+    d.bridge = lerp(d.bridge, 0, dt * 5.5);
+    d.bridgeToMain = lerp(d.bridgeToMain, 0, dt * 5.5);
+
+    if (d.mode === "splitting") {
+      const k = clamp(d.life / C.splitGrowTime, 0, 1);
+      d.scale = lerp(0.72, 1, easeOutCubic(k));
+
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+
+      const dc = dist2(cx, cy, d.x, d.y);
+      const dir = normalize(d.x - cx, d.y - cy);
+
+      if (dc >= d.targetDist || k >= 1) {
+        d.mode = "drifting";
+        d.vx = dir.x * rand(-6, 6);
+        d.vy = dir.y * rand(-6, 6);
+        d.life = 0;
+      }
+      continue;
+    }
+
+    if (d.mode === "drifting") {
+      const toCenter = normalize(cx - d.x, cy - d.y);
+      const distCenter = toCenter.len;
+
+      const noiseX =
+        Math.sin(time * 0.44 + d.seed * 0.7) * C.driftNoise +
+        Math.sin(time * 0.82 + d.seed * 1.19) * C.driftNoise * 0.35;
+
+      const noiseY =
+        Math.cos(time * 0.48 + d.seed * 0.45) * C.driftNoise * C.driftYBias +
+        Math.sin(time * 0.9 + d.seed * 0.85) * C.driftNoise * 0.26;
+
+      let boundaryPull = 0;
+      if (distCenter > C.maxDistance) {
+        boundaryPull = (distCenter - C.maxDistance) * 0.12;
+      } else if (distCenter < C.minDistance * 0.82) {
+        boundaryPull = -(C.minDistance * 0.82 - distCenter) * 0.09;
+      }
+
+      d.vx += (noiseX - toCenter.x * boundaryPull) * dt * C.driftForce;
+      d.vy += (noiseY - toCenter.y * boundaryPull) * dt * C.driftForce;
+
+      d.vx *= C.driftDamping;
+      d.vy *= C.driftDamping;
+
+      limitDropletSpeed(d);
+
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+
+      d.scale = lerp(d.scale, 1, dt * 2.2);
+    }
+
+    if (d.mode === "absorbing") {
+      d.absorbT += dt / C.absorbShrinkTime;
+      const k = clamp(d.absorbT, 0, 1);
+      d.scale = lerp(1, 0.25, easeInCubic(k));
+      d.alpha = lerp(0.9, 0.04, k);
+
+      const dir = normalize(cx - d.x, cy - d.y);
+      d.vx = lerp(d.vx, dir.x * 90, dt * 3.2);
+      d.vy = lerp(d.vy, dir.y * 90, dt * 3.2);
+
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
     }
   }
 
-  function createSplitDroplet(type, index = 0, total = 2) {
-    const C = CONFIG.auxDroplets;
-    const mainR = getMainBaseRadius();
-    const angleBase = -Math.PI * 0.35 + (index / Math.max(total - 1, 1)) * Math.PI * 0.7 + rand(-0.28, 0.28);
-    const startR = mainR * 0.28;
-    const targetDist = rand(C.minDistance, C.maxDistance);
+  applyDropletPairSurfaceTension(dt, time);
+  applyMainSurfaceTension(dt, mainR);
 
-    return {
-      kind: type,
-      r: getRadiusByType(type),
-      x: cx + Math.cos(angleBase) * startR,
-      y: cy + Math.sin(angleBase) * startR,
-      vx: Math.cos(angleBase) * C.spawnFromMainSpeed * rand(0.82, 1.1),
-      vy: Math.sin(angleBase) * C.spawnFromMainSpeed * rand(0.82, 1.1) * 0.95,
-      targetDist,
-      alpha: 0.88,
-      scale: 0.45,
-      life: 0,
-      mode: "splitting", // splitting | drifting | absorbing
-      absorbT: 0,
-      seed: rand(0, 1000)
-    };
-  }
+  state.auxDroplets = state.auxDroplets.filter((d) => {
+    if (d.mode !== "absorbing") return true;
+    return d.absorbT < 1;
+  });
+}
 
-  function splitFromMain(countNeeded = 1) {
-    const current = state.auxDroplets.length;
-    const allowed = CONFIG.auxDroplets.maxAuxCount - current;
-    const count = Math.max(0, Math.min(countNeeded, allowed));
-    if (!count) return;
+function applyDropletPairSurfaceTension(dt, time) {
+  const C = CONFIG.auxDroplets;
 
-    const template = choose(CONFIG.auxDroplets.patterns);
-    const candidates = template.slice().sort(() => Math.random() - 0.5);
+  for (let i = 0; i < state.auxDroplets.length; i++) {
+    const a = state.auxDroplets[i];
+    if (a.mode !== "drifting") continue;
 
-    for (let i = 0; i < count; i++) {
-      const type = candidates[i] || choose(["medium", "small"]);
-      state.auxDroplets.push(createSplitDroplet(type, i, count));
-    }
-  }
+    for (let j = i + 1; j < state.auxDroplets.length; j++) {
+      const b = state.auxDroplets[j];
+      if (b.mode !== "drifting") continue;
 
-  function maybeScheduleSplit(dt) {
-    const C = CONFIG.auxDroplets;
-    if (state.auxDroplets.length >= C.maxAuxCount) return;
+      const dir = normalize(b.x - a.x, b.y - a.y);
+      const d = dir.len;
+      const rr = a.r * a.scale + b.r * b.scale;
 
-    state.splitTimer -= dt;
-    if (state.splitTimer > 0) return;
+      if (d < C.pairSenseRadius) {
+        const nearK = clamp(1 - d / C.pairSenseRadius, 0, 1);
 
-    splitFromMain(1);
-    state.splitTimer = rand(C.splitDelayMin, C.splitDelayMax);
-  }
-
-  function updateAuxDroplets(dt, time) {
-    if (started) return;
-
-    const C = CONFIG.auxDroplets;
-    const mainR = getMainBaseRadius();
-
-    state.auxMergePulse = Math.max(0, state.auxMergePulse - dt * 1.15);
-
-    maybeScheduleSplit(dt);
-
-    // 基本更新
-    for (const d of state.auxDroplets) {
-      d.life += dt;
-
-      if (d.mode === "splitting") {
-        const k = clamp(d.life / C.splitGrowTime, 0, 1);
-        d.scale = lerp(0.45, 1, easeOutCubic(k));
-
-        d.x += d.vx * dt;
-        d.y += d.vy * dt;
-
-        const dc = dist2(cx, cy, d.x, d.y);
-        const dir = normalize(d.x - cx, d.y - cy);
-
-        // 目標距離で漂いへ
-        if (dc >= d.targetDist || k >= 1) {
-          d.mode = "drifting";
-          d.vx = dir.x * rand(-18, 18);
-          d.vy = dir.y * rand(-18, 18);
-          d.life = 0;
-        }
-        continue;
+        a.vx += dir.x * C.pairAttractForce * nearK * dt;
+        a.vy += dir.y * C.pairAttractForce * nearK * dt;
+        b.vx -= dir.x * C.pairAttractForce * nearK * dt;
+        b.vy -= dir.y * C.pairAttractForce * nearK * dt;
       }
 
-      if (d.mode === "drifting") {
-        const toCenter = normalize(cx - d.x, cy - d.y);
-        const distCenter = toCenter.len;
+      const bridgeStart = rr * C.pairBridgeStart;
+      const bridgeFull = rr * C.pairBridgeFull;
 
-        // 中央の周りを循環ではなく、揺蕩わせる
-        const noiseX =
-          Math.sin(time * 0.9 + d.seed * 0.7) * C.driftNoise +
-          Math.sin(time * 1.55 + d.seed * 1.3) * C.driftNoise * 0.42;
-
-        const noiseY =
-          Math.cos(time * 1.0 + d.seed * 0.5) * C.driftNoise * C.driftYBias +
-          Math.sin(time * 1.7 + d.seed * 0.8) * C.driftNoise * 0.35;
-
-        // 範囲外に行きすぎたらゆるく戻す
-        let boundaryPull = 0;
-        if (distCenter > C.maxDistance) {
-          boundaryPull = (distCenter - C.maxDistance) * 0.22;
-        } else if (distCenter < C.minDistance * 0.72) {
-          boundaryPull = -(C.minDistance * 0.72 - distCenter) * 0.18;
-        }
-
-        d.vx += (noiseX - toCenter.x * boundaryPull) * dt;
-        d.vy += (noiseY - toCenter.y * boundaryPull) * dt;
-
-        d.vx *= C.driftDamping;
-        d.vy *= C.driftDamping;
-
-        d.x += d.vx * dt;
-        d.y += d.vy * dt;
-
-        d.scale = lerp(d.scale, 1, dt * 5);
+      if (d < bridgeStart) {
+        const bk = clamp((bridgeStart - d) / Math.max(bridgeStart - bridgeFull, 1), 0, 1);
+        a.bridge = Math.max(a.bridge, bk);
+        b.bridge = Math.max(b.bridge, bk);
       }
 
-      if (d.mode === "absorbing") {
-        d.absorbT += dt / C.absorbShrinkTime;
-        const k = clamp(d.absorbT, 0, 1);
-        d.scale = lerp(1, 0.2, easeInCubic(k));
-        d.alpha = lerp(0.88, 0.04, k);
-
-        const dir = normalize(cx - d.x, cy - d.y);
-        d.vx = lerp(d.vx, dir.x * 180, dt * 5.5);
-        d.vy = lerp(d.vy, dir.y * 180, dt * 5.5);
-
-        d.x += d.vx * dt;
-        d.y += d.vy * dt;
-      }
-    }
-
-    // 滴同士の表面張力
-    applyDropletPairSurfaceTension(dt);
-
-    // 主滴との表面張力
-    applyMainSurfaceTension(dt, mainR);
-
-    // 消去
-    state.auxDroplets = state.auxDroplets.filter((d) => {
-      if (d.mode !== "absorbing") return true;
-      return d.absorbT < 1;
-    });
-  }
-
-  function applyDropletPairSurfaceTension(dt) {
-    const C = CONFIG.auxDroplets;
-
-    for (let i = 0; i < state.auxDroplets.length; i++) {
-      const a = state.auxDroplets[i];
-      if (a.mode !== "drifting") continue;
-
-      for (let j = i + 1; j < state.auxDroplets.length; j++) {
-        const b = state.auxDroplets[j];
-        if (b.mode !== "drifting") continue;
-
-        const dir = normalize(b.x - a.x, b.y - a.y);
-        const d = dir.len;
-
-        if (d < C.pairAttractRadius) {
-          const k = 1 - d / C.pairAttractRadius;
-          const force = C.pairAttractForce * k;
-
-          a.vx += dir.x * force * dt;
-          a.vy += dir.y * force * dt;
-          b.vx -= dir.x * force * dt;
-          b.vy -= dir.y * force * dt;
-        }
-
-        // 近接で融合
-        if (d <= a.r + b.r + C.pairMergePadding) {
-          mergeDropletPair(i, j);
+      if (d <= rr + C.pairMergePadding) {
+        if (Math.random() < C.pairMergeChance * dt * 60) {
+          mergeDropletPair(i, j, time);
           return;
         }
       }
     }
   }
+}
 
-  function mergeDropletPair(i, j) {
-    const a = state.auxDroplets[i];
-    const b = state.auxDroplets[j];
-    if (!a || !b) return;
+function mergeDropletPair(i, j, time) {
+  const a = state.auxDroplets[i];
+  const b = state.auxDroplets[j];
+  if (!a || !b) return;
 
-    const area = Math.PI * a.r * a.r + Math.PI * b.r * b.r;
-    const nr = Math.sqrt(area / Math.PI);
+  const area = Math.PI * (a.r * a.scale) ** 2 + Math.PI * (b.r * b.scale) ** 2;
+  const mainR = getMainBaseRadius();
+  const maxR = mainR * CONFIG.auxDroplets.maxRadiusRatioToMain;
+  const nr = clampAuxRadius(Math.min(Math.sqrt(area / Math.PI), maxR));
 
-    // 2滴が融合して1滴へ
-    const merged = {
-      kind: nr >= 12 ? "medium" : "small",
-      r: clamp(nr, CONFIG.auxDroplets.smallRadiusMin, CONFIG.auxDroplets.mediumRadiusMax),
-      x: (a.x + b.x) * 0.5,
-      y: (a.y + b.y) * 0.5,
-      vx: (a.vx + b.vx) * 0.5,
-      vy: (a.vy + b.vy) * 0.5,
-      targetDist: (dist2(cx, cy, a.x, a.y) + dist2(cx, cy, b.x, b.y)) * 0.5,
-      alpha: 0.9,
-      scale: 1.08,
-      life: 0,
-      mode: "drifting",
-      absorbT: 0,
-      seed: rand(0, 1000)
-    };
+  const merged = {
+    kind: inferKindByRadius(nr),
+    r: nr,
+    x: (a.x + b.x) * 0.5,
+    y: (a.y + b.y) * 0.5,
+    vx: (a.vx + b.vx) * 0.4,
+    vy: (a.vy + b.vy) * 0.4,
+    targetDist: (a.targetDist + b.targetDist) * 0.5,
+    alpha: 0.92,
+    scale: 1.06,
+    life: 0,
+    mode: "drifting",
+    absorbT: 0,
+    seed: rand(0, 1000),
+    bridge: 0,
+    bridgeToMain: 0,
+    justMergedAt: time
+  };
 
-    state.auxMergePulse = Math.min(1, state.auxMergePulse + CONFIG.auxDroplets.mergeFlashMax);
+  state.auxMergePulse = Math.min(1, state.auxMergePulse + CONFIG.auxDroplets.mergeFlashMax);
 
-    state.auxDroplets.splice(j, 1);
-    state.auxDroplets.splice(i, 1, merged);
-  }
+  state.auxDroplets.splice(j, 1);
+  state.auxDroplets.splice(i, 1, merged);
 
-  function applyMainSurfaceTension(dt, mainR) {
-    const C = CONFIG.auxDroplets;
+  scheduleSplitAfterQuiet();
+}
 
-    for (const d of state.auxDroplets) {
-      if (d.mode !== "drifting") continue;
+function applyMainSurfaceTension(dt, mainR) {
+  const C = CONFIG.auxDroplets;
 
-      const dir = normalize(cx - d.x, cy - d.y);
-      const distCenter = dir.len;
+  for (const d of state.auxDroplets) {
+    if (d.mode !== "drifting") continue;
 
-      if (distCenter < C.mainAttractRadius) {
-        const k = 1 - distCenter / C.mainAttractRadius;
-        const force = C.mainAttractForce * k;
+    const dir = normalize(cx - d.x, cy - d.y);
+    const distCenter = dir.len;
+    const rr = mainR + d.r * d.scale;
 
-        d.vx += dir.x * force * dt;
-        d.vy += dir.y * force * dt;
-      }
+    if (distCenter < C.mainSenseRadius) {
+      const k = clamp(1 - distCenter / C.mainSenseRadius, 0, 1);
+      d.vx += dir.x * C.mainAttractForce * k * dt;
+      d.vy += dir.y * C.mainAttractForce * k * dt;
+    }
 
-      if (distCenter <= mainR + d.r + C.mainMergePadding) {
-        d.mode = "absorbing";
-        d.absorbT = 0;
-        state.auxMergePulse = Math.min(1, state.auxMergePulse + C.mergeFlashMax);
-      }
+    const bridgeStart = rr * C.mainBridgeStart;
+    const bridgeFull = rr * C.mainBridgeFull;
+
+    if (distCenter < bridgeStart) {
+      d.bridgeToMain = clamp(
+        (bridgeStart - distCenter) / Math.max(bridgeStart - bridgeFull, 1),
+        0,
+        1
+      );
+    }
+
+    if (distCenter <= rr + C.mainMergePadding) {
+      d.mode = "absorbing";
+      d.absorbT = 0;
+      state.auxMergePulse = Math.min(1, state.auxMergePulse + C.mergeFlashMax);
+      scheduleSplitAfterQuiet();
     }
   }
-
+}
   /* =========================================================
      09. Phase
   ========================================================= */
@@ -723,6 +831,54 @@
       pts[0].x,
       pts[0].y
     );
+
+    function drawBridgeBetween(x1, y1, r1, x2, y2, r2, strength, alphaMul = 1) {
+    if (strength <= 0.001) return;
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const d = Math.hypot(dx, dy) || 1;
+    const nx = dx / d;
+    const ny = dy / d;
+    const px = -ny;
+    const py = nx;
+
+    const neck = Math.min(r1, r2) * lerp(0.12, 0.46, strength);
+    const pull = lerp(0.18, 0.42, strength) * d;
+
+    const a1x = x1 + nx * r1 * 0.72;
+    const a1y = y1 + ny * r1 * 0.72;
+    const a2x = x2 - nx * r2 * 0.72;
+    const a2y = y2 - ny * r2 * 0.72;
+
+    const p1x = a1x + px * neck;
+    const p1y = a1y + py * neck;
+    const p2x = a2x + px * neck * 0.92;
+    const p2y = a2y + py * neck * 0.92;
+    const p3x = a2x - px * neck * 0.92;
+    const p3y = a2y - py * neck * 0.92;
+    const p4x = a1x - px * neck;
+    const p4y = a1y - py * neck;
+
+    const c1x = (a1x + a2x) * 0.5 - nx * pull * 0.12 + px * neck * 0.65;
+    const c1y = (a1y + a2y) * 0.5 - ny * pull * 0.12 + py * neck * 0.65;
+    const c2x = (a1x + a2x) * 0.5 - nx * pull * 0.12 - px * neck * 0.65;
+    const c2y = (a1y + a2y) * 0.5 - ny * pull * 0.12 - py * neck * 0.65;
+
+    ctx.beginPath();
+    ctx.moveTo(p1x, p1y);
+    ctx.quadraticCurveTo(c1x, c1y, p2x, p2y);
+    ctx.lineTo(p3x, p3y);
+    ctx.quadraticCurveTo(c2x, c2y, p4x, p4y);
+    ctx.closePath();
+
+    ctx.fillStyle = `rgba(255,255,255,${0.032 * strength * alphaMul})`;
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(255,255,255,${0.09 * strength * alphaMul})`;
+    ctx.lineWidth = 0.8 + strength * 0.55;
+    ctx.stroke();
+    }
   }
 
   function drawDroplet(time, hintK) {
