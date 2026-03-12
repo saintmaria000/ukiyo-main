@@ -5,8 +5,8 @@
   --fg-faint:rgba(255,255,255,.38);
   --line:rgba(255,255,255,.12);
 
-  --logo-main-size:clamp(2.4rem, 7vw, 5.8rem);
-  --logo-sub-size:clamp(.78rem, 1.25vw, 1rem);
+  --logo-main-size:clamp(3.5rem, 8vw, 7.2rem);
+  --logo-sub-size:clamp(.72rem, .92vw, .88rem);
   --lang-size:clamp(.78rem, 1.1vw, .92rem);
 
   --safe-x:clamp(20px, 4vw, 40px);
@@ -55,21 +55,19 @@ body{
 
 /* ==============================
    Entrance base layer
-   canvasより前に置く
 ============================== */
 .entrance{
   position:fixed;
   inset:0;
-  z-index:20; /* ← canvasより前 */
+  z-index:20;
   min-height:100svh;
   min-height:100vh;
   display:grid;
   grid-template-rows:1fr auto;
   padding:var(--safe-y) var(--safe-x);
-  pointer-events:none; /* 基本は演出だけ */
+  pointer-events:none;
 }
 
-/* canvasより上にある演出レイヤーがタップを食わないようにする */
 .hero-overlay,
 .hero-copy,
 .hero-logo,
@@ -79,111 +77,142 @@ body{
 
 /* ==============================
    Initial logo
-   浮世のニュアンスを強めた版
+   U   k   i   y   o
+        F   i   l   m
 ============================== */
-
-.brand-main{
-  font-size:clamp(3.4rem, 8vw, 7rem);
-  letter-spacing:.52em;
-  padding-left:.52em;
-}
-
-.brand-sub{
-  margin-top:14px;
-  font-size:clamp(.68rem, .88vw, .82rem);
-  letter-spacing:.36em;
-  padding-left:.36em;
-}
 .brand{
   position:fixed;
   left:50%;
   top:52%;
   z-index:22;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
   width:max-content;
-  text-align:left;
+
   pointer-events:none;
   opacity:1;
   visibility:visible;
-  transform:translate(-50%, -50%) translateY(18px);
+  transform:translate(-50%, -50%);
   transition:
-    opacity 500ms ease,
-    transform 500ms ease;
+    opacity 520ms ease,
+    transform 520ms ease,
+    filter 520ms ease;
 }
 
-.brand-main{
-  font-size:clamp(3.4rem, 8vw, 7rem);
-  font-weight:250;
-  line-height:.9;
-  letter-spacing:.52em;
-  text-transform:lowercase;
-  color:rgba(255,255,255,.86);
-  padding-left:.52em;
-  text-shadow:
-    0 0 10px rgba(255,255,255,.03),
-    0 0 26px rgba(120,150,255,.025);
-}
-
-.brand-sub{
-  position:absolute;
-  top:.28em;
-  left:100%;
-  margin-top:0;
-  margin-left:1.4em;
-  font-size:clamp(.56rem, .78vw, .76rem);
-  line-height:1;
-  letter-spacing:.42em;
-  text-transform:uppercase;
-  color:rgba(255,255,255,.42);
-  padding-left:.42em;
-  white-space:nowrap;
-}
-
-/* ロゴ全体を少しだけ“水滴の下”に感じさせる */
+/* ロゴ周辺のごく薄い湿度 */
 .brand::before{
   content:"";
   position:absolute;
   left:50%;
   top:50%;
-  width:140%;
+  width:150%;
   height:180%;
-  transform:translate(-50%, -56%);
+  transform:translate(-50%, -54%);
   pointer-events:none;
   background:
     radial-gradient(
       ellipse at center,
-      rgba(255,255,255,.035) 0%,
-      rgba(255,255,255,.012) 34%,
-      rgba(255,255,255,0) 72%
+      rgba(255,255,255,.030) 0%,
+      rgba(255,255,255,.010) 34%,
+      rgba(255,255,255,0) 74%
     );
   filter:blur(12px);
 }
 
-/* 少しだけ呼吸するような静かな存在感 */
-@keyframes brandBreath {
+.brand-main{
+  position:relative;
+  z-index:1;
+
+  font-size:var(--logo-main-size);
+  font-weight:250;
+  line-height:.9;
+  letter-spacing:.54em;
+  text-transform:none;
+  color:rgba(255,255,255,.88);
+  padding-left:.54em;
+
+  text-shadow:
+    0 0 10px rgba(255,255,255,.03),
+    0 0 30px rgba(120,150,255,.02);
+
+  transition:
+    opacity 520ms ease,
+    transform 520ms ease,
+    letter-spacing 520ms ease,
+    filter 520ms ease;
+}
+
+.brand-sub{
+  position:relative;
+  z-index:1;
+
+  margin-top:14px;
+  margin-left:2.7em;
+  align-self:center;
+
+  font-size:var(--logo-sub-size);
+  font-weight:300;
+  line-height:1;
+  letter-spacing:.42em;
+  text-transform:none;
+  color:rgba(255,255,255,.42);
+  padding-left:.42em;
+
+  text-shadow:
+    0 0 8px rgba(255,255,255,.02),
+    0 0 24px rgba(120,150,255,.015);
+
+  transition:
+    opacity 520ms ease,
+    transform 520ms ease,
+    letter-spacing 520ms ease,
+    filter 520ms ease;
+
+  transition-delay:40ms;
+}
+
+/* 静かな呼吸 */
+@keyframes brandFloat {
   0%{
-    transform:translate(-50%, -50%) translateY(18px);
+    transform:translate(-50%, -50%);
     opacity:1;
   }
   50%{
-    transform:translate(-50%, -50%) translateY(16px);
+    transform:translate(-50%, calc(-50% - 1px));
     opacity:.985;
   }
   100%{
-    transform:translate(-50%, -50%) translateY(18px);
+    transform:translate(-50%, -50%);
     opacity:1;
   }
 }
 
 .brand{
-  animation:brandBreath 4.8s ease-in-out infinite;
+  animation:brandFloat 5.2s ease-in-out infinite;
 }
 
-/* JSでtransformを触るので、transition時はanimationを邪魔しないように */
+/* ほどけるように消える */
 body.is-transitioning .brand{
   opacity:0;
-  transform:translate(-50%, -50%) translateY(26px);
+  transform:translate(-50%, calc(-50% - 8px));
+  filter:blur(2px);
   animation:none;
 }
+
+body.is-transitioning .brand-main{
+  letter-spacing:.62em;
+  transform:translateY(-2px);
+  opacity:0;
+}
+
+body.is-transitioning .brand-sub{
+  letter-spacing:.52em;
+  transform:translateY(2px);
+  opacity:0;
+}
+
 /* ==============================
    Final reveal logo
 ============================== */
@@ -191,7 +220,7 @@ body.is-transitioning .brand{
   position:fixed;
   left:50%;
   top:50%;
-  z-index:30; /* ← brandよりさらに前 */
+  z-index:30;
   display:block;
   text-align:center;
   pointer-events:none;
@@ -227,10 +256,6 @@ body.is-transitioning .brand{
 
 /* ==============================
    Entrance Language Gate
-   animation後に表示
-   PC: JA / EN
-   smartphone portrait: rotate notice
-   smartphone landscape: JA / EN
 ============================== */
 .entrance-gate{
   position:fixed;
@@ -316,14 +341,20 @@ body.is-transitioning .brand{
 }
 
 @media (max-width:640px){
+  .brand{
+    top:53%;
+  }
+
   .brand-main{
-    letter-spacing:.22em;
-    padding-left:.22em;
+    letter-spacing:.28em;
+    padding-left:.28em;
   }
 
   .brand-sub{
-    letter-spacing:.34em;
-    padding-left:.34em;
+    margin-top:12px;
+    margin-left:1.7em;
+    letter-spacing:.30em;
+    padding-left:.30em;
   }
 
   .reveal-logo-main{
@@ -350,13 +381,14 @@ body.is-transitioning .brand{
 
 @media (prefers-reduced-motion:reduce){
   .brand,
-  .lang-select,
   .reveal-logo,
   .entrance-gate{
     transition:none;
+    animation:none;
   }
 
-  .lang-link,
+  .brand-main,
+  .brand-sub,
   .entrance-gate__link{
     transition:none;
   }
