@@ -442,19 +442,46 @@
       seed: rand(0, 1000)
     };
   }
+function initAuxDroplets() {
+  state.auxDroplets.length = 0;
+  state.mainAbsorbPulse = 0;
 
-  function initAuxDroplets() {
-    state.auxDroplets.length = 0;
-    state.mainAbsorbPulse = 0;
+  const kinds = CONFIG.auxDroplets.initialPattern;
+  const bounds = getFloatBounds();
 
-    const kinds = CONFIG.auxDroplets.initialPattern;
+  for (let i = 0; i < kinds.length; i++) {
 
-    for (let i = 0; i < kinds.length; i++) {
-      const angle = -Math.PI * 0.34 + i * 0.96 + rand(-0.10, 0.10);
-      const dist = getStableDistanceForKind(kinds[i]);
-      state.auxDroplets.push(createAuxDroplet(kinds[i], angle, dist));
-    }
+    // 完全ランダム角度
+    const angle = Math.random() * Math.PI * 2;
+
+    // 主滴からの距離もランダム
+    const minDist = getMainBaseRadius() * 0.9;
+    const maxDist = getMainBaseRadius() * 1.8;
+    const dist = rand(minDist, maxDist);
+
+    let x = cx + Math.cos(angle) * dist;
+    let y = cy + Math.sin(angle) * dist;
+
+    // 可動範囲内に収める
+    x = clamp(x, bounds.minX, bounds.maxX);
+    y = clamp(y, bounds.minY, bounds.maxY);
+
+    const tangent = angle + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+
+    state.auxDroplets.push({
+      kind: kinds[i],
+      r: clampAuxRadius(getAuxBaseRadius(kinds[i])),
+      x,
+      y,
+      vx: Math.cos(tangent) * rand(3, 5),
+      vy: Math.sin(tangent) * rand(2, 4),
+      alpha: 0.9,
+      scale: 1,
+      life: 0,
+      seed: rand(0, 1000)
+    });
   }
+}
 
   function limitDropletSpeed(d) {
     const maxV = CONFIG.auxDroplets.maxSpeed;
