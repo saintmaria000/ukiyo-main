@@ -831,8 +831,8 @@ function applyMainSurfaceTension(dt, mainR) {
       pts[0].x,
       pts[0].y
     );
-
-    function drawBridgeBetween(x1, y1, r1, x2, y2, r2, strength, alphaMul = 1) {
+  }
+  function drawBridgeBetween(x1, y1, r1, x2, y2, r2, strength, alphaMul = 1) {
     if (strength <= 0.001) return;
 
     const dx = x2 - x1;
@@ -879,8 +879,7 @@ function applyMainSurfaceTension(dt, mainR) {
     ctx.lineWidth = 0.8 + strength * 0.55;
     ctx.stroke();
     }
-  }
-
+    
   function drawDroplet(time, hintK) {
     const pts = buildDropletPath(time, hintK);
 
