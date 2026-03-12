@@ -81,10 +81,23 @@ body{
    Initial logo
    浮世のニュアンスを強めた版
 ============================== */
+
+.brand-main{
+  font-size:clamp(3.4rem, 8vw, 7rem);
+  letter-spacing:.52em;
+  padding-left:.52em;
+}
+
+.brand-sub{
+  margin-top:14px;
+  font-size:clamp(.68rem, .88vw, .82rem);
+  letter-spacing:.36em;
+  padding-left:.36em;
+}
 .brand{
   position:fixed;
   left:50%;
-  top:50%;
+  top:52%;
   z-index:22;
   width:max-content;
   text-align:left;
@@ -98,13 +111,13 @@ body{
 }
 
 .brand-main{
-  font-size:clamp(3rem, 7.4vw, 6.4rem);
+  font-size:clamp(3.4rem, 8vw, 7rem);
   font-weight:250;
   line-height:.9;
-  letter-spacing:.24em;
+  letter-spacing:.52em;
   text-transform:lowercase;
   color:rgba(255,255,255,.86);
-  padding-left:.24em;
+  padding-left:.52em;
   text-shadow:
     0 0 10px rgba(255,255,255,.03),
     0 0 26px rgba(120,150,255,.025);
