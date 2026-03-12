@@ -62,9 +62,15 @@
       burst: 1.0,
       drift: 0.5,
       gather: 1.08,
-      flash: 0.22,
-      logo: 0.8
+      flash: 0.30,
+      logo: 0.96
     },
+
+    // -------------------------------------------------------
+    // 終盤の余韻
+    // 憂き世が出切ってから言語選択へ移るまでの静止時間
+    // -------------------------------------------------------
+    logoHoldAfterReveal: 0.96,
 
     // -------------------------------------------------------
     // 破片量
@@ -130,6 +136,7 @@
   let finished = false;
   let startTime = 0;
   let lastTs = 0;
+  let doneTimer = 0;
 
   const P = CONFIG.phase;
   const T_HINT = P.hint;
@@ -889,7 +896,7 @@
   /* =========================================================
      15. Brand / Reveal Logo
      - 初期ロゴは広がって薄くなる
-     - 憂き世は上から落ちて1回だけ軽くバウンド
+     - 憂き世は上から入って1回だけ軽くバウンド
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
@@ -906,16 +913,16 @@
     revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
 
     let y;
-    if (k < 0.65) {
-      const drop = k / 0.65;
-      y = lerp(-120, 8, easeOutCubic(drop));
+    if (k < 0.78) {
+      const enter = k / 0.78;
+      y = lerp(-34, 0, easeOutCubic(enter));
     } else {
-      const bounce = (k - 0.65) / 0.35;
-      y = 8 - Math.sin(bounce * Math.PI) * 8;
+      const bounce = (k - 0.78) / 0.22;
+      y = -Math.sin(bounce * Math.PI) * 4 * (1 - bounce);
     }
 
     revealLogo.style.transform =
-      `translate(-50%, -50%) translateY(${y}px) scale(${lerp(0.96, 1, k)})`;
+      `translate(-50%, -50%) translateY(${y}px) scale(${lerp(0.985, 1, k)})`;
   }
 
   function prepareLogos() {
@@ -937,7 +944,7 @@
       revealLogo.style.left = revealLogo.style.left || "50%";
       revealLogo.style.top = revealLogo.style.top || "50%";
       revealLogo.style.zIndex = "25";
-      revealLogo.style.transform = "translate(-50%, -50%) translateY(-120px) scale(0.96)";
+      revealLogo.style.transform = "translate(-50%, -50%) translateY(-34px) scale(0.985)";
     }
   }
 
@@ -998,7 +1005,6 @@
     }
 
     if (phase === "hint") {
-      // 早く消えすぎない
       setBrandOpacity(1 - hintK * 0.38);
       setRevealOpacity(0);
       drawDroplet(now, hintK);
@@ -1010,7 +1016,6 @@
         const burstK = clamp((t - T_HINT) / P.burst, 0, 1);
         setBrandOpacity(1 - easeOutCubic(burstK));
 
-        // 少し広がって薄くなる
         if (brand) {
           const spread = 1 + burstK * 0.035;
           brand.style.transform = `translate(-50%, -50%) scale(${spread})`;
@@ -1047,7 +1052,9 @@
 
       if (phase === "done" && !finished) {
         finished = true;
-        fireEntranceDone();
+        doneTimer = window.setTimeout(() => {
+          fireEntranceDone();
+        }, CONFIG.logoHoldAfterReveal * 1000);
       }
     }
 
@@ -1097,6 +1104,18 @@
      19. Boot / Events
   ========================================================= */
   function boot() {
+    window.clearTimeout(doneTimer);
+    doneTimer = 0;
+
+    started = false;
+    finished = false;
+    startTime = 0;
+    lastTs = 0;
+
+    state.flash = 0;
+    state.revealShown = false;
+    state.entranceDoneFired = false;
+
     resize();
     createShardField();
     prepareLogos();
