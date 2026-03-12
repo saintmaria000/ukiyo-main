@@ -2,295 +2,260 @@
 (function () {
   "use strict";
 
-  // =========================
-  // 設定
-  // =========================
   const CONFIG = {
-    jaUrl: "./ja/index.html",
-    enUrl: "./en/index.html",
+    jaUrl: "../ja/index.html",
+    enUrl: "../en/index.html",
 
-    // true なら「このセッションで一度閉じたら再表示しない」
+    // 同一セッション内で一度選んだら再表示しない
     oncePerSession: true,
+    sessionKeyDone: "ukiyo_lang_gate_done",
+    sessionKeyLang: "ukiyo_lang_gate_lang",
 
-    storageKeyClosed: "ukiyo_mobile_entry_closed",
-    storageKeyLang: "ukiyo_mobile_lang"
+    labels: {
+      ja: "JA",
+      en: "EN",
+      rotateJa: "Please rotate your device horizontally.",
+      rotateEn: "横画面にしてお進みください。",
+      continue: "Continue"
+    }
   };
 
-  // =========================
-  // 対象判定
-  // =========================
-  function isSmartphoneLike() {
-    const ua = navigator.userAgent || "";
-    const coarse = window.matchMedia("(pointer: coarse)").matches;
-    const smallScreen = Math.min(window.innerWidth, window.innerHeight) <= 900;
-
-    const mobileUA =
-      /iPhone|Android.+Mobile|Windows Phone|iPod/i.test(ua);
-
-    return coarse && (smallScreen || mobileUA);
+  function isCoarsePointer() {
+    return window.matchMedia("(pointer: coarse)").matches;
   }
 
   function isLandscape() {
     return window.matchMedia("(orientation: landscape)").matches;
   }
 
+  function isSmartphoneLike() {
+    const ua = navigator.userAgent || "";
+    const mobileUA = /iPhone|Android.+Mobile|iPod|Windows Phone/i.test(ua);
+    const smallSide = Math.min(window.innerWidth, window.innerHeight) <= 900;
+    return isCoarsePointer() && (mobileUA || smallSide);
+  }
+
   function shouldSkip() {
-    if (!isSmartphoneLike()) return true;
-
-    if (CONFIG.oncePerSession) {
-      try {
-        if (sessionStorage.getItem(CONFIG.storageKeyClosed) === "1") {
-          return true;
-        }
-      } catch (_) {}
-    }
-
-    return false;
-  }
-
-  // =========================
-  // DOM生成
-  // =========================
-  function createOverlay() {
-    const overlay = document.createElement("div");
-    overlay.className = "mobile-entry-announce";
-    overlay.setAttribute("role", "dialog");
-    overlay.setAttribute("aria-modal", "true");
-    overlay.setAttribute("aria-label", "Language selection");
-
-    overlay.innerHTML = `
-      <div class="mobile-entry-announce__backdrop"></div>
-      <div class="mobile-entry-announce__panel">
-        <div class="mobile-entry-announce__inner">
-
-          <p class="mobile-entry-announce__lead">Choose Language</p>
-
-          <div class="mobile-entry-announce__lang">
-            <button type="button" class="mobile-entry-announce__btn" data-lang="ja">JA</button>
-            <button type="button" class="mobile-entry-announce__btn" data-lang="en">EN</button>
-          </div>
-
-          <div class="mobile-entry-announce__rotate ${isLandscape() ? "is-hidden" : ""}">
-            <div class="mobile-entry-announce__icon" aria-hidden="true">
-              <span class="mobile-entry-announce__phone"></span>
-            </div>
-            <p class="mobile-entry-announce__note">
-              For the best experience, please rotate your device horizontally.
-            </p>
-          </div>
-
-        </div>
-      </div>
-    `;
-
-    return overlay;
-  }
-
-  function injectStyle() {
-    if (document.getElementById("mobile-entry-announce-style")) return;
-
-    const style = document.createElement("style");
-    style.id = "mobile-entry-announce-style";
-    style.textContent = `
-      .mobile-entry-announce{
-        position:fixed;
-        inset:0;
-        z-index:99999;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
-        color:#fff;
-      }
-
-      .mobile-entry-announce__backdrop{
-        position:absolute;
-        inset:0;
-        background:rgba(0,0,0,.76);
-        backdrop-filter:blur(10px);
-        -webkit-backdrop-filter:blur(10px);
-      }
-
-      .mobile-entry-announce__panel{
-        position:relative;
-        width:min(88vw, 420px);
-        margin:auto;
-      }
-
-      .mobile-entry-announce__inner{
-        position:relative;
-        padding:24px 22px 22px;
-        border:1px solid rgba(255,255,255,.14);
-        background:rgba(10,10,10,.88);
-        box-shadow:0 18px 50px rgba(0,0,0,.35);
-        text-align:center;
-      }
-
-      .mobile-entry-announce__lead{
-        margin:0 0 18px;
-        font-size:.82rem;
-        letter-spacing:.24em;
-        text-transform:uppercase;
-        opacity:.9;
-      }
-
-      .mobile-entry-announce__lang{
-        display:flex;
-        justify-content:center;
-        gap:12px;
-        margin:0 0 22px;
-      }
-
-      .mobile-entry-announce__btn{
-        appearance:none;
-        border:1px solid rgba(255,255,255,.2);
-        background:transparent;
-        color:#fff;
-        min-width:96px;
-        padding:12px 16px;
-        font-size:.78rem;
-        letter-spacing:.18em;
-        text-transform:uppercase;
-        cursor:pointer;
-        transition:
-          background .2s ease,
-          border-color .2s ease,
-          transform .2s ease,
-          opacity .2s ease;
-      }
-
-      .mobile-entry-announce__btn:active{
-        transform:scale(.98);
-      }
-
-      .mobile-entry-announce__btn:hover{
-        background:rgba(255,255,255,.08);
-        border-color:rgba(255,255,255,.35);
-      }
-
-      .mobile-entry-announce__rotate{
-        display:grid;
-        gap:10px;
-        justify-items:center;
-        padding-top:6px;
-      }
-
-      .mobile-entry-announce__rotate.is-hidden{
-        display:none;
-      }
-
-      .mobile-entry-announce__icon{
-        width:34px;
-        height:34px;
-        display:grid;
-        place-items:center;
-      }
-
-      .mobile-entry-announce__phone{
-        width:16px;
-        height:26px;
-        border:1.5px solid rgba(255,255,255,.8);
-        border-radius:4px;
-        position:relative;
-        display:block;
-        transform:rotate(-90deg);
-        opacity:.9;
-      }
-
-      .mobile-entry-announce__phone::after{
-        content:"";
-        position:absolute;
-        left:50%;
-        bottom:2px;
-        width:4px;
-        height:4px;
-        border-radius:50%;
-        background:rgba(255,255,255,.75);
-        transform:translateX(-50%);
-      }
-
-      .mobile-entry-announce__note{
-        margin:0;
-        font-size:.68rem;
-        line-height:1.6;
-        letter-spacing:.08em;
-        color:rgba(255,255,255,.78);
-      }
-
-      @media (max-width: 380px){
-        .mobile-entry-announce__inner{
-          padding:22px 16px 18px;
-        }
-
-        .mobile-entry-announce__btn{
-          min-width:84px;
-          padding:11px 12px;
-          font-size:.72rem;
-        }
-
-        .mobile-entry-announce__note{
-          font-size:.64rem;
-        }
-      }
-    `;
-
-    document.head.appendChild(style);
-  }
-
-  // =========================
-  // 制御
-  // =========================
-  function updateRotateNotice(root) {
-    const note = root.querySelector(".mobile-entry-announce__rotate");
-    if (!note) return;
-
-    note.classList.toggle("is-hidden", isLandscape());
-  }
-
-  function closeOverlay(root) {
-    if (!root) return;
+    if (!CONFIG.oncePerSession) return false;
 
     try {
-      if (CONFIG.oncePerSession) {
-        sessionStorage.setItem(CONFIG.storageKeyClosed, "1");
-      }
+      return sessionStorage.getItem(CONFIG.sessionKeyDone) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function markDone(lang) {
+    if (!CONFIG.oncePerSession) return;
+
+    try {
+      sessionStorage.setItem(CONFIG.sessionKeyDone, "1");
+      if (lang) sessionStorage.setItem(CONFIG.sessionKeyLang, lang);
     } catch (_) {}
-
-    window.removeEventListener("resize", root.__updateRotateNotice__);
-    window.removeEventListener("orientationchange", root.__updateRotateNotice__);
-
-    root.remove();
   }
 
   function goToLanguage(lang) {
     const url = lang === "ja" ? CONFIG.jaUrl : CONFIG.enUrl;
-
-    try {
-      localStorage.setItem(CONFIG.storageKeyLang, lang);
-    } catch (_) {}
-
+    markDone(lang);
     window.location.href = url;
   }
 
-  function bind(root) {
-    const buttons = root.querySelectorAll("[data-lang]");
+  function injectStyle() {
+    if (document.getElementById("lang-gate-style")) return;
 
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const lang = this.getAttribute("data-lang");
-        closeOverlay(root);
-        goToLanguage(lang);
-      });
+    const style = document.createElement("style");
+    style.id = "lang-gate-style";
+    style.textContent = `
+      .lang-gate {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(0, 0, 0, 0.92);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
+      }
+
+      .lang-gate__inner {
+        width: min(88vw, 420px);
+        text-align: center;
+        padding: 24px 20px;
+      }
+
+      .lang-gate__panel {
+        display: none;
+      }
+
+      .lang-gate__panel.is-active {
+        display: block;
+      }
+
+      .lang-gate__title {
+        margin: 0 0 18px;
+        font-size: 0.72rem;
+        line-height: 1.8;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.82);
+      }
+
+      .lang-gate__links {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .lang-gate__link,
+      .lang-gate__btn {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        cursor: pointer;
+        opacity: 0.88;
+        transition: opacity 0.2s ease;
+      }
+
+      .lang-gate__link:hover,
+      .lang-gate__btn:hover,
+      .lang-gate__link:focus-visible,
+      .lang-gate__btn:focus-visible {
+        opacity: 1;
+        outline: none;
+      }
+
+      .lang-gate__sep {
+        opacity: 0.35;
+        user-select: none;
+      }
+
+      .lang-gate__note {
+        margin: 0 0 18px;
+        font-size: 0.72rem;
+        line-height: 1.9;
+        letter-spacing: 0.14em;
+        color: rgba(255,255,255,0.8);
+      }
+
+      .lang-gate__continue {
+        margin-top: 8px;
+      }
+
+      @media (max-width: 480px) {
+        .lang-gate__inner {
+          width: min(90vw, 340px);
+          padding: 20px 16px;
+        }
+
+        .lang-gate__link,
+        .lang-gate__btn {
+          font-size: 0.88rem;
+          letter-spacing: 0.18em;
+        }
+
+        .lang-gate__note,
+        .lang-gate__title {
+          font-size: 0.68rem;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function createGate() {
+    const root = document.createElement("div");
+    root.className = "lang-gate";
+    root.setAttribute("role", "dialog");
+    root.setAttribute("aria-modal", "true");
+    root.setAttribute("aria-label", "Language selection");
+
+    const mobile = isSmartphoneLike();
+
+    root.innerHTML = `
+      <div class="lang-gate__inner">
+
+        <div class="lang-gate__panel ${mobile && !isLandscape() ? "is-active" : ""}" data-panel="rotate">
+          <p class="lang-gate__note">
+            ${CONFIG.labels.rotateJa}<br>
+            ${CONFIG.labels.rotateEn}
+          </p>
+          <div class="lang-gate__continue">
+            <button type="button" class="lang-gate__btn" data-action="continue">
+              ${CONFIG.labels.continue}
+            </button>
+          </div>
+        </div>
+
+        <div class="lang-gate__panel ${!mobile || isLandscape() ? "is-active" : ""}" data-panel="lang">
+          <p class="lang-gate__title">Language</p>
+          <div class="lang-gate__links">
+            <button type="button" class="lang-gate__link" data-lang="ja">JA</button>
+            <span class="lang-gate__sep">/</span>
+            <button type="button" class="lang-gate__link" data-lang="en">EN</button>
+          </div>
+        </div>
+
+      </div>
+    `;
+
+    return root;
+  }
+
+  function setActivePanel(root, name) {
+    const panels = root.querySelectorAll(".lang-gate__panel");
+    panels.forEach((panel) => {
+      panel.classList.toggle("is-active", panel.getAttribute("data-panel") === name);
+    });
+  }
+
+  function updatePanels(root) {
+    if (!isSmartphoneLike()) {
+      setActivePanel(root, "lang");
+      return;
+    }
+
+    if (isLandscape()) {
+      setActivePanel(root, "lang");
+    } else {
+      setActivePanel(root, "rotate");
+    }
+  }
+
+  function bind(root) {
+    root.addEventListener("click", function (event) {
+      const langBtn = event.target.closest("[data-lang]");
+      if (langBtn) {
+        goToLanguage(langBtn.getAttribute("data-lang"));
+        return;
+      }
+
+      const continueBtn = event.target.closest('[data-action="continue"]');
+      if (continueBtn) {
+        if (isLandscape()) {
+          setActivePanel(root, "lang");
+        }
+      }
     });
 
-    const onResize = function () {
-      updateRotateNotice(root);
+    const onChange = function () {
+      updatePanels(root);
     };
 
-    root.__updateRotateNotice__ = onResize;
+    root.__onChange__ = onChange;
 
-    window.addEventListener("resize", onResize, { passive: true });
-    window.addEventListener("orientationchange", onResize, { passive: true });
+    window.addEventListener("resize", onChange, { passive: true });
+    window.addEventListener("orientationchange", onChange, { passive: true });
   }
 
   function init() {
@@ -298,11 +263,10 @@
 
     injectStyle();
 
-    const overlay = createOverlay();
-    document.body.appendChild(overlay);
-
-    bind(overlay);
-    updateRotateNotice(overlay);
+    const gate = createGate();
+    document.body.appendChild(gate);
+    bind(gate);
+    updatePanels(gate);
   }
 
   if (document.readyState === "loading") {
