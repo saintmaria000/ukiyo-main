@@ -68,7 +68,6 @@
 
       /* -------------------------------------------------------
          新生保護
-         接合は可、深い融合だけ少し守る
       ------------------------------------------------------- */
       newbornProtectSec: 4.0,
       newbornProtectMainSec: 8.0,
@@ -86,16 +85,16 @@
       /* -------------------------------------------------------
          浮遊
       ------------------------------------------------------- */
-      driftForce: 2.15,
-      driftDamping: 0.9935,
-      driftNoiseX: 2.85,
-      driftNoiseY: 2.2,
+      driftForce: 2.12,
+      driftDamping: 0.993,
+      driftNoiseX: 2.9,
+      driftNoiseY: 2.25,
       maxSpeed: 18.0,
-      sparsePull: 9.5,
+      sparsePull: 9.2,
 
-      // 微弱な相互重力
-      pairGravity: 3.25,
-      pairGravityRadius: 180,
+      // 近い時にほんのり軌道を変える程度の重力
+      pairGravity: 2.9,
+      pairGravityRadius: 170,
 
       // 同じ場所に0.2秒以上いない
       lingerLimitSec: 0.2,
@@ -115,11 +114,36 @@
       centerDriftForce: 12,
       centerDriftSoftness: 26,
 
-      // 初期配置 / 適正距離
+      /* -------------------------------------------------------
+         初期配置 / 適正距離
+      ------------------------------------------------------- */
       stableDistLarge: 1.72,
       stableDistMedium: 1.48,
       stableDistSmall: 1.28,
       stableDistJitter: 0.08,
+
+      /* -------------------------------------------------------
+         接合
+         接合は見た目だけで、力は与えない
+      ------------------------------------------------------- */
+      contactStartMul: 1.82,
+      contactFullMul: 1.06,
+      contactMinHold: 0.08,
+
+      // 主滴は同時接合1つまで
+      mainContactMax: 1,
+
+      // 2滴接合中に後から来た3滴目は 1/2 で通過
+      thirdPassThroughChance: 0.5,
+
+      /* -------------------------------------------------------
+         融合
+         9割近い深い重なりでのみ融合
+      ------------------------------------------------------- */
+      mergeOverlapRatio: 0.9,
+      mergeDuration: 0.18,
+      mergeBounceMin: 6.5,
+      mergeBounceMax: 11.5,
 
       /* -------------------------------------------------------
          分裂
@@ -127,7 +151,7 @@
       splitDelayMin: 2.0,
       splitDelayMax: 2.0,
       splitStartDistanceRatio: 0.26,
-      splitPushForce: 95,
+      splitPushForce: 96,
       splitGrowTime: 0.92,
       splitReleaseDistanceRatio: 1.04,
 
@@ -135,30 +159,7 @@
          壁反射
       ------------------------------------------------------- */
       wallBounce: 0.92,
-      wallDamping: 0.86,
-
-      /* -------------------------------------------------------
-         接合
-         接合は見た目のみ。力は与えない。
-      ------------------------------------------------------- */
-      contactStartMul: 1.82,
-      contactFullMul: 1.06,
-      contactMinHold: 0.12,
-
-      // 主滴は同時接合1つまで
-      mainContactMax: 1,
-
-      // すでに2滴が接合している場所へ第三滴が来たときの通過確率
-      thirdPassThroughChance: 0.5,
-
-      /* -------------------------------------------------------
-         融合
-         深い重なり(約90%)でのみ完全融合
-      ------------------------------------------------------- */
-      mergeOverlapRatio: 0.9,
-      mergeDuration: 0.18,
-      mergeBounceMin: 6.5,
-      mergeBounceMax: 11.5
+      wallDamping: 0.86
     },
 
     phase: {
@@ -519,16 +520,6 @@
     return mainR * (mul + rand(-C.stableDistJitter, C.stableDistJitter));
   }
 
-  function countStablePairContactsFor(d) {
-    let count = 0;
-    for (const [key, rec] of d.contactMap.entries()) {
-      if (key === "main") continue;
-      if (rec.passThrough) continue;
-      count++;
-    }
-    return count;
-  }
-
   function createAuxDroplet(kind, angle, distance, tsSec, bornBySplit = false, targetDistance = null) {
     const bounds = getFloatBounds();
     const x = clamp(cx + Math.cos(angle) * distance, bounds.minX, bounds.maxX);
@@ -544,10 +535,10 @@
       y,
       vx: bornBySplit
         ? Math.cos(angle) * rand(8, 12)
-        : Math.cos(tangentAngle) * rand(3.2, 5.8),
+        : Math.cos(tangentAngle) * rand(3.0, 5.4),
       vy: bornBySplit
         ? Math.sin(angle) * rand(8, 12)
-        : Math.sin(tangentAngle) * rand(2.4, 4.6),
+        : Math.sin(tangentAngle) * rand(2.2, 4.2),
       alpha: 0.9,
       scale: bornBySplit ? 0.72 : 1,
       life: 0,
@@ -707,6 +698,16 @@
     }
   }
 
+  function countStablePairContactsFor(d) {
+    let count = 0;
+    for (const [key, rec] of d.contactMap.entries()) {
+      if (key === "main") continue;
+      if (rec.passThrough) continue;
+      count++;
+    }
+    return count;
+  }
+
   function ensureContact(a, b, tsSec, strength, passThrough = false) {
     const idA = state.auxDroplets.indexOf(a);
     const idB = state.auxDroplets.indexOf(b);
@@ -728,7 +729,7 @@
       recA.strength = Math.max(recA.strength, strength);
       recA.depth = strength;
       recA.target = b;
-      recA.passThrough = !!passThrough;
+      recA.passThrough = recA.passThrough || passThrough;
     }
 
     const recB = b.contactMap.get(keyBA);
@@ -746,7 +747,7 @@
       recB.strength = Math.max(recB.strength, strength);
       recB.depth = strength;
       recB.target = a;
-      recB.passThrough = !!passThrough;
+      recB.passThrough = recB.passThrough || passThrough;
     }
 
     if (a.mode === "floating") a.mode = "contacting";
@@ -769,7 +770,6 @@
       rec.strength = Math.max(rec.strength, strength);
       rec.depth = strength;
       rec.target = "main";
-      rec.passThrough = false;
     }
 
     if (d.mode === "floating") d.mode = "contacting";
@@ -946,8 +946,6 @@
     const bounds = getFloatBounds();
     const mainR = getMainBaseRadius();
 
-    state.mainAbsorbPulse = Math.max(0, state.mainAbsorbPulse - dt * CONFIG.droplet.absorbPulseDecay);
-
     updateActiveMerge(dt, tsSec);
 
     for (const d of state.auxDroplets) {
@@ -1087,12 +1085,18 @@
         if (d < start) {
           const k = clamp((start - d) / Math.max(start - full, 1), 0, 1);
 
-          const aContacts = countStablePairContactsFor(a);
-          const bContacts = countStablePairContactsFor(b);
-
           let passThrough = false;
-          if ((aContacts >= 1 || bContacts >= 1) && Math.random() < CONFIG.auxDroplets.thirdPassThroughChance * dt * 8) {
-            passThrough = true;
+          const existingRec = a.contactMap.get(`d${j}`);
+
+          if (!existingRec) {
+            const aHasStable = countStablePairContactsFor(a) >= 1;
+            const bHasStable = countStablePairContactsFor(b) >= 1;
+
+            if (aHasStable || bHasStable) {
+              passThrough = Math.random() < CONFIG.auxDroplets.thirdPassThroughChance;
+            }
+          } else {
+            passThrough = !!existingRec.passThrough;
           }
 
           ensureContact(a, b, tsSec, k, passThrough);
@@ -1125,8 +1129,7 @@
     for (const d of state.auxDroplets) {
       if (d.mode === "merging" || d.mode === "splitting") continue;
 
-      const dir = normalize(cx - d.x, cy - d.y);
-      const dist = dir.len;
+      const dist = dist2(cx, cy, d.x, d.y);
       const rr = getMainBaseRadius() + d.r * d.scale;
 
       const start = rr * CONFIG.auxDroplets.contactStartMul;
@@ -2169,5 +2172,3 @@
 
   boot();
 })();
-
-// ssssss
