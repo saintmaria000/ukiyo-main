@@ -86,12 +86,21 @@
       stableDistJitter: 0.08,
 
       /* -------------------------------------------------------
-         接合（見た目だけ）
-         ※ 力は与えない
+         接合判定
+         ※ 見た目接合の距離だけ維持
       ------------------------------------------------------- */
       contactStartMul: 1.78,
       contactFullMul: 1.08,
       mainContactMax: 1,
+
+      /* -------------------------------------------------------
+         メタボール接合
+         ※ 水滴自体の描画ルールは維持し、接合時だけ1面化
+      ------------------------------------------------------- */
+      metaballJoinMul: 1.62,
+      metaballThreshold: 132,
+      metaballBlur: 14,
+      metaballPad: 34,
 
       /* -------------------------------------------------------
          壁反射
@@ -180,8 +189,15 @@
     entranceDoneFired: false,
 
     auxDroplets: [],
-    mainAbsorbPulse: 0
+    mainAbsorbPulse: 0,
+
+    metaballCanvas: document.createElement("canvas"),
+    metaballCtx: null
   };
+
+  state.metaballCtx = state.metaballCanvas.getContext("2d", {
+    willReadFrequently: true
+  });
 
   /* =========================================================
      05. Utils
@@ -847,6 +863,319 @@
   }
 
   /* =========================================================
+     11.5 Metaball Helpers
+     ※ 見た目の描画ルールは既存のまま、接合時だけ1面化
+  ========================================================= */
+  function getMainRenderDroplet(time, hintK) {
+    const m = getDropletMorph(time, hintK);
+    return {
+      id: "main",
+      type: "main",
+      x: cx,
+      y: cy,
+      r: m.r,
+      rx: m.rx,
+      ry: m.ry,
+      alpha: 1,
+      seed: 0
+    };
+  }
+
+  function getAuxRenderDroplets(time) {
+    return state.auxDroplets.map((d, i) => {
+      const m = getAuxMorph(d, time);
+      return {
+        id: `aux-${i}`,
+        type: "aux",
+        source: d,
+        x: d.x,
+        y: d.y,
+        r: m.r,
+        rx: m.rx,
+        ry: m.ry,
+        alpha: d.alpha,
+        seed: d.seed
+      };
+    });
+  }
+
+  function shouldMetaballJoin(a, b) {
+    const d = dist2(a.x, a.y, b.x, b.y);
+    const rr = a.r + b.r;
+    return d <= rr * CONFIG.auxDroplets.metaballJoinMul;
+  }
+
+  function buildDropletGroups(items) {
+    const n = items.length;
+    const visited = new Array(n).fill(false);
+    const groups = [];
+
+    for (let i = 0; i < n; i++) {
+      if (visited[i]) continue;
+
+      const stack = [i];
+      visited[i] = true;
+      const group = [];
+
+      while (stack.length) {
+        const idx = stack.pop();
+        const a = items[idx];
+        group.push(a);
+
+        for (let j = 0; j < n; j++) {
+          if (visited[j]) continue;
+          const b = items[j];
+          if (shouldMetaballJoin(a, b)) {
+            visited[j] = true;
+            stack.push(j);
+          }
+        }
+      }
+
+      groups.push(group);
+    }
+
+    return groups;
+  }
+
+  function getGroupBounds(group) {
+    const pad = CONFIG.auxDroplets.metaballPad + CONFIG.auxDroplets.metaballBlur;
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const d of group) {
+      minX = Math.min(minX, d.x - d.rx - pad);
+      minY = Math.min(minY, d.y - d.ry - pad);
+      maxX = Math.max(maxX, d.x + d.rx + pad);
+      maxY = Math.max(maxY, d.y + d.ry + pad);
+    }
+
+    return {
+      minX: Math.floor(minX),
+      minY: Math.floor(minY),
+      maxX: Math.ceil(maxX),
+      maxY: Math.ceil(maxY),
+      w: Math.max(1, Math.ceil(maxX - minX)),
+      h: Math.max(1, Math.ceil(maxY - minY))
+    };
+  }
+
+  function buildMetaballMask(group) {
+    const off = state.metaballCanvas;
+    const octx = state.metaballCtx;
+    const blur = CONFIG.auxDroplets.metaballBlur;
+    const threshold = CONFIG.auxDroplets.metaballThreshold;
+    const b = getGroupBounds(group);
+
+    off.width = b.w;
+    off.height = b.h;
+
+    octx.clearRect(0, 0, b.w, b.h);
+
+    octx.save();
+    octx.fillStyle = "#fff";
+    octx.filter = `blur(${blur}px)`;
+
+    for (const d of group) {
+      octx.beginPath();
+      octx.ellipse(
+        d.x - b.minX,
+        d.y - b.minY,
+        d.rx,
+        d.ry,
+        0,
+        0,
+        Math.PI * 2
+      );
+      octx.fill();
+    }
+
+    octx.restore();
+
+    const img = octx.getImageData(0, 0, b.w, b.h);
+    const data = img.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const a = data[i + 3];
+      if (a >= threshold) {
+        data[i] = 255;
+        data[i + 1] = 255;
+        data[i + 2] = 255;
+        data[i + 3] = 255;
+      } else {
+        data[i + 3] = 0;
+      }
+    }
+
+    octx.putImageData(img, 0, 0);
+    return b;
+  }
+
+  function drawSingleOrganicDroplet(item, time, hintK) {
+    if (item.type === "main") {
+      const deformation = getVisualDeformationForMain();
+
+      const pts = buildDropletPathAt(
+        item.x,
+        item.y,
+        getDropletMorph(time, hintK),
+        time,
+        0,
+        deformation
+      );
+
+      ctx.save();
+
+      const body = ctx.createRadialGradient(
+        item.x - 18,
+        item.y - 22,
+        5,
+        item.x,
+        item.y,
+        getMainBaseRadius() * 1.1
+      );
+      body.addColorStop(0, "rgba(255,255,255,0.12)");
+      body.addColorStop(0.38, "rgba(255,255,255,0.055)");
+      body.addColorStop(0.72, "rgba(255,255,255,0.028)");
+      body.addColorStop(1, "rgba(255,255,255,0.01)");
+
+      tracePath(pts);
+      ctx.fillStyle = body;
+      ctx.fill();
+
+      const mainContactBoost = deformation ? deformation.pullStrength : 0;
+      ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + mainContactBoost * 0.08})`;
+      ctx.lineWidth = 1.05;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.ellipse(item.x - 18, item.y - 22, 9, 16, -0.4, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.ellipse(item.x + 6, item.y + 8, 28, 17, 0.42, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255,255,255,0.035)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.restore();
+      return;
+    }
+
+    const d = item.source;
+    const m = getAuxMorph(d, time);
+    const deformation = getVisualDeformationForAux(d);
+    const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, deformation);
+
+    ctx.save();
+
+    const g = ctx.createRadialGradient(
+      d.x - m.r * 0.18,
+      d.y - m.r * 0.22,
+      1,
+      d.x,
+      d.y,
+      m.r * 1.18
+    );
+    g.addColorStop(0, `rgba(255,255,255,${0.10 * d.alpha})`);
+    g.addColorStop(0.42, `rgba(255,255,255,${0.046 * d.alpha})`);
+    g.addColorStop(1, "rgba(255,255,255,0.008)");
+
+    tracePath(pts);
+    ctx.fillStyle = g;
+    ctx.fill();
+
+    const contactBoost = deformation ? deformation.pullStrength : 0;
+    ctx.strokeStyle = `rgba(255,255,255,${(0.15 + contactBoost * 0.08) * d.alpha})`;
+    ctx.lineWidth =
+      d.kind === "large" ? 1.02 :
+      d.kind === "medium" ? 0.92 : 0.78;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(
+      d.x - m.r * 0.18,
+      d.y - m.r * 0.22,
+      Math.max(1.3, m.r * 0.18),
+      Math.max(2.0, m.r * 0.25),
+      -0.34,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = `rgba(255,255,255,${0.04 * d.alpha})`;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawMetaballGroup(group, time, hintK) {
+    const bounds = buildMetaballMask(group);
+
+    ctx.save();
+
+    const centerX = (bounds.minX + bounds.maxX) * 0.5;
+    const centerY = (bounds.minY + bounds.maxY) * 0.5;
+    const radius = Math.max(bounds.w, bounds.h) * 0.58;
+
+    const body = ctx.createRadialGradient(
+      centerX - radius * 0.18,
+      centerY - radius * 0.22,
+      4,
+      centerX,
+      centerY,
+      radius
+    );
+    body.addColorStop(0, "rgba(255,255,255,0.12)");
+    body.addColorStop(0.38, "rgba(255,255,255,0.055)");
+    body.addColorStop(0.72, "rgba(255,255,255,0.028)");
+    body.addColorStop(1, "rgba(255,255,255,0.01)");
+
+    ctx.drawImage(state.metaballCanvas, bounds.minX, bounds.minY);
+
+    ctx.globalCompositeOperation = "source-in";
+    ctx.fillStyle = body;
+    ctx.fillRect(bounds.minX, bounds.minY, bounds.w, bounds.h);
+
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 0.18 + hintK * 0.05;
+    ctx.drawImage(state.metaballCanvas, bounds.minX, bounds.minY);
+
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.08;
+
+    for (const d of group) {
+      ctx.beginPath();
+      ctx.ellipse(
+        d.x - d.rx * 0.18,
+        d.y - d.ry * 0.22,
+        Math.max(1.5, d.rx * 0.18),
+        Math.max(2.2, d.ry * 0.24),
+        -0.35,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  function drawDropletSystem(time, hintK) {
+    const items = [getMainRenderDroplet(time, hintK), ...getAuxRenderDroplets(time)];
+    const groups = buildDropletGroups(items);
+
+    for (const group of groups) {
+      if (group.length === 1) drawSingleOrganicDroplet(group[0], time, hintK);
+      else drawMetaballGroup(group, time, hintK);
+    }
+  }
+
+  /* =========================================================
      12. Background / Halo / Horizon / Water
   ========================================================= */
   function drawBackground(time) {
@@ -948,6 +1277,7 @@
   /* =========================================================
      13. Reflection
      ※ 水面下に反射全体を映す / フェードなし
+     ※ メタボール接合対応
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
@@ -956,50 +1286,101 @@
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
 
-    const mainPts = buildDropletPathAt(
-      cx,
-      cy,
-      getDropletMorph(time, hintK * 0.72),
-      time,
-      0,
-      getVisualDeformationForMain()
-    );
+    const items = [getMainRenderDroplet(time, hintK * 0.72), ...getAuxRenderDroplets(time)];
+    const groups = buildDropletGroups(items);
 
-    drawReflectionShape(
-      mainPts,
-      time,
-      {
-        bodyAlpha: 0.10,
-        strokeAlpha: 0.045,
-        squashY: 0.60,
-        rippleAmp: 0.9,
-        rippleFreq: 0.018,
-        rippleSpeed: 1.2
+    for (const group of groups) {
+      if (group.length === 1) {
+        drawSingleReflection(group[0], time, hintK);
+      } else {
+        drawMetaballReflection(group, time);
       }
-    );
+    }
 
-    for (const d of state.auxDroplets) {
-      const m = getAuxMorph(d, time);
+    ctx.restore();
+  }
+
+  function drawSingleReflection(item, time, hintK) {
+    if (item.type === "main") {
       const pts = buildDropletPathAt(
-        d.x,
-        d.y,
-        m,
+        cx,
+        cy,
+        getDropletMorph(time, hintK * 0.72),
         time,
-        d.seed,
-        getVisualDeformationForAux(d)
+        0,
+        getVisualDeformationForMain()
       );
 
       drawReflectionShape(
         pts,
-        time + d.seed * 0.0008,
+        time,
         {
-          bodyAlpha: 0.062 * d.alpha,
-          strokeAlpha: 0.028 * d.alpha,
-          squashY: 0.58,
-          rippleAmp: Math.max(0.35, m.r * 0.018),
-          rippleFreq: 0.02,
-          rippleSpeed: 1.1
+          bodyAlpha: 0.10,
+          strokeAlpha: 0.045,
+          squashY: 0.60,
+          rippleAmp: 0.9,
+          rippleFreq: 0.018,
+          rippleSpeed: 1.2
         }
+      );
+      return;
+    }
+
+    const d = item.source;
+    const m = getAuxMorph(d, time);
+    const pts = buildDropletPathAt(
+      d.x,
+      d.y,
+      m,
+      time,
+      d.seed,
+      getVisualDeformationForAux(d)
+    );
+
+    drawReflectionShape(
+      pts,
+      time + d.seed * 0.0008,
+      {
+        bodyAlpha: 0.062 * d.alpha,
+        strokeAlpha: 0.028 * d.alpha,
+        squashY: 0.58,
+        rippleAmp: Math.max(0.35, m.r * 0.018),
+        rippleFreq: 0.02,
+        rippleSpeed: 1.1
+      }
+    );
+  }
+
+  function drawMetaballReflection(group, time) {
+    const bounds = buildMetaballMask(group);
+
+    const squashY = 0.58;
+    const slices = 16;
+    const sliceH = Math.max(2, Math.ceil(bounds.h / slices));
+    const flow =
+      Math.sin(time * 0.72) * 0.8 +
+      Math.sin(time * 0.34 + 1.2) * 0.45;
+
+    ctx.save();
+    ctx.globalAlpha = 0.11;
+
+    for (let i = 0; i < slices; i++) {
+      const sy = i * sliceH;
+      const sh = Math.min(sliceH, bounds.h - sy);
+      if (sh <= 0) continue;
+
+      const srcY = bounds.minY + sy;
+      const reflectedY = horizonY + (horizonY - (srcY + sh)) * squashY;
+
+      const waveX =
+        Math.sin((srcY + sy) * 0.018 + time * 1.14) * 0.9 +
+        Math.sin((srcY + sy) * 0.008 + time * 0.62) * 0.32 +
+        flow;
+
+      ctx.drawImage(
+        state.metaballCanvas,
+        0, sy, bounds.w, sh,
+        bounds.minX + waveX, reflectedY, bounds.w, sh * squashY
       );
     }
 
@@ -1476,8 +1857,7 @@
       setBrandOpacity(1);
       setRevealOpacity(0);
       drawReflection(now, 0);
-      drawDroplet(now, 0);
-      drawAuxDroplets(now);
+      drawDropletSystem(now, 0);
       rafId = requestAnimationFrame(render);
       return;
     }
@@ -1486,8 +1866,7 @@
       setBrandOpacity(1 - hintK * 0.38);
       setRevealOpacity(0);
       drawReflection(now, hintK);
-      drawDroplet(now, hintK);
-      drawAuxDroplets(now);
+      drawDropletSystem(now, hintK);
       rafId = requestAnimationFrame(render);
       return;
     }
@@ -1636,4 +2015,3 @@
 
   boot();
 })();
-
