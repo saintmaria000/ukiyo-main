@@ -66,10 +66,10 @@
          可動範囲の輪郭線を見せるか
       ----------------------------------------------------- */
       background: {
-        areaBgColor: "#0055ff",
+        areaBgColor: "#ff1515",
         areaBgAlpha: 0.62,
         areaBgSoftAlpha: 0.16,
-        showAreaDebugFill: true,
+        showAreaDebugFill: false,
         showAreaDebugStroke: true,
         areaStrokeColor: "rgba(255,255,255,0.10)"
       },
