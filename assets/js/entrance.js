@@ -136,9 +136,9 @@
       ----------------------------------------------------- */
       aux: {
         kinds: [
-          { name: "mediumA", radius: 34, count: 1, alpha: 0.96 },
-          { name: "smallA", radius: 22, count: 1, alpha: 0.92 },
-          { name: "smallB", radius: 13, count: 1, alpha: 0.90 }
+          { name: "mediumA", radius: 24, count: 1, alpha: 0.96 },
+          { name: "smallA", radius: 19, count: 1, alpha: 0.92 },
+          { name: "smallB", radius: 15, count: 1, alpha: 0.90 }
         ],
 
         spawnGapFromMain: 24,
