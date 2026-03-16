@@ -3,7 +3,7 @@
   "use strict";
 
   /* =========================================================
-     01. DOM / Base
+     Sector 01. DOM / Base
   ========================================================= */
   const canvas = document.getElementById("particle-canvas");
   if (!canvas) return;
@@ -16,7 +16,9 @@
   const entranceGate = document.getElementById("entranceGate");
 
   /* =========================================================
-     02. Config / 可変値
+     Sector 02. Config / 可変値
+     - 水滴系は現行動作用の暫定版を維持
+     - revealLogo は「落下 → 単発バウンド → 固定」に修正
   ========================================================= */
   const CONFIG = {
     bg: "#000000",
@@ -31,80 +33,49 @@
       wobbleSpeedB: 1.42,
       floatY: -54,
 
-      // 既存互換で保持
       absorbPulseAmp: 0.0,
       absorbPulseDecay: 1.35
     },
 
     auxDroplets: {
-      /* -------------------------------------------------------
-         サイズ
-      ------------------------------------------------------- */
       sizeRatioLarge: 0.382,
       sizeRatioMedium: 0.236,
       sizeRatioSmall: 0.092,
       maxRadiusRatioToMain: 0.5,
 
-      /* -------------------------------------------------------
-         個数
-      ------------------------------------------------------- */
       minTotalCount: 2,
       maxTotalCount: 4,
       minAuxCount: 1,
       maxAuxCount: 3,
 
-      /* -------------------------------------------------------
-         初期構成
-      ------------------------------------------------------- */
       initialPattern: ["medium", "small"],
 
-      /* -------------------------------------------------------
-         可動範囲
-      ------------------------------------------------------- */
       bounds: {
         sideInset: 18,
         topOffset: 0,
         bottomInsetFromFilm: -14
       },
 
-      /* -------------------------------------------------------
-         浮遊
-         ※ 独立して漂うだけ
-      ------------------------------------------------------- */
       driftForce: 2.12,
       driftDamping: 0.993,
       driftNoiseX: 2.9,
       driftNoiseY: 2.25,
       maxSpeed: 18.0,
 
-      /* -------------------------------------------------------
-         初期配置 / 適正距離
-      ------------------------------------------------------- */
       stableDistLarge: 1.72,
       stableDistMedium: 1.48,
       stableDistSmall: 1.28,
       stableDistJitter: 0.08,
 
-      /* -------------------------------------------------------
-         接合判定
-         ※ 見た目接合の距離だけ維持
-      ------------------------------------------------------- */
       contactStartMul: 1.78,
       contactFullMul: 1.08,
       mainContactMax: 1,
 
-      /* -------------------------------------------------------
-         メタボール接合
-         ※ 水滴自体の描画ルールは維持し、接合時だけ1面化
-      ------------------------------------------------------- */
       metaballJoinMul: 1.62,
       metaballThreshold: 132,
       metaballBlur: 14,
       metaballPad: 34,
 
-      /* -------------------------------------------------------
-         壁反射
-      ------------------------------------------------------- */
       wallBounce: 0.92,
       wallDamping: 0.86
     },
@@ -122,9 +93,13 @@
 
     reveal: {
       dropFromY: -148,
-      dropOvershoot: 22,
-      bounceAmp: 16,
-      wobbleCycles: 2.1
+      dropOvershoot: 18,
+      bounceBackY: -10,
+      dropDuration: 0.68,
+      bounceDuration: 0.24,
+      startScale: 0.93,
+      impactScale: 1.02,
+      finalScale: 1.0
     },
 
     shardCount: 160,
@@ -151,13 +126,13 @@
   };
 
   /* =========================================================
-     03. Media Query
+     Sector 03. Media Query
   ========================================================= */
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const coarsePortraitQuery = window.matchMedia("(pointer: coarse) and (orientation: portrait)");
 
   /* =========================================================
-     04. Runtime State
+     Sector 04. Runtime State
   ========================================================= */
   let w = 0;
   let h = 0;
@@ -200,7 +175,7 @@
   });
 
   /* =========================================================
-     05. Utils
+     Sector 05. Utils
   ========================================================= */
   function clamp(v, min, max) {
     return Math.max(min, Math.min(max, v));
@@ -225,6 +200,13 @@
     return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
   }
 
+  function easeInOutCubic(t) {
+    t = clamp(t, 0, 1);
+    return t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
   function rand(min, max) {
     return min + Math.random() * (max - min);
   }
@@ -245,7 +227,7 @@
   }
 
   /* =========================================================
-     06. Resize / Layout
+     Sector 06. Resize / Layout
   ========================================================= */
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -296,7 +278,7 @@
   }
 
   /* =========================================================
-     07. Shards / Generate
+     Sector 07. Shards / Generate
   ========================================================= */
   function createShardField() {
     state.shards.length = 0;
@@ -416,8 +398,8 @@
   }
 
   /* =========================================================
-     08. Aux Droplets / Model
-     ※ 独立浮遊 + 初期配置ランダム
+     Sector 08. Water System / Generate & Model
+     - 現行動作維持版
   ========================================================= */
   function getAuxBaseRadius(kind) {
     const mainR = getMainBaseRadius();
@@ -451,7 +433,6 @@
 
     for (let i = 0; i < kinds.length; i++) {
       const angle = Math.random() * Math.PI * 2;
-
       const minDist = getMainBaseRadius() * 0.9;
       const maxDist = getMainBaseRadius() * 1.8;
       const dist = rand(minDist, maxDist);
@@ -512,6 +493,22 @@
     }
   }
 
+  /* =========================================================
+     Sector 09. Phase
+  ========================================================= */
+  function getPhase(t) {
+    if (t < T_HINT) return "hint";
+    if (t < T_BURST) return "burst";
+    if (t < T_DRIFT) return "drift";
+    if (t < T_GATHER) return "gather";
+    if (t < T_FLASH) return "flash";
+    if (t < T_LOGO) return "logo";
+    return "done";
+  }
+
+  /* =========================================================
+     Sector 10. Water System / Update
+  ========================================================= */
   function updateAuxDroplets(dt, tsSec) {
     if (started) return;
 
@@ -544,23 +541,6 @@
     }
   }
 
-  /* =========================================================
-     09. Phase
-  ========================================================= */
-  function getPhase(t) {
-    if (t < T_HINT) return "hint";
-    if (t < T_BURST) return "burst";
-    if (t < T_DRIFT) return "drift";
-    if (t < T_GATHER) return "gather";
-    if (t < T_FLASH) return "flash";
-    if (t < T_LOGO) return "logo";
-    return "done";
-  }
-
-  /* =========================================================
-     10. Water Droplet / Visual Contact
-     ※ 接合は見た目だけ
-  ========================================================= */
   function getPairContactK(ax, ay, ar, bx, by, br) {
     const d = dist2(ax, ay, bx, by);
     const rr = ar + br;
@@ -656,9 +636,6 @@
     };
   }
 
-  /* =========================================================
-     11. Water Droplet / Draw
-  ========================================================= */
   function getDropletMorph(time, hintK) {
     const base = getMainBaseRadius();
     const absorbPulse = state.mainAbsorbPulse * CONFIG.droplet.absorbPulseAmp;
@@ -747,6 +724,9 @@
     return pts;
   }
 
+  /* =========================================================
+     Sector 11. Water System / Draw
+  ========================================================= */
   function tracePath(pts) {
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
@@ -862,10 +842,6 @@
     }
   }
 
-  /* =========================================================
-     11.5 Metaball Helpers
-     ※ 見た目の描画ルールは既存のまま、接合時だけ1面化
-  ========================================================= */
   function getMainRenderDroplet(time, hintK) {
     const m = getDropletMorph(time, hintK);
     return {
@@ -1017,7 +993,6 @@
   function drawSingleOrganicDroplet(item, time, hintK) {
     if (item.type === "main") {
       const deformation = getVisualDeformationForMain();
-
       const pts = buildDropletPathAt(
         item.x,
         item.y,
@@ -1176,7 +1151,7 @@
   }
 
   /* =========================================================
-     12. Background / Halo / Horizon / Water
+     Sector 12. Background / Halo / Water
   ========================================================= */
   function drawBackground(time) {
     ctx.clearRect(0, 0, w, h);
@@ -1275,9 +1250,7 @@
   }
 
   /* =========================================================
-     13. Reflection
-     ※ 水面下に反射全体を映す / フェードなし
-     ※ メタボール接合対応
+     Sector 13. Reflection
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
@@ -1470,7 +1443,7 @@
   }
 
   /* =========================================================
-     14. Shards / Update
+     Sector 14. Shards / Update
   ========================================================= */
   function getSnapRadius(s) {
     return s.depthBand === "near" ? CONFIG.gatherSnapRadiusNear : CONFIG.gatherSnapRadius;
@@ -1606,7 +1579,7 @@
   }
 
   /* =========================================================
-     15. Shards / Draw
+     Sector 15. Shards / Draw
   ========================================================= */
   function projectScale(z) {
     return 1 + z / 420;
@@ -1714,7 +1687,7 @@
   }
 
   /* =========================================================
-     16. Compression Flash
+     Sector 16. Compression Flash
   ========================================================= */
   function drawCompressionFlash() {
     if (state.flash <= 0.001) return;
@@ -1744,7 +1717,8 @@
   }
 
   /* =========================================================
-     17. Brand / Reveal Logo
+     Sector 17. Brand / Reveal Logo
+     - revealLogo を「落下 → 単発バウンド → 固定」に修正
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
@@ -1752,32 +1726,52 @@
     brand.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
   }
 
+  function getRevealMotion(k) {
+    const C = CONFIG.reveal;
+    const dropPortion = C.dropDuration / (C.dropDuration + C.bounceDuration);
+
+    let y = 0;
+    let scale = C.finalScale;
+
+    if (k <= dropPortion) {
+      const t = k / Math.max(dropPortion, 0.0001);
+      const e = easeOutCubic(t);
+
+      y = lerp(C.dropFromY, C.dropOvershoot, e);
+      scale = lerp(C.startScale, C.impactScale, e);
+    } else {
+      const t = (k - dropPortion) / Math.max(1 - dropPortion, 0.0001);
+      const e = easeInOutCubic(t);
+
+      if (t < 0.5) {
+        const t1 = t / 0.5;
+        y = lerp(C.dropOvershoot, C.bounceBackY, easeOutCubic(t1));
+        scale = lerp(C.impactScale, C.finalScale + 0.008, easeOutCubic(t1));
+      } else {
+        const t2 = (t - 0.5) / 0.5;
+        y = lerp(C.bounceBackY, 0, easeInOutCubic(t2));
+        scale = lerp(C.finalScale + 0.008, C.finalScale, easeInOutCubic(t2));
+      }
+    }
+
+    if (k >= 1) {
+      y = 0;
+      scale = C.finalScale;
+    }
+
+    return { y, scale };
+  }
+
   function setRevealOpacity(opacity) {
     if (!revealLogo) return;
 
     const k = clamp(opacity, 0, 1);
-
     revealLogo.style.opacity = String(k);
     revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
 
-    let y;
-    let scale;
-
-    if (k < 0.62) {
-      const drop = k / 0.62;
-      y = lerp(-150, 20, easeOutCubic(drop));
-      scale = lerp(0.93, 1.03, easeOutCubic(drop));
-    } else {
-      const settle = (k - 0.62) / 0.38;
-      const damp = Math.exp(-3.2 * settle);
-      const wave = Math.cos(settle * Math.PI * 3.6);
-
-      y = wave * 18 * damp;
-      scale = 1 + Math.cos(settle * Math.PI * 2.2) * 0.012 * damp;
-    }
-
+    const motion = getRevealMotion(k);
     revealLogo.style.transform =
-      `translate(-50%, -50%) translateY(${y}px) scale(${scale})`;
+      `translate(-50%, -50%) translateY(${motion.y}px) scale(${motion.scale})`;
   }
 
   function prepareLogos() {
@@ -1801,7 +1795,7 @@
       revealLogo.style.top = revealLogo.style.top || "50%";
       revealLogo.style.zIndex = "25";
       revealLogo.style.transform =
-        `translate(-50%, -50%) translateY(${CONFIG.reveal.dropFromY}px) scale(0.93)`;
+        `translate(-50%, -50%) translateY(${CONFIG.reveal.dropFromY}px) scale(${CONFIG.reveal.startScale})`;
     }
   }
 
@@ -1812,7 +1806,7 @@
   }
 
   /* =========================================================
-     18. Gate
+     Sector 18. Gate
   ========================================================= */
   function openEntranceGateFallback() {
     if (!entranceGate) return;
@@ -1837,7 +1831,7 @@
   }
 
   /* =========================================================
-     19. Render
+     Sector 19. Render
   ========================================================= */
   function render(ts) {
     const now = ts * 0.001;
@@ -1925,11 +1919,12 @@
       }
 
       rafId = requestAnimationFrame(render);
+      return;
     }
   }
 
   /* =========================================================
-     20. Start / Trigger
+     Sector 20. Start / Trigger
   ========================================================= */
   function startEntrance() {
     if (started) return;
@@ -1968,7 +1963,7 @@
   }
 
   /* =========================================================
-     21. Boot / Events
+     Sector 21. Boot / Events
   ========================================================= */
   function boot() {
     window.clearTimeout(doneTimer);
