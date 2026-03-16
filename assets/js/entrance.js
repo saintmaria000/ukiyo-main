@@ -67,8 +67,8 @@
       ----------------------------------------------------- */
       background: {
         areaBgColor: "#ff1515",
-        areaBgAlpha: 0.62,
-        areaBgSoftAlpha: 0.16,
+        areaBgAlpha: 0,
+        areaBgSoftAlpha: 0,
         showAreaDebugFill: false,
         showAreaDebugStroke: false,
         areaStrokeColor: "rgba(255,255,255,0.10)"
