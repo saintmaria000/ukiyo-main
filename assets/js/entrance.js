@@ -1,3 +1,4 @@
+
 // assets/js/entrance.js
 (() => {
   "use strict";
@@ -23,7 +24,7 @@
      ---------------------------------------------------------
      役割:
      - 演出全体の調整値
-     - 水滴系は今回「完全固定範囲」「サイズ依存分離」に修正
+     - 水滴系は「完全固定範囲」「サイズ依存分離」
      - コメントは「何を変える値か」を日本語で明記
   ========================================================= */
   const CONFIG = {
@@ -136,8 +137,8 @@
       aux: {
         kinds: [
           { name: "mediumA", radius: 24, count: 1, alpha: 0.96 },
-          { name: "smallA",  radius: 12, count: 1, alpha: 0.92 },
-          { name: "smallB",  radius: 10, count: 1, alpha: 0.90 }
+          { name: "smallA", radius: 12, count: 1, alpha: 0.92 },
+          { name: "smallB", radius: 10, count: 1, alpha: 0.90 }
         ],
 
         spawnGapFromMain: 14,
@@ -269,13 +270,13 @@
          反射の縦潰し量
       ----------------------------------------------------- */
       reflection: {
-        mainBodyAlpha: 0.10,
-        auxBodyAlphaMul: 0.062,
-        strokeAlphaMain: 0.045,
-        strokeAlphaAux: 0.028,
-        squashMain: 0.60,
-        squashAux: 0.58,
-        squashMetaball: 0.58
+        mainBodyAlpha: 0.12,
+        auxBodyAlphaMul: 0.08,
+        strokeAlphaMain: 0.055,
+        strokeAlphaAux: 0.038,
+        squashMain: 0.82,
+        squashAux: 0.80,
+        squashMetaball: 0.80
       }
     },
 
@@ -376,14 +377,21 @@
 
     water: {
       auxDroplets: [],
-      metaballCanvas: document.createElement("canvas"),
-      metaballCtx: null
+
+      /* マスク生成専用 */
+      metaballMaskCanvas: document.createElement("canvas"),
+      metaballMaskCtx: null,
+
+      /* 合成結果専用 */
+      metaballCompositeCanvas: document.createElement("canvas"),
+      metaballCompositeCtx: null
     }
   };
 
-  state.water.metaballCtx = state.water.metaballCanvas.getContext("2d", {
+  state.water.metaballMaskCtx = state.water.metaballMaskCanvas.getContext("2d", {
     willReadFrequently: true
   });
+  state.water.metaballCompositeCtx = state.water.metaballCompositeCanvas.getContext("2d");
 
   /* =========================================================
      Sector 05. Utils
@@ -474,7 +482,6 @@
 
   function getWaterBounds() {
     const C = CONFIG.water.area;
-
     const width = C.fixedWidth;
     const height = C.fixedHeight;
 
@@ -980,6 +987,8 @@
      - メタボール接合
   ========================================================= */
   function tracePath(pts) {
+    if (!pts || pts.length < 2) return;
+
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for (let i = 1; i < pts.length - 2; i++) {
@@ -1188,8 +1197,8 @@
   }
 
   function buildMetaballMask(group) {
-    const off = state.water.metaballCanvas;
-    const octx = state.water.metaballCtx;
+    const off = state.water.metaballMaskCanvas;
+    const octx = state.water.metaballMaskCtx;
     const blur = CONFIG.water.metaball.blur;
     const threshold = CONFIG.water.metaball.threshold;
     const b = getGroupBounds(group);
@@ -1230,6 +1239,9 @@
         data[i + 2] = 255;
         data[i + 3] = 255;
       } else {
+        data[i] = 0;
+        data[i + 1] = 0;
+        data[i + 2] = 0;
         data[i + 3] = 0;
       }
     }
@@ -1238,16 +1250,23 @@
     return b;
   }
 
-  function drawMetaballGroup(group, hintK) {
+  function buildMetaballComposite(group, hintK) {
     const bounds = buildMetaballMask(group);
 
-    ctx.save();
+    const maskCanvas = state.water.metaballMaskCanvas;
+    const compCanvas = state.water.metaballCompositeCanvas;
+    const cctx = state.water.metaballCompositeCtx;
 
-    const centerX = (bounds.minX + bounds.maxX) * 0.5;
-    const centerY = (bounds.minY + bounds.maxY) * 0.5;
+    compCanvas.width = bounds.w;
+    compCanvas.height = bounds.h;
+
+    cctx.clearRect(0, 0, bounds.w, bounds.h);
+
+    const centerX = bounds.w * 0.5;
+    const centerY = bounds.h * 0.5;
     const radius = Math.max(bounds.w, bounds.h) * 0.58;
 
-    const body = ctx.createRadialGradient(
+    const body = cctx.createRadialGradient(
       centerX - radius * 0.18,
       centerY - radius * 0.22,
       4,
@@ -1260,34 +1279,46 @@
     body.addColorStop(0.72, "rgba(255,255,255,0.028)");
     body.addColorStop(1, "rgba(255,255,255,0.01)");
 
-    ctx.drawImage(state.water.metaballCanvas, bounds.minX, bounds.minY);
+    cctx.fillStyle = body;
+    cctx.fillRect(0, 0, bounds.w, bounds.h);
 
-    ctx.globalCompositeOperation = "source-in";
-    ctx.fillStyle = body;
-    ctx.fillRect(bounds.minX, bounds.minY, bounds.w, bounds.h);
+    cctx.globalCompositeOperation = "destination-in";
+    cctx.drawImage(maskCanvas, 0, 0);
 
-    ctx.globalCompositeOperation = "source-over";
-    ctx.globalAlpha = 0.18 + hintK * 0.05;
-    ctx.drawImage(state.water.metaballCanvas, bounds.minX, bounds.minY);
+    cctx.globalCompositeOperation = "source-over";
+    cctx.globalAlpha = 0.18 + hintK * 0.05;
+    cctx.drawImage(maskCanvas, 0, 0);
+    cctx.globalAlpha = 1;
 
-    ctx.globalCompositeOperation = "lighter";
-    ctx.globalAlpha = 0.08;
-
+    cctx.globalCompositeOperation = "lighter";
     for (const d of group) {
-      ctx.beginPath();
-      ctx.ellipse(
-        d.x - d.rx * 0.18,
-        d.y - d.ry * 0.22,
+      cctx.beginPath();
+      cctx.ellipse(
+        (d.x - bounds.minX) - d.rx * 0.18,
+        (d.y - bounds.minY) - d.ry * 0.22,
         Math.max(1.5, d.rx * 0.18),
         Math.max(2.2, d.ry * 0.24),
         -0.35,
         0,
         Math.PI * 2
       );
-      ctx.fillStyle = "rgba(255,255,255,0.55)";
-      ctx.fill();
+      cctx.fillStyle = "rgba(255,255,255,0.055)";
+      cctx.fill();
     }
 
+    cctx.globalCompositeOperation = "source-over";
+    return bounds;
+  }
+
+  function drawMetaballGroup(group, hintK) {
+    const bounds = buildMetaballComposite(group, hintK);
+
+    ctx.save();
+    ctx.drawImage(
+      state.water.metaballCompositeCanvas,
+      bounds.minX,
+      bounds.minY
+    );
     ctx.restore();
   }
 
@@ -1469,195 +1500,104 @@
   /* =========================================================
      Sector 13. Reflection
      ---------------------------------------------------------
-     - 主滴 / 従滴 / メタボールの反射
+     - まずは全体形状が下に映る簡易反射
+     - 後から具体的な反射表現を足しやすい土台
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
 
+    /* 水面より下だけに描く */
     ctx.beginPath();
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
 
-    const items = [getMainRenderDroplet(time, hintK * 0.72), ...getAuxRenderDroplets(time)];
+    const items = [getMainRenderDroplet(time, hintK), ...getAuxRenderDroplets(time)];
     const groups = buildDropletGroups(items);
 
     for (const group of groups) {
       if (group.length === 1) {
-        drawSingleReflection(group[0], time, hintK);
+        drawSingleMirrorReflection(group[0], time, hintK);
       } else {
-        drawMetaballReflection(group, time);
+        drawMetaballMirrorReflection(group, hintK);
       }
     }
 
     ctx.restore();
   }
 
-  function drawSingleReflection(item, time, hintK) {
-    const R = CONFIG.water.reflection;
+  function drawSingleMirrorReflection(item, time, hintK) {
+    let pts;
+    let alpha;
+    let lineAlpha;
+    let squashY;
 
     if (item.type === "main") {
-      const pts = buildDropletPathAt(
+      pts = buildDropletPathAt(
         cx,
         cy,
-        getMainMorph(time, hintK * 0.72),
+        getMainMorph(time, hintK),
         time,
         0,
         getVisualDeformationForMain()
       );
+      alpha = CONFIG.water.reflection.mainBodyAlpha;
+      lineAlpha = CONFIG.water.reflection.strokeAlphaMain;
+      squashY = CONFIG.water.reflection.squashMain;
+    } else {
+      const d = item.source;
+      const m = getAuxMorph(d, time);
 
-      drawReflectionShape(
-        pts,
+      pts = buildDropletPathAt(
+        d.x,
+        d.y,
+        m,
         time,
-        {
-          bodyAlpha: R.mainBodyAlpha,
-          strokeAlpha: R.strokeAlphaMain,
-          squashY: R.squashMain,
-          rippleAmp: 0.9,
-          rippleFreq: 0.018,
-          rippleSpeed: 1.2
-        }
+        d.seed,
+        getVisualDeformationForAux(d)
       );
-      return;
+      alpha = CONFIG.water.reflection.auxBodyAlphaMul * d.alpha;
+      lineAlpha = CONFIG.water.reflection.strokeAlphaAux * d.alpha;
+      squashY = CONFIG.water.reflection.squashAux;
     }
-
-    const d = item.source;
-    const m = getAuxMorph(d, time);
-    const pts = buildDropletPathAt(
-      d.x,
-      d.y,
-      m,
-      time,
-      d.seed,
-      getVisualDeformationForAux(d)
-    );
-
-    drawReflectionShape(
-      pts,
-      time + d.seed * 0.0008,
-      {
-        bodyAlpha: R.auxBodyAlphaMul * d.alpha,
-        strokeAlpha: R.strokeAlphaAux * d.alpha,
-        squashY: R.squashAux,
-        rippleAmp: Math.max(0.35, m.r * 0.018),
-        rippleFreq: 0.02,
-        rippleSpeed: 1.1
-      }
-    );
-  }
-
-  function drawMetaballReflection(group, time) {
-    const bounds = buildMetaballMask(group);
-    const squashY = CONFIG.water.reflection.squashMetaball;
-    const slices = 16;
-    const sliceH = Math.max(2, Math.ceil(bounds.h / slices));
-    const flow =
-      Math.sin(time * 0.72) * 0.8 +
-      Math.sin(time * 0.34 + 1.2) * 0.45;
-
-    ctx.save();
-    ctx.globalAlpha = 0.11;
-
-    for (let i = 0; i < slices; i++) {
-      const sy = i * sliceH;
-      const sh = Math.min(sliceH, bounds.h - sy);
-      if (sh <= 0) continue;
-
-      const srcY = bounds.minY + sy;
-      const reflectedY = horizonY + (horizonY - (srcY + sh)) * squashY;
-
-      const waveX =
-        Math.sin((srcY + sy) * 0.018 + time * 1.14) * 0.9 +
-        Math.sin((srcY + sy) * 0.008 + time * 0.62) * 0.32 +
-        flow;
-
-      ctx.drawImage(
-        state.water.metaballCanvas,
-        0, sy, bounds.w, sh,
-        bounds.minX + waveX, reflectedY, bounds.w, sh * squashY
-      );
-    }
-
-    ctx.restore();
-  }
-
-  function drawReflectionShape(pts, time, opt) {
-    const {
-      bodyAlpha,
-      strokeAlpha,
-      squashY,
-      rippleAmp,
-      rippleFreq,
-      rippleSpeed
-    } = opt;
 
     const reflected = pts.map((p) => {
       const mirroredY = horizonY + (horizonY - p.y);
-
-      const waveX =
-        Math.sin(p.y * rippleFreq + time * rippleSpeed) * rippleAmp +
-        Math.sin(p.y * rippleFreq * 0.46 + time * rippleSpeed * 0.62) * rippleAmp * 0.28;
-
       return {
-        x: p.x + waveX,
+        x: p.x,
         y: horizonY + (mirroredY - horizonY) * squashY
       };
     });
 
+    ctx.save();
+
     tracePath(reflected);
-
-    const topY = Math.min(...reflected.map((p) => p.y));
-    const bottomY = Math.max(...reflected.map((p) => p.y));
-
-    const fillGrad = ctx.createLinearGradient(0, topY, 0, bottomY);
-    fillGrad.addColorStop(0, `rgba(255,255,255,${bodyAlpha})`);
-    fillGrad.addColorStop(0.45, `rgba(255,255,255,${bodyAlpha * 0.9})`);
-    fillGrad.addColorStop(1, `rgba(255,255,255,${bodyAlpha * 0.82})`);
-
-    ctx.fillStyle = fillGrad;
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(255,255,255,${strokeAlpha})`;
+    ctx.strokeStyle = `rgba(255,255,255,${lineAlpha})`;
     ctx.lineWidth = 0.9;
     ctx.stroke();
 
-    drawReflectionSheen(topY, bottomY, time, bodyAlpha);
+    ctx.restore();
   }
 
-  function drawReflectionSheen(topY, bottomY, time, alphaBase) {
-    const lines = 4;
-    const span = Math.max(16, bottomY - topY);
+  function drawMetaballMirrorReflection(group, hintK) {
+    const bounds = buildMetaballComposite(group, hintK);
+    const srcCanvas = state.water.metaballCompositeCanvas;
+    const squashY = CONFIG.water.reflection.squashMetaball;
+
+    const srcBottom = bounds.maxY;
+    const reflectedTop = horizonY + (horizonY - srcBottom) * squashY;
+    const reflectedHeight = bounds.h * squashY;
 
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, horizonY, w, h - horizonY);
-    ctx.clip();
+    ctx.globalAlpha = 0.11;
 
-    for (let i = 0; i < lines; i++) {
-      const yy = topY + span * (0.18 + i / (lines + 2));
-      const alpha = alphaBase * (0.10 - i * 0.014);
-
-      const grad = ctx.createLinearGradient(0, 0, w, 0);
-      grad.addColorStop(0, "rgba(255,255,255,0)");
-      grad.addColorStop(0.2, `rgba(255,255,255,${alpha * 0.42})`);
-      grad.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
-      grad.addColorStop(0.8, `rgba(255,255,255,${alpha * 0.42})`);
-      grad.addColorStop(1, "rgba(255,255,255,0)");
-
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1;
-
-      ctx.beginPath();
-      for (let x = 0; x <= w; x += 20) {
-        const y =
-          yy +
-          Math.sin(x * 0.011 + time * 1.0 + i * 0.75) * 0.28 +
-          Math.sin(x * 0.004 + time * 0.52 + i * 0.28) * 0.14;
-
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
+    ctx.drawImage(
+      srcCanvas,
+      0, 0, bounds.w, bounds.h,
+      bounds.minX, reflectedTop, bounds.w, reflectedHeight
+    );
 
     ctx.restore();
   }
@@ -2237,3 +2177,4 @@
 
   boot();
 })();
+```
