@@ -4,6 +4,9 @@
 
   /* =========================================================
      Sector 01. DOM / Base
+     ---------------------------------------------------------
+     役割:
+     - 描画先 canvas と各DOM参照の取得
   ========================================================= */
   const canvas = document.getElementById("particle-canvas");
   if (!canvas) return;
@@ -17,69 +20,255 @@
 
   /* =========================================================
      Sector 02. Config / 可変値
-     - 水滴系は現行動作用の暫定版を維持
-     - revealLogo は「落下 → 単発バウンド → 固定」に修正
+     ---------------------------------------------------------
+     役割:
+     - 演出全体の調整値
+     - 水滴系は今回ここを新仕様へ差し替え
+     - コメントは「何を変える値か」を日本語で明記
   ========================================================= */
   const CONFIG = {
+    /* -------------------------------------------------------
+       共通背景
+       bg:
+       画面全体のベース背景色
+    ------------------------------------------------------- */
     bg: "#000000",
 
+    /* -------------------------------------------------------
+       水平線の基準帯
+       horizonYMin / horizonYMax:
+       水平線の高さ帯。中央計算でこの中間を使う
+    ------------------------------------------------------- */
     horizonYMin: 0.58,
     horizonYMax: 0.62,
 
-    droplet: {
-      radius: 104,
-      wobbleAmp: 0.105,
-      wobbleSpeedA: 0.92,
-      wobbleSpeedB: 1.42,
-      floatY: -54,
-
-      absorbPulseAmp: 0.0,
-      absorbPulseDecay: 1.35
-    },
-
-    auxDroplets: {
-      sizeRatioLarge: 0.382,
-      sizeRatioMedium: 0.236,
-      sizeRatioSmall: 0.092,
-      maxRadiusRatioToMain: 0.5,
-
-      minTotalCount: 2,
-      maxTotalCount: 4,
-      minAuxCount: 1,
-      maxAuxCount: 3,
-
-      initialPattern: ["medium", "small"],
-
-      bounds: {
-        sideInset: 18,
-        topOffset: 0,
-        bottomInsetFromFilm: -14
+    /* -------------------------------------------------------
+       水滴ワールド全体設定
+       - 水滴範囲内の背景色
+       - 水滴可動範囲
+       - ハロー
+       - 水面
+       - 反射
+    ------------------------------------------------------- */
+    water: {
+      /* -----------------------------------------------------
+         水滴範囲内の背景色設定
+         areaBgColor:
+         水滴が存在する範囲の背景色
+         areaBgAlpha:
+         その色の見せる強さ
+         areaBgSoftAlpha:
+         外周へぼかすための弱い層
+      ----------------------------------------------------- */
+      background: {
+        areaBgColor: "#0a0a0a",
+        areaBgAlpha: 0.42,
+        areaBgSoftAlpha: 0.18
       },
 
-      driftForce: 2.12,
-      driftDamping: 0.993,
-      driftNoiseX: 2.9,
-      driftNoiseY: 2.25,
-      maxSpeed: 18.0,
+      /* -----------------------------------------------------
+         水滴範囲設定
+         centerXRatio / centerYRatio:
+         水滴世界の中心位置
+         mainOffsetY:
+         主水滴の見た目上のY補正
+         rangeWidthRatio / rangeHeightRatio:
+         水滴可動範囲の広さ
+         sideInset / topInset / bottomInset:
+         可動範囲の内側余白
+      ----------------------------------------------------- */
+      area: {
+        centerXRatio: 0.5,
+        centerYRatio: 0.5,
+        mainOffsetY: -54,
 
-      stableDistLarge: 1.72,
-      stableDistMedium: 1.48,
-      stableDistSmall: 1.28,
-      stableDistJitter: 0.08,
+        rangeWidthRatio: 0.34,
+        rangeHeightRatio: 0.28,
 
-      contactStartMul: 1.78,
-      contactFullMul: 1.08,
-      mainContactMax: 1,
+        sideInset: 18,
+        topInset: 0,
+        bottomInset: 6
+      },
 
-      metaballJoinMul: 1.62,
-      metaballThreshold: 132,
-      metaballBlur: 14,
-      metaballPad: 34,
+      /* -----------------------------------------------------
+         主水滴
+         radius:
+         主水滴の基本半径
+         viewportMinScale / viewportMaxScale:
+         画面サイズによる拡縮下限 / 上限
+         wobbleAmp:
+         主水滴の揺れの強さ
+         wobbleSpeedA / wobbleSpeedB:
+         主水滴の揺れ速度
+         rippleAmpA / rippleAmpB:
+         輪郭の細かい脈動量
+      ----------------------------------------------------- */
+      main: {
+        radius: 104,
+        viewportMinScale: 0.72,
+        viewportMaxScale: 1.12,
 
-      wallBounce: 0.92,
-      wallDamping: 0.86
+        wobbleAmp: 0.108,
+        wobbleSpeedA: 0.92,
+        wobbleSpeedB: 1.42,
+        rippleAmpA: 0.012,
+        rippleAmpB: 0.010
+      },
+
+      /* -----------------------------------------------------
+         従水滴
+         kinds:
+         従水滴ごとの定義
+         - name: 識別名
+         - radiusRatio: 主水滴に対する大きさ
+         - count: その水滴の個数
+         - alpha: 見た目の濃さ
+         spawnGapFromMain:
+         主水滴輪郭の外側にどれだけ離して生成するか
+         maxRadiusRatioToMain:
+         従水滴の最大サイズ制限
+      ----------------------------------------------------- */
+      aux: {
+        kinds: [
+          { name: "mediumA", radiusRatio: 0.24, count: 1, alpha: 0.92 },
+          { name: "smallA",  radiusRatio: 0.12, count: 1, alpha: 0.88 },
+          { name: "smallB",  radiusRatio: 0.09, count: 1, alpha: 0.84 }
+        ],
+
+        spawnGapFromMain: 14,
+        maxRadiusRatioToMain: 0.48,
+
+        /* ---------------------------------------------------
+           ノイズ移動
+           driftForce:
+           ノイズで動く力
+           driftDamping:
+           動きの減衰
+           driftNoiseX / driftNoiseY:
+           X/Y方向のノイズ量
+           maxSpeed:
+           最大速度
+           centerBias:
+           端に寄り過ぎないための内向き補正
+        --------------------------------------------------- */
+        motion: {
+          driftForce: 2.05,
+          driftDamping: 0.9925,
+          driftNoiseX: 2.8,
+          driftNoiseY: 2.2,
+          maxSpeed: 17.5,
+          centerBias: 2.4
+        },
+
+        /* ---------------------------------------------------
+           壁との反応
+           wallBounce:
+           壁に当たったときの跳ね返り
+           wallDamping:
+           反射時に他軸へかける減衰
+        --------------------------------------------------- */
+        wall: {
+          wallBounce: 0.92,
+          wallDamping: 0.86
+        },
+
+        /* ---------------------------------------------------
+           従水滴の見た目
+           wobbleAmp:
+           従水滴の輪郭揺れ量
+           wobbleSpeedA / wobbleSpeedB:
+           従水滴の揺れ速度
+        --------------------------------------------------- */
+        visual: {
+          wobbleAmp: 0.11,
+          wobbleSpeedA: 1.18,
+          wobbleSpeedB: 1.84
+        }
+      },
+
+      /* -----------------------------------------------------
+         接近変形
+         contactStartMul:
+         変形が始まる距離倍率
+         contactFullMul:
+         もっとも強く変形する距離倍率
+      ----------------------------------------------------- */
+      contact: {
+        contactStartMul: 1.78,
+        contactFullMul: 1.08
+      },
+
+      /* -----------------------------------------------------
+         メタボール接合
+         joinMul:
+         接合グループ化する距離倍率
+         threshold:
+         blur後にどこで輪郭確定するか
+         blur:
+         接合の柔らかさ
+         pad:
+         マスク余白
+      ----------------------------------------------------- */
+      metaball: {
+        joinMul: 1.62,
+        threshold: 132,
+        blur: 14,
+        pad: 34
+      },
+
+      /* -----------------------------------------------------
+         ハロー
+         radiusRatio:
+         ハロー半径
+         alphaCore / alphaMid:
+         ハローの中心と中間の明るさ
+      ----------------------------------------------------- */
+      halo: {
+        radiusRatio: 0.16,
+        alphaCore: 0.12,
+        alphaMid: 0.05
+      },
+
+      /* -----------------------------------------------------
+         水面
+         lineCount:
+         波線本数
+         lineSpacing:
+         波線間隔
+         amp:
+         波線の揺れ
+      ----------------------------------------------------- */
+      waterSurface: {
+        lineCount: 10,
+        lineSpacing: 8,
+        amp: 0.8
+      },
+
+      /* -----------------------------------------------------
+         反射
+         mainBodyAlpha:
+         主水滴反射の濃さ
+         auxBodyAlphaMul:
+         従水滴反射の濃さ倍率
+         strokeAlphaMain / strokeAlphaAux:
+         反射線の濃さ
+         squashMain / squashAux / squashMetaball:
+         反射の縦潰し量
+      ----------------------------------------------------- */
+      reflection: {
+        mainBodyAlpha: 0.10,
+        auxBodyAlphaMul: 0.062,
+        strokeAlphaMain: 0.045,
+        strokeAlphaAux: 0.028,
+        squashMain: 0.60,
+        squashAux: 0.58,
+        squashMetaball: 0.58
+      }
     },
 
+    /* -------------------------------------------------------
+       フェーズ時間
+    ------------------------------------------------------- */
     phase: {
       hint: 0.15,
       burst: 1.0,
@@ -91,6 +280,12 @@
 
     logoHoldAfterReveal: 1.42,
 
+    /* -------------------------------------------------------
+       revealLogo
+       - 憂き世の文字は落下
+       - 単発でバウンド
+       - その後は固定
+    ------------------------------------------------------- */
     reveal: {
       dropFromY: -148,
       dropOvershoot: 18,
@@ -102,6 +297,9 @@
       finalScale: 1.0
     },
 
+    /* -------------------------------------------------------
+       破片演出
+    ------------------------------------------------------- */
     shardCount: 160,
     shardNearRatio: 0.16,
     shardMidRatio: 0.60,
@@ -163,14 +361,14 @@
     revealShown: false,
     entranceDoneFired: false,
 
-    auxDroplets: [],
-    mainAbsorbPulse: 0,
-
-    metaballCanvas: document.createElement("canvas"),
-    metaballCtx: null
+    water: {
+      auxDroplets: [],
+      metaballCanvas: document.createElement("canvas"),
+      metaballCtx: null
+    }
   };
 
-  state.metaballCtx = state.metaballCanvas.getContext("2d", {
+  state.water.metaballCtx = state.water.metaballCanvas.getContext("2d", {
     willReadFrequently: true
   });
 
@@ -241,39 +439,36 @@
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    cx = w * 0.5;
-    cy = h * 0.5 + CONFIG.droplet.floatY;
+    cx = w * CONFIG.water.area.centerXRatio;
+    cy = h * CONFIG.water.area.centerYRatio + CONFIG.water.area.mainOffsetY;
     horizonY = h * lerp(CONFIG.horizonYMin, CONFIG.horizonYMax, 0.5);
 
     if (!started) {
       createShardField();
-      initAuxDroplets();
+      initWaterDroplets();
     }
   }
 
   function getMainBaseRadius() {
-    return CONFIG.droplet.radius * Math.min(w / 1200, h / 900, 1.12);
+    const C = CONFIG.water.main;
+    const viewportScale = Math.min(w / 1200, h / 900, C.viewportMaxScale);
+    return C.radius * Math.max(C.viewportMinScale, viewportScale);
   }
 
-  function getFloatBounds() {
-    const C = CONFIG.auxDroplets;
+  function getWaterBounds() {
+    const C = CONFIG.water.area;
     const rect = rectSize(brand);
-    const mainR = getMainBaseRadius();
-
-    const brandW = rect ? rect.width : Math.min(w * 0.28, 360);
-    const brandH = rect ? rect.height : mainR * 0.92;
-
-    const left = cx - brandW * 0.5 + C.bounds.sideInset;
-    const right = cx + brandW * 0.5 - C.bounds.sideInset;
-    const top = cy - mainR * 1.2 + C.bounds.topOffset;
-    const filmBaseline = rect ? rect.bottom : cy + brandH * 0.5;
-    const bottom = filmBaseline - C.bounds.bottomInsetFromFilm;
+    const baseWidth = rect ? rect.width : w * C.rangeWidthRatio;
+    const width = Math.max(baseWidth, w * C.rangeWidthRatio);
+    const height = Math.max(getMainBaseRadius() * 2.7, h * C.rangeHeightRatio);
 
     return {
-      minX: left,
-      maxX: right,
-      minY: top,
-      maxY: bottom
+      minX: cx - width * 0.5 + C.sideInset,
+      maxX: cx + width * 0.5 - C.sideInset,
+      minY: cy - height * 0.5 + C.topInset,
+      maxY: cy + height * 0.5 - C.bottomInset,
+      width,
+      height
     };
   }
 
@@ -399,154 +594,131 @@
 
   /* =========================================================
      Sector 08. Water System / Generate & Model
-     - 現行動作維持版
+     ---------------------------------------------------------
+     ここを全面差し替え
+     - 主水滴 / 従水滴
+     - 主水滴外での生成
+     - 水滴範囲
+     - メタボールの下準備
   ========================================================= */
-  function getAuxBaseRadius(kind) {
+  function createWaterDroplet(kindDef, indexWithinKind) {
+    const bounds = getWaterBounds();
     const mainR = getMainBaseRadius();
-    if (kind === "large") return mainR * CONFIG.auxDroplets.sizeRatioLarge;
-    if (kind === "medium") return mainR * CONFIG.auxDroplets.sizeRatioMedium;
-    return mainR * CONFIG.auxDroplets.sizeRatioSmall;
+    const r = clamp(
+      mainR * kindDef.radiusRatio,
+      mainR * 0.06,
+      mainR * CONFIG.water.aux.maxRadiusRatioToMain
+    );
+
+    const gap = CONFIG.water.aux.spawnGapFromMain;
+    const minDist = mainR + r + gap;
+    const maxDist = Math.min(bounds.width, bounds.height) * 0.42;
+
+    let x = cx;
+    let y = cy;
+    let placed = false;
+
+    for (let i = 0; i < 60; i++) {
+      const ang = rand(0, Math.PI * 2);
+      const dist = rand(minDist, Math.max(minDist + 1, maxDist));
+      const tx = cx + Math.cos(ang) * dist;
+      const ty = cy + Math.sin(ang) * dist;
+
+      if (
+        tx > bounds.minX + r &&
+        tx < bounds.maxX - r &&
+        ty > bounds.minY + r &&
+        ty < bounds.maxY - r &&
+        dist2(tx, ty, cx, cy) > minDist
+      ) {
+        x = tx;
+        y = ty;
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      const ang = rand(0, Math.PI * 2);
+      x = clamp(cx + Math.cos(ang) * minDist, bounds.minX + r, bounds.maxX - r);
+      y = clamp(cy + Math.sin(ang) * minDist, bounds.minY + r, bounds.maxY - r);
+    }
+
+    const tangent = rand(0, Math.PI * 2);
+
+    return {
+      name: kindDef.name,
+      r,
+      alpha: kindDef.alpha,
+      x,
+      y,
+      vx: Math.cos(tangent) * rand(2.2, 4.5),
+      vy: Math.sin(tangent) * rand(1.8, 4.0),
+      scale: 1,
+      life: 0,
+      seed: rand(0, 1000),
+      indexWithinKind
+    };
   }
 
-  function clampAuxRadius(r) {
-    const mainR = getMainBaseRadius();
-    return clamp(r, mainR * 0.06, mainR * CONFIG.auxDroplets.maxRadiusRatioToMain);
-  }
+  function initWaterDroplets() {
+    state.water.auxDroplets.length = 0;
 
-  function getStableDistanceForKind(kind) {
-    const mainR = getMainBaseRadius();
-    const C = CONFIG.auxDroplets;
-    const mul =
-      kind === "large" ? C.stableDistLarge :
-      kind === "medium" ? C.stableDistMedium :
-      C.stableDistSmall;
-
-    return mainR * (mul + rand(-C.stableDistJitter, C.stableDistJitter));
-  }
-
-  function initAuxDroplets() {
-    state.auxDroplets.length = 0;
-    state.mainAbsorbPulse = 0;
-
-    const kinds = CONFIG.auxDroplets.initialPattern;
-    const bounds = getFloatBounds();
-
-    for (let i = 0; i < kinds.length; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const minDist = getMainBaseRadius() * 0.9;
-      const maxDist = getMainBaseRadius() * 1.8;
-      const dist = rand(minDist, maxDist);
-
-      let x = cx + Math.cos(angle) * dist;
-      let y = cy + Math.sin(angle) * dist;
-
-      x = clamp(x, bounds.minX, bounds.maxX);
-      y = clamp(y, bounds.minY, bounds.maxY);
-
-      const tangent = angle + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
-
-      state.auxDroplets.push({
-        kind: kinds[i],
-        r: clampAuxRadius(getAuxBaseRadius(kinds[i])),
-        x,
-        y,
-        vx: Math.cos(tangent) * rand(3, 5),
-        vy: Math.sin(tangent) * rand(2, 4),
-        alpha: 0.9,
-        scale: 1,
-        life: 0,
-        seed: rand(0, 1000)
-      });
+    for (const kindDef of CONFIG.water.aux.kinds) {
+      for (let i = 0; i < kindDef.count; i++) {
+        state.water.auxDroplets.push(createWaterDroplet(kindDef, i));
+      }
     }
   }
 
-  function limitDropletSpeed(d) {
-    const maxV = CONFIG.auxDroplets.maxSpeed;
-    const len = Math.hypot(d.vx, d.vy);
-    if (len > maxV) {
-      d.vx = (d.vx / len) * maxV;
-      d.vy = (d.vy / len) * maxV;
-    }
+  function getMainMorph(time, hintK) {
+    const C = CONFIG.water.main;
+    const base = getMainBaseRadius();
+
+    const wobble =
+      Math.sin(time * C.wobbleSpeedA) * 0.55 +
+      Math.sin(time * C.wobbleSpeedB + 1.4) * 0.45;
+
+    const ripple =
+      Math.sin(time * 3.2 + 0.7) * 0.4 +
+      Math.sin(time * 4.9 - 0.9) * 0.23;
+
+    const amp = C.wobbleAmp * (1 + 0.22 * wobble);
+    const shiver = hintK * 0.05;
+
+    return {
+      r: base,
+      rx: base * (1.0 + amp * 0.55 + shiver + ripple * C.rippleAmpA),
+      ry: base * (1.08 - amp * 0.4 - shiver * 0.65 + wobble * C.rippleAmpB),
+      warpA: amp + shiver * 0.9,
+      warpB: amp * 0.7 + shiver * 0.7
+    };
   }
 
-  function applyWallBounce(d, bounds) {
-    const C = CONFIG.auxDroplets;
+  function getAuxMorph(d, time) {
+    const V = CONFIG.water.aux.visual;
+    const local =
+      Math.sin(time * V.wobbleSpeedA + d.seed) * 0.55 +
+      Math.sin(time * V.wobbleSpeedB + d.seed * 0.6) * 0.45;
 
-    if (d.x < bounds.minX) {
-      d.x = bounds.minX;
-      d.vx = Math.abs(d.vx) * C.wallBounce;
-      d.vy *= C.wallDamping;
-    } else if (d.x > bounds.maxX) {
-      d.x = bounds.maxX;
-      d.vx = -Math.abs(d.vx) * C.wallBounce;
-      d.vy *= C.wallDamping;
-    }
+    const rr = d.r * d.scale;
+    const amp = V.wobbleAmp * (1 + local * 0.12);
 
-    if (d.y < bounds.minY) {
-      d.y = bounds.minY;
-      d.vy = Math.abs(d.vy) * C.wallBounce;
-      d.vx *= C.wallDamping;
-    } else if (d.y > bounds.maxY) {
-      d.y = bounds.maxY;
-      d.vy = -Math.abs(d.vy) * C.wallBounce;
-      d.vx *= C.wallDamping;
-    }
-  }
-
-  /* =========================================================
-     Sector 09. Phase
-  ========================================================= */
-  function getPhase(t) {
-    if (t < T_HINT) return "hint";
-    if (t < T_BURST) return "burst";
-    if (t < T_DRIFT) return "drift";
-    if (t < T_GATHER) return "gather";
-    if (t < T_FLASH) return "flash";
-    if (t < T_LOGO) return "logo";
-    return "done";
-  }
-
-  /* =========================================================
-     Sector 10. Water System / Update
-  ========================================================= */
-  function updateAuxDroplets(dt, tsSec) {
-    if (started) return;
-
-    const C = CONFIG.auxDroplets;
-    const bounds = getFloatBounds();
-
-    for (const d of state.auxDroplets) {
-      d.life += dt;
-
-      const noiseX =
-        Math.sin(tsSec * 0.36 + d.seed * 0.63) * C.driftNoiseX +
-        Math.sin(tsSec * 0.71 + d.seed * 1.11) * C.driftNoiseX * 0.32;
-
-      const noiseY =
-        Math.cos(tsSec * 0.41 + d.seed * 0.47) * C.driftNoiseY +
-        Math.sin(tsSec * 0.76 + d.seed * 0.81) * C.driftNoiseY * 0.22;
-
-      d.vx += noiseX * dt * C.driftForce;
-      d.vy += noiseY * dt * C.driftForce;
-
-      d.vx *= C.driftDamping;
-      d.vy *= C.driftDamping;
-
-      limitDropletSpeed(d);
-
-      d.x += d.vx * dt;
-      d.y += d.vy * dt;
-
-      applyWallBounce(d, bounds);
-    }
+    return {
+      r: rr,
+      rx: rr * (1 + amp * 0.22),
+      ry: rr * (1.05 - amp * 0.16),
+      warpA: amp * 0.75,
+      warpB: amp * 0.52
+    };
   }
 
   function getPairContactK(ax, ay, ar, bx, by, br) {
     const d = dist2(ax, ay, bx, by);
     const rr = ar + br;
 
-    const start = rr * CONFIG.auxDroplets.contactStartMul;
-    const full = rr * CONFIG.auxDroplets.contactFullMul;
+    const start = rr * CONFIG.water.contact.contactStartMul;
+    const full = rr * CONFIG.water.contact.contactFullMul;
 
     if (d >= start) return 0;
     return clamp((start - d) / Math.max(start - full, 1), 0, 1);
@@ -573,7 +745,7 @@
     let best = null;
     let bestK = 0;
 
-    for (const other of state.auxDroplets) {
+    for (const other of state.water.auxDroplets) {
       if (other === d) continue;
 
       const k = getPairContactK(
@@ -613,7 +785,7 @@
     let best = null;
     let bestK = 0;
 
-    for (const d of state.auxDroplets) {
+    for (const d of state.water.auxDroplets) {
       const k = getPairContactK(
         cx, cy, getMainBaseRadius(),
         d.x, d.y, d.r * d.scale
@@ -633,47 +805,6 @@
       pullStrength: bestK * 0.9,
       squash: bestK * 0.48,
       neckWidth: bestK * 0.92
-    };
-  }
-
-  function getDropletMorph(time, hintK) {
-    const base = getMainBaseRadius();
-    const absorbPulse = state.mainAbsorbPulse * CONFIG.droplet.absorbPulseAmp;
-
-    const wobble =
-      Math.sin(time * CONFIG.droplet.wobbleSpeedA) * 0.55 +
-      Math.sin(time * CONFIG.droplet.wobbleSpeedB + 1.4) * 0.45;
-
-    const ripple =
-      Math.sin(time * 3.2 + 0.7) * 0.4 +
-      Math.sin(time * 4.9 - 0.9) * 0.23;
-
-    const amp = CONFIG.droplet.wobbleAmp * (1 + 0.22 * wobble) + absorbPulse;
-    const shiver = hintK * 0.05;
-
-    return {
-      r: base,
-      rx: base * (1.0 + amp * 0.55 + shiver + ripple * 0.012),
-      ry: base * (1.08 - amp * 0.4 - shiver * 0.65 + wobble * 0.01),
-      warpA: amp + shiver * 0.9,
-      warpB: amp * 0.7 + shiver * 0.7
-    };
-  }
-
-  function getAuxMorph(d, time) {
-    const local =
-      Math.sin(time * 1.18 + d.seed) * 0.55 +
-      Math.sin(time * 1.84 + d.seed * 0.6) * 0.45;
-
-    const rr = d.r * d.scale;
-    const amp = 0.11 * (1 + local * 0.12);
-
-    return {
-      r: rr,
-      rx: rr * (1 + amp * 0.22),
-      ry: rr * (1.05 - amp * 0.16),
-      warpA: amp * 0.75,
-      warpB: amp * 0.52
     };
   }
 
@@ -725,7 +856,119 @@
   }
 
   /* =========================================================
+     Sector 09. Phase
+  ========================================================= */
+  function getPhase(t) {
+    if (t < T_HINT) return "hint";
+    if (t < T_BURST) return "burst";
+    if (t < T_DRIFT) return "drift";
+    if (t < T_GATHER) return "gather";
+    if (t < T_FLASH) return "flash";
+    if (t < T_LOGO) return "logo";
+    return "done";
+  }
+
+  /* =========================================================
+     Sector 10. Water System / Update
+     ---------------------------------------------------------
+     ここを全面差し替え
+     - 従水滴は主水滴輪郭外で生成済み
+     - 可動範囲内をノイズ移動
+  ========================================================= */
+  function limitDropletSpeed(d) {
+    const maxV = CONFIG.water.aux.motion.maxSpeed;
+    const len = Math.hypot(d.vx, d.vy);
+    if (len > maxV) {
+      d.vx = (d.vx / len) * maxV;
+      d.vy = (d.vy / len) * maxV;
+    }
+  }
+
+  function applyWaterBounds(d, bounds) {
+    const C = CONFIG.water.aux.wall;
+    const r = d.r * d.scale;
+
+    if (d.x < bounds.minX + r) {
+      d.x = bounds.minX + r;
+      d.vx = Math.abs(d.vx) * C.wallBounce;
+      d.vy *= C.wallDamping;
+    } else if (d.x > bounds.maxX - r) {
+      d.x = bounds.maxX - r;
+      d.vx = -Math.abs(d.vx) * C.wallBounce;
+      d.vy *= C.wallDamping;
+    }
+
+    if (d.y < bounds.minY + r) {
+      d.y = bounds.minY + r;
+      d.vy = Math.abs(d.vy) * C.wallBounce;
+      d.vx *= C.wallDamping;
+    } else if (d.y > bounds.maxY - r) {
+      d.y = bounds.maxY - r;
+      d.vy = -Math.abs(d.vy) * C.wallBounce;
+      d.vx *= C.wallDamping;
+    }
+  }
+
+  function pushOutsideMain(d) {
+    const mainR = getMainBaseRadius();
+    const minDist = mainR + d.r + CONFIG.water.aux.spawnGapFromMain;
+    const dx = d.x - cx;
+    const dy = d.y - cy;
+    const dist = Math.hypot(dx, dy) || 1;
+
+    if (dist < minDist) {
+      const nx = dx / dist;
+      const ny = dy / dist;
+      d.x = cx + nx * minDist;
+      d.y = cy + ny * minDist;
+      d.vx += nx * 1.2;
+      d.vy += ny * 1.2;
+    }
+  }
+
+  function updateWaterDroplets(dt, tsSec) {
+    if (started) return;
+
+    const bounds = getWaterBounds();
+    const C = CONFIG.water.aux.motion;
+
+    for (const d of state.water.auxDroplets) {
+      d.life += dt;
+
+      const noiseX =
+        Math.sin(tsSec * 0.36 + d.seed * 0.63) * C.driftNoiseX +
+        Math.sin(tsSec * 0.71 + d.seed * 1.11) * C.driftNoiseX * 0.32;
+
+      const noiseY =
+        Math.cos(tsSec * 0.41 + d.seed * 0.47) * C.driftNoiseY +
+        Math.sin(tsSec * 0.76 + d.seed * 0.81) * C.driftNoiseY * 0.22;
+
+      const toCenterX = cx - d.x;
+      const toCenterY = cy - d.y;
+      const centerLen = Math.hypot(toCenterX, toCenterY) || 1;
+
+      d.vx += noiseX * dt * C.driftForce + (toCenterX / centerLen) * dt * C.centerBias;
+      d.vy += noiseY * dt * C.driftForce + (toCenterY / centerLen) * dt * C.centerBias;
+
+      d.vx *= C.driftDamping;
+      d.vy *= C.driftDamping;
+
+      limitDropletSpeed(d);
+
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+
+      pushOutsideMain(d);
+      applyWaterBounds(d, bounds);
+    }
+  }
+
+  /* =========================================================
      Sector 11. Water System / Draw
+     ---------------------------------------------------------
+     ここを全面差し替え
+     - 単体水滴
+     - メタボール接合
   ========================================================= */
   function tracePath(pts) {
     ctx.beginPath();
@@ -744,13 +987,12 @@
     ctx.closePath();
   }
 
-  function drawDroplet(time, hintK) {
+  function drawMainDroplet(time, hintK) {
     const deformation = getVisualDeformationForMain();
-
     const pts = buildDropletPathAt(
       cx,
       cy,
-      getDropletMorph(time, hintK),
+      getMainMorph(time, hintK),
       time,
       0,
       deformation
@@ -794,56 +1036,52 @@
     ctx.restore();
   }
 
-  function drawAuxDroplets(time) {
-    for (const d of state.auxDroplets) {
-      const m = getAuxMorph(d, time);
-      const deformation = getVisualDeformationForAux(d);
-      const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, deformation);
+  function drawSingleAuxDroplet(d, time) {
+    const m = getAuxMorph(d, time);
+    const deformation = getVisualDeformationForAux(d);
+    const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, deformation);
 
-      ctx.save();
+    ctx.save();
 
-      const g = ctx.createRadialGradient(
-        d.x - m.r * 0.18,
-        d.y - m.r * 0.22,
-        1,
-        d.x,
-        d.y,
-        m.r * 1.18
-      );
-      g.addColorStop(0, `rgba(255,255,255,${0.10 * d.alpha})`);
-      g.addColorStop(0.42, `rgba(255,255,255,${0.046 * d.alpha})`);
-      g.addColorStop(1, "rgba(255,255,255,0.008)");
+    const g = ctx.createRadialGradient(
+      d.x - m.r * 0.18,
+      d.y - m.r * 0.22,
+      1,
+      d.x,
+      d.y,
+      m.r * 1.18
+    );
+    g.addColorStop(0, `rgba(255,255,255,${0.10 * d.alpha})`);
+    g.addColorStop(0.42, `rgba(255,255,255,${0.046 * d.alpha})`);
+    g.addColorStop(1, "rgba(255,255,255,0.008)");
 
-      tracePath(pts);
-      ctx.fillStyle = g;
-      ctx.fill();
+    tracePath(pts);
+    ctx.fillStyle = g;
+    ctx.fill();
 
-      const contactBoost = deformation ? deformation.pullStrength : 0;
-      ctx.strokeStyle = `rgba(255,255,255,${(0.15 + contactBoost * 0.08) * d.alpha})`;
-      ctx.lineWidth =
-        d.kind === "large" ? 1.02 :
-        d.kind === "medium" ? 0.92 : 0.78;
-      ctx.stroke();
+    const contactBoost = deformation ? deformation.pullStrength : 0;
+    ctx.strokeStyle = `rgba(255,255,255,${(0.15 + contactBoost * 0.08) * d.alpha})`;
+    ctx.lineWidth = m.r > getMainBaseRadius() * 0.18 ? 0.92 : 0.78;
+    ctx.stroke();
 
-      ctx.beginPath();
-      ctx.ellipse(
-        d.x - m.r * 0.18,
-        d.y - m.r * 0.22,
-        Math.max(1.3, m.r * 0.18),
-        Math.max(2.0, m.r * 0.25),
-        -0.34,
-        0,
-        Math.PI * 2
-      );
-      ctx.fillStyle = `rgba(255,255,255,${0.04 * d.alpha})`;
-      ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(
+      d.x - m.r * 0.18,
+      d.y - m.r * 0.22,
+      Math.max(1.3, m.r * 0.18),
+      Math.max(2.0, m.r * 0.25),
+      -0.34,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = `rgba(255,255,255,${0.04 * d.alpha})`;
+    ctx.fill();
 
-      ctx.restore();
-    }
+    ctx.restore();
   }
 
   function getMainRenderDroplet(time, hintK) {
-    const m = getDropletMorph(time, hintK);
+    const m = getMainMorph(time, hintK);
     return {
       id: "main",
       type: "main",
@@ -858,7 +1096,7 @@
   }
 
   function getAuxRenderDroplets(time) {
-    return state.auxDroplets.map((d, i) => {
+    return state.water.auxDroplets.map((d, i) => {
       const m = getAuxMorph(d, time);
       return {
         id: `aux-${i}`,
@@ -878,7 +1116,7 @@
   function shouldMetaballJoin(a, b) {
     const d = dist2(a.x, a.y, b.x, b.y);
     const rr = a.r + b.r;
-    return d <= rr * CONFIG.auxDroplets.metaballJoinMul;
+    return d <= rr * CONFIG.water.metaball.joinMul;
   }
 
   function buildDropletGroups(items) {
@@ -915,7 +1153,7 @@
   }
 
   function getGroupBounds(group) {
-    const pad = CONFIG.auxDroplets.metaballPad + CONFIG.auxDroplets.metaballBlur;
+    const pad = CONFIG.water.metaball.pad + CONFIG.water.metaball.blur;
 
     let minX = Infinity;
     let minY = Infinity;
@@ -940,10 +1178,10 @@
   }
 
   function buildMetaballMask(group) {
-    const off = state.metaballCanvas;
-    const octx = state.metaballCtx;
-    const blur = CONFIG.auxDroplets.metaballBlur;
-    const threshold = CONFIG.auxDroplets.metaballThreshold;
+    const off = state.water.metaballCanvas;
+    const octx = state.water.metaballCtx;
+    const blur = CONFIG.water.metaball.blur;
+    const threshold = CONFIG.water.metaball.threshold;
     const b = getGroupBounds(group);
 
     off.width = b.w;
@@ -990,104 +1228,7 @@
     return b;
   }
 
-  function drawSingleOrganicDroplet(item, time, hintK) {
-    if (item.type === "main") {
-      const deformation = getVisualDeformationForMain();
-      const pts = buildDropletPathAt(
-        item.x,
-        item.y,
-        getDropletMorph(time, hintK),
-        time,
-        0,
-        deformation
-      );
-
-      ctx.save();
-
-      const body = ctx.createRadialGradient(
-        item.x - 18,
-        item.y - 22,
-        5,
-        item.x,
-        item.y,
-        getMainBaseRadius() * 1.1
-      );
-      body.addColorStop(0, "rgba(255,255,255,0.12)");
-      body.addColorStop(0.38, "rgba(255,255,255,0.055)");
-      body.addColorStop(0.72, "rgba(255,255,255,0.028)");
-      body.addColorStop(1, "rgba(255,255,255,0.01)");
-
-      tracePath(pts);
-      ctx.fillStyle = body;
-      ctx.fill();
-
-      const mainContactBoost = deformation ? deformation.pullStrength : 0;
-      ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + mainContactBoost * 0.08})`;
-      ctx.lineWidth = 1.05;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.ellipse(item.x - 18, item.y - 22, 9, 16, -0.4, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.05)";
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.ellipse(item.x + 6, item.y + 8, 28, 17, 0.42, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(255,255,255,0.035)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      ctx.restore();
-      return;
-    }
-
-    const d = item.source;
-    const m = getAuxMorph(d, time);
-    const deformation = getVisualDeformationForAux(d);
-    const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, deformation);
-
-    ctx.save();
-
-    const g = ctx.createRadialGradient(
-      d.x - m.r * 0.18,
-      d.y - m.r * 0.22,
-      1,
-      d.x,
-      d.y,
-      m.r * 1.18
-    );
-    g.addColorStop(0, `rgba(255,255,255,${0.10 * d.alpha})`);
-    g.addColorStop(0.42, `rgba(255,255,255,${0.046 * d.alpha})`);
-    g.addColorStop(1, "rgba(255,255,255,0.008)");
-
-    tracePath(pts);
-    ctx.fillStyle = g;
-    ctx.fill();
-
-    const contactBoost = deformation ? deformation.pullStrength : 0;
-    ctx.strokeStyle = `rgba(255,255,255,${(0.15 + contactBoost * 0.08) * d.alpha})`;
-    ctx.lineWidth =
-      d.kind === "large" ? 1.02 :
-      d.kind === "medium" ? 0.92 : 0.78;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.ellipse(
-      d.x - m.r * 0.18,
-      d.y - m.r * 0.22,
-      Math.max(1.3, m.r * 0.18),
-      Math.max(2.0, m.r * 0.25),
-      -0.34,
-      0,
-      Math.PI * 2
-    );
-    ctx.fillStyle = `rgba(255,255,255,${0.04 * d.alpha})`;
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawMetaballGroup(group, time, hintK) {
+  function drawMetaballGroup(group, hintK) {
     const bounds = buildMetaballMask(group);
 
     ctx.save();
@@ -1109,7 +1250,7 @@
     body.addColorStop(0.72, "rgba(255,255,255,0.028)");
     body.addColorStop(1, "rgba(255,255,255,0.01)");
 
-    ctx.drawImage(state.metaballCanvas, bounds.minX, bounds.minY);
+    ctx.drawImage(state.water.metaballCanvas, bounds.minX, bounds.minY);
 
     ctx.globalCompositeOperation = "source-in";
     ctx.fillStyle = body;
@@ -1117,7 +1258,7 @@
 
     ctx.globalCompositeOperation = "source-over";
     ctx.globalAlpha = 0.18 + hintK * 0.05;
-    ctx.drawImage(state.metaballCanvas, bounds.minX, bounds.minY);
+    ctx.drawImage(state.water.metaballCanvas, bounds.minX, bounds.minY);
 
     ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha = 0.08;
@@ -1140,36 +1281,82 @@
     ctx.restore();
   }
 
-  function drawDropletSystem(time, hintK) {
+  function drawWaterDropletSystem(time, hintK) {
     const items = [getMainRenderDroplet(time, hintK), ...getAuxRenderDroplets(time)];
     const groups = buildDropletGroups(items);
 
     for (const group of groups) {
-      if (group.length === 1) drawSingleOrganicDroplet(group[0], time, hintK);
-      else drawMetaballGroup(group, time, hintK);
+      if (group.length === 1) {
+        const item = group[0];
+        if (item.type === "main") drawMainDroplet(time, hintK);
+        else drawSingleAuxDroplet(item.source, time);
+      } else {
+        drawMetaballGroup(group, hintK);
+      }
     }
   }
 
   /* =========================================================
      Sector 12. Background / Halo / Water
+     ---------------------------------------------------------
+     ここを全面差し替え
+     - 水滴範囲内背景色
+     - ハロー
+     - 水面
   ========================================================= */
   function drawBackground(time) {
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = CONFIG.bg;
     ctx.fillRect(0, 0, w, h);
 
+    drawWaterAreaBackground();
     drawHalo(time);
     drawHorizon(time);
     drawWater(time);
   }
 
+  function drawWaterAreaBackground() {
+    const bounds = getWaterBounds();
+    const C = CONFIG.water.background;
+
+    ctx.save();
+
+    const g = ctx.createRadialGradient(
+      cx,
+      cy,
+      getMainBaseRadius() * 0.3,
+      cx,
+      cy,
+      Math.max(bounds.width, bounds.height) * 0.7
+    );
+
+    const rgb = hexToRgb(C.areaBgColor);
+    const c1 = `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgAlpha})`;
+    const c2 = `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgSoftAlpha})`;
+    const c3 = `rgba(${rgb.r},${rgb.g},${rgb.b},0)`;
+
+    g.addColorStop(0, c1);
+    g.addColorStop(0.58, c2);
+    g.addColorStop(1, c3);
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.rect(bounds.minX - 80, bounds.minY - 80, bounds.width + 160, bounds.height + 160);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
   function drawHalo(time) {
+    const H = CONFIG.water.halo;
     const pulse = 0.93 + Math.sin(time * 1.1) * 0.03;
-    const r = Math.max(w, h) * 0.16 * pulse;
+    const r = Math.max(w, h) * H.radiusRatio * pulse;
+
     const g = ctx.createRadialGradient(cx, cy - 10, 0, cx, cy - 10, r);
-    g.addColorStop(0, "rgba(255,255,255,0.12)");
-    g.addColorStop(0.33, "rgba(255,255,255,0.05)");
+    g.addColorStop(0, `rgba(255,255,255,${H.alphaCore})`);
+    g.addColorStop(0.33, `rgba(255,255,255,${H.alphaMid})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
+
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(cx, cy - 10, r, 0, Math.PI * 2);
@@ -1211,6 +1398,8 @@
   }
 
   function drawWater(time) {
+    const W = CONFIG.water.waterSurface;
+
     ctx.save();
     ctx.beginPath();
     ctx.rect(0, horizonY, w, h - horizonY);
@@ -1223,10 +1412,9 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, horizonY, w, h - horizonY);
 
-    const lineCount = 10;
-    for (let i = 0; i < lineCount; i++) {
-      const y = horizonY + 6 + i * 8;
-      const a = 0.018 * (1 - i / lineCount);
+    for (let i = 0; i < W.lineCount; i++) {
+      const y = horizonY + 6 + i * W.lineSpacing;
+      const a = 0.018 * (1 - i / W.lineCount);
       const wave = Math.sin(time * 0.8 + i * 0.9) * 8;
       const grad = ctx.createLinearGradient(0, 0, w, 0);
       grad.addColorStop(0, "rgba(255,255,255,0)");
@@ -1239,7 +1427,7 @@
       ctx.lineWidth = 1;
       ctx.beginPath();
       for (let x = 0; x <= w; x += 22) {
-        const yy = y + Math.sin(x * 0.012 + wave) * 0.8;
+        const yy = y + Math.sin(x * 0.012 + wave) * W.amp;
         if (x === 0) ctx.moveTo(x, yy);
         else ctx.lineTo(x, yy);
       }
@@ -1249,8 +1437,24 @@
     ctx.restore();
   }
 
+  function hexToRgb(hex) {
+    const value = hex.replace("#", "");
+    const full = value.length === 3
+      ? value.split("").map((ch) => ch + ch).join("")
+      : value;
+
+    return {
+      r: parseInt(full.slice(0, 2), 16),
+      g: parseInt(full.slice(2, 4), 16),
+      b: parseInt(full.slice(4, 6), 16)
+    };
+  }
+
   /* =========================================================
      Sector 13. Reflection
+     ---------------------------------------------------------
+     ここを全面差し替え
+     - 主滴 / 従滴 / メタボールの反射
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
@@ -1274,11 +1478,13 @@
   }
 
   function drawSingleReflection(item, time, hintK) {
+    const R = CONFIG.water.reflection;
+
     if (item.type === "main") {
       const pts = buildDropletPathAt(
         cx,
         cy,
-        getDropletMorph(time, hintK * 0.72),
+        getMainMorph(time, hintK * 0.72),
         time,
         0,
         getVisualDeformationForMain()
@@ -1288,9 +1494,9 @@
         pts,
         time,
         {
-          bodyAlpha: 0.10,
-          strokeAlpha: 0.045,
-          squashY: 0.60,
+          bodyAlpha: R.mainBodyAlpha,
+          strokeAlpha: R.strokeAlphaMain,
+          squashY: R.squashMain,
           rippleAmp: 0.9,
           rippleFreq: 0.018,
           rippleSpeed: 1.2
@@ -1314,9 +1520,9 @@
       pts,
       time + d.seed * 0.0008,
       {
-        bodyAlpha: 0.062 * d.alpha,
-        strokeAlpha: 0.028 * d.alpha,
-        squashY: 0.58,
+        bodyAlpha: R.auxBodyAlphaMul * d.alpha,
+        strokeAlpha: R.strokeAlphaAux * d.alpha,
+        squashY: R.squashAux,
         rippleAmp: Math.max(0.35, m.r * 0.018),
         rippleFreq: 0.02,
         rippleSpeed: 1.1
@@ -1326,8 +1532,7 @@
 
   function drawMetaballReflection(group, time) {
     const bounds = buildMetaballMask(group);
-
-    const squashY = 0.58;
+    const squashY = CONFIG.water.reflection.squashMetaball;
     const slices = 16;
     const sliceH = Math.max(2, Math.ceil(bounds.h / slices));
     const flow =
@@ -1351,7 +1556,7 @@
         flow;
 
       ctx.drawImage(
-        state.metaballCanvas,
+        state.water.metaballCanvas,
         0, sy, bounds.w, sh,
         bounds.minX + waveX, reflectedY, bounds.w, sh * squashY
       );
@@ -1718,7 +1923,11 @@
 
   /* =========================================================
      Sector 17. Brand / Reveal Logo
-     - revealLogo を「落下 → 単発バウンド → 固定」に修正
+     ---------------------------------------------------------
+     revealLogo:
+     - 落下
+     - 単発バウンド
+     - その後固定
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
@@ -1741,7 +1950,6 @@
       scale = lerp(C.startScale, C.impactScale, e);
     } else {
       const t = (k - dropPortion) / Math.max(1 - dropPortion, 0.0001);
-      const e = easeInOutCubic(t);
 
       if (t < 0.5) {
         const t1 = t / 0.5;
@@ -1832,6 +2040,9 @@
 
   /* =========================================================
      Sector 19. Render
+     ---------------------------------------------------------
+     - 静止状態 / hint までは新しい水滴系を描画
+     - 以後は既存の破片主体
   ========================================================= */
   function render(ts) {
     const now = ts * 0.001;
@@ -1847,11 +2058,11 @@
     const hintK = phase === "hint" ? easeOutCubic(t / P.hint) : 0;
 
     if (!started) {
-      updateAuxDroplets(dt, now);
+      updateWaterDroplets(dt, now);
       setBrandOpacity(1);
       setRevealOpacity(0);
       drawReflection(now, 0);
-      drawDropletSystem(now, 0);
+      drawWaterDropletSystem(now, 0);
       rafId = requestAnimationFrame(render);
       return;
     }
@@ -1860,7 +2071,7 @@
       setBrandOpacity(1 - hintK * 0.38);
       setRevealOpacity(0);
       drawReflection(now, hintK);
-      drawDropletSystem(now, hintK);
+      drawWaterDropletSystem(now, hintK);
       rafId = requestAnimationFrame(render);
       return;
     }
@@ -1964,6 +2175,8 @@
 
   /* =========================================================
      Sector 21. Boot / Events
+     ---------------------------------------------------------
+     - 水滴初期化は新しい initWaterDroplets() を使う
   ========================================================= */
   function boot() {
     window.clearTimeout(doneTimer);
@@ -1977,11 +2190,10 @@
     state.flash = 0;
     state.revealShown = false;
     state.entranceDoneFired = false;
-    state.mainAbsorbPulse = 0;
 
     resize();
     createShardField();
-    initAuxDroplets();
+    initWaterDroplets();
     prepareLogos();
 
     cancelAnimationFrame(rafId);
