@@ -70,7 +70,7 @@
         areaBgSoftAlpha: 0.16,
         showAreaDebugFill: true,
         showAreaDebugStroke: true,
-        areaStrokeColor: "rgba(255,255,255,0.10)"
+        areaStrokeColor: "rgb(255, 0, 0)"
       },
 
       /* -----------------------------------------------------
