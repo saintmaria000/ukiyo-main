@@ -90,12 +90,12 @@
         centerYRatio: 0.5,
         mainOffsetY: -54,
 
-        fixedWidth: 400,
+        fixedWidth: 500,
         fixedHeight: 315,
 
         sideInset: 18,
         topInset: 9,
-        bottomInset: 0,
+        bottomInset: -5,
       },
 
       /* -----------------------------------------------------
