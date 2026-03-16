@@ -61,7 +61,7 @@
          外周へぼかすための弱い層
       ----------------------------------------------------- */
       background: {
-        areaBgColor: "#0a0a0a",
+        areaBgColor: "#ff0000",
         areaBgAlpha: 0.42,
         areaBgSoftAlpha: 0.18
       },
