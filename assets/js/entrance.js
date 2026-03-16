@@ -1306,165 +1306,134 @@
     }
   }
 
-  /* =========================================================
-     Sector 12. Background / Halo / Water
-     ---------------------------------------------------------
-     - 水滴範囲内背景色
-     - ハロー
-     - 水面
-  ========================================================= */
-  function drawBackground(time) {
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = CONFIG.bg;
-    ctx.fillRect(0, 0, w, h);
+/* =========================================================
+   Sector 12. Background / Water Area / Halo
+   ---------------------------------------------------------
+   背景
+   可動範囲背景
+   ハローのみ
+========================================================= */
 
-    drawWaterAreaBackground();
-    drawHalo(time);
-    drawHorizon(time);
-    drawWater(time);
-  }
+function drawBackground(time) {
 
-  function drawWaterAreaBackground() {
-    const bounds = getWaterBounds();
-    const C = CONFIG.water.background;
-    const rgb = hexToRgb(C.areaBgColor);
+  ctx.clearRect(0, 0, w, h);
 
-    ctx.save();
+  /* 画面背景 */
+  ctx.fillStyle = CONFIG.bg;
+  ctx.fillRect(0, 0, w, h);
 
-    if (C.showAreaDebugFill) {
-      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgAlpha})`;
-      ctx.fillRect(
-        bounds.minX,
-        bounds.minY,
-        bounds.maxX - bounds.minX,
-        bounds.maxY - bounds.minY
-      );
-    }
+  /* 水滴可動範囲背景 */
+  drawWaterAreaBackground();
 
-    const g = ctx.createRadialGradient(
-      cx,
-      cy,
-      Math.min(bounds.width, bounds.height) * 0.18,
-      cx,
-      cy,
-      Math.max(bounds.width, bounds.height) * 0.72
-    );
-    g.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgSoftAlpha})`);
-    g.addColorStop(1, `rgba(${rgb.r},${rgb.g},${rgb.b},0)`);
+  /* ハロー */
+  drawHalo(time);
 
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.rect(
-      bounds.minX - 80,
-      bounds.minY - 80,
-      (bounds.maxX - bounds.minX) + 160,
-      (bounds.maxY - bounds.minY) + 160
-    );
-    ctx.fill();
+}
 
-    if (C.showAreaDebugStroke) {
-      ctx.strokeStyle = C.areaStrokeColor;
-      ctx.lineWidth = 1;
-      ctx.strokeRect(
-        bounds.minX,
-        bounds.minY,
-        bounds.maxX - bounds.minX,
-        bounds.maxY - bounds.minY
-      );
-    }
 
-    ctx.restore();
-  }
+/* =========================================================
+   可動範囲背景
+   ---------------------------------------------------------
+   水滴の移動範囲を常に色表示
+   四角影の原因になる処理は削除
+========================================================= */
 
-  function drawHalo(time) {
-    const H = CONFIG.water.halo;
-    const pulse = 0.93 + Math.sin(time * 1.1) * 0.03;
-    const r = Math.max(w, h) * H.radiusRatio * pulse;
+function drawWaterAreaBackground() {
 
-    const g = ctx.createRadialGradient(cx, cy - 10, 0, cx, cy - 10, r);
-    g.addColorStop(0, `rgba(255,255,255,${H.alphaCore})`);
-    g.addColorStop(0.33, `rgba(255,255,255,${H.alphaMid})`);
-    g.addColorStop(1, "rgba(255,255,255,0)");
+  const bounds = getWaterBounds();
+  const C = CONFIG.water.background;
+  const rgb = hexToRgb(C.areaBgColor);
 
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(cx, cy - 10, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  if (!C.showAreaDebugFill) return;
 
-  function drawHorizon(time) {
-    const lineW = w * 0.44;
-    const amp = 0.8;
-    const yBase = horizonY;
+  ctx.save();
 
-    const g = ctx.createLinearGradient(cx - lineW * 0.5, 0, cx + lineW * 0.5, 0);
-    g.addColorStop(0, "rgba(255,255,255,0)");
-    g.addColorStop(0.18, "rgba(255,255,255,0.028)");
-    g.addColorStop(0.5, "rgba(255,255,255,0.075)");
-    g.addColorStop(0.82, "rgba(255,255,255,0.028)");
-    g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle =
+    `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgAlpha})`;
 
-    ctx.strokeStyle = g;
+  ctx.fillRect(
+    bounds.minX,
+    bounds.minY,
+    bounds.maxX - bounds.minX,
+    bounds.maxY - bounds.minY
+  );
+
+  if (C.showAreaDebugStroke) {
+
+    ctx.strokeStyle = C.areaStrokeColor;
     ctx.lineWidth = 1;
-    ctx.beginPath();
 
-    const startX = cx - lineW * 0.5;
-    const endX = cx + lineW * 0.5;
+    ctx.strokeRect(
+      bounds.minX,
+      bounds.minY,
+      bounds.maxX - bounds.minX,
+      bounds.maxY - bounds.minY
+    );
 
-    for (let x = startX; x <= endX; x += 8) {
-      const local = (x - startX) / lineW;
-      const centerWeight = 1 - Math.abs(local - 0.5) * 2;
-      const y =
-        yBase +
-        Math.sin(time * 0.45 + x * 0.01) * amp * 0.5 * centerWeight +
-        Math.sin(time * 0.22 + x * 0.004) * amp * 0.35;
-
-      if (x === startX) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-
-    ctx.stroke();
   }
 
-  function drawWater(time) {
-    const W = CONFIG.water.waterSurface;
+  ctx.restore();
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, horizonY, w, h - horizonY);
-    ctx.clip();
+}
 
-    const g = ctx.createLinearGradient(0, horizonY, 0, h);
-    g.addColorStop(0, "rgba(8,8,8,1)");
-    g.addColorStop(0.08, "rgba(4,4,4,1)");
-    g.addColorStop(1, "rgba(0,0,0,1)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, horizonY, w, h - horizonY);
 
-    for (let i = 0; i < W.lineCount; i++) {
-      const y = horizonY + 6 + i * W.lineSpacing;
-      const a = 0.018 * (1 - i / W.lineCount);
-      const wave = Math.sin(time * 0.8 + i * 0.9) * 8;
-      const grad = ctx.createLinearGradient(0, 0, w, 0);
-      grad.addColorStop(0, "rgba(255,255,255,0)");
-      grad.addColorStop(0.2, `rgba(255,255,255,${a * 0.35})`);
-      grad.addColorStop(0.5, `rgba(255,255,255,${a})`);
-      grad.addColorStop(0.8, `rgba(255,255,255,${a * 0.35})`);
-      grad.addColorStop(1, "rgba(255,255,255,0)");
+/* =========================================================
+   Halo
+========================================================= */
 
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = 0; x <= w; x += 22) {
-        const yy = y + Math.sin(x * 0.012 + wave) * W.amp;
-        if (x === 0) ctx.moveTo(x, yy);
-        else ctx.lineTo(x, yy);
-      }
-      ctx.stroke();
-    }
+function drawHalo(time) {
 
-    ctx.restore();
-  }
+  const H = CONFIG.water.halo;
+
+  const pulse =
+    0.93 +
+    Math.sin(time * 1.1) * 0.03;
+
+  const r =
+    Math.max(w, h) *
+    H.radiusRatio *
+    pulse;
+
+  const g =
+    ctx.createRadialGradient(
+      cx,
+      cy - 10,
+      0,
+      cx,
+      cy - 10,
+      r
+    );
+
+  g.addColorStop(
+    0,
+    `rgba(255,255,255,${H.alphaCore})`
+  );
+
+  g.addColorStop(
+    0.33,
+    `rgba(255,255,255,${H.alphaMid})`
+  );
+
+  g.addColorStop(
+    1,
+    "rgba(255,255,255,0)"
+  );
+
+  ctx.fillStyle = g;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    cx,
+    cy - 10,
+    r,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+}
 
   /* =========================================================
      Sector 13. Reflection
