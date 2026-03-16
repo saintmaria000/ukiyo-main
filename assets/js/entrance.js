@@ -95,7 +95,7 @@
 
         sideInset: 18,
         topInset: 9,
-        bottomInset: -5,
+        bottomInset: -20,
       },
 
       /* -----------------------------------------------------
