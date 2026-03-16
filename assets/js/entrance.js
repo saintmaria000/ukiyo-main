@@ -66,7 +66,7 @@
          可動範囲の輪郭線を見せるか
       ----------------------------------------------------- */
       background: {
-        areaBgColor: "#101216",
+        areaBgColor: "#0055ff",
         areaBgAlpha: 0.62,
         areaBgSoftAlpha: 0.16,
         showAreaDebugFill: true,
@@ -94,7 +94,7 @@
         fixedHeight: 315,
 
         sideInset: 38,
-        topInset: 138,
+        topInset: 9,
         bottomInset: 18
       },
 
