@@ -93,9 +93,9 @@
         fixedWidth: 300,
         fixedHeight: 315,
 
-        sideInset: 2,
+        sideInset: -18,
         topInset: 9,
-        bottomInset: 18
+        bottomInset: -5
       },
 
       /* -----------------------------------------------------
