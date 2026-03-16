@@ -94,7 +94,7 @@
         fixedHeight: 315,
 
         sideInset: 38,
-        topInset: 18,
+        topInset: 138,
         bottomInset: 18
       },
 
