@@ -93,7 +93,7 @@
         fixedWidth: 300,
         fixedHeight: 315,
 
-        sideInset: 38,
+        sideInset: 2,
         topInset: 9,
         bottomInset: 18
       },
