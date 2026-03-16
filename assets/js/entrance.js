@@ -23,7 +23,7 @@
      ---------------------------------------------------------
      役割:
      - 演出全体の調整値
-     - 水滴系は今回ここを新仕様へ差し替え
+     - 水滴系は今回「完全固定範囲」「サイズ依存分離」に修正
      - コメントは「何を変える値か」を日本語で明記
   ========================================================= */
   const CONFIG = {
@@ -59,11 +59,18 @@
          その色の見せる強さ
          areaBgSoftAlpha:
          外周へぼかすための弱い層
+         showAreaDebugFill:
+         可動範囲の塗りを常時見せるか
+         showAreaDebugStroke:
+         可動範囲の輪郭線を見せるか
       ----------------------------------------------------- */
       background: {
-        areaBgColor: "#ff0000",
-        areaBgAlpha: 0.42,
-        areaBgSoftAlpha: 0.18
+        areaBgColor: "#101216",
+        areaBgAlpha: 0.62,
+        areaBgSoftAlpha: 0.16,
+        showAreaDebugFill: true,
+        showAreaDebugStroke: true,
+        areaStrokeColor: "rgba(255,255,255,0.10)"
       },
 
       /* -----------------------------------------------------
@@ -72,22 +79,22 @@
          水滴世界の中心位置
          mainOffsetY:
          主水滴の見た目上のY補正
-         rangeWidthRatio / rangeHeightRatio:
-         水滴可動範囲の広さ
-         sideInset / topInset / bottomInset:
-         可動範囲の内側余白
+
+         fixedWidth / fixedHeight:
+         可動範囲の固定サイズ
+         ここは主水滴サイズや補助水滴サイズに依存させない
       ----------------------------------------------------- */
       area: {
         centerXRatio: 0.5,
         centerYRatio: 0.5,
         mainOffsetY: -54,
 
-        rangeWidthRatio: 0.34,
-        rangeHeightRatio: 0.28,
+        fixedWidth: 300,
+        fixedHeight: 315,
 
         sideInset: 18,
-        topInset: 0,
-        bottomInset: 6
+        topInset: 18,
+        bottomInset: 18
       },
 
       /* -----------------------------------------------------
@@ -95,7 +102,7 @@
          radius:
          主水滴の基本半径
          viewportMinScale / viewportMaxScale:
-         画面サイズによる拡縮下限 / 上限
+         画面依存の倍率。固定にしたいなら両方 1.0
          wobbleAmp:
          主水滴の揺れの強さ
          wobbleSpeedA / wobbleSpeedB:
@@ -105,8 +112,8 @@
       ----------------------------------------------------- */
       main: {
         radius: 104,
-        viewportMinScale: 0.72,
-        viewportMaxScale: 1.12,
+        viewportMinScale: 1.0,
+        viewportMaxScale: 1.0,
 
         wobbleAmp: 0.108,
         wobbleSpeedA: 0.92,
@@ -119,24 +126,21 @@
          従水滴
          kinds:
          従水滴ごとの定義
-         - name: 識別名
-         - radiusRatio: 主水滴に対する大きさ
+         - radius: 個別半径
          - count: その水滴の個数
          - alpha: 見た目の濃さ
+
          spawnGapFromMain:
          主水滴輪郭の外側にどれだけ離して生成するか
-         maxRadiusRatioToMain:
-         従水滴の最大サイズ制限
       ----------------------------------------------------- */
       aux: {
         kinds: [
-          { name: "mediumA", radiusRatio: 0.24, count: 1, alpha: 0.92 },
-          { name: "smallA",  radiusRatio: 0.12, count: 1, alpha: 0.88 },
-          { name: "smallB",  radiusRatio: 0.09, count: 1, alpha: 0.84 }
+          { name: "mediumA", radius: 24, count: 1, alpha: 0.96 },
+          { name: "smallA",  radius: 12, count: 1, alpha: 0.92 },
+          { name: "smallB",  radius: 10, count: 1, alpha: 0.90 }
         ],
 
         spawnGapFromMain: 14,
-        maxRadiusRatioToMain: 0.48,
 
         /* ---------------------------------------------------
            ノイズ移動
@@ -178,11 +182,20 @@
            従水滴の輪郭揺れ量
            wobbleSpeedA / wobbleSpeedB:
            従水滴の揺れ速度
+
+           fillAlphaCenter / Mid / Edge:
+           塗りの濃さ
+           端で黒く潰れにくくするため少し強め
         --------------------------------------------------- */
         visual: {
           wobbleAmp: 0.11,
           wobbleSpeedA: 1.18,
-          wobbleSpeedB: 1.84
+          wobbleSpeedB: 1.84,
+
+          fillAlphaCenter: 0.14,
+          fillAlphaMid: 0.065,
+          fillAlphaEdge: 0.018,
+          strokeAlphaBase: 0.18
         }
       },
 
@@ -417,11 +430,17 @@
     return Math.hypot(bx - ax, by - ay);
   }
 
-  function rectSize(el) {
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    if (!r.width || !r.height) return null;
-    return r;
+  function hexToRgb(hex) {
+    const value = hex.replace("#", "");
+    const full = value.length === 3
+      ? value.split("").map((ch) => ch + ch).join("")
+      : value;
+
+    return {
+      r: parseInt(full.slice(0, 2), 16),
+      g: parseInt(full.slice(2, 4), 16),
+      b: parseInt(full.slice(4, 6), 16)
+    };
   }
 
   /* =========================================================
@@ -450,17 +469,14 @@
   }
 
   function getMainBaseRadius() {
-    const C = CONFIG.water.main;
-    const viewportScale = Math.min(w / 1200, h / 900, C.viewportMaxScale);
-    return C.radius * Math.max(C.viewportMinScale, viewportScale);
+    return CONFIG.water.main.radius;
   }
 
   function getWaterBounds() {
     const C = CONFIG.water.area;
-    const rect = rectSize(brand);
-    const baseWidth = rect ? rect.width : w * C.rangeWidthRatio;
-    const width = Math.max(baseWidth, w * C.rangeWidthRatio);
-    const height = Math.max(getMainBaseRadius() * 2.7, h * C.rangeHeightRatio);
+
+    const width = C.fixedWidth;
+    const height = C.fixedHeight;
 
     return {
       minX: cx - width * 0.5 + C.sideInset,
@@ -595,7 +611,6 @@
   /* =========================================================
      Sector 08. Water System / Generate & Model
      ---------------------------------------------------------
-     ここを全面差し替え
      - 主水滴 / 従水滴
      - 主水滴外での生成
      - 水滴範囲
@@ -604,11 +619,7 @@
   function createWaterDroplet(kindDef, indexWithinKind) {
     const bounds = getWaterBounds();
     const mainR = getMainBaseRadius();
-    const r = clamp(
-      mainR * kindDef.radiusRatio,
-      mainR * 0.06,
-      mainR * CONFIG.water.aux.maxRadiusRatioToMain
-    );
+    const r = kindDef.radius;
 
     const gap = CONFIG.water.aux.spawnGapFromMain;
     const minDist = mainR + r + gap;
@@ -871,7 +882,6 @@
   /* =========================================================
      Sector 10. Water System / Update
      ---------------------------------------------------------
-     ここを全面差し替え
      - 従水滴は主水滴輪郭外で生成済み
      - 可動範囲内をノイズ移動
   ========================================================= */
@@ -886,7 +896,7 @@
 
   function applyWaterBounds(d, bounds) {
     const C = CONFIG.water.aux.wall;
-    const r = d.r * d.scale;
+    const r = d.r;
 
     if (d.x < bounds.minX + r) {
       d.x = bounds.minX + r;
@@ -966,7 +976,6 @@
   /* =========================================================
      Sector 11. Water System / Draw
      ---------------------------------------------------------
-     ここを全面差し替え
      - 単体水滴
      - メタボール接合
   ========================================================= */
@@ -1040,6 +1049,7 @@
     const m = getAuxMorph(d, time);
     const deformation = getVisualDeformationForAux(d);
     const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, deformation);
+    const V = CONFIG.water.aux.visual;
 
     ctx.save();
 
@@ -1051,17 +1061,17 @@
       d.y,
       m.r * 1.18
     );
-    g.addColorStop(0, `rgba(255,255,255,${0.10 * d.alpha})`);
-    g.addColorStop(0.42, `rgba(255,255,255,${0.046 * d.alpha})`);
-    g.addColorStop(1, "rgba(255,255,255,0.008)");
+    g.addColorStop(0, `rgba(255,255,255,${V.fillAlphaCenter * d.alpha})`);
+    g.addColorStop(0.42, `rgba(255,255,255,${V.fillAlphaMid * d.alpha})`);
+    g.addColorStop(1, `rgba(255,255,255,${V.fillAlphaEdge * d.alpha})`);
 
     tracePath(pts);
     ctx.fillStyle = g;
     ctx.fill();
 
     const contactBoost = deformation ? deformation.pullStrength : 0;
-    ctx.strokeStyle = `rgba(255,255,255,${(0.15 + contactBoost * 0.08) * d.alpha})`;
-    ctx.lineWidth = m.r > getMainBaseRadius() * 0.18 ? 0.92 : 0.78;
+    ctx.strokeStyle = `rgba(255,255,255,${(V.strokeAlphaBase + contactBoost * 0.08) * d.alpha})`;
+    ctx.lineWidth = m.r > 18 ? 0.92 : 0.78;
     ctx.stroke();
 
     ctx.beginPath();
@@ -1074,7 +1084,7 @@
       0,
       Math.PI * 2
     );
-    ctx.fillStyle = `rgba(255,255,255,${0.04 * d.alpha})`;
+    ctx.fillStyle = `rgba(255,255,255,${0.05 * d.alpha})`;
     ctx.fill();
 
     ctx.restore();
@@ -1299,7 +1309,6 @@
   /* =========================================================
      Sector 12. Background / Halo / Water
      ---------------------------------------------------------
-     ここを全面差し替え
      - 水滴範囲内背景色
      - ハロー
      - 水面
@@ -1318,31 +1327,51 @@
   function drawWaterAreaBackground() {
     const bounds = getWaterBounds();
     const C = CONFIG.water.background;
+    const rgb = hexToRgb(C.areaBgColor);
 
     ctx.save();
+
+    if (C.showAreaDebugFill) {
+      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgAlpha})`;
+      ctx.fillRect(
+        bounds.minX,
+        bounds.minY,
+        bounds.maxX - bounds.minX,
+        bounds.maxY - bounds.minY
+      );
+    }
 
     const g = ctx.createRadialGradient(
       cx,
       cy,
-      getMainBaseRadius() * 0.3,
+      Math.min(bounds.width, bounds.height) * 0.18,
       cx,
       cy,
-      Math.max(bounds.width, bounds.height) * 0.7
+      Math.max(bounds.width, bounds.height) * 0.72
     );
-
-    const rgb = hexToRgb(C.areaBgColor);
-    const c1 = `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgAlpha})`;
-    const c2 = `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgSoftAlpha})`;
-    const c3 = `rgba(${rgb.r},${rgb.g},${rgb.b},0)`;
-
-    g.addColorStop(0, c1);
-    g.addColorStop(0.58, c2);
-    g.addColorStop(1, c3);
+    g.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},${C.areaBgSoftAlpha})`);
+    g.addColorStop(1, `rgba(${rgb.r},${rgb.g},${rgb.b},0)`);
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.rect(bounds.minX - 80, bounds.minY - 80, bounds.width + 160, bounds.height + 160);
+    ctx.rect(
+      bounds.minX - 80,
+      bounds.minY - 80,
+      (bounds.maxX - bounds.minX) + 160,
+      (bounds.maxY - bounds.minY) + 160
+    );
     ctx.fill();
+
+    if (C.showAreaDebugStroke) {
+      ctx.strokeStyle = C.areaStrokeColor;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(
+        bounds.minX,
+        bounds.minY,
+        bounds.maxX - bounds.minX,
+        bounds.maxY - bounds.minY
+      );
+    }
 
     ctx.restore();
   }
@@ -1437,23 +1466,9 @@
     ctx.restore();
   }
 
-  function hexToRgb(hex) {
-    const value = hex.replace("#", "");
-    const full = value.length === 3
-      ? value.split("").map((ch) => ch + ch).join("")
-      : value;
-
-    return {
-      r: parseInt(full.slice(0, 2), 16),
-      g: parseInt(full.slice(2, 4), 16),
-      b: parseInt(full.slice(4, 6), 16)
-    };
-  }
-
   /* =========================================================
      Sector 13. Reflection
      ---------------------------------------------------------
-     ここを全面差し替え
      - 主滴 / 従滴 / メタボールの反射
   ========================================================= */
   function drawReflection(time, hintK) {
@@ -2176,7 +2191,7 @@
   /* =========================================================
      Sector 21. Boot / Events
      ---------------------------------------------------------
-     - 水滴初期化は新しい initWaterDroplets() を使う
+     - 水滴初期化は initWaterDroplets() を使う
   ========================================================= */
   function boot() {
     window.clearTimeout(doneTimer);
