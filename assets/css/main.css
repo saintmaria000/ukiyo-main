@@ -197,6 +197,7 @@ a{
   --view-header-spacing:var(--ls-ui);
 
   --video-w:960px;
+  --video-side-safe:48px;
 
   --edge-btn-size:.86rem;
   --edge-btn-spacing:.25em;
@@ -273,6 +274,7 @@ a{
   --about-stack-pad-top:36px;
   --about-stack-pad-x:clamp(22px, 3vw, 54px);
   --about-stack-pad-bottom:240px;
+  --about-stack-pad:clamp(22px, 3vw, 54px);
 
   --about-stack-line-protrusion:156px;
 
@@ -317,941 +319,959 @@ a{
   --about-back-size:.95rem;
   --about-back-spacing:.16em;
   --about-back-margin-top:clamp(64px, 10vw, 180px);
-    /* -----------------------------------------
-      3-12. Modal
-      動画詳細
-    ----------------------------------------- */
-    --modal-width:min(92vw, 1400px);
-    --modal-max-w:1400px;
-    --modal-close-top:8px;
-    --modal-close-right:12px;
-    --modal-close-size:1.2rem;
-    --modal-video-max-h:80vh;
-
-    --modal-footer-gap-top:10px;
-    --modal-footer-pad-bottom:10px;
-
-    --modal-credit-toggle-size:.86rem;
-    --modal-credit-toggle-spacing:.18em;
-
-    --modal-credit-inner-max-w:520px;
-    --modal-credit-inner-width:auto;
-    --modal-credit-inner-pad-top:24px;
-    --modal-credit-inner-pad-x:32px;
-    --modal-credit-inner-pad-bottom:20px;
-
-    --modal-credit-title-size:1.05rem;
-    --modal-credit-title-spacing:.16em;
-    --modal-credit-title-gap:18px;
-
-    --modal-credit-list-size:.86rem;
-    --modal-credit-list-line:1.8;
-    --modal-credit-list-gap:18px;
-
-    --modal-credit-row-gap:16px;
-
-    --modal-credit-close-size:.78rem;
-    --modal-credit-close-spacing:.18em;
-
-    /* -----------------------------------------
-      3-13. 光演出
-    ----------------------------------------- */
-    --video-unlock-flash-blur:14px;
-    --video-unlock-flash-scale:.96;
-    --video-unlock-flash-opacity-peak:.95;
-    --video-unlock-flash-duration:.72s;
-  }
-
-
-  /* =========================================================
-    4. 固定UI
-    常に出ているUI
-  ========================================================= */
 
   /* -----------------------------------------
-    4-1. ミュート
-    ----------------------------------------- */
-  .global-mute{
-    position:fixed;
-    top:var(--global-mute-top);
-    right:var(--global-mute-right);
-    left:auto;
-    bottom:auto;
-    z-index:var(--z-ui);
-    padding:var(--global-mute-pad);
-    opacity:.7;
-    cursor:pointer;
-    transition:opacity .2s ease, transform .2s ease;
-    pointer-events:auto;
-    transform:none;
-  }
+     3-12. Modal
+     動画詳細
+  ----------------------------------------- */
+  --modal-width:min(92vw, 1400px);
+  --modal-max-w:1400px;
+  --modal-close-top:8px;
+  --modal-close-right:12px;
+  --modal-close-size:1.2rem;
+  --modal-video-max-h:80vh;
 
-  .global-mute:hover{
-    opacity:1;
-    transform:scale(var(--global-mute-hover-scale));
-  }
+  --modal-footer-gap-top:10px;
+  --modal-footer-pad-bottom:10px;
 
-  .icon-sound{
-    width:var(--global-mute-icon-size);
-    height:var(--global-mute-icon-size);
-    display:block;
-    fill:#fff;
-    stroke:#fff;
-  }
+  --modal-credit-toggle-size:.86rem;
+  --modal-credit-toggle-spacing:.18em;
 
-  .icon-cross{
-    display:none;
-  }
+  --modal-credit-inner-max-w:520px;
+  --modal-credit-inner-width:auto;
+  --modal-credit-inner-pad-top:24px;
+  --modal-credit-inner-pad-x:32px;
+  --modal-credit-inner-pad-bottom:20px;
 
-  .global-mute.is-muted .icon-wave{
-    display:none;
-  }
+  --modal-credit-title-size:1.05rem;
+  --modal-credit-title-spacing:.16em;
+  --modal-credit-title-gap:18px;
 
-  .global-mute.is-muted .icon-cross{
-    display:block;
-  }
+  --modal-credit-list-size:.86rem;
+  --modal-credit-list-line:1.8;
+  --modal-credit-list-gap:18px;
+
+  --modal-credit-row-gap:16px;
+
+  --modal-credit-close-size:.78rem;
+  --modal-credit-close-spacing:.18em;
 
   /* -----------------------------------------
-    4-2. pull return
-    ----------------------------------------- */
-  .pull-return{
-    position:fixed;
-    top:var(--pull-return-top);
-    left:50%;
-    transform:translateX(-50%) translateY(var(--pull-return-offset-y));
+     3-13. 光演出
+  ----------------------------------------- */
+  --video-unlock-flash-blur:14px;
+  --video-unlock-flash-scale:.96;
+  --video-unlock-flash-opacity-peak:.95;
+  --video-unlock-flash-duration:.72s;
+}
+
+/* -----------------------------------------
+   3-14. viewport実寸補強
+   スマホブラウザの可視領域追従を優先
+----------------------------------------- */
+@supports (height:100svh){
+  :root{
+    --vvh:100svh;
+  }
+}
+
+@supports (height:100dvh){
+  :root{
+    --vvh:100dvh;
+  }
+}
+
+
+/* =========================================================
+   4. 固定UI
+   常に出ているUI
+========================================================= */
+
+/* -----------------------------------------
+   4-1. ミュート
+----------------------------------------- */
+.global-mute{
+  position:fixed;
+  top:var(--global-mute-top);
+  right:var(--global-mute-right);
+  left:auto;
+  bottom:auto;
+  z-index:var(--z-ui);
+  padding:var(--global-mute-pad);
+  opacity:.7;
+  cursor:pointer;
+  transition:opacity .2s ease, transform .2s ease;
+  pointer-events:auto;
+  transform:none;
+}
+
+.global-mute:hover{
+  opacity:1;
+  transform:scale(var(--global-mute-hover-scale));
+}
+
+.icon-sound{
+  width:var(--global-mute-icon-size);
+  height:var(--global-mute-icon-size);
+  display:block;
+  fill:#fff;
+  stroke:#fff;
+}
+
+.icon-cross{
+  display:none;
+}
+
+.global-mute.is-muted .icon-wave{
+  display:none;
+}
+
+.global-mute.is-muted .icon-cross{
+  display:block;
+}
+
+/* -----------------------------------------
+   4-2. pull return
+----------------------------------------- */
+.pull-return{
+  position:fixed;
+  top:var(--pull-return-top);
+  left:50%;
+  transform:translateX(-50%) translateY(var(--pull-return-offset-y));
+  opacity:0;
+  pointer-events:auto;
+  z-index:var(--z-pull-return);
+  transition:opacity .28s ease, transform .28s ease;
+}
+
+body.is-pull-hint-visible .pull-return{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.pull-return-link{
+  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size:var(--pull-return-link-size);
+  font-weight:300;
+  letter-spacing:var(--pull-return-link-letter-spacing);
+  text-transform:none;
+  color:#fff;
+  text-decoration:none;
+  padding-bottom:var(--pull-return-link-pad-bottom);
+  opacity:var(--pull-return-link-opacity);
+  transition:
+    opacity .22s ease,
+    border-color .22s ease,
+    transform .22s ease;
+}
+
+.pull-return-link:hover{
+  opacity:1;
+  border-color:rgba(255,255,255,.45);
+  transform:translateY(-1px);
+}
+
+
+/* =========================================================
+   5. ステージ
+   GalleryとContactは独立セクションではなく左右viewの中身
+========================================================= */
+
+/* -----------------------------------------
+   5-1. 土台
+   3面空間の骨組み
+----------------------------------------- */
+.space-wrapper{
+  position:relative;
+  width:100%;
+  height:var(--vvh);
+  overflow:hidden;
+}
+
+.stage{
+  position:absolute;
+  width:var(--stage-w);
+  height:var(--stage-h);
+  left:calc(var(--vv-left) + (var(--vvw) / 2));
+  top:calc(var(--vv-top) + (var(--vvh) / 2));
+  transform-origin:center;
+  transform:translate(-50%, -50%) scale(var(--stage-scale));
+  overflow:hidden;
+  perspective:var(--stage-perspective);
+}
+
+.outer-space{
+  position:absolute;
+  inset:0;
+  display:flex;
+  width:calc(var(--stage-w) * 3);
+  height:100%;
+  transition:transform .8s ease;
+  z-index:var(--z-stage);
+}
+
+.view{
+  width:var(--stage-w);
+  height:100%;
+  padding:var(--stage-pad-y) var(--stage-pad-x);
+  position:relative;
+}
+
+.view-inner{
+  position:relative;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.view-header{
+  font-size:var(--view-header-size);
+  letter-spacing:var(--view-header-spacing);
+  text-transform:uppercase;
+  opacity:.8;
+}
+
+.view.view-left .view-header{
+  position:absolute;
+  top:var(--stage-header-top);
+  left:0;
+  margin:0;
+}
+
+.view.view-right .view-header{
+  position:absolute;
+  top:var(--stage-header-top);
+  right:0;
+  margin:0;
+  text-align:right;
+}
+
+/* -----------------------------------------
+   5-2. 視点移動
+   左右viewの切り替え
+----------------------------------------- */
+.inner-shell{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transition:transform .8s ease;
+  z-index:var(--z-video);
+  pointer-events:none;
+  max-width:calc(100vw - 24px);
+}
+
+body.view-center .outer-space{
+  transform:translateX(calc(var(--stage-w) * -1));
+}
+
+body.view-left .outer-space{
+  transform:translateX(0);
+}
+
+body.view-right .outer-space{
+  transform:translateX(calc(var(--stage-w) * -2));
+}
+
+body.view-center .inner-shell{
+  transform:translate(-50%, -50%) translateX(0);
+}
+
+body.view-left .inner-shell{
+  transform:
+    translate(-50%, -50%)
+    translateZ(var(--inner-shell-depth))
+    translateX(var(--inner-shell-side-shift));
+}
+
+body.view-right .inner-shell{
+  transform:
+    translate(-50%, -50%)
+    translateZ(var(--inner-shell-depth))
+    translateX(calc(var(--inner-shell-side-shift) * -1));
+}
+
+/* -----------------------------------------
+   5-3. 共通パーツ
+   左右共通で使うUI
+----------------------------------------- */
+.view-left .view-inner{
+  justify-content:center;
+  align-items:flex-start;
+}
+
+.view-right .view-inner{
+  justify-content:center;
+  align-items:flex-end;
+}
+
+.video-frame{
+  width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
+  max-width:100%;
+  aspect-ratio:16 / 9;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:var(--shadow-video);
+  position:relative;
+  pointer-events:auto;
+}
+
+.video-frame iframe{
+  width:100%;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  border:0;
+  display:block;
+}
+
+.video-shield{
+  position:absolute;
+  inset:0;
+  background:transparent;
+  border:0;
+  padding:0;
+  margin:0;
+  display:none;
+  z-index:var(--z-video-shield);
+  cursor:pointer;
+  pointer-events:auto;
+}
+
+.edge-btn{
+  position:absolute;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:none;
+  border:none;
+  font-size:var(--edge-btn-size);
+  letter-spacing:var(--edge-btn-spacing);
+  text-transform:uppercase;
+  opacity:.8;
+  cursor:pointer;
+  padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
+  min-width:var(--edge-btn-min-w);
+  min-height:var(--edge-btn-min-h);
+  z-index:var(--z-stage-component);
+  pointer-events:auto;
+  transition:color .2s ease, filter .2s ease, transform .1s ease;
+}
+
+.edge-btn:hover{
+  color:#fff;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
+}
+
+.edge-btn--left{
+  top:50%;
+  left:var(--edge-offset);
+  transform:translateY(-50%);
+}
+
+.edge-btn--right{
+  top:50%;
+  right:var(--edge-offset);
+  transform:translateY(-50%);
+}
+
+.edge-btn--bottom{
+  bottom:var(--edge-offset);
+  left:50%;
+  transform:translateX(-50%);
+}
+
+/* -----------------------------------------
+   5-4. Gallery
+   左view
+----------------------------------------- */
+.gallery-panel{
+  position:relative;
+  width:100%;
+  max-width:var(--gallery-w);
+  min-width:0;
+  margin-top:var(--gallery-panel-gap-top);
+  height:min(var(--gallery-panel-max-h), calc(100vh - var(--gallery-panel-vh-offset)));
+  min-height:var(--gallery-panel-min-h);
+  display:flex;
+  flex-direction:column;
+}
+
+.gallery-preview{
+  position:absolute;
+  inset:0;
+  background:#000;
+  z-index:0;
+  pointer-events:none;
+}
+
+.gallery-preview-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  opacity:0;
+  transform:scale(1.04);
+  transition:opacity .45s ease, transform .8s ease;
+  filter:brightness(.75);
+  pointer-events:none;
+}
+
+.gallery-preview.is-visible .gallery-preview-img{
+  opacity:.35;
+  transform:scale(1);
+}
+
+.gallery-scroll{
+  position:relative;
+  z-index:1;
+  flex:1;
+  min-height:0;
+  width:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:0;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.16) transparent;
+}
+
+.gallery-item{
+  display:block;
+  position:relative;
+  z-index:1;
+  width:100%;
+  text-align:left;
+  background:transparent;
+  border:none;
+  padding:var(--gallery-item-pad-y) 0;
+  border-bottom:1px solid var(--line-soft);
+  font-size:var(--gallery-item-size);
+  letter-spacing:var(--gallery-item-spacing);
+  cursor:pointer;
+  transition:color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
+}
+
+.gallery-item > *{
+  pointer-events:none;
+}
+
+.gallery-item:first-child{
+  border-top:1px solid var(--line-soft);
+}
+
+.gallery-item:hover{
+  background:rgba(255,255,255,.03);
+}
+
+.gallery-item-meta{
+  opacity:.6;
+  font-size:var(--gallery-meta-size);
+  letter-spacing:var(--gallery-meta-spacing);
+  margin-top:var(--gallery-meta-gap-top);
+}
+
+/* -----------------------------------------
+   5-5. Contact
+   右view
+   通常時は縦中央優先で margin-top を消す
+----------------------------------------- */
+.contact-block{
+  margin-top:var(--contact-block-margin-top);
+  max-width:var(--contact-w);
+  font-size:var(--contact-block-size);
+  letter-spacing:var(--contact-block-spacing);
+  line-height:1.8;
+}
+
+.view-right .contact-block{
+  margin-top:0;
+  text-align:right;
+}
+
+.contact-label{
+  opacity:.5;
+  font-size:var(--contact-label-size);
+  letter-spacing:var(--contact-label-spacing);
+  text-transform:uppercase;
+  margin-top:var(--contact-label-margin-top);
+}
+
+.contact-value p,
+.contact-value a{
+  font-size:var(--contact-value-size);
+  text-decoration:none;
+}
+
+.contact-value a:hover{
+  text-decoration:underline;
+}
+
+
+/* =========================================================
+   6. About
+========================================================= */
+
+/* -----------------------------------------
+   6-1. 全体
+----------------------------------------- */
+#about{
+  position:relative;
+  overflow:hidden;
+  border-top:2px solid #fff;
+}
+
+#about .about-bg-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:0;
+}
+
+#about .about-overlay{
+  position:absolute;
+  inset:0;
+  background:var(--overlay-dark);
+  z-index:1;
+  pointer-events:none;
+}
+
+#about .about-content{
+  position:relative;
+  z-index:2;
+  max-width:var(--about-content-max-w);
+  margin:0 auto;
+  padding:
+    var(--about-content-pad-top)
+    var(--about-content-pad-x)
+    var(--about-content-pad-bottom);
+}
+
+/* -----------------------------------------
+   6-2. hero
+   1画面使用 / 中身は縦中央 / 横は左寄せ
+----------------------------------------- */
+.about-hero{
+  min-height:var(--about-hero-min-h);
+  width:100%;
+  max-width:var(--about-hero-max-w);
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+
+  gap:var(--about-hero-gap);
+
+  padding-top:var(--about-hero-pad-top);
+  padding-bottom:var(--about-hero-pad-bottom);
+}
+
+.about-logo-text{
+  letter-spacing:var(--about-logo-spacing);
+  text-transform:lowercase;
+}
+
+.about-logo-main{
+  font-size:var(--about-logo-main-size);
+  line-height:.92;
+}
+
+.about-logo-sub{
+  font-size:var(--about-logo-sub-size);
+  opacity:.8;
+  letter-spacing:var(--about-logo-sub-spacing);
+}
+
+.about-lead{
+  max-width:var(--about-lead-max-w);
+  font-size:var(--about-lead-size);
+  line-height:var(--about-lead-line);
+  letter-spacing:var(--about-lead-spacing);
+  opacity:.9;
+}
+
+/* -----------------------------------------
+   6-3. stack
+   heroの下に通常配置
+   ライン演出のみ疑似要素
+----------------------------------------- */
+.about-stack{
+  position:relative;
+  width:100%;
+  max-width:var(--about-stack-max-w);
+
+  margin-left:0;
+  margin-right:auto;
+
+  padding:
+    var(--about-stack-pad-top)
+    var(--about-stack-pad-x)
+    var(--about-stack-pad-bottom)
+    var(--about-stack-pad-x);
+
+  display:grid;
+  gap:var(--about-stack-gap);
+
+  border-left:1px solid #fff;
+}
+
+/* hero側に伸びるライン */
+.about-stack::before{
+  content:"";
+  position:absolute;
+  left:-1px;
+  bottom:100%;
+  width:1px;
+  height:var(--about-stack-line-protrusion);
+  background:#fff;
+  pointer-events:none;
+}
+
+/* stack 内容 */
+.about-item h3{
+  font-size:var(--about-heading-size);
+  letter-spacing:var(--about-heading-spacing);
+  margin-bottom:var(--about-item-heading-gap);
+}
+
+.about-item p{
+  font-size:var(--about-body-size);
+  line-height:var(--about-body-line);
+  letter-spacing:var(--about-body-spacing);
+  opacity:.85;
+  max-width:var(--about-body-max-w);
+}
+
+/* -----------------------------------------
+   6-4. 2カラム
+----------------------------------------- */
+.about-split{
+  border-left:1px solid #fff;
+
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+
+  gap:var(--about-split-gap);
+
+  padding:
+    var(--about-split-pad-top)
+    var(--about-split-pad-x)
+    var(--about-split-pad-bottom);
+
+  margin-top:var(--about-split-margin-top);
+  margin-bottom:var(--about-split-margin-bottom);
+
+  width:100%;
+  max-width:1480px;
+
+  margin-left:0;
+  margin-right:auto;
+}
+
+.about-col h4{
+  font-size:var(--about-col-title-size);
+  letter-spacing:var(--about-col-title-spacing);
+  text-transform:uppercase;
+  margin-bottom:var(--about-col-heading-gap);
+}
+
+.about-col ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.about-col li{
+  font-size:var(--about-col-item-size);
+  line-height:var(--about-col-item-line);
+  letter-spacing:var(--about-col-item-spacing);
+  opacity:.85;
+  max-width:34ch;
+}
+
+/* -----------------------------------------
+   6-5. クレジット
+----------------------------------------- */
+.about-credit{
+  margin-top:var(--about-credit-margin-top);
+}
+
+.about-credit-title{
+  letter-spacing:var(--about-credit-title-spacing);
+  text-transform:uppercase;
+  opacity:.85;
+  font-size:var(--about-credit-title-size);
+  margin-bottom:var(--about-credit-title-gap);
+}
+
+.about-credit-name{
+  font-size:var(--about-credit-name-size);
+  letter-spacing:var(--about-credit-name-spacing);
+
+  margin-bottom:var(--about-credit-block-gap);
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  width:100%;
+  gap:var(--about-credit-name-gap);
+
+  margin-left:0;
+  margin-right:auto;
+}
+
+.about-credit-name a{
+  font-size:var(--about-credit-link-size);
+  text-decoration:none;
+}
+
+/* -----------------------------------------
+   6-6. 戻り
+----------------------------------------- */
+.about-actions{
+  width:100%;
+  margin-top:var(--about-back-margin-top);
+
+  font-size:var(--about-back-size);
+  letter-spacing:var(--about-back-spacing);
+
+  text-transform:uppercase;
+  text-align:center;
+}
+
+.about-actions a{
+  text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.2);
+  padding-bottom:2px;
+
+  transition:
+    color .2s ease,
+    filter .2s ease,
+    transform .1s ease;
+}
+
+.about-actions a:hover{
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
+}
+
+
+/* =========================================================
+   7. Modal
+   動画詳細
+========================================================= */
+
+/* -----------------------------------------
+   7-1. 全体
+----------------------------------------- */
+.modal{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+  z-index:var(--z-modal);
+}
+
+.modal--open{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.modal__backdrop{
+  position:absolute;
+  inset:0;
+  background:var(--overlay-modal);
+}
+
+.modal__content{
+  position:relative;
+  z-index:1;
+  width:var(--modal-width);
+  max-width:var(--modal-max-w);
+  background:rgba(0,0,0,.9);
+  box-shadow:var(--shadow-modal);
+}
+
+.modal__close{
+  position:absolute;
+  top:var(--modal-close-top);
+  right:var(--modal-close-right);
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:var(--modal-close-size);
+  cursor:pointer;
+  opacity:.85;
+  z-index:2;
+}
+
+/* -----------------------------------------
+   7-2. 動画
+----------------------------------------- */
+.modal__video{
+  width:100%;
+}
+
+.modal__video-frame{
+  width:100%;
+  aspect-ratio:16 / 9;
+  position:relative;
+  overflow:hidden;
+  max-height:var(--modal-video-max-h);
+}
+
+.modal__video-frame iframe{
+  width:100%;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  border:0;
+  display:block;
+}
+
+/* -----------------------------------------
+   7-3. 下導線
+----------------------------------------- */
+.modal__footer{
+  margin-top:var(--modal-footer-gap-top);
+  display:flex;
+  justify-content:center;
+  padding-bottom:var(--modal-footer-pad-bottom);
+}
+
+.modal__credit-toggle{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:var(--modal-credit-toggle-size);
+  letter-spacing:var(--modal-credit-toggle-spacing);
+  text-transform:uppercase;
+  cursor:pointer;
+  opacity:.85;
+}
+
+/* -----------------------------------------
+   7-4. クレジット
+----------------------------------------- */
+.modal__credit{
+  position:absolute;
+  inset:0;
+  background:var(--overlay-credit);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+}
+
+.modal__credit--open{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.modal__credit-inner{
+  text-align:center;
+  max-width:var(--modal-credit-inner-max-w);
+  width:var(--modal-credit-inner-width);
+  padding:
+    var(--modal-credit-inner-pad-top)
+    var(--modal-credit-inner-pad-x)
+    var(--modal-credit-inner-pad-bottom);
+}
+
+.modal__credit-title{
+  font-size:var(--modal-credit-title-size);
+  margin-bottom:var(--modal-credit-title-gap);
+  letter-spacing:var(--modal-credit-title-spacing);
+}
+
+.modal__credit-list{
+  font-size:var(--modal-credit-list-size);
+  line-height:var(--modal-credit-list-line);
+  margin-bottom:var(--modal-credit-list-gap);
+}
+
+.credit-row{
+  display:flex;
+  justify-content:space-between;
+  gap:var(--modal-credit-row-gap);
+}
+
+.credit-role{
+  opacity:.7;
+  text-align:left;
+}
+
+.credit-name{
+  font-weight:500;
+  text-align:right;
+}
+
+.modal__credit-close{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:var(--modal-credit-close-size);
+  letter-spacing:var(--modal-credit-close-spacing);
+  text-transform:uppercase;
+  cursor:pointer;
+  opacity:.85;
+}
+
+
+/* =========================================================
+   8. 光演出
+   操作補助
+========================================================= */
+.video-unlock-flash{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+  z-index:var(--z-video-flash);
+  border-radius:0;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(255,255,255,.16) 0%,
+      rgba(255,255,255,.10) 38%,
+      rgba(255,255,255,.05) 62%,
+      rgba(255,255,255,0) 100%
+    );
+  filter:blur(var(--video-unlock-flash-blur));
+  transform:scale(var(--video-unlock-flash-scale));
+}
+
+.video-unlock-flash.is-active{
+  animation:videoUnlockFlash var(--video-unlock-flash-duration) ease-out forwards;
+}
+
+@keyframes videoUnlockFlash{
+  0%{
     opacity:0;
-    pointer-events:auto;
-    z-index:var(--z-pull-return);
-    transition:opacity .28s ease, transform .28s ease;
+    transform:scale(.96);
+    filter:blur(18px);
   }
-
-  body.is-pull-hint-visible .pull-return{
-    opacity:1;
-    transform:translateX(-50%) translateY(0);
+  22%{
+    opacity:var(--video-unlock-flash-opacity-peak);
+    transform:scale(1.01);
+    filter:blur(12px);
   }
-
-  .pull-return-link{
-    font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-    font-size:var(--pull-return-link-size);
-    font-weight:300;
-    letter-spacing:var(--pull-return-link-letter-spacing);
-    text-transform:none;
-    color:rgb(255, 255, 255);
-    text-decoration:none;
-    padding-bottom:var(--pull-return-link-pad-bottom);
-    opacity:var(--pull-return-link-opacity);
-    transition:
-      opacity .22s ease,
-      border-color .22s ease,
-      transform .22s ease;
-    
-  }
-
-  .pull-return-link:hover{
-    opacity:1;
-    border-color:rgba(255,255,255,.45);
-    transform:translateY(-1px);
-  }
-
-
-  /* =========================================================
-    5. ステージ
-    GalleryとContactは独立セクションではなく左右viewの中身
-  ========================================================= */
-
-  /* -----------------------------------------
-    5-1. 土台
-    3面空間の骨組み
-    ----------------------------------------- */
-  .space-wrapper{
-    position:relative;
-    width:100%;
-    height:var(--vvh);
-    overflow:hidden;
-  }
-
-  .stage{
-    position:absolute;
-    width:var(--stage-w);
-    height:var(--stage-h);
-    left:calc(var(--vv-left) + (var(--vvw) / 2));
-    top:calc(var(--vv-top) + (var(--vvh) / 2));
-    transform-origin:center;
-    transform:translate(-50%, -50%) scale(var(--stage-scale));
-    overflow:hidden;
-    perspective:var(--stage-perspective);
-  }
-
-  .outer-space{
-    position:absolute;
-    inset:0;
-    display:flex;
-    width:calc(var(--stage-w) * 3);
-    height:100%;
-    transition:transform .8s ease;
-    z-index:var(--z-stage);
-  }
-
-  .view{
-    width:var(--stage-w);
-    height:100%;
-    padding:var(--stage-pad-y) var(--stage-pad-x);
-    position:relative;
-  }
-
-  .view-inner{
-    position:relative;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-  }
-
-  .view-header{
-    font-size:var(--view-header-size);
-    letter-spacing:var(--view-header-spacing);
-    text-transform:uppercase;
-    opacity:.8;
-  }
-
-  .view.view-left .view-header{
-    position:absolute;
-    top:var(--stage-header-top);
-    left:0;
-    margin:0;
-  }
-
-  .view.view-right .view-header{
-    position:absolute;
-    top:var(--stage-header-top);
-    right:0;
-    margin:0;
-    text-align:right;
-  }
-
-  /* -----------------------------------------
-    5-2. 視点移動
-    左右viewの切り替え
-    ----------------------------------------- */
-  .inner-shell{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transition:transform .8s ease;
-    z-index:var(--z-video);
-    pointer-events:none;
-  }
-
-  body.view-center .outer-space{
-    transform:translateX(calc(var(--stage-w) * -1));
-  }
-
-  body.view-left .outer-space{
-    transform:translateX(0);
-  }
-
-  body.view-right .outer-space{
-    transform:translateX(calc(var(--stage-w) * -2));
-  }
-
-  body.view-center .inner-shell{
-    transform:translate(-50%, -50%) translateX(0);
-  }
-
-  body.view-left .inner-shell{
-    transform:
-      translate(-50%, -50%)
-      translateZ(var(--inner-shell-depth))
-      translateX(var(--inner-shell-side-shift));
-  }
-
-  body.view-right .inner-shell{
-    transform:
-      translate(-50%, -50%)
-      translateZ(var(--inner-shell-depth))
-      translateX(calc(var(--inner-shell-side-shift) * -1));
-  }
-
-  /* -----------------------------------------
-    5-3. 共通パーツ
-    左右共通で使うUI
-    ----------------------------------------- */
-  .view-left .view-inner{
-    justify-content:center;
-    align-items:flex-start;
-  }
-
-  .view-right .view-inner{
-    justify-content:center;
-    align-items:flex-end;
-  }
-
-  .video-frame{
-    width:var(--video-w);
-    aspect-ratio:16 / 9;
-    background:#000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:var(--shadow-video);
-    position:relative;
-    pointer-events:auto;
-  }
-
-  .video-frame iframe{
-    width:100%;
-    height:100%;
-    border:0;
-    display:block;
-  }
-
-  .video-shield{
-    position:absolute;
-    inset:0;
-    background:transparent;
-    border:0;
-    padding:0;
-    margin:0;
-    display:none;
-    z-index:var(--z-video-shield);
-    cursor:pointer;
-    pointer-events:auto;
-  }
-
-  .edge-btn{
-    position:absolute;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    background:none;
-    border:none;
-    font-size:var(--edge-btn-size);
-    letter-spacing:var(--edge-btn-spacing);
-    text-transform:uppercase;
-    opacity:.8;
-    cursor:pointer;
-    padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
-    min-width:var(--edge-btn-min-w);
-    min-height:var(--edge-btn-min-h);
-    z-index:var(--z-stage-component);
-    pointer-events:auto;
-    transition:color .2s ease, filter .2s ease, transform .1s ease;
-  }
-
-  .edge-btn:hover{
-    color:#fff;
-    filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
-  }
-
-  .edge-btn--left{
-    top:50%;
-    left:var(--edge-offset);
-    transform:translateY(-50%);
-  }
-
-  .edge-btn--right{
-    top:50%;
-    right:var(--edge-offset);
-    transform:translateY(-50%);
-  }
-
-  .edge-btn--bottom{
-    bottom:var(--edge-offset);
-    left:50%;
-    transform:translateX(-50%);
-  }
-
-  /* -----------------------------------------
-    5-4. Gallery
-    左view
-    ----------------------------------------- */
-  .gallery-panel{
-    position:relative;
-    width:100%;
-    max-width:var(--gallery-w);
-    min-width:0;
-    margin-top:var(--gallery-panel-gap-top);
-    height:min(var(--gallery-panel-max-h), calc(100vh - var(--gallery-panel-vh-offset)));
-    min-height:var(--gallery-panel-min-h);
-    display:flex;
-    flex-direction:column;
-  }
-
-  .gallery-preview{
-    position:absolute;
-    inset:0;
-    background:#000;
-    z-index:0;
-    pointer-events:none;
-  }
-
-  .gallery-preview-img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
+  100%{
     opacity:0;
-    transform:scale(1.04);
-    transition:opacity .45s ease, transform .8s ease;
-    filter:brightness(.75);
-    pointer-events:none;
+    transform:scale(1.08);
+    filter:blur(24px);
   }
-
-  .gallery-preview.is-visible .gallery-preview-img{
-    opacity:.35;
-    transform:scale(1);
-  }
-
-  .gallery-scroll{
-    position:relative;
-    z-index:1;
-    flex:1;
-    min-height:0;
-    width:100%;
-    overflow-y:auto;
-    overflow-x:hidden;
-    padding-right:0;
-    scrollbar-width:thin;
-    scrollbar-color:rgba(255,255,255,.16) transparent;
-  }
-
-  .gallery-item{
-    display:block;
-    position:relative;
-    z-index:1;
-    width:100%;
-    text-align:left;
-    background:transparent;
-    border:none;
-    padding:var(--gallery-item-pad-y) 0;
-    border-bottom:1px solid var(--line-soft);
-    font-size:var(--gallery-item-size);
-    letter-spacing:var(--gallery-item-spacing);
-    cursor:pointer;
-    transition:color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
-  }
-
-  .gallery-item > *{
-    pointer-events:none;
-  }
-
-  .gallery-item:first-child{
-    border-top:1px solid var(--line-soft);
-  }
-
-  .gallery-item:hover{
-    background:rgba(255,255,255,.03);
-  }
-
-  .gallery-item-meta{
-    opacity:.6;
-    font-size:var(--gallery-meta-size);
-    letter-spacing:var(--gallery-meta-spacing);
-    margin-top:var(--gallery-meta-gap-top);
-  }
-
-  /* -----------------------------------------
-    5-5. Contact
-    右view
-    通常時は縦中央優先で margin-top を消す
-    ----------------------------------------- */
-  .contact-block{
-    margin-top:var(--contact-block-margin-top);
-    max-width:var(--contact-w);
-    font-size:var(--contact-block-size);
-    letter-spacing:var(--contact-block-spacing);
-    line-height:1.8;
-  }
-
-  .view-right .contact-block{
-    margin-top:0;
-    text-align:right;
-  }
-
-  .contact-label{
-    opacity:.5;
-    font-size:var(--contact-label-size);
-    letter-spacing:var(--contact-label-spacing);
-    text-transform:uppercase;
-    margin-top:var(--contact-label-margin-top);
-  }
-
-  .contact-value p,
-  .contact-value a{
-    font-size:var(--contact-value-size);
-    text-decoration:none;
-  }
-
-  .contact-value a:hover{
-    text-decoration:underline;
-  }
-
-
-  /* =========================================================
-    6. About
-  ========================================================= */
-
-  /* -----------------------------------------
-    6-1. 全体
-  ----------------------------------------- */
-  #about{
-    position:relative;
-    overflow:hidden;
-    border-top:2px solid #fff;
-  }
-
-  #about .about-bg-video{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    z-index:0;
-  }
-
-  #about .about-overlay{
-    position:absolute;
-    inset:0;
-    background:var(--overlay-dark);
-    z-index:1;
-    pointer-events:none;
-  }
-
-  #about .about-content{
-    position:relative;
-    z-index:2;
-    max-width:var(--about-content-max-w);
-    margin:0 auto;
-    padding:
-      var(--about-content-pad-top)
-      var(--about-content-pad-x)
-      var(--about-content-pad-bottom);
-  }
-
-  /* -----------------------------------------
-    6-2. hero
-    1画面使用 / 中身は縦中央 / 横は左寄せ
-  ----------------------------------------- */
-  .about-hero{
-    min-height:var(--about-hero-min-h);
-    width:100%;
-    max-width:var(--about-hero-max-w);
-
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:flex-start;
-
-    gap:var(--about-hero-gap);
-
-    padding-top:var(--about-hero-pad-top);
-    padding-bottom:var(--about-hero-pad-bottom);
-  }
-
-  .about-logo-text{
-    letter-spacing:var(--about-logo-spacing);
-    text-transform:lowercase;
-  }
-
-  .about-logo-main{
-    font-size:var(--about-logo-main-size);
-    line-height:.92;
-  }
-
-  .about-logo-sub{
-    font-size:var(--about-logo-sub-size);
-    opacity:.8;
-    letter-spacing:var(--about-logo-sub-spacing);
-  }
-
-  .about-lead{
-    max-width:var(--about-lead-max-w);
-    font-size:var(--about-lead-size);
-    line-height:var(--about-lead-line);
-    letter-spacing:var(--about-lead-spacing);
-    opacity:.9;
-  }
-
-  /* -----------------------------------------
-    6-3. stack
-    heroの下に通常配置
-    ライン演出のみ疑似要素
-  ----------------------------------------- */
-
-  .about-stack{
-    position:relative;
-    width:100%;
-    max-width:var(--about-stack-max-w);
-
-    margin-left:0;
-    margin-right:auto;
-
-    padding:
-      var(--about-stack-pad-top)
-      var(--about-stack-pad-x)
-      var(--about-stack-pad-bottom)
-      var(--about-stack-pad-x);
-
-    display:grid;
-    gap:var(--about-stack-gap);
-
-    border-left:1px solid #fff;
-  }
-
-  /* hero側に伸びるライン */
-  .about-stack::before{
-    content:"";
-    position:absolute;
-    left:-1px;
-    bottom:100%;
-    width:1px;
-    height:var(--about-stack-line-protrusion);
-    background:#fff;
-    pointer-events:none;
-  }
-
-  /* stack 内容 */
-
-  .about-item h3{
-    font-size:var(--about-heading-size);
-    letter-spacing:var(--about-heading-spacing);
-    margin-bottom:var(--about-item-heading-gap);
-  }
-
-  .about-item p{
-    font-size:var(--about-body-size);
-    line-height:var(--about-body-line);
-    letter-spacing:var(--about-body-spacing);
-    opacity:.85;
-    max-width:var(--about-body-max-w);
-  }
-
-  /* -----------------------------------------
-    6-4. 2カラム
-  ----------------------------------------- */
-
-  .about-split{
-    border-left:1px solid #fff;
-
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-
-    gap:var(--about-split-gap);
-
-    padding:
-      var(--about-split-pad-top)
-      var(--about-split-pad-x)
-      var(--about-split-pad-bottom);
-
-    margin-top:var(--about-split-margin-top);
-    margin-bottom:var(--about-split-margin-bottom);
-
-    width:100%;
-    max-width:1480px;
-
-    margin-left:0;
-    margin-right:auto;
-  }
-
-  .about-col h4{
-    font-size:var(--about-col-title-size);
-    letter-spacing:var(--about-col-title-spacing);
-    text-transform:uppercase;
-    margin-bottom:var(--about-col-heading-gap);
-  }
-
-  .about-col ul{
-    list-style:none;
-    padding:0;
-    margin:0;
-  }
-
-  .about-col li{
-    font-size:var(--about-col-item-size);
-    line-height:var(--about-col-item-line);
-    letter-spacing:var(--about-col-item-spacing);
-    opacity:.85;
-    max-width:34ch;
-  }
-
-  /* -----------------------------------------
-    6-5. クレジット
-  ----------------------------------------- */
-
-  .about-credit{
-    margin-top:var(--about-credit-margin-top);
-  }
-
-  .about-credit-title{
-    letter-spacing:var(--about-credit-title-spacing);
-    text-transform:uppercase;
-    opacity:.85;
-    font-size:var(--about-credit-title-size);
-    margin-bottom:var(--about-credit-title-gap);
-  }
-
-  .about-credit-name{
-    font-size:var(--about-credit-name-size);
-    letter-spacing:var(--about-credit-name-spacing);
-
-    margin-bottom:var(--about-credit-block-gap);
-
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-
-    width:100%;
-    gap:var(--about-credit-name-gap);
-
-    margin-left:0;
-    margin-right:auto;
-  }
-
-  .about-credit-name a{
-    font-size:var(--about-credit-link-size);
-    text-decoration:none;
-  }
-
-  /* -----------------------------------------
-    6-6. 戻り
-  ----------------------------------------- */
-
-  .about-actions{
-    width:100%;
-    margin-top:var(--about-back-margin-top);
-
-    font-size:var(--about-back-size);
-    letter-spacing:var(--about-back-spacing);
-
-    text-transform:uppercase;
-    text-align:center;
-  }
-
-  .about-actions a{
-    text-decoration:none;
-    border-bottom:1px solid rgba(255,255,255,.2);
-    padding-bottom:2px;
-
-    transition:
-      color .2s ease,
-      filter .2s ease,
-      transform .1s ease;
-  }
-
-  .about-actions a:hover{
-    filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
-  }
-
-  /* =========================================================
-    7. Modal
-    動画詳細
-  ========================================================= */
-
-  /* -----------------------------------------
-    7-1. 全体
-    ----------------------------------------- */
-  .modal{
-    position:fixed;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .25s ease;
-    z-index:var(--z-modal);
-  }
-
-  .modal--open{
-    opacity:1;
-    pointer-events:auto;
-  }
-
-  .modal__backdrop{
-    position:absolute;
-    inset:0;
-    background:var(--overlay-modal);
-  }
-
-  .modal__content{
-    position:relative;
-    z-index:1;
-    width:var(--modal-width);
-    max-width:var(--modal-max-w);
-    background:rgba(0,0,0,.9);
-    box-shadow:var(--shadow-modal);
-  }
-
-  .modal__close{
-    position:absolute;
-    top:var(--modal-close-top);
-    right:var(--modal-close-right);
-    background:none;
-    border:none;
-    color:#fff;
-    font-size:var(--modal-close-size);
-    cursor:pointer;
-    opacity:.85;
-    z-index:2;
-  }
-
-  /* -----------------------------------------
-    7-2. 動画
-    ----------------------------------------- */
-  .modal__video{
-    width:100%;
-  }
-
-  .modal__video-frame{
-    width:100%;
-    aspect-ratio:16 / 9;
-    position:relative;
-    overflow:hidden;
-    max-height:var(--modal-video-max-h);
-  }
-
-  .modal__video-frame iframe{
-    width:100%;
-    height:100%;
-    border:0;
-    display:block;
-  }
-
-  /* -----------------------------------------
-    7-3. 下導線
-    ----------------------------------------- */
-  .modal__footer{
-    margin-top:var(--modal-footer-gap-top);
-    display:flex;
-    justify-content:center;
-    padding-bottom:var(--modal-footer-pad-bottom);
-  }
-
-  .modal__credit-toggle{
-    background:none;
-    border:none;
-    color:#fff;
-    font-size:var(--modal-credit-toggle-size);
-    letter-spacing:var(--modal-credit-toggle-spacing);
-    text-transform:uppercase;
-    cursor:pointer;
-    opacity:.85;
-  }
-
-  /* -----------------------------------------
-    7-4. クレジット
-    ----------------------------------------- */
-  .modal__credit{
-    position:absolute;
-    inset:0;
-    background:var(--overlay-credit);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .25s ease;
-  }
-
-  .modal__credit--open{
-    opacity:1;
-    pointer-events:auto;
-  }
-
-  .modal__credit-inner{
-    text-align:center;
-    max-width:var(--modal-credit-inner-max-w);
-    width:var(--modal-credit-inner-width);
-    padding:
-      var(--modal-credit-inner-pad-top)
-      var(--modal-credit-inner-pad-x)
-      var(--modal-credit-inner-pad-bottom);
-  }
-
-  .modal__credit-title{
-    font-size:var(--modal-credit-title-size);
-    margin-bottom:var(--modal-credit-title-gap);
-    letter-spacing:var(--modal-credit-title-spacing);
-  }
-
-  .modal__credit-list{
-    font-size:var(--modal-credit-list-size);
-    line-height:var(--modal-credit-list-line);
-    margin-bottom:var(--modal-credit-list-gap);
-  }
-
-  .credit-row{
-    display:flex;
-    justify-content:space-between;
-    gap:var(--modal-credit-row-gap);
-  }
-
-  .credit-role{
-    opacity:.7;
-    text-align:left;
-  }
-
-  .credit-name{
-    font-weight:500;
-    text-align:right;
-  }
-
-  .modal__credit-close{
-    background:none;
-    border:none;
-    color:#fff;
-    font-size:var(--modal-credit-close-size);
-    letter-spacing:var(--modal-credit-close-spacing);
-    text-transform:uppercase;
-    cursor:pointer;
-    opacity:.85;
-  }
-
-
-  /* =========================================================
-    8. 光演出
-    操作補助
-  ========================================================= */
-  .video-unlock-flash{
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-    opacity:0;
-    z-index:var(--z-video-flash);
-    border-radius:0;
-    background:
-      radial-gradient(
-        ellipse at center,
-        rgba(255,255,255,.16) 0%,
-        rgba(255,255,255,.10) 38%,
-        rgba(255,255,255,.05) 62%,
-        rgba(255,255,255,0) 100%
-      );
-    filter:blur(var(--video-unlock-flash-blur));
-    transform:scale(var(--video-unlock-flash-scale));
-  }
-
-  .video-unlock-flash.is-active{
-    animation:videoUnlockFlash var(--video-unlock-flash-duration) ease-out forwards;
-  }
-
-  @keyframes videoUnlockFlash{
-    0%{
-      opacity:0;
-      transform:scale(.96);
-      filter:blur(18px);
-    }
-    22%{
-      opacity:var(--video-unlock-flash-opacity-peak);
-      transform:scale(1.01);
-      filter:blur(12px);
-    }
-    100%{
-      opacity:0;
-      transform:scale(1.08);
-      filter:blur(24px);
-    }
-  }
+}
 
 
 /* =========================================================
@@ -1276,6 +1296,22 @@ a{
     --about-heading-size:1.3rem;
     --about-col-title-size:1.15rem;
     --about-credit-name-size:1.25rem;
+
+    --video-side-safe:32px;
+  }
+}
+
+/* -----------------------------------------
+   9-1b. 小型PC / 低い画面
+   現行見た目を崩さず、固定UIだけ最小限追従
+----------------------------------------- */
+@media (pointer:fine) and (max-width:1366px),
+       (pointer:fine) and (max-height:820px){
+  :root{
+    --view-header-size:clamp(.88rem, .82rem + .22vw, 1rem);
+    --edge-btn-size:clamp(.9rem, .84rem + .18vw, .98rem);
+    --pull-return-link-size:clamp(.72rem, .68rem + .18vw, .9rem);
+    --global-mute-icon-size:clamp(20px, 1.4vw, 22px);
   }
 }
 
@@ -1287,6 +1323,7 @@ a{
   :root{
     /* ステージ共通 */
     --edge-btn-size:1.4rem;
+    --video-side-safe:40px;
 
     /* Gallery */
     --gallery-w:clamp(560px, 68vw, 860px);
@@ -1366,7 +1403,7 @@ a{
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
     /* Modal
-      横幅だけ締める。高さは直接潰さない */
+       横幅だけ締める。高さは直接潰さない */
     --modal-width:min(76vw, 720px);
 
     --modal-footer-gap-top:4px;
@@ -1374,7 +1411,7 @@ a{
     --modal-credit-toggle-size:.72rem;
 
     /* Credit
-      PC版の思想を保ちつつ、スマホでは中央箱を締める */
+       PC版の思想を保ちつつ、スマホでは中央箱を締める */
     --modal-credit-inner-width:min(92%, 520px);
     --modal-credit-inner-max-w:270px;
     --modal-credit-inner-pad-top:14px;
@@ -1408,6 +1445,14 @@ a{
 @media (max-width:900px){
   .about-split{
     grid-template-columns:1fr;
+  }
+
+  .inner-shell{
+    max-width:calc(100vw - 16px);
+  }
+
+  .video-frame{
+    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
   }
 }
 
@@ -1516,6 +1561,15 @@ a{
   .contact-value p,
   .contact-value a{
     line-height:1.65;
+  }
+
+  .inner-shell{
+    max-width:calc(100vw - 20px);
+  }
+
+  .video-frame{
+    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
+    max-width:calc(100vw - var(--video-side-safe));
   }
 
   /* Modal */
