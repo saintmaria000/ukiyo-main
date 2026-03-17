@@ -1,4 +1,3 @@
-
 // assets/js/entrance.js
 (() => {
   "use strict";
@@ -25,45 +24,27 @@
      役割:
      - 演出全体の調整値
      - 水滴系は「完全固定範囲」「サイズ依存分離」
-     - コメントは「何を変える値か」を日本語で明記
+     - 今回は 3粒構成（主1 + 補助2）
+     - 主水滴は画面サイズに応じてレスポンシブ
   ========================================================= */
   const CONFIG = {
     /* -------------------------------------------------------
        共通背景
-       bg:
-       画面全体のベース背景色
     ------------------------------------------------------- */
     bg: "#000000",
 
     /* -------------------------------------------------------
        水平線の基準帯
-       horizonYMin / horizonYMax:
-       水平線の高さ帯。中央計算でこの中間を使う
     ------------------------------------------------------- */
     horizonYMin: 0.58,
     horizonYMax: 0.62,
 
     /* -------------------------------------------------------
        水滴ワールド全体設定
-       - 水滴範囲内の背景色
-       - 水滴可動範囲
-       - ハロー
-       - 水面
-       - 反射
     ------------------------------------------------------- */
     water: {
       /* -----------------------------------------------------
          水滴範囲内の背景色設定
-         areaBgColor:
-         水滴が存在する範囲の背景色
-         areaBgAlpha:
-         その色の見せる強さ
-         areaBgSoftAlpha:
-         外周へぼかすための弱い層
-         showAreaDebugFill:
-         可動範囲の塗りを常時見せるか
-         showAreaDebugStroke:
-         可動範囲の輪郭線を見せるか
       ----------------------------------------------------- */
       background: {
         areaBgColor: "#ff1515",
@@ -76,14 +57,6 @@
 
       /* -----------------------------------------------------
          水滴範囲設定
-         centerXRatio / centerYRatio:
-         水滴世界の中心位置
-         mainOffsetY:
-         主水滴の見た目上のY補正
-
-         fixedWidth / fixedHeight:
-         可動範囲の固定サイズ
-         ここは主水滴サイズや補助水滴サイズに依存させない
       ----------------------------------------------------- */
       area: {
         centerXRatio: 0.5,
@@ -95,26 +68,22 @@
 
         sideInset: 18,
         topInset: 9,
-        bottomInset: -20,
+        bottomInset: -20
       },
 
       /* -----------------------------------------------------
          主水滴
-         radius:
-         主水滴の基本半径
-         viewportMinScale / viewportMaxScale:
-         画面依存の倍率。固定にしたいなら両方 1.0
-         wobbleAmp:
-         主水滴の揺れの強さ
-         wobbleSpeedA / wobbleSpeedB:
-         主水滴の揺れ速度
-         rippleAmpA / rippleAmpB:
-         輪郭の細かい脈動量
+         - radius: ベース半径
+         - viewportMinScale / viewportMaxScale:
+           レスポンシブ倍率の上下限
       ----------------------------------------------------- */
       main: {
         radius: 104,
-        viewportMinScale: 1.0,
-        viewportMaxScale: 1.0,
+
+        viewportMinScale: 0.72,
+        viewportMaxScale: 1.18,
+        responsiveBaseWidth: 1440,
+        responsiveBaseHeight: 900,
 
         wobbleAmp: 0.108,
         wobbleSpeedA: 0.92,
@@ -125,91 +94,75 @@
 
       /* -----------------------------------------------------
          従水滴
-         kinds:
-         従水滴ごとの定義
-         - radius: 個別半径
-         - count: その水滴の個数
-         - alpha: 見た目の濃さ
-
-         spawnGapFromMain:
-         主水滴輪郭の外側にどれだけ離して生成するか
+         - 3粒構成:
+           主1 + 補助2（mediumA / smallA）
+         - 初期配置も役割に沿って固定寄りにしてある
       ----------------------------------------------------- */
       aux: {
         kinds: [
           {
             name: "mediumA",
-            radius: 24,
+            radius: 22,
             count: 1,
-            alpha: 0.96,
+            alpha: 0.95,
+            spawnAngleDeg: 220,
+            spawnDistanceMul: 1.02,
+            orbitRadiusX: 62,
+            orbitRadiusY: 44,
             moveProfile: {
               driftForceMul: 0.84,
-              centerBiasMul: 0.62,
+              centerBiasMul: 0.72,
               maxSpeedMul: 0.84,
               noiseFreqMul: 0.88,
               wallBounceMul: 0.96,
-              wallDampingMul: 1.00
+              wallDampingMul: 1.00,
+              gravityMul: 0.34,
+              horizonPullMul: 0.18
             }
           },
           {
             name: "smallA",
-            radius: 19,
-            count: 1,
-            alpha: 0.92,
-            moveProfile: {
-              driftForceMul: 1.00,
-              centerBiasMul: 0.34,
-              maxSpeedMul: 1.00,
-              noiseFreqMul: 1.04,
-              wallBounceMul: 1.00,
-              wallDampingMul: 1.00
-            }
-          },
-          {
-            name: "smallB",
-            radius: 18,
+            radius: 11,
             count: 1,
             alpha: 0.90,
+            spawnAngleDeg: 56,
+            spawnDistanceMul: 1.58,
+            orbitRadiusX: 148,
+            orbitRadiusY: 92,
             moveProfile: {
-              driftForceMul: 1.12,
-              centerBiasMul: 0.18,
-              maxSpeedMul: 1.10,
-              noiseFreqMul: 1.12,
-              wallBounceMul: 1.04,
-              wallDampingMul: 0.98
+              driftForceMul: 1.08,
+              centerBiasMul: 0.20,
+              maxSpeedMul: 1.06,
+              noiseFreqMul: 1.08,
+              wallBounceMul: 1.03,
+              wallDampingMul: 0.99,
+              gravityMul: 0.72,
+              horizonPullMul: 0.54
             }
           }
         ],
 
-        spawnGapFromMain: 24,
+        spawnGapFromMain: {
+          mediumA: 12,
+          smallA: 28
+        },
 
         /* ---------------------------------------------------
            ノイズ移動
-           driftForce:
-           ノイズで動く力
-           driftDamping:
-           動きの減衰
-           driftNoiseX / driftNoiseY:
-           X/Y方向のノイズ量
-           maxSpeed:
-           最大速度
-           centerBias:
-           端に寄り過ぎないための内向き補正
+           - 水滴らしさを壊さないよう全体は抑えめ
         --------------------------------------------------- */
         motion: {
-          driftForce: 1.55,
-          driftDamping: 0.9915,
-          driftNoiseX: 2.2,
-          driftNoiseY: 1.8,
-          maxSpeed: 14.5,
-          centerBias: 1.45
+          driftForce: 1.45,
+          driftDamping: 0.991,
+          driftNoiseX: 2.0,
+          driftNoiseY: 1.6,
+          maxSpeed: 13.6,
+          centerBias: 1.18
         },
 
         /* ---------------------------------------------------
            壁との反応
-           wallBounce:
-           壁に当たったときの跳ね返り
-           wallDamping:
-           反射時に他軸へかける減衰
+           - 跳ねすぎず、少し勢いを吸われる方向
         --------------------------------------------------- */
         wall: {
           wallBounce: 0.78,
@@ -218,14 +171,6 @@
 
         /* ---------------------------------------------------
            従水滴の見た目
-           wobbleAmp:
-           従水滴の輪郭揺れ量
-           wobbleSpeedA / wobbleSpeedB:
-           従水滴の揺れ速度
-
-           fillAlphaCenter / Mid / Edge:
-           塗りの濃さ
-           端で黒く潰れにくくするため少し強め
         --------------------------------------------------- */
         visual: {
           wobbleAmp: 0.11,
@@ -241,10 +186,6 @@
 
       /* -----------------------------------------------------
          接近変形
-         contactStartMul:
-         変形が始まる距離倍率
-         contactFullMul:
-         もっとも強く変形する距離倍率
       ----------------------------------------------------- */
       contact: {
         contactStartMul: 1.78,
@@ -253,14 +194,6 @@
 
       /* -----------------------------------------------------
          メタボール接合
-         joinMul:
-         接合グループ化する距離倍率
-         threshold:
-         blur後にどこで輪郭確定するか
-         blur:
-         接合の柔らかさ
-         pad:
-         マスク余白
       ----------------------------------------------------- */
       metaball: {
         joinMul: 1.62,
@@ -271,10 +204,6 @@
 
       /* -----------------------------------------------------
          ハロー
-         radiusRatio:
-         ハロー半径
-         alphaCore / alphaMid:
-         ハローの中心と中間の明るさ
       ----------------------------------------------------- */
       halo: {
         radiusRatio: 0.16,
@@ -284,12 +213,6 @@
 
       /* -----------------------------------------------------
          水面
-         lineCount:
-         波線本数
-         lineSpacing:
-         波線間隔
-         amp:
-         波線の揺れ
       ----------------------------------------------------- */
       waterSurface: {
         lineCount: 10,
@@ -299,14 +222,6 @@
 
       /* -----------------------------------------------------
          反射
-         mainBodyAlpha:
-         主水滴反射の濃さ
-         auxBodyAlphaMul:
-         従水滴反射の濃さ倍率
-         strokeAlphaMain / strokeAlphaAux:
-         反射線の濃さ
-         squashMain / squashAux / squashMetaball:
-         反射の縦潰し量
       ----------------------------------------------------- */
       reflection: {
         mainBodyAlpha: 0.12,
@@ -335,9 +250,6 @@
 
     /* -------------------------------------------------------
        revealLogo
-       - 憂き世の文字は落下
-       - 単発でバウンド
-       - その後は固定
     ------------------------------------------------------- */
     reveal: {
       dropFromY: -148,
@@ -516,21 +428,39 @@
   }
 
   function getMainBaseRadius() {
-    return CONFIG.water.main.radius;
+    const C = CONFIG.water.main;
+
+    const scaleW = w / C.responsiveBaseWidth;
+    const scaleH = h / C.responsiveBaseHeight;
+    const responsiveScale = (scaleW * 0.58) + (scaleH * 0.42);
+    const finalScale = clamp(
+      responsiveScale,
+      C.viewportMinScale,
+      C.viewportMaxScale
+    );
+
+    return C.radius * finalScale;
   }
 
   function getWaterBounds() {
     const C = CONFIG.water.area;
-    const width = C.fixedWidth;
-    const height = C.fixedHeight;
+    const baseMinX = cx - C.fixedWidth * 0.5;
+    const baseMaxX = cx + C.fixedWidth * 0.5;
+    const baseMinY = cy - C.fixedHeight * 0.5;
+    const baseMaxY = cy + C.fixedHeight * 0.5;
+
+    const minX = baseMinX + C.sideInset;
+    const maxX = baseMaxX - C.sideInset;
+    const minY = baseMinY + C.topInset;
+    const maxY = baseMaxY - C.bottomInset;
 
     return {
-      minX: cx - width * 0.5 + C.sideInset,
-      maxX: cx + width * 0.5 - C.sideInset,
-      minY: cy - height * 0.5 + C.topInset,
-      maxY: cy + height * 0.5 - C.bottomInset,
-      width,
-      height
+      minX,
+      maxX,
+      minY,
+      maxY,
+      width: maxX - minX,
+      height: maxY - minY
     };
   }
 
@@ -656,52 +586,32 @@
 
   /* =========================================================
      Sector 08. Water System / Generate & Model
-     ---------------------------------------------------------
-     - 主水滴 / 従水滴
-     - 主水滴外での生成
-     - 水滴範囲
-     - メタボールの下準備
   ========================================================= */
   function createWaterDroplet(kindDef, indexWithinKind) {
     const bounds = getWaterBounds();
     const mainR = getMainBaseRadius();
     const r = kindDef.radius;
 
-    const gap = CONFIG.water.aux.spawnGapFromMain;
+    const gapMap = CONFIG.water.aux.spawnGapFromMain;
+    const gap =
+      typeof gapMap === "number"
+        ? gapMap
+        : (gapMap[kindDef.name] ?? 16);
+
     const minDist = mainR + r + gap;
-    const maxDist = Math.min(bounds.width, bounds.height) * 0.42;
 
-    let x = cx;
-    let y = cy;
-    let placed = false;
+    const angleDeg = kindDef.spawnAngleDeg ?? rand(0, 360);
+    const angle = angleDeg * Math.PI / 180;
+    const distMul = kindDef.spawnDistanceMul ?? 1;
+    const initialDist = minDist * distMul;
 
-    for (let i = 0; i < 60; i++) {
-      const ang = rand(0, Math.PI * 2);
-      const dist = rand(minDist, Math.max(minDist + 1, maxDist));
-      const tx = cx + Math.cos(ang) * dist;
-      const ty = cy + Math.sin(ang) * dist;
+    let x = cx + Math.cos(angle) * initialDist;
+    let y = cy + Math.sin(angle) * initialDist;
 
-      if (
-        tx > bounds.minX + r &&
-        tx < bounds.maxX - r &&
-        ty > bounds.minY + r &&
-        ty < bounds.maxY - r &&
-        dist2(tx, ty, cx, cy) > minDist
-      ) {
-        x = tx;
-        y = ty;
-        placed = true;
-        break;
-      }
-    }
+    x = clamp(x, bounds.minX + r, bounds.maxX - r);
+    y = clamp(y, bounds.minY + r, bounds.maxY - r);
 
-    if (!placed) {
-      const ang = rand(0, Math.PI * 2);
-      x = clamp(cx + Math.cos(ang) * minDist, bounds.minX + r, bounds.maxX - r);
-      y = clamp(cy + Math.sin(ang) * minDist, bounds.minY + r, bounds.maxY - r);
-    }
-
-    const tangent = rand(0, Math.PI * 2);
+    const tangent = angle + (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2);
 
     return {
       name: kindDef.name,
@@ -709,8 +619,8 @@
       alpha: kindDef.alpha,
       x,
       y,
-      vx: Math.cos(tangent) * rand(1.4, 3.1),
-      vy: Math.sin(tangent) * rand(1.2, 2.8),
+      vx: Math.cos(tangent) * rand(0.8, 2.0),
+      vy: Math.sin(tangent) * rand(0.6, 1.8),
       scale: 1,
       life: 0,
       seed: rand(0, 1000),
@@ -722,11 +632,16 @@
         maxSpeedMul: 1,
         noiseFreqMul: 1,
         wallBounceMul: 1,
-        wallDampingMul: 1
+        wallDampingMul: 1,
+        gravityMul: 1,
+        horizonPullMul: 0
       },
 
-      orbitBiasX: rand(-1, 1),
-      orbitBiasY: rand(-1, 1)
+      anchorX: x,
+      anchorY: y,
+      orbitRadiusX: kindDef.orbitRadiusX ?? 96,
+      orbitRadiusY: kindDef.orbitRadiusY ?? 64,
+      orbitPhase: rand(0, Math.PI * 2)
     };
   }
 
@@ -939,9 +854,6 @@
 
   /* =========================================================
      Sector 10. Water System / Update
-     ---------------------------------------------------------
-     - 従水滴は主水滴輪郭外で生成済み
-     - 可動範囲内をノイズ移動
   ========================================================= */
   function limitDropletSpeed(d) {
     const baseMaxV = CONFIG.water.aux.motion.maxSpeed;
@@ -954,7 +866,7 @@
     }
   }
 
-function applyWaterBounds(d, bounds) {
+  function applyWaterBounds(d, bounds) {
     const base = CONFIG.water.aux.wall;
     const mp = d.moveProfile || {};
 
@@ -983,9 +895,16 @@ function applyWaterBounds(d, bounds) {
       d.vx *= wallDamping;
     }
   }
+
   function pushOutsideMain(d) {
     const mainR = getMainBaseRadius();
-    const minDist = mainR + d.r + CONFIG.water.aux.spawnGapFromMain;
+    const gapMap = CONFIG.water.aux.spawnGapFromMain;
+    const gap =
+      typeof gapMap === "number"
+        ? gapMap
+        : (gapMap[d.name] ?? 16);
+
+    const minDist = mainR + d.r + gap;
     const dx = d.x - cx;
     const dy = d.y - cy;
     const dist = Math.hypot(dx, dy) || 1;
@@ -995,8 +914,8 @@ function applyWaterBounds(d, bounds) {
       const ny = dy / dist;
       d.x = cx + nx * minDist;
       d.y = cy + ny * minDist;
-      d.vx += nx * 1.2;
-      d.vy += ny * 1.2;
+      d.vx += nx * 0.65;
+      d.vy += ny * 0.65;
     }
   }
 
@@ -1015,33 +934,49 @@ function applyWaterBounds(d, bounds) {
         maxSpeedMul: 1,
         noiseFreqMul: 1,
         wallBounceMul: 1,
-        wallDampingMul: 1
+        wallDampingMul: 1,
+        gravityMul: 1,
+        horizonPullMul: 0
       };
 
       const nf = mp.noiseFreqMul || 1;
 
+      const orbitX =
+        d.anchorX +
+        Math.cos(tsSec * (0.22 * nf) + d.orbitPhase) * d.orbitRadiusX;
+
+      const orbitY =
+        d.anchorY +
+        Math.sin(tsSec * (0.18 * nf) + d.orbitPhase * 0.9) * d.orbitRadiusY;
+
       const noiseX =
-        Math.sin(tsSec * (0.36 * nf) + d.seed * 0.63) * C.driftNoiseX +
-        Math.sin(tsSec * (0.71 * nf) + d.seed * 1.11) * C.driftNoiseX * 0.32;
+        Math.sin(tsSec * (0.34 * nf) + d.seed * 0.63) * C.driftNoiseX +
+        Math.sin(tsSec * (0.61 * nf) + d.seed * 1.11) * C.driftNoiseX * 0.24;
 
       const noiseY =
-        Math.cos(tsSec * (0.41 * nf) + d.seed * 0.47) * C.driftNoiseY +
-        Math.sin(tsSec * (0.76 * nf) + d.seed * 0.81) * C.driftNoiseY * 0.22;
+        Math.cos(tsSec * (0.37 * nf) + d.seed * 0.47) * C.driftNoiseY +
+        Math.sin(tsSec * (0.69 * nf) + d.seed * 0.81) * C.driftNoiseY * 0.18;
 
-      const targetX = cx + d.orbitBiasX * 82;
-      const targetY = cy + d.orbitBiasY * 58;
+      const toOrbitX = orbitX - d.x;
+      const toOrbitY = orbitY - d.y;
+      const orbitLen = Math.hypot(toOrbitX, toOrbitY) || 1;
 
-      const toTargetX = targetX - d.x;
-      const toTargetY = targetY - d.y;
-      const targetLen = Math.hypot(toTargetX, toTargetY) || 1;
+      const horizonPull =
+        d.y < horizonY - 18
+          ? 0
+          : (d.y - (horizonY - 18)) * 0.0022 * (mp.horizonPullMul || 0);
+
+      const gravity = 0.075 * (mp.gravityMul || 1);
 
       d.vx +=
         noiseX * dt * C.driftForce * (mp.driftForceMul || 1) +
-        (toTargetX / targetLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
+        (toOrbitX / orbitLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
 
       d.vy +=
         noiseY * dt * C.driftForce * (mp.driftForceMul || 1) +
-        (toTargetY / targetLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
+        (toOrbitY / orbitLen) * dt * C.centerBias * (mp.centerBiasMul || 1) +
+        gravity +
+        horizonPull;
 
       d.vx *= C.driftDamping;
       d.vy *= C.driftDamping;
@@ -1058,9 +993,6 @@ function applyWaterBounds(d, bounds) {
 
   /* =========================================================
      Sector 11. Water System / Draw
-     ---------------------------------------------------------
-     - 単体水滴
-     - メタボール接合
   ========================================================= */
   function tracePath(pts) {
     if (!pts || pts.length < 2) return;
@@ -1415,10 +1347,6 @@ function applyWaterBounds(d, bounds) {
 
   /* =========================================================
      Sector 12. Background / Halo / Water
-     ---------------------------------------------------------
-     - 水滴範囲内背景色
-     - ハロー
-     - 水面
   ========================================================= */
   function drawBackground(time) {
     ctx.clearRect(0, 0, w, h);
@@ -1575,14 +1503,10 @@ function applyWaterBounds(d, bounds) {
 
   /* =========================================================
      Sector 13. Reflection
-     ---------------------------------------------------------
-     - まずは全体形状が下に映る簡易反射
-     - 後から具体的な反射表現を足しやすい土台
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
 
-    /* 水面より下だけに描く */
     ctx.beginPath();
     ctx.rect(0, horizonY, w, h - horizonY);
     ctx.clip();
@@ -1954,11 +1878,6 @@ function applyWaterBounds(d, bounds) {
 
   /* =========================================================
      Sector 17. Brand / Reveal Logo
-     ---------------------------------------------------------
-     revealLogo:
-     - 落下
-     - 単発バウンド
-     - その後固定
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
@@ -2071,9 +1990,6 @@ function applyWaterBounds(d, bounds) {
 
   /* =========================================================
      Sector 19. Render
-     ---------------------------------------------------------
-     - 静止状態 / hint までは新しい水滴系を描画
-     - 以後は既存の破片主体
   ========================================================= */
   function render(ts) {
     const now = ts * 0.001;
@@ -2173,17 +2089,8 @@ function applyWaterBounds(d, bounds) {
 
     document.body.classList.add("is-transitioning");
 
-    if (motionQuery.matches) {
-      started = true;
-      finished = true;
-      setBrandOpacity(0);
-      showRevealLogo();
-      setRevealOpacity(1);
-      fireEntranceDone();
-      return;
-    }
-
     started = true;
+    finished = false;
     startTime = performance.now() * 0.001;
     lastTs = 0;
   }
@@ -2201,13 +2108,12 @@ function applyWaterBounds(d, bounds) {
       e.preventDefault();
     }
 
+    if (e.cancelable) e.preventDefault();
     startEntrance();
   }
 
   /* =========================================================
      Sector 21. Boot / Events
-     ---------------------------------------------------------
-     - 水滴初期化は initWaterDroplets() を使う
   ========================================================= */
   function boot() {
     window.clearTimeout(doneTimer);
@@ -2226,6 +2132,11 @@ function applyWaterBounds(d, bounds) {
     createShardField();
     initWaterDroplets();
     prepareLogos();
+
+    if (motionQuery.matches) {
+      setBrandOpacity(1);
+      setRevealOpacity(0);
+    }
 
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(render);
