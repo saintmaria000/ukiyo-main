@@ -136,9 +136,48 @@
       ----------------------------------------------------- */
       aux: {
         kinds: [
-          { name: "mediumA", radius: 24, count: 1, alpha: 0.96 },
-          { name: "smallA", radius: 19, count: 1, alpha: 0.92 },
-          { name: "smallB", radius: 18, count: 1, alpha: 0.90 }
+          {
+            name: "mediumA",
+            radius: 24,
+            count: 1,
+            alpha: 0.96,
+            moveProfile: {
+              driftForceMul: 0.84,
+              centerBiasMul: 0.62,
+              maxSpeedMul: 0.84,
+              noiseFreqMul: 0.88,
+              wallBounceMul: 0.96,
+              wallDampingMul: 1.00
+            }
+          },
+          {
+            name: "smallA",
+            radius: 19,
+            count: 1,
+            alpha: 0.92,
+            moveProfile: {
+              driftForceMul: 1.00,
+              centerBiasMul: 0.34,
+              maxSpeedMul: 1.00,
+              noiseFreqMul: 1.04,
+              wallBounceMul: 1.00,
+              wallDampingMul: 1.00
+            }
+          },
+          {
+            name: "smallB",
+            radius: 18,
+            count: 1,
+            alpha: 0.90,
+            moveProfile: {
+              driftForceMul: 1.12,
+              centerBiasMul: 0.18,
+              maxSpeedMul: 1.10,
+              noiseFreqMul: 1.12,
+              wallBounceMul: 1.04,
+              wallDampingMul: 0.98
+            }
+          }
         ],
 
         spawnGapFromMain: 24,
@@ -157,12 +196,12 @@
            端に寄り過ぎないための内向き補正
         --------------------------------------------------- */
         motion: {
-          driftForce: 2.05,
-          driftDamping: 0.9925,
-          driftNoiseX: 2.8,
-          driftNoiseY: 2.2,
-          maxSpeed: 17.5,
-          centerBias: 2.4
+          driftForce: 1.55,
+          driftDamping: 0.9915,
+          driftNoiseX: 2.2,
+          driftNoiseY: 1.8,
+          maxSpeed: 14.5,
+          centerBias: 1.45
         },
 
         /* ---------------------------------------------------
@@ -173,8 +212,8 @@
            反射時に他軸へかける減衰
         --------------------------------------------------- */
         wall: {
-          wallBounce: 0.92,
-          wallDamping: 0.86
+          wallBounce: 0.78,
+          wallDamping: 0.88
         },
 
         /* ---------------------------------------------------
@@ -670,12 +709,24 @@
       alpha: kindDef.alpha,
       x,
       y,
-      vx: Math.cos(tangent) * rand(2.2, 4.5),
-      vy: Math.sin(tangent) * rand(1.8, 4.0),
+      vx: Math.cos(tangent) * rand(1.4, 3.1),
+      vy: Math.sin(tangent) * rand(1.2, 2.8),
       scale: 1,
       life: 0,
       seed: rand(0, 1000),
-      indexWithinKind
+      indexWithinKind,
+
+      moveProfile: kindDef.moveProfile || {
+        driftForceMul: 1,
+        centerBiasMul: 1,
+        maxSpeedMul: 1,
+        noiseFreqMul: 1,
+        wallBounceMul: 1,
+        wallDampingMul: 1
+      },
+
+      orbitBiasX: rand(-1, 1),
+      orbitBiasY: rand(-1, 1)
     };
   }
 
@@ -893,7 +944,9 @@
      - 可動範囲内をノイズ移動
   ========================================================= */
   function limitDropletSpeed(d) {
-    const maxV = CONFIG.water.aux.motion.maxSpeed;
+    const baseMaxV = CONFIG.water.aux.motion.maxSpeed;
+    const maxV = baseMaxV * (d.moveProfile?.maxSpeedMul || 1);
+
     const len = Math.hypot(d.vx, d.vy);
     if (len > maxV) {
       d.vx = (d.vx / len) * maxV;
@@ -901,31 +954,35 @@
     }
   }
 
-  function applyWaterBounds(d, bounds) {
-    const C = CONFIG.water.aux.wall;
+function applyWaterBounds(d, bounds) {
+    const base = CONFIG.water.aux.wall;
+    const mp = d.moveProfile || {};
+
+    const wallBounce = base.wallBounce * (mp.wallBounceMul || 1);
+    const wallDamping = base.wallDamping * (mp.wallDampingMul || 1);
+
     const r = d.r;
 
     if (d.x < bounds.minX + r) {
       d.x = bounds.minX + r;
-      d.vx = Math.abs(d.vx) * C.wallBounce;
-      d.vy *= C.wallDamping;
+      d.vx = Math.abs(d.vx) * wallBounce;
+      d.vy *= wallDamping;
     } else if (d.x > bounds.maxX - r) {
       d.x = bounds.maxX - r;
-      d.vx = -Math.abs(d.vx) * C.wallBounce;
-      d.vy *= C.wallDamping;
+      d.vx = -Math.abs(d.vx) * wallBounce;
+      d.vy *= wallDamping;
     }
 
     if (d.y < bounds.minY + r) {
       d.y = bounds.minY + r;
-      d.vy = Math.abs(d.vy) * C.wallBounce;
-      d.vx *= C.wallDamping;
+      d.vy = Math.abs(d.vy) * wallBounce;
+      d.vx *= wallDamping;
     } else if (d.y > bounds.maxY - r) {
       d.y = bounds.maxY - r;
-      d.vy = -Math.abs(d.vy) * C.wallBounce;
-      d.vx *= C.wallDamping;
+      d.vy = -Math.abs(d.vy) * wallBounce;
+      d.vx *= wallDamping;
     }
   }
-
   function pushOutsideMain(d) {
     const mainR = getMainBaseRadius();
     const minDist = mainR + d.r + CONFIG.water.aux.spawnGapFromMain;
@@ -952,20 +1009,39 @@
     for (const d of state.water.auxDroplets) {
       d.life += dt;
 
+      const mp = d.moveProfile || {
+        driftForceMul: 1,
+        centerBiasMul: 1,
+        maxSpeedMul: 1,
+        noiseFreqMul: 1,
+        wallBounceMul: 1,
+        wallDampingMul: 1
+      };
+
+      const nf = mp.noiseFreqMul || 1;
+
       const noiseX =
-        Math.sin(tsSec * 0.36 + d.seed * 0.63) * C.driftNoiseX +
-        Math.sin(tsSec * 0.71 + d.seed * 1.11) * C.driftNoiseX * 0.32;
+        Math.sin(tsSec * (0.36 * nf) + d.seed * 0.63) * C.driftNoiseX +
+        Math.sin(tsSec * (0.71 * nf) + d.seed * 1.11) * C.driftNoiseX * 0.32;
 
       const noiseY =
-        Math.cos(tsSec * 0.41 + d.seed * 0.47) * C.driftNoiseY +
-        Math.sin(tsSec * 0.76 + d.seed * 0.81) * C.driftNoiseY * 0.22;
+        Math.cos(tsSec * (0.41 * nf) + d.seed * 0.47) * C.driftNoiseY +
+        Math.sin(tsSec * (0.76 * nf) + d.seed * 0.81) * C.driftNoiseY * 0.22;
 
-      const toCenterX = cx - d.x;
-      const toCenterY = cy - d.y;
-      const centerLen = Math.hypot(toCenterX, toCenterY) || 1;
+      const targetX = cx + d.orbitBiasX * 82;
+      const targetY = cy + d.orbitBiasY * 58;
 
-      d.vx += noiseX * dt * C.driftForce + (toCenterX / centerLen) * dt * C.centerBias;
-      d.vy += noiseY * dt * C.driftForce + (toCenterY / centerLen) * dt * C.centerBias;
+      const toTargetX = targetX - d.x;
+      const toTargetY = targetY - d.y;
+      const targetLen = Math.hypot(toTargetX, toTargetY) || 1;
+
+      d.vx +=
+        noiseX * dt * C.driftForce * (mp.driftForceMul || 1) +
+        (toTargetX / targetLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
+
+      d.vy +=
+        noiseY * dt * C.driftForce * (mp.driftForceMul || 1) +
+        (toTargetY / targetLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
 
       d.vx *= C.driftDamping;
       d.vy *= C.driftDamping;

@@ -50,6 +50,8 @@ a{
 
 .page{
   min-height:100vh;
+  min-height:100svh;
+  min-height:100dvh;
 }
 
 
@@ -97,6 +99,12 @@ a{
   --vvh:100vh;
   --vv-top:0px;
   --vv-left:0px;
+
+  /* 実viewport追従用
+     基本は --vvh を見る */
+  --viewport-h:100vh;
+  --viewport-h-safe:100svh;
+  --viewport-h-dynamic:100dvh;
 
   /* -----------------------------------------
      3-2. 3面空間
@@ -198,6 +206,7 @@ a{
 
   --video-w:960px;
   --video-side-safe:48px;
+  --inner-shell-side-safe:24px;
 
   --edge-btn-size:.86rem;
   --edge-btn-spacing:.25em;
@@ -241,7 +250,7 @@ a{
   --contact-value-size:1.14rem;
 
   /* -----------------------------------------
-    3-11. About
+     3-11. About
   ----------------------------------------- */
 
   /* 外側 */
@@ -365,10 +374,7 @@ a{
   --video-unlock-flash-duration:.72s;
 }
 
-/* -----------------------------------------
-   3-14. viewport実寸補強
-   スマホブラウザの可視領域追従を優先
------------------------------------------ */
+/* 実viewport優先 */
 @supports (height:100svh){
   :root{
     --vvh:100svh;
@@ -485,6 +491,7 @@ body.is-pull-hint-visible .pull-return{
   position:relative;
   width:100%;
   height:var(--vvh);
+  min-height:var(--vvh);
   overflow:hidden;
 }
 
@@ -520,6 +527,8 @@ body.is-pull-hint-visible .pull-return{
 .view-inner{
   position:relative;
   height:100%;
+  min-width:0;
+  min-height:0;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
@@ -558,7 +567,7 @@ body.is-pull-hint-visible .pull-return{
   transition:transform .8s ease;
   z-index:var(--z-video);
   pointer-events:none;
-  max-width:calc(100vw - 24px);
+  max-width:calc(100vw - var(--inner-shell-side-safe));
 }
 
 body.view-center .outer-space{
@@ -693,7 +702,7 @@ body.view-right .inner-shell{
   max-width:var(--gallery-w);
   min-width:0;
   margin-top:var(--gallery-panel-gap-top);
-  height:min(var(--gallery-panel-max-h), calc(100vh - var(--gallery-panel-vh-offset)));
+  height:min(var(--gallery-panel-max-h), calc(var(--vvh) - var(--gallery-panel-vh-offset)));
   min-height:var(--gallery-panel-min-h);
   display:flex;
   flex-direction:column;
@@ -732,7 +741,7 @@ body.view-right .inner-shell{
   width:100%;
   overflow-y:auto;
   overflow-x:hidden;
-  padding-right:0;
+  padding-right:var(--gallery-scroll-pad-right);
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.16) transparent;
 }
@@ -745,7 +754,7 @@ body.view-right .inner-shell{
   text-align:left;
   background:transparent;
   border:none;
-  padding:var(--gallery-item-pad-y) 0;
+  padding:var(--gallery-item-pad-y) var(--gallery-item-pad-x);
   border-bottom:1px solid var(--line-soft);
   font-size:var(--gallery-item-size);
   letter-spacing:var(--gallery-item-spacing);
@@ -919,7 +928,6 @@ body.view-right .inner-shell{
   border-left:1px solid #fff;
 }
 
-/* hero側に伸びるライン */
 .about-stack::before{
   content:"";
   position:absolute;
@@ -931,7 +939,6 @@ body.view-right .inner-shell{
   pointer-events:none;
 }
 
-/* stack 内容 */
 .about-item h3{
   font-size:var(--about-heading-size);
   letter-spacing:var(--about-heading-spacing);
@@ -951,25 +958,23 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 .about-split{
   border-left:1px solid #fff;
-
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-
   gap:var(--about-split-gap);
-
   padding:
     var(--about-split-pad-top)
     var(--about-split-pad-x)
     var(--about-split-pad-bottom);
-
   margin-top:var(--about-split-margin-top);
   margin-bottom:var(--about-split-margin-bottom);
-
   width:100%;
   max-width:1480px;
-
   margin-left:0;
   margin-right:auto;
+}
+
+.about-col{
+  min-width:0;
 }
 
 .about-col h4{
@@ -1011,16 +1016,12 @@ body.view-right .inner-shell{
 .about-credit-name{
   font-size:var(--about-credit-name-size);
   letter-spacing:var(--about-credit-name-spacing);
-
   margin-bottom:var(--about-credit-block-gap);
-
   display:flex;
   justify-content:space-between;
   align-items:center;
-
   width:100%;
   gap:var(--about-credit-name-gap);
-
   margin-left:0;
   margin-right:auto;
 }
@@ -1036,10 +1037,8 @@ body.view-right .inner-shell{
 .about-actions{
   width:100%;
   margin-top:var(--about-back-margin-top);
-
   font-size:var(--about-back-size);
   letter-spacing:var(--about-back-spacing);
-
   text-transform:uppercase;
   text-align:center;
 }
@@ -1048,7 +1047,6 @@ body.view-right .inner-shell{
   text-decoration:none;
   border-bottom:1px solid rgba(255,255,255,.2);
   padding-bottom:2px;
-
   transition:
     color .2s ease,
     filter .2s ease,
@@ -1298,12 +1296,13 @@ body.view-right .inner-shell{
     --about-credit-name-size:1.25rem;
 
     --video-side-safe:32px;
+    --inner-shell-side-safe:16px;
   }
 }
 
 /* -----------------------------------------
-   9-1b. 小型PC / 低い画面
-   現行見た目を崩さず、固定UIだけ最小限追従
+   9-2. 小型PC
+   レイアウトは変えず、UIだけ穏やかに追従
 ----------------------------------------- */
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
@@ -1316,7 +1315,7 @@ body.view-right .inner-shell{
 }
 
 /* -----------------------------------------
-   9-2. タッチ横向き
+   9-3. タッチ横向き
    スマホ横向き + iPad横向き
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
@@ -1324,6 +1323,7 @@ body.view-right .inner-shell{
     /* ステージ共通 */
     --edge-btn-size:1.4rem;
     --video-side-safe:40px;
+    --inner-shell-side-safe:20px;
 
     /* Gallery */
     --gallery-w:clamp(560px, 68vw, 860px);
@@ -1402,16 +1402,14 @@ body.view-right .inner-shell{
     --about-back-spacing:.08em;
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
-    /* Modal
-       横幅だけ締める。高さは直接潰さない */
+    /* Modal */
     --modal-width:min(76vw, 720px);
 
     --modal-footer-gap-top:4px;
     --modal-footer-pad-bottom:6px;
     --modal-credit-toggle-size:.72rem;
 
-    /* Credit
-       PC版の思想を保ちつつ、スマホでは中央箱を締める */
+    /* Credit */
     --modal-credit-inner-width:min(92%, 520px);
     --modal-credit-inner-max-w:270px;
     --modal-credit-inner-pad-top:14px;
@@ -1445,14 +1443,6 @@ body.view-right .inner-shell{
 @media (max-width:900px){
   .about-split{
     grid-template-columns:1fr;
-  }
-
-  .inner-shell{
-    max-width:calc(100vw - 16px);
-  }
-
-  .video-frame{
-    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
   }
 }
 
@@ -1516,7 +1506,6 @@ body.view-right .inner-shell{
     margin-top:var(--gallery-panel-gap-top);
     align-self:flex-start;
 
-    /* スクロール本体を panel にする */
     display:block;
     overflow-y:auto;
     overflow-x:hidden;
@@ -1563,16 +1552,6 @@ body.view-right .inner-shell{
     line-height:1.65;
   }
 
-  .inner-shell{
-    max-width:calc(100vw - 20px);
-  }
-
-  .video-frame{
-    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
-    max-width:calc(100vw - var(--video-side-safe));
-  }
-
-  /* Modal */
   .modal__content{
     width:var(--modal-width);
     max-width:var(--modal-max-w);
@@ -1602,7 +1581,6 @@ body.view-right .inner-shell{
       var(--modal-credit-inner-pad-bottom);
   }
 
-  /* タイトルも一覧も同じ箱幅 */
   .modal__credit-title,
   .modal__credit-list{
     width:var(--modal-credit-block-w);
@@ -1625,7 +1603,6 @@ body.view-right .inner-shell{
     overflow:visible;
   }
 
-  /* PC版思想に寄せる */
   .credit-row{
     display:flex;
     justify-content:space-between;
