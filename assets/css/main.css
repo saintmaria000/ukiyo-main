@@ -149,11 +149,11 @@ a{
      3-5. 重なり順
   ----------------------------------------- */
   --z-stage:2;
-  --z-stage-component:20;
-  --z-video-flash:9;
-  --z-video-shield:10;
-  --z-ui:9000;
-  --z-video:9999;
+  --z-video-flash:40;
+  --z-video-shield:50;
+  --z-video:60;
+  --z-stage-component:120;
+  --z-ui:200;
   --z-modal:10000;
   --z-pull-return:21000;
 
@@ -505,6 +505,7 @@ body.is-pull-hint-visible .pull-return{
   transform:translate(-50%, -50%) scale(var(--stage-scale));
   overflow:hidden;
   perspective:var(--stage-perspective);
+  z-index:var(--z-stage);
 }
 
 .outer-space{
@@ -535,6 +536,8 @@ body.is-pull-hint-visible .pull-return{
 }
 
 .view-header{
+  position:relative;
+  z-index:var(--z-stage-component);
   font-size:var(--view-header-size);
   letter-spacing:var(--view-header-spacing);
   text-transform:uppercase;
@@ -698,6 +701,7 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 .gallery-panel{
   position:relative;
+  z-index:var(--z-stage-component);
   width:100%;
   max-width:var(--gallery-w);
   min-width:0;
@@ -787,6 +791,8 @@ body.view-right .inner-shell{
    通常時は縦中央優先で margin-top を消す
 ----------------------------------------- */
 .contact-block{
+  position:relative;
+  z-index:var(--z-stage-component);
   margin-top:var(--contact-block-margin-top);
   max-width:var(--contact-w);
   font-size:var(--contact-block-size);
