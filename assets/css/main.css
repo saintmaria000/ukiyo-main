@@ -1591,6 +1591,36 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
+    /* --- 縦スマホ：文字サイズ補正 --- */
+
+    /* ヘッダー / UI */
+    --view-header-size:clamp(1rem, 3.2vw, 1.2rem);
+    --edge-btn-size:1.45rem;
+
+    /* 本文系 */
+    --font-body-md:clamp(1.08rem, 3.8vw, 1.2rem);
+    --font-body-sm:clamp(1rem, 3.4vw, 1.1rem);
+    --font-body-xs:clamp(.92rem, 3vw, 1rem);
+
+    /* Gallery */
+    --gallery-item-size:1.25rem;
+    --gallery-meta-size:1rem;
+
+    /* Contact */
+    --contact-block-size:1.1rem;
+    --contact-label-size:1.35rem;
+    --contact-value-size:1.2rem;
+
+    /* About */
+    --about-lead-size:1.08rem;
+    --about-body-size:1.05rem;
+    --about-heading-size:1.4rem;
+    --about-col-title-size:1.2rem;
+    --about-col-item-size:1.02rem;
+
+    /* Modal */
+    --modal-credit-title-size:1rem;
+    --modal-credit-list-size:.92rem;
     --video-mobile-portrait-visible-ratio:.84;
     --video-mobile-portrait-visible-max:500;
     --video-mobile-portrait-visible-offset-y:0;
