@@ -1,5 +1,6 @@
 /* =========================================================
    1. Reset / Base
+   初期化
 ========================================================= */
 *{
   margin:0;
@@ -9,7 +10,7 @@
 
 html{
   background:#000;
-  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue","Segoe UI", sans-serif;
+  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
   scroll-behavior:smooth;
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.22) transparent;
@@ -47,7 +48,15 @@ a{
   color:inherit;
 }
 
+img,
+video,
+iframe{
+  display:block;
+  max-width:100%;
+}
+
 .page{
+  position:relative;
   min-height:100vh;
   min-height:100svh;
   min-height:100dvh;
@@ -85,26 +94,27 @@ a{
 
 
 /* =========================================================
-   3. Root Variables
+   3. Variables
 ========================================================= */
 :root{
   /* -----------------------------------------
-     3-1. Viewport / Stage Metrics
-     stage.scale.js から更新
+     3-1. Viewport
   ----------------------------------------- */
   --vvw:100vw;
   --vvh:100vh;
   --vv-top:0px;
   --vv-left:0px;
 
-  /* 1面サイズ */
-  --stage-panel-w:2400px;
-  --stage-panel-h:1080px;
-  --stage-scale:1;
+  --viewport-h:100vh;
+  --viewport-h-safe:100svh;
+  --viewport-h-dynamic:100dvh;
 
   /* -----------------------------------------
-     3-2. Stage / Space
+     3-2. Stage base
   ----------------------------------------- */
+  --stage-w:2400px;
+  --stage-h:1080px;
+  --stage-scale:1;
   --stage-pad-y:40px;
   --stage-pad-x:90px;
   --edge-offset:32px;
@@ -112,9 +122,22 @@ a{
   --stage-header-top:20px;
 
   /* -----------------------------------------
-     3-3. Colors
+     3-3. Stage / shell movement
+     PC基準の移動量を維持
   ----------------------------------------- */
+  --inner-shell-side-shift:1920px;
+  --inner-shell-depth:-350px;
+
+  /* -----------------------------------------
+     3-4. Colors
+  ----------------------------------------- */
+  --text-main:#fff;
+  --text-soft:rgba(255,255,255,.85);
+  --text-muted:rgba(255,255,255,.6);
+
   --line-soft:rgba(255,255,255,.08);
+  --line-mid:rgba(255,255,255,.22);
+
   --overlay-dark:rgba(0,0,0,.45);
   --overlay-modal:rgba(0,0,0,.65);
   --overlay-credit:rgba(0,0,0,.75);
@@ -123,24 +146,42 @@ a{
   --shadow-modal:0 0 40px rgba(0,0,0,.7);
 
   /* -----------------------------------------
-     3-4. Z-index
+     3-5. Z-index
   ----------------------------------------- */
   --z-stage:2;
+  --z-video-layer:55;
   --z-video-flash:40;
   --z-video-shield:50;
-  --z-center-media:80;
+  --z-video:60;
   --z-stage-component:120;
+  --z-ui:200;
   --z-modal:10000;
-  --z-nav-top:30000;
+  --z-pull-return:21000;
 
   /* -----------------------------------------
-     3-5. Typography
+     3-6. Typography
   ----------------------------------------- */
+  --font-display-xl:clamp(2.6rem, 4.4vw, 5.6rem);
+  --font-display-lg:clamp(1.7rem, 2.5vw, 2.3rem);
+
+  --font-title-lg:clamp(1.32rem, 1.9vw, 1.65rem);
+  --font-title-md:clamp(1.12rem, 1.45vw, 1.36rem);
+
+  --font-body-md:clamp(1rem, 1.1vw, 1.06rem);
+  --font-body-sm:clamp(.9rem, 1vw, .98rem);
+  --font-body-xs:clamp(.78rem, .85vw, .86rem);
+
+  --font-ui-xs:clamp(.78rem, .8vw, .86rem);
   --font-ui-sm:clamp(.9rem, .98vw, 1rem);
+
+  --ls-wide:.35em;
+  --ls-title:.28em;
   --ls-ui:.25em;
+  --ls-body:.08em;
+  --ls-body-tight:.05em;
 
   /* -----------------------------------------
-     3-6. Fixed UI
+     3-7. Fixed UI
   ----------------------------------------- */
   --global-mute-top:24px;
   --global-mute-right:32px;
@@ -156,50 +197,24 @@ a{
   --pull-return-link-opacity:.75;
 
   /* -----------------------------------------
-     3-7. Shared Stage UI
+     3-8. Stage common UI
   ----------------------------------------- */
   --view-header-size:var(--font-ui-sm);
   --view-header-spacing:var(--ls-ui);
 
-  /* -----------------------------------------
-     3-8. Center Media
-     PCは旧CSS基準を再現
-  ----------------------------------------- */
   --video-w:960px;
   --video-side-safe:48px;
+  --inner-shell-side-safe:24px;
 
-  --video-w-mobile-landscape:94vw;
-  --video-side-safe-mobile-landscape:16px;
-
-  --video-w-mobile-portrait:100vw;
-  --video-side-safe-mobile-portrait:0px;
-
-  /* PC 旧基準 */
-  --center-video-shift-side:1950px;
-  --center-video-depth:-350px;
-
-  /* モバイル個別 */
-  --center-video-shift-side-landscape:42vw;
-  --center-video-depth-landscape:-120px;
-
-  --center-video-shift-side-portrait:0px;
-  --center-video-depth-portrait:0px;
-
-  /* -----------------------------------------
-     3-9. Edge Button
-  ----------------------------------------- */
-  --edge-btn-size:1.26rem;
+  --edge-btn-size:.86rem;
   --edge-btn-spacing:.25em;
   --edge-btn-pad-y:4px;
   --edge-btn-pad-x:0;
   --edge-btn-min-w:auto;
   --edge-btn-min-h:auto;
 
-  --edge-offset-bottom:20px;
-  --edge-offset-bottom-shift:0px;
-
   /* -----------------------------------------
-     3-10. Gallery
+     3-9. Gallery
   ----------------------------------------- */
   --gallery-w:520px;
   --gallery-panel-gap-top:32px;
@@ -219,7 +234,7 @@ a{
   --gallery-meta-gap-top:4px;
 
   /* -----------------------------------------
-     3-11. Contact
+     3-10. Contact
   ----------------------------------------- */
   --contact-w:420px;
   --contact-block-size:.86rem;
@@ -231,7 +246,7 @@ a{
   --contact-value-size:1.14rem;
 
   /* -----------------------------------------
-     3-12. About
+     3-11. About
   ----------------------------------------- */
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
@@ -256,10 +271,12 @@ a{
 
   --about-stack-max-w:1320px;
   --about-stack-gap:clamp(120px, 11vw, 220px);
+
   --about-stack-pad-top:36px;
   --about-stack-pad-x:clamp(22px, 3vw, 54px);
   --about-stack-pad-bottom:240px;
   --about-stack-pad:clamp(22px, 3vw, 54px);
+
   --about-stack-line-protrusion:156px;
 
   --about-heading-size:1.7rem;
@@ -302,7 +319,7 @@ a{
   --about-back-margin-top:clamp(64px, 10vw, 180px);
 
   /* -----------------------------------------
-     3-13. Modal
+     3-12. Modal
   ----------------------------------------- */
   --modal-width:min(92vw, 1400px);
   --modal-max-w:1400px;
@@ -337,7 +354,7 @@ a{
   --modal-credit-close-spacing:.18em;
 
   /* -----------------------------------------
-     3-14. Flash
+     3-13. Video flash
   ----------------------------------------- */
   --video-unlock-flash-blur:14px;
   --video-unlock-flash-scale:.96;
@@ -365,12 +382,15 @@ a{
   position:fixed;
   top:var(--global-mute-top);
   right:var(--global-mute-right);
-  z-index:var(--z-nav-top);
+  left:auto;
+  bottom:auto;
+  z-index:var(--z-ui);
   padding:var(--global-mute-pad);
   opacity:.7;
   cursor:pointer;
   transition:opacity .2s ease, transform .2s ease;
   pointer-events:auto;
+  transform:none;
 }
 
 .global-mute:hover{
@@ -405,7 +425,7 @@ a{
   transform:translateX(-50%) translateY(var(--pull-return-offset-y));
   opacity:0;
   pointer-events:auto;
-  z-index:var(--z-nav-top);
+  z-index:var(--z-pull-return);
   transition:opacity .28s ease, transform .28s ease;
 }
 
@@ -438,7 +458,7 @@ body.is-pull-hint-visible .pull-return{
 
 
 /* =========================================================
-   5. Stage / 3-Screen Space
+   5. Stage
 ========================================================= */
 .space-wrapper{
   position:relative;
@@ -450,8 +470,8 @@ body.is-pull-hint-visible .pull-return{
 
 .stage{
   position:absolute;
-  width:var(--stage-panel-w);
-  height:var(--stage-panel-h);
+  width:var(--stage-w);
+  height:var(--stage-h);
   left:calc(var(--vv-left) + (var(--vvw) / 2));
   top:calc(var(--vv-top) + (var(--vvh) / 2));
   transform-origin:center;
@@ -465,17 +485,17 @@ body.is-pull-hint-visible .pull-return{
   position:absolute;
   inset:0;
   display:flex;
-  width:calc(var(--stage-panel-w) * 3);
+  width:calc(var(--stage-w) * 3);
   height:100%;
   transition:transform .8s ease;
   z-index:var(--z-stage);
 }
 
 .view{
-  width:var(--stage-panel-w);
+  position:relative;
+  width:var(--stage-w);
   height:100%;
   padding:var(--stage-pad-y) var(--stage-pad-x);
-  position:relative;
 }
 
 .view-inner{
@@ -512,8 +532,31 @@ body.is-pull-hint-visible .pull-return{
   text-align:right;
 }
 
+
+/* =========================================================
+   5-2. Stage camera / center media
+   現HTMLに不足していた center-media-layer を定義
+========================================================= */
+.center-media-layer{
+  position:fixed;
+  inset:0;
+  z-index:var(--z-video-layer);
+  pointer-events:none;
+}
+
+.inner-shell{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transition:transform .8s ease;
+  z-index:var(--z-video);
+  pointer-events:none;
+  max-width:calc(100vw - var(--inner-shell-side-safe));
+  will-change:transform;
+}
+
 body.view-center .outer-space{
-  transform:translateX(calc(var(--stage-panel-w) * -1));
+  transform:translateX(calc(var(--stage-w) * -1));
 }
 
 body.view-left .outer-space{
@@ -521,9 +564,31 @@ body.view-left .outer-space{
 }
 
 body.view-right .outer-space{
-  transform:translateX(calc(var(--stage-panel-w) * -2));
+  transform:translateX(calc(var(--stage-w) * -2));
 }
 
+body.view-center .inner-shell{
+  transform:translate(-50%, -50%) translateX(0);
+}
+
+body.view-left .inner-shell{
+  transform:
+    translate(-50%, -50%)
+    translateZ(var(--inner-shell-depth))
+    translateX(var(--inner-shell-side-shift));
+}
+
+body.view-right .inner-shell{
+  transform:
+    translate(-50%, -50%)
+    translateZ(var(--inner-shell-depth))
+    translateX(calc(var(--inner-shell-side-shift) * -1));
+}
+
+
+/* =========================================================
+   5-3. Shared stage parts
+========================================================= */
 .view-left .view-inner{
   justify-content:center;
   align-items:flex-start;
@@ -534,56 +599,10 @@ body.view-right .outer-space{
   align-items:flex-end;
 }
 
-
-/* =========================================================
-   5-3. Center Media Layer
-   PCは旧CSS基準を忠実再現
-========================================================= */
-.center-media-layer{
-  position:absolute;
-  inset:0;
-  z-index:var(--z-center-media);
-  pointer-events:none;
-  perspective:var(--stage-perspective);
-}
-
-.center-media-layer .inner-shell{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transition:transform .8s ease, opacity .35s ease;
-  pointer-events:none;
-  max-width:none;
-  transform-style:preserve-3d;
-  will-change:transform;
-}
-
-body.view-center .center-media-layer .inner-shell{
-  transform:
-    translate(-50%, -50%)
-    translateX(0)
-    translateZ(0);
-}
-
-body.view-left .center-media-layer .inner-shell{
-  transform:
-    translate(-50%, -50%)
-    translateX(var(--center-video-shift-side))
-    translateZ(var(--center-video-depth));
-}
-
-body.view-right .center-media-layer .inner-shell{
-  transform:
-    translate(-50%, -50%)
-    translateX(calc(var(--center-video-shift-side) * -1))
-    translateZ(var(--center-video-depth));
-}
-
 .video-frame{
-  width:min(var(--video-w), calc(var(--vvw) - var(--video-side-safe)));
+  width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
   max-width:100%;
   aspect-ratio:16 / 9;
-  height:auto;
   background:#000;
   display:flex;
   align-items:center;
@@ -591,6 +610,7 @@ body.view-right .center-media-layer .inner-shell{
   box-shadow:var(--shadow-video);
   position:relative;
   pointer-events:auto;
+  overflow:hidden;
 }
 
 .video-frame iframe{
@@ -615,10 +635,6 @@ body.view-right .center-media-layer .inner-shell{
   pointer-events:auto;
 }
 
-
-/* =========================================================
-   5-4. Edge Buttons
-========================================================= */
 .edge-btn{
   position:absolute;
   display:inline-flex;
@@ -634,7 +650,7 @@ body.view-right .center-media-layer .inner-shell{
   padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
   min-width:var(--edge-btn-min-w);
   min-height:var(--edge-btn-min-h);
-  z-index:var(--z-nav-top);
+  z-index:var(--z-stage-component);
   pointer-events:auto;
   transition:color .2s ease, filter .2s ease, transform .1s ease;
 }
@@ -657,16 +673,14 @@ body.view-right .center-media-layer .inner-shell{
 }
 
 .edge-btn--bottom{
-  bottom:var(--edge-offset-bottom);
+  bottom:var(--edge-offset);
   left:50%;
-  transform:
-    translateX(-50%)
-    translateY(var(--edge-offset-bottom-shift));
+  transform:translateX(-50%);
 }
 
 
 /* =========================================================
-   6. Gallery
+   5-4. Gallery
 ========================================================= */
 .gallery-panel{
   position:relative;
@@ -747,16 +761,21 @@ body.view-right .center-media-layer .inner-shell{
   background:rgba(255,255,255,.03);
 }
 
+.gallery-item-title{
+  line-height:1.45;
+}
+
 .gallery-item-meta{
   opacity:.6;
   font-size:var(--gallery-meta-size);
   letter-spacing:var(--gallery-meta-spacing);
   margin-top:var(--gallery-meta-gap-top);
+  line-height:1.35;
 }
 
 
 /* =========================================================
-   7. Contact
+   5-5. Contact
 ========================================================= */
 .contact-block{
   position:relative;
@@ -793,7 +812,7 @@ body.view-right .center-media-layer .inner-shell{
 
 
 /* =========================================================
-   8. About
+   6. About
 ========================================================= */
 #about{
   position:relative;
@@ -1004,7 +1023,7 @@ body.view-right .center-media-layer .inner-shell{
 
 
 /* =========================================================
-   9. Modal
+   7. Modal
 ========================================================= */
 .modal{
   position:fixed;
@@ -1038,19 +1057,6 @@ body.view-right .center-media-layer .inner-shell{
   box-shadow:var(--shadow-modal);
 }
 
-.modal__close{
-  position:absolute;
-  top:var(--modal-close-top);
-  right:var(--modal-close-right);
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:var(--modal-close-size);
-  cursor:pointer;
-  opacity:.85;
-  z-index:2;
-}
-
 .modal__video{
   width:100%;
 }
@@ -1061,6 +1067,7 @@ body.view-right .center-media-layer .inner-shell{
   position:relative;
   overflow:hidden;
   max-height:var(--modal-video-max-h);
+  background:#000;
 }
 
 .modal__video-frame iframe{
@@ -1145,20 +1152,9 @@ body.view-right .center-media-layer .inner-shell{
   text-align:right;
 }
 
-.modal__credit-close{
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:var(--modal-credit-close-size);
-  letter-spacing:var(--modal-credit-close-spacing);
-  text-transform:uppercase;
-  cursor:pointer;
-  opacity:.85;
-}
-
 
 /* =========================================================
-   10. Flash Effect
+   8. Flash
 ========================================================= */
 .video-unlock-flash{
   position:absolute;
@@ -1203,7 +1199,7 @@ body.view-right .center-media-layer .inner-shell{
 
 
 /* =========================================================
-   11. Responsive Variables
+   9. Responsive variables
 ========================================================= */
 @media (max-width:900px){
   :root{
@@ -1218,83 +1214,9 @@ body.view-right .center-media-layer .inner-shell{
     --about-heading-size:1.3rem;
     --about-col-title-size:1.15rem;
     --about-credit-name-size:1.25rem;
-  }
-}
 
-/* スマホ縦：縦比率1面 + 動画横幅いっぱい */
-@media (pointer:coarse) and (orientation:portrait){
-  :root{
-    --stage-panel-w:430px;
-    --stage-panel-h:932px;
-
-    --video-w:var(--video-w-mobile-portrait);
-    --video-side-safe:var(--video-side-safe-mobile-portrait);
-
-    --center-video-shift-side:var(--center-video-shift-side-portrait);
-    --center-video-depth:var(--center-video-depth-portrait);
-
-    --edge-offset-bottom:8px;
-    --edge-offset-bottom-shift:6px;
-
-    --view-header-size:1rem;
-
-    --gallery-w:min(84vw, 360px);
-    --gallery-panel-gap-top:20px;
-    --gallery-panel-max-h:62vh;
-    --gallery-panel-min-h:260px;
-    --gallery-panel-vh-offset:220px;
-
-    --gallery-item-size:1rem;
-    --gallery-item-pad-y:12px;
-    --gallery-meta-size:.82rem;
-
-    --contact-w:min(84vw, 360px);
-    --contact-block-size:1rem;
-    --contact-label-size:1.08rem;
-    --contact-value-size:1.02rem;
-  }
-
-  body.view-left .center-media-layer .inner-shell,
-  body.view-center .center-media-layer .inner-shell,
-  body.view-right .center-media-layer .inner-shell{
-    transform:
-      translate(-50%, -50%)
-      translateX(0)
-      translateZ(0);
-  }
-
-  .video-frame{
-    width:var(--vvw);
-    max-width:var(--vvw);
-  }
-
-  .view-left .view-inner,
-  .view-right .view-inner{
-    justify-content:center;
-    padding-top:0;
-    padding-bottom:0;
-  }
-
-  .gallery-panel{
-    width:100%;
-    max-width:var(--gallery-w);
-    margin-top:var(--gallery-panel-gap-top);
-    height:min(var(--gallery-panel-max-h), calc(var(--vvh) - var(--gallery-panel-vh-offset)));
-    min-height:var(--gallery-panel-min-h);
-  }
-
-  .view-right .contact-block{
-    width:100%;
-    max-width:var(--contact-w);
-    margin-top:0;
-  }
-
-  .video-frame iframe{
-    pointer-events:auto;
-  }
-
-  .video-shield{
-    display:none;
+    --video-side-safe:32px;
+    --inner-shell-side-safe:16px;
   }
 }
 
@@ -1308,21 +1230,11 @@ body.view-right .center-media-layer .inner-shell{
   }
 }
 
-/* スマホ横 / iPad横：現状思想維持 */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
-    --stage-panel-w:1600px;
-    --stage-panel-h:900px;
-
     --edge-btn-size:1.4rem;
-    --video-w:var(--video-w-mobile-landscape);
-    --video-side-safe:var(--video-side-safe-mobile-landscape);
-
-    --center-video-shift-side:var(--center-video-shift-side-landscape);
-    --center-video-depth:var(--center-video-depth-landscape);
-
-    --edge-offset-bottom:4px;
-    --edge-offset-bottom-shift:10px;
+    --video-side-safe:40px;
+    --inner-shell-side-safe:20px;
 
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-gap-top:28px;
@@ -1410,6 +1322,8 @@ body.view-right .center-media-layer .inner-shell{
     --modal-credit-inner-pad-x:16px;
     --modal-credit-inner-pad-bottom:12px;
 
+    --modal-credit-block-w:min(88%, 420px);
+
     --modal-credit-title-size:.74rem;
     --modal-credit-title-gap:10px;
 
@@ -1424,11 +1338,16 @@ body.view-right .center-media-layer .inner-shell{
 
 
 /* =========================================================
-   12. Responsive Layout
+   10. Responsive layout
 ========================================================= */
 @media (max-width:900px){
   .about-split{
     grid-template-columns:1fr;
+  }
+
+  .about-credit-name{
+    flex-direction:column;
+    align-items:flex-start;
   }
 }
 
@@ -1510,14 +1429,6 @@ body.view-right .center-media-layer .inner-shell{
     width:100%;
   }
 
-  .gallery-item-title{
-    line-height:1.45;
-  }
-
-  .gallery-item-meta{
-    line-height:1.35;
-  }
-
   .view-right .view-inner{
     justify-content:center;
     align-items:flex-end;
@@ -1565,6 +1476,7 @@ body.view-right .center-media-layer .inner-shell{
 
   .modal__credit-title,
   .modal__credit-list{
+    width:var(--modal-credit-block-w);
     max-width:100%;
     margin-left:auto;
     margin-right:auto;
@@ -1606,11 +1518,11 @@ body.view-right .center-media-layer .inner-shell{
 
 
 /* =========================================================
-   13. Device Handling
+   11. Device handling
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
   .edge-btn{
-    z-index:var(--z-nav-top);
+    z-index:20000;
   }
 
   .video-frame iframe{
@@ -1638,5 +1550,3 @@ body.view-right .center-media-layer .inner-shell{
     pointer-events:none;
   }
 }
-
-/* sss */
