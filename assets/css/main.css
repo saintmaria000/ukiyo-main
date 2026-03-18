@@ -168,7 +168,7 @@ a{
   --video-w:960px;
   --video-side-safe:48px;
 
-  --video-w-mobile-landscape:94vw;
+  --video-w-mobile-landscape:50vw;
   --video-side-safe-mobile-landscape:16px;
 
   --video-w-mobile-portrait:100vw;
@@ -179,7 +179,7 @@ a{
   --center-video-depth:-450px;
 
   /* モバイル個別 */
-  --center-video-shift-side-landscape:42vw;
+  --center-video-shift-side-landscape:75vw;
   --center-video-depth-landscape:-120px;
 
   --center-video-shift-side-portrait:0px;
