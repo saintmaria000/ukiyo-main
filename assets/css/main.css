@@ -139,14 +139,16 @@ a{
 
   /* -----------------------------------------
      3-5. 重なり順
+     共通レイヤー管理
+     navi は全端末で動画より上
   ----------------------------------------- */
   --z-stage:2;
-  --z-stage-component:20100;
   --z-video-flash:9;
   --z-video-shield:10;
   --z-ui:9000;
   --z-video:9999;
   --z-modal:10000;
+  --z-stage-component:20000;
   --z-pull-return:21000;
 
   /* -----------------------------------------
@@ -163,7 +165,7 @@ a{
   --font-body-xs:clamp(.78rem, .85vw, .86rem);
 
   --font-ui-xs:clamp(.78rem, .8vw, .86rem);
-  --font-ui-sm:clamp(.9rem, .98vw, 1rem);
+  --font-ui-sm:clamp(2rem, .98vw, 1rem);
 
   --ls-wide:.35em;
   --ls-title:.28em;
@@ -205,21 +207,24 @@ a{
   --edge-btn-pad-x:0;
   --edge-btn-min-w:auto;
   --edge-btn-min-h:auto;
+
   /* -----------------------------------------
      3-8b. モバイル中央動画
      見た目サイズ指定用
      JSがstage scaleを考慮して逆算する
+     portrait = 縦スマホ
+     landscape = 横スマホ / タブレット横
   ----------------------------------------- */
-  --video-mobile-portrait-visible-ratio:.92;
-  --video-mobile-portrait-visible-max:760;
-  --video-mobile-portrait-visible-offset-y:72;
+  --video-mobile-portrait-visible-ratio:.88;
+  --video-mobile-portrait-visible-max:520;
+  --video-mobile-portrait-visible-offset-y:0;
 
-  --video-mobile-landscape-visible-ratio:.78;
-  --video-mobile-landscape-visible-max:980;
+  --video-mobile-landscape-visible-ratio:.72;
+  --video-mobile-landscape-visible-max:840;
   --video-mobile-landscape-visible-offset-y:0;
 
   /* JS計算結果 */
-  --video-mobile-stage-w:760px;
+  --video-mobile-stage-w:960px;
   --video-mobile-stage-offset-y:0px;
 
   /* -----------------------------------------
@@ -257,7 +262,7 @@ a{
   --contact-value-size:1.14rem;
 
   /* -----------------------------------------
-    3-11. About
+     3-11. About
   ----------------------------------------- */
 
   /* 外側 */
@@ -1341,6 +1346,12 @@ body.view-right .inner-shell{
     --edge-btn-size:1.4rem;
     --video-side-safe:40px;
 
+    /* 中央動画の見た目サイズ可変
+       横画面は少し控えめにしてバランスを整える */
+    --video-mobile-landscape-visible-ratio:.72;
+    --video-mobile-landscape-visible-max:840;
+    --video-mobile-landscape-visible-offset-y:0;
+
     /* Gallery */
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-gap-top:28px;
@@ -1464,6 +1475,7 @@ body.view-right .inner-shell{
   }
 }
 
+
 /* =========================================================
    10. レスポンシブレイアウト
    形だけ変える
@@ -1546,7 +1558,6 @@ body.view-right .inner-shell{
     margin-top:var(--gallery-panel-gap-top);
     align-self:flex-start;
 
-    /* スクロール本体を panel にする */
     display:block;
     overflow-y:auto;
     overflow-x:hidden;
@@ -1608,7 +1619,6 @@ body.view-right .inner-shell{
     max-width:none;
   }
 
-  /* Modal */
   .modal__content{
     width:var(--modal-width);
     max-width:var(--modal-max-w);
@@ -1638,7 +1648,6 @@ body.view-right .inner-shell{
       var(--modal-credit-inner-pad-bottom);
   }
 
-  /* タイトルも一覧も同じ箱幅 */
   .modal__credit-title,
   .modal__credit-list{
     width:var(--modal-credit-block-w);
@@ -1661,7 +1670,6 @@ body.view-right .inner-shell{
     overflow:visible;
   }
 
-  /* PC版思想に寄せる */
   .credit-row{
     display:flex;
     justify-content:space-between;
@@ -1681,6 +1689,7 @@ body.view-right .inner-shell{
     white-space:nowrap;
   }
 }
+
 /* -----------------------------------------
    10-2b. タッチ縦向き
    中央動画だけ見た目基準で調整
@@ -1708,10 +1717,6 @@ body.view-right .inner-shell{
    iPhone向け Gallery ロック簡易版
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
-  .edge-btn{
-    z-index:20000;
-  }
-
   .video-frame iframe{
     pointer-events:none;
   }
