@@ -1,6 +1,5 @@
 /* =========================================================
    1. リセット
-   初期化
 ========================================================= */
 *{
   margin:0;
@@ -55,7 +54,6 @@ a{
 
 /* =========================================================
    2. スクロールバー
-   標準スクロールバー見た目
 ========================================================= */
 ::-webkit-scrollbar{
   width:12px;
@@ -85,13 +83,11 @@ a{
 
 
 /* =========================================================
-   3. 変数
-   値だけ置く
+   3. 共通変数
 ========================================================= */
 :root{
   /* -----------------------------------------
-     3-1. 画面基準
-     viewport補助
+     3-1. viewport補助
   ----------------------------------------- */
   --vvw:100vw;
   --vvh:100vh;
@@ -100,8 +96,6 @@ a{
 
   /* -----------------------------------------
      3-2. 3面空間
-     Gallery / Contact 共通の土台
-     ここを触ると左右まとめて変わる
   ----------------------------------------- */
   --stage-w:2400px;
   --stage-h:1080px;
@@ -114,8 +108,6 @@ a{
 
   /* -----------------------------------------
      3-3. 視点移動
-     中央動画の逃がし
-     左右view全体に効く
   ----------------------------------------- */
   --inner-shell-side-shift:1920px;
   --inner-shell-depth:-350px;
@@ -139,7 +131,6 @@ a{
 
   /* -----------------------------------------
      3-5. 重なり順
-     共通レイヤー管理
      navi は全端末で動画より上
   ----------------------------------------- */
   --z-stage:2;
@@ -165,7 +156,7 @@ a{
   --font-body-xs:clamp(.78rem, .85vw, .86rem);
 
   --font-ui-xs:clamp(.78rem, .8vw, .86rem);
-  --font-ui-sm:clamp(2rem, .98vw, 1rem);
+  --font-ui-sm:clamp(.9rem, .98vw, 1rem);
 
   --ls-wide:.35em;
   --ls-title:.28em;
@@ -175,7 +166,6 @@ a{
 
   /* -----------------------------------------
      3-7. 固定UI
-     常に出ているUI
   ----------------------------------------- */
   --global-mute-top:24px;
   --global-mute-right:32px;
@@ -192,8 +182,6 @@ a{
 
   /* -----------------------------------------
      3-8. ステージ共通UI
-     view見出し / edgeボタン / 中央動画
-     ここは左右共通
   ----------------------------------------- */
   --view-header-size:var(--font-ui-sm);
   --view-header-spacing:var(--ls-ui);
@@ -210,10 +198,7 @@ a{
 
   /* -----------------------------------------
      3-8b. モバイル中央動画
-     見た目サイズ指定用
      JSがstage scaleを考慮して逆算する
-     portrait = 縦スマホ
-     landscape = 横スマホ / タブレット横
   ----------------------------------------- */
   --video-mobile-portrait-visible-ratio:.88;
   --video-mobile-portrait-visible-max:520;
@@ -223,13 +208,11 @@ a{
   --video-mobile-landscape-visible-max:840;
   --video-mobile-landscape-visible-offset-y:0;
 
-  /* JS計算結果 */
   --video-mobile-stage-w:960px;
   --video-mobile-stage-offset-y:0px;
 
   /* -----------------------------------------
      3-9. Gallery
-     左view専用
   ----------------------------------------- */
   --gallery-w:520px;
   --gallery-panel-gap-top:32px;
@@ -250,7 +233,6 @@ a{
 
   /* -----------------------------------------
      3-10. Contact
-     右view専用
   ----------------------------------------- */
   --contact-w:420px;
   --contact-block-size:.86rem;
@@ -264,14 +246,11 @@ a{
   /* -----------------------------------------
      3-11. About
   ----------------------------------------- */
-
-  /* 外側 */
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
   --about-content-pad-x:6vw;
   --about-content-pad-bottom:180px;
 
-  /* hero */
   --about-hero-min-h:100svh;
   --about-hero-pad-top:120px;
   --about-hero-pad-bottom:110px;
@@ -288,15 +267,12 @@ a{
   --about-lead-line:1.95;
   --about-lead-spacing:.05em;
 
-  /* stack */
   --about-stack-max-w:1320px;
   --about-stack-gap:clamp(120px, 11vw, 220px);
-
   --about-stack-pad-top:36px;
   --about-stack-pad-x:clamp(22px, 3vw, 54px);
   --about-stack-pad-bottom:240px;
   --about-stack-pad:clamp(22px, 3vw, 54px);
-
   --about-stack-line-protrusion:156px;
 
   --about-heading-size:1.7rem;
@@ -308,7 +284,6 @@ a{
   --about-body-spacing:.05em;
   --about-body-max-w:700px;
 
-  /* 2カラム */
   --about-split-gap:clamp(36px, 4vw, 56px);
   --about-split-pad-top:clamp(28px, 3vw, 56px);
   --about-split-pad-x:clamp(22px, 3vw, 54px);
@@ -324,7 +299,6 @@ a{
   --about-col-item-line:2;
   --about-col-item-spacing:.05em;
 
-  /* credit */
   --about-credit-margin-top:0px;
   --about-credit-title-size:1rem;
   --about-credit-title-spacing:.18em;
@@ -336,14 +310,12 @@ a{
   --about-credit-block-gap:72px;
   --about-credit-link-size:1rem;
 
-  /* 戻り */
   --about-back-size:.95rem;
   --about-back-spacing:.16em;
   --about-back-margin-top:clamp(64px, 10vw, 180px);
 
   /* -----------------------------------------
      3-12. Modal
-     動画詳細
   ----------------------------------------- */
   --modal-width:min(92vw, 1400px);
   --modal-max-w:1400px;
@@ -388,7 +360,6 @@ a{
 
 /* -----------------------------------------
    3-14. viewport実寸補強
-   スマホブラウザの可視領域追従を優先
 ----------------------------------------- */
 @supports (height:100svh){
   :root{
@@ -405,12 +376,7 @@ a{
 
 /* =========================================================
    4. 固定UI
-   常に出ているUI
 ========================================================= */
-
-/* -----------------------------------------
-   4-1. ミュート
------------------------------------------ */
 .global-mute{
   position:fixed;
   top:var(--global-mute-top);
@@ -451,9 +417,6 @@ a{
   display:block;
 }
 
-/* -----------------------------------------
-   4-2. pull return
------------------------------------------ */
 .pull-return{
   position:fixed;
   top:var(--pull-return-top);
@@ -495,13 +458,7 @@ body.is-pull-hint-visible .pull-return{
 
 /* =========================================================
    5. ステージ
-   GalleryとContactは独立セクションではなく左右viewの中身
 ========================================================= */
-
-/* -----------------------------------------
-   5-1. 土台
-   3面空間の骨組み
------------------------------------------ */
 .space-wrapper{
   position:relative;
   width:100%;
@@ -570,7 +527,6 @@ body.is-pull-hint-visible .pull-return{
 
 /* -----------------------------------------
    5-2. 視点移動
-   左右viewの切り替え
 ----------------------------------------- */
 .inner-shell{
   position:absolute;
@@ -614,7 +570,6 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    5-3. 共通パーツ
-   左右共通で使うUI
 ----------------------------------------- */
 .view-left .view-inner{
   justify-content:center;
@@ -706,7 +661,6 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    5-4. Gallery
-   左view
 ----------------------------------------- */
 .gallery-panel{
   position:relative;
@@ -795,8 +749,6 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    5-5. Contact
-   右view
-   通常時は縦中央優先で margin-top を消す
 ----------------------------------------- */
 .contact-block{
   margin-top:var(--contact-block-margin-top);
@@ -833,10 +785,6 @@ body.view-right .inner-shell{
 /* =========================================================
    6. About
 ========================================================= */
-
-/* -----------------------------------------
-   6-1. 全体
------------------------------------------ */
 #about{
   position:relative;
   overflow:hidden;
@@ -871,22 +819,15 @@ body.view-right .inner-shell{
     var(--about-content-pad-bottom);
 }
 
-/* -----------------------------------------
-   6-2. hero
-   1画面使用 / 中身は縦中央 / 横は左寄せ
------------------------------------------ */
 .about-hero{
   min-height:var(--about-hero-min-h);
   width:100%;
   max-width:var(--about-hero-max-w);
-
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:flex-start;
-
   gap:var(--about-hero-gap);
-
   padding-top:var(--about-hero-pad-top);
   padding-bottom:var(--about-hero-pad-bottom);
 }
@@ -915,32 +856,22 @@ body.view-right .inner-shell{
   opacity:.9;
 }
 
-/* -----------------------------------------
-   6-3. stack
-   heroの下に通常配置
-   ライン演出のみ疑似要素
------------------------------------------ */
 .about-stack{
   position:relative;
   width:100%;
   max-width:var(--about-stack-max-w);
-
   margin-left:0;
   margin-right:auto;
-
   padding:
     var(--about-stack-pad-top)
     var(--about-stack-pad-x)
     var(--about-stack-pad-bottom)
     var(--about-stack-pad-x);
-
   display:grid;
   gap:var(--about-stack-gap);
-
   border-left:1px solid #fff;
 }
 
-/* hero側に伸びるライン */
 .about-stack::before{
   content:"";
   position:absolute;
@@ -952,7 +883,6 @@ body.view-right .inner-shell{
   pointer-events:none;
 }
 
-/* stack 内容 */
 .about-item h3{
   font-size:var(--about-heading-size);
   letter-spacing:var(--about-heading-spacing);
@@ -967,28 +897,19 @@ body.view-right .inner-shell{
   max-width:var(--about-body-max-w);
 }
 
-/* -----------------------------------------
-   6-4. 2カラム
------------------------------------------ */
 .about-split{
   border-left:1px solid #fff;
-
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-
   gap:var(--about-split-gap);
-
   padding:
     var(--about-split-pad-top)
     var(--about-split-pad-x)
     var(--about-split-pad-bottom);
-
   margin-top:var(--about-split-margin-top);
   margin-bottom:var(--about-split-margin-bottom);
-
   width:100%;
   max-width:1480px;
-
   margin-left:0;
   margin-right:auto;
 }
@@ -1014,9 +935,6 @@ body.view-right .inner-shell{
   max-width:34ch;
 }
 
-/* -----------------------------------------
-   6-5. クレジット
------------------------------------------ */
 .about-credit{
   margin-top:var(--about-credit-margin-top);
 }
@@ -1032,16 +950,12 @@ body.view-right .inner-shell{
 .about-credit-name{
   font-size:var(--about-credit-name-size);
   letter-spacing:var(--about-credit-name-spacing);
-
   margin-bottom:var(--about-credit-block-gap);
-
   display:flex;
   justify-content:space-between;
   align-items:center;
-
   width:100%;
   gap:var(--about-credit-name-gap);
-
   margin-left:0;
   margin-right:auto;
 }
@@ -1051,16 +965,11 @@ body.view-right .inner-shell{
   text-decoration:none;
 }
 
-/* -----------------------------------------
-   6-6. 戻り
------------------------------------------ */
 .about-actions{
   width:100%;
   margin-top:var(--about-back-margin-top);
-
   font-size:var(--about-back-size);
   letter-spacing:var(--about-back-spacing);
-
   text-transform:uppercase;
   text-align:center;
 }
@@ -1069,7 +978,6 @@ body.view-right .inner-shell{
   text-decoration:none;
   border-bottom:1px solid rgba(255,255,255,.2);
   padding-bottom:2px;
-
   transition:
     color .2s ease,
     filter .2s ease,
@@ -1083,12 +991,7 @@ body.view-right .inner-shell{
 
 /* =========================================================
    7. Modal
-   動画詳細
 ========================================================= */
-
-/* -----------------------------------------
-   7-1. 全体
------------------------------------------ */
 .modal{
   position:fixed;
   inset:0;
@@ -1134,9 +1037,6 @@ body.view-right .inner-shell{
   z-index:2;
 }
 
-/* -----------------------------------------
-   7-2. 動画
------------------------------------------ */
 .modal__video{
   width:100%;
 }
@@ -1158,9 +1058,6 @@ body.view-right .inner-shell{
   display:block;
 }
 
-/* -----------------------------------------
-   7-3. 下導線
------------------------------------------ */
 .modal__footer{
   margin-top:var(--modal-footer-gap-top);
   display:flex;
@@ -1179,9 +1076,6 @@ body.view-right .inner-shell{
   opacity:.85;
 }
 
-/* -----------------------------------------
-   7-4. クレジット
------------------------------------------ */
 .modal__credit{
   position:absolute;
   inset:0;
@@ -1251,7 +1145,6 @@ body.view-right .inner-shell{
 
 /* =========================================================
    8. 光演出
-   操作補助
 ========================================================= */
 .video-unlock-flash{
   position:absolute;
@@ -1296,13 +1189,12 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   9. レスポンシブ変数
-   値だけ変える
+   9. レスポンシブ
+   共通 → 横画面 → 縦画面 の順
 ========================================================= */
 
 /* -----------------------------------------
-   9-1. 狭い幅
-   まずAbout中心
+   9-1. 狭い幅 共通
 ----------------------------------------- */
 @media (max-width:900px){
   :root{
@@ -1320,11 +1212,22 @@ body.view-right .inner-shell{
 
     --video-side-safe:32px;
   }
+
+  .about-split{
+    grid-template-columns:1fr;
+  }
+
+  .inner-shell{
+    max-width:calc(100vw - 16px);
+  }
+
+  .video-frame{
+    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
+  }
 }
 
 /* -----------------------------------------
-   9-1b. 小型PC / 低い画面
-   現行見た目を崩さず、固定UIだけ最小限追従
+   9-2. 小型PC / 低い画面
 ----------------------------------------- */
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
@@ -1337,8 +1240,8 @@ body.view-right .inner-shell{
 }
 
 /* -----------------------------------------
-   9-2. タッチ横向き
-   スマホ横向き + iPad横向き
+   9-3. タッチ横向き
+   変数とレイアウトを近接配置
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
@@ -1346,10 +1249,9 @@ body.view-right .inner-shell{
     --edge-btn-size:1.4rem;
     --video-side-safe:40px;
 
-    /* 中央動画の見た目サイズ可変
-       横画面は少し控えめにしてバランスを整える */
-    --video-mobile-landscape-visible-ratio:.72;
-    --video-mobile-landscape-visible-max:840;
+    /* 中央動画 */
+    --video-mobile-landscape-visible-ratio:.52;
+    --video-mobile-landscape-visible-max:640;
     --video-mobile-landscape-visible-offset-y:0;
 
     /* Gallery */
@@ -1429,16 +1331,13 @@ body.view-right .inner-shell{
     --about-back-spacing:.08em;
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
-    /* Modal
-       横幅だけ締める。高さは直接潰さない */
+    /* Modal */
     --modal-width:min(76vw, 720px);
 
     --modal-footer-gap-top:4px;
     --modal-footer-pad-bottom:6px;
     --modal-credit-toggle-size:.72rem;
 
-    /* Credit
-       PC版の思想を保ちつつ、スマホでは中央箱を締める */
     --modal-credit-inner-width:min(92%, 520px);
     --modal-credit-inner-max-w:270px;
     --modal-credit-inner-pad-top:14px;
@@ -1458,50 +1357,7 @@ body.view-right .inner-shell{
 
     --modal-credit-close-size:.66rem;
   }
-}
 
-/* -----------------------------------------
-   9-2b. タッチ縦向き
-   スマホ縦の中央動画サイズ調整用
------------------------------------------ */
-@media (pointer:coarse) and (orientation:portrait){
-  :root{
-    /* 中央動画の見た目サイズ可変 */
-    --video-mobile-portrait-visible-ratio:.88;
-    --video-mobile-portrait-visible-max:520;
-    --video-mobile-portrait-visible-offset-y:0;
-
-    --video-side-safe:24px;
-  }
-}
-
-
-/* =========================================================
-   10. レスポンシブレイアウト
-   形だけ変える
-========================================================= */
-
-/* -----------------------------------------
-   10-1. 狭い幅
------------------------------------------ */
-@media (max-width:900px){
-  .about-split{
-    grid-template-columns:1fr;
-  }
-
-  .inner-shell{
-    max-width:calc(100vw - 16px);
-  }
-
-  .video-frame{
-    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
-  }
-}
-
-/* -----------------------------------------
-   10-2. タッチ横向き
------------------------------------------ */
-@media (pointer:coarse) and (orientation:landscape){
   #about .about-content{
     max-width:none;
   }
@@ -1557,7 +1413,6 @@ body.view-right .inner-shell{
     min-height:var(--gallery-panel-fixed-h);
     margin-top:var(--gallery-panel-gap-top);
     align-self:flex-start;
-
     display:block;
     overflow-y:auto;
     overflow-x:hidden;
@@ -1688,35 +1543,8 @@ body.view-right .inner-shell{
     font-weight:500;
     white-space:nowrap;
   }
-}
 
-/* -----------------------------------------
-   10-2b. タッチ縦向き
-   中央動画だけ見た目基準で調整
------------------------------------------ */
-@media (pointer:coarse) and (orientation:portrait){
-  .inner-shell{
-    max-width:none;
-  }
-
-  body.view-center .inner-shell{
-    transform:
-      translate(-50%, -50%)
-      translateY(var(--video-mobile-stage-offset-y));
-  }
-
-  .video-frame{
-    width:var(--video-mobile-stage-w);
-    max-width:none;
-  }
-}
-
-
-/* =========================================================
-   11. 端末対策
-   iPhone向け Gallery ロック簡易版
-========================================================= */
-@media (pointer:coarse) and (orientation:landscape){
+  /* iPhone向け Gallery ロック簡易版 */
   .video-frame iframe{
     pointer-events:none;
   }
@@ -1740,6 +1568,35 @@ body.view-right .inner-shell{
   .gallery-preview,
   .gallery-preview-img{
     pointer-events:none;
+  }
+}
+
+/* -----------------------------------------
+   9-4. タッチ縦向き
+   変数とレイアウトを近接配置
+----------------------------------------- */
+@media (pointer:coarse) and (orientation:portrait){
+  :root{
+    --video-mobile-portrait-visible-ratio:.88;
+    --video-mobile-portrait-visible-max:520;
+    --video-mobile-portrait-visible-offset-y:0;
+
+    --video-side-safe:24px;
+  }
+
+  .inner-shell{
+    max-width:none;
+  }
+
+  body.view-center .inner-shell{
+    transform:
+      translate(-50%, -50%)
+      translateY(var(--video-mobile-stage-offset-y));
+  }
+
+  .video-frame{
+    width:var(--video-mobile-stage-w);
+    max-width:none;
   }
 }
 
