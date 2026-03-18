@@ -1409,7 +1409,7 @@ body.view-right .inner-shell{
     --about-lead-spacing:.02em;
 
     --about-stack-gap:clamp(44px, 4vw, 68px);
-    --about-stack-pad:clamp(20px, 3vw, 34px);
+    --about-stack-pad:clamp(30px, 3vw, 34px);
     --about-stack-line-protrusion:48px;
 
     --about-heading-size:.96rem;
@@ -1422,7 +1422,7 @@ body.view-right .inner-shell{
 
     --about-split-gap:clamp(20px, 2.4vw, 28px);
     --about-split-pad-top:clamp(20px, 3vw, 30px);
-    --about-split-pad-x:clamp(20px, 3vw, 30px);
+    --about-split-pad-x:clamp(30px, 3vw, 30px);
     --about-split-pad-bottom:clamp(40px, 6vw, 68px);
     --about-split-margin-top:58px;
 
@@ -1516,9 +1516,9 @@ body.view-right .inner-shell{
   .about-stack{
     margin-top:0;
     padding:
-      calc(var(--about-stack-pad) + 26px)
+      calc(var(--about-stack-pad) + 16px)
       var(--about-stack-pad)
-      calc(var(--about-stack-pad) + 30px)
+      calc(var(--about-stack-pad) + 20px)
       var(--about-stack-pad);
   }
 
