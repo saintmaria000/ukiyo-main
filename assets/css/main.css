@@ -90,7 +90,7 @@ a{
 :root{
   /* -----------------------------------------
      3-1. Viewport / Stage Metrics
-     JS から更新される値
+     stage.scale.js から更新
   ----------------------------------------- */
   --vvw:100vw;
   --vvh:100vh;
@@ -103,7 +103,7 @@ a{
   --stage-scale:1;
 
   /* -----------------------------------------
-     3-2. Stage / 3D Space
+     3-2. Stage / Space
   ----------------------------------------- */
   --stage-pad-y:40px;
   --stage-pad-x:90px;
@@ -163,19 +163,27 @@ a{
 
   /* -----------------------------------------
      3-8. Center Media
+     PCは旧CSS基準を再現
   ----------------------------------------- */
   --video-w:960px;
   --video-side-safe:48px;
 
-  --video-w-mobile-portrait:100vw;
-  --video-side-safe-mobile-portrait:0px;
-
   --video-w-mobile-landscape:94vw;
   --video-side-safe-mobile-landscape:16px;
 
-  /* 左右移動時の見切れ残し量 */
-  --center-video-shift-side:clamp(120px, 28vw, 420px);
-  --center-video-shift-side-portrait:clamp(28px, 8vw, 56px);
+  --video-w-mobile-portrait:100vw;
+  --video-side-safe-mobile-portrait:0px;
+
+  /* PC 旧基準 */
+  --center-video-shift-side:1950px;
+  --center-video-depth:-350px;
+
+  /* モバイル個別 */
+  --center-video-shift-side-landscape:42vw;
+  --center-video-depth-landscape:-120px;
+
+  --center-video-shift-side-portrait:0px;
+  --center-video-depth-portrait:0px;
 
   /* -----------------------------------------
      3-9. Edge Button
@@ -329,7 +337,7 @@ a{
   --modal-credit-close-spacing:.18em;
 
   /* -----------------------------------------
-     3-14. Flash Effect
+     3-14. Flash
   ----------------------------------------- */
   --video-unlock-flash-blur:14px;
   --video-unlock-flash-scale:.96;
@@ -528,45 +536,49 @@ body.view-right .outer-space{
 
 
 /* =========================================================
-   5-3b. Center Media Layer
-   中央動画専用レイヤー
+   5-3. Center Media Layer
+   PCは旧CSS基準を忠実再現
 ========================================================= */
 .center-media-layer{
   position:absolute;
   inset:0;
   z-index:var(--z-center-media);
   pointer-events:none;
+  perspective:var(--stage-perspective);
 }
 
 .center-media-layer .inner-shell{
   position:absolute;
   top:50%;
   left:50%;
-  transition:transform .8s ease;
+  transition:transform .8s ease, opacity .35s ease;
   pointer-events:none;
   max-width:none;
+  transform-style:preserve-3d;
+  will-change:transform;
 }
 
-/* center */
 body.view-center .center-media-layer .inner-shell{
-  transform:translate(-50%, -50%) translateX(0);
+  transform:
+    translate(-50%, -50%)
+    translateX(0)
+    translateZ(0);
 }
 
-/* left view: 動画は右へ少し残す */
 body.view-left .center-media-layer .inner-shell{
   transform:
     translate(-50%, -50%)
-    translateX(var(--center-video-shift-side));
+    translateX(var(--center-video-shift-side))
+    translateZ(var(--center-video-depth));
 }
 
-/* right view: 動画は左へ少し残す */
 body.view-right .center-media-layer .inner-shell{
   transform:
     translate(-50%, -50%)
-    translateX(calc(var(--center-video-shift-side) * -1));
+    translateX(calc(var(--center-video-shift-side) * -1))
+    translateZ(var(--center-video-depth));
 }
 
-/* 中央動画 */
 .video-frame{
   width:min(var(--video-w), calc(var(--vvw) - var(--video-side-safe)));
   max-width:100%;
@@ -1209,29 +1221,21 @@ body.view-right .center-media-layer .inner-shell{
   }
 }
 
-/* -----------------------------------------
-   11-1. スマホ縦
-   PC / スマホ横はそのまま維持
-   縦だけ 1面を縦比率にし、動画は横幅いっぱい
------------------------------------------ */
+/* スマホ縦：縦比率1面 + 動画横幅いっぱい */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
-    /* 1面サイズを縦比率に */
     --stage-panel-w:430px;
     --stage-panel-h:932px;
 
-    /* 中央動画は横幅いっぱい */
     --video-w:var(--video-w-mobile-portrait);
     --video-side-safe:var(--video-side-safe-mobile-portrait);
 
-    /* 見切れ残しは少なめ */
     --center-video-shift-side:var(--center-video-shift-side-portrait);
+    --center-video-depth:var(--center-video-depth-portrait);
 
-    /* ボタン */
     --edge-offset-bottom:8px;
     --edge-offset-bottom-shift:6px;
 
-    /* 読みやすさ */
     --view-header-size:1rem;
 
     --gallery-w:min(84vw, 360px);
@@ -1250,11 +1254,13 @@ body.view-right .center-media-layer .inner-shell{
     --contact-value-size:1.02rem;
   }
 
-  /* 縦では左右 view に入っても動画は中央主役寄り */
   body.view-left .center-media-layer .inner-shell,
   body.view-center .center-media-layer .inner-shell,
   body.view-right .center-media-layer .inner-shell{
-    transform:translate(-50%, -50%);
+    transform:
+      translate(-50%, -50%)
+      translateX(0)
+      translateZ(0);
   }
 
   .video-frame{
@@ -1302,10 +1308,7 @@ body.view-right .center-media-layer .inner-shell{
   }
 }
 
-/* -----------------------------------------
-   11-2. スマホ横 + iPad横
-   既存レイアウト維持
------------------------------------------ */
+/* スマホ横 / iPad横：現状思想維持 */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
     --stage-panel-w:1600px;
@@ -1314,6 +1317,9 @@ body.view-right .center-media-layer .inner-shell{
     --edge-btn-size:1.4rem;
     --video-w:var(--video-w-mobile-landscape);
     --video-side-safe:var(--video-side-safe-mobile-landscape);
+
+    --center-video-shift-side:var(--center-video-shift-side-landscape);
+    --center-video-depth:var(--center-video-depth-landscape);
 
     --edge-offset-bottom:4px;
     --edge-offset-bottom-shift:10px;
