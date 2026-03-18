@@ -133,13 +133,13 @@ a{
      3-5. 重なり順
      navi は全端末で動画より上
   ----------------------------------------- */
-  --z-stage:2;
+  --z-stage:10020;           /* ← 上げる */
   --z-video-flash:9;
   --z-video-shield:10;
   --z-ui:9000;
   --z-video:9999;
   --z-modal:10000;
-  --z-stage-component:20000;
+  --z-stage-component:10030; /* ← stageより上 */
   --z-pull-return:21000;
 
   /* -----------------------------------------
@@ -486,6 +486,7 @@ body.is-pull-hint-visible .pull-return{
   height:100%;
   transition:transform .8s ease;
   z-index:var(--z-stage);
+  pointer-events:none; /* ← 重要 */
 }
 
 .view{
@@ -493,6 +494,7 @@ body.is-pull-hint-visible .pull-return{
   height:100%;
   padding:var(--stage-pad-y) var(--stage-pad-x);
   position:relative;
+  pointer-events:none;
 }
 
 .view-inner{
@@ -501,6 +503,7 @@ body.is-pull-hint-visible .pull-return{
   display:flex;
   flex-direction:column;
   justify-content:space-between;
+  pointer-events:none;
 }
 
 .view-header{
@@ -659,6 +662,16 @@ body.view-right .inner-shell{
   transform:translateX(-50%);
 }
 
+.edge-btn,
+.gallery-panel,
+.gallery-scroll,
+.gallery-item,
+.contact-block,
+.contact-value a,
+.video-frame,
+.video-shield{
+  pointer-events:auto;
+}
 /* -----------------------------------------
    5-4. Gallery
 ----------------------------------------- */
