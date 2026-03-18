@@ -141,7 +141,7 @@ a{
      3-5. 重なり順
   ----------------------------------------- */
   --z-stage:2;
-  --z-stage-component:20;
+  --z-stage-component:20100;
   --z-video-flash:9;
   --z-video-shield:10;
   --z-ui:9000;
