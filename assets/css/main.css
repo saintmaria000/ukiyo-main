@@ -690,7 +690,7 @@ body.view-right .inner-shell{
 .gallery-preview{
   position:absolute;
   inset:0;
-  background:#000;
+  /* background:#000; */
   z-index:0;
   pointer-events:none;
 }
