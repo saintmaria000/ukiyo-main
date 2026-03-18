@@ -168,15 +168,15 @@ a{
   --video-w:960px;
   --video-side-safe:48px;
 
-  --video-w-mobile-landscape:94vw;
+  --video-w-mobile-landscape:45vw;
   --video-side-safe-mobile-landscape:16px;
 
   --video-w-mobile-portrait:100vw;
   --video-side-safe-mobile-portrait:0px;
 
   /* PC 旧基準 */
-  --center-video-shift-side:1950px;
-  --center-video-depth:-350px;
+  --center-video-shift-side:1680px;
+  --center-video-depth:-450px;
 
   /* モバイル個別 */
   --center-video-shift-side-landscape:42vw;
