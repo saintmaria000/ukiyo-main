@@ -205,6 +205,22 @@ a{
   --edge-btn-pad-x:0;
   --edge-btn-min-w:auto;
   --edge-btn-min-h:auto;
+  /* -----------------------------------------
+     3-8b. モバイル中央動画
+     見た目サイズ指定用
+     JSがstage scaleを考慮して逆算する
+  ----------------------------------------- */
+  --video-mobile-portrait-visible-ratio:.92;
+  --video-mobile-portrait-visible-max:760;
+  --video-mobile-portrait-visible-offset-y:72;
+
+  --video-mobile-landscape-visible-ratio:.78;
+  --video-mobile-landscape-visible-max:980;
+  --video-mobile-landscape-visible-offset-y:0;
+
+  /* JS計算結果 */
+  --video-mobile-stage-w:960px;
+  --video-mobile-stage-offset-y:0px;
 
   /* -----------------------------------------
      3-9. Gallery
@@ -1433,6 +1449,20 @@ body.view-right .inner-shell{
   }
 }
 
+/* -----------------------------------------
+   9-2b. タッチ縦向き
+   スマホ縦の中央動画サイズ調整用
+----------------------------------------- */
+@media (pointer:coarse) and (orientation:portrait){
+  :root{
+    /* 中央動画の見た目サイズ可変 */
+    --video-mobile-landscape-visible-ratio:.78;
+    --video-mobile-landscape-visible-max:980;
+    --video-mobile-landscape-visible-offset-y:0;
+
+    --video-side-safe:24px;
+  }
+}
 
 /* =========================================================
    10. レスポンシブレイアウト
@@ -1564,12 +1594,18 @@ body.view-right .inner-shell{
   }
 
   .inner-shell{
-    max-width:calc(100vw - 20px);
+    max-width:none;
+  }
+
+  body.view-center .inner-shell{
+    transform:
+      translate(-50%, -50%)
+      translateY(var(--video-mobile-stage-offset-y));
   }
 
   .video-frame{
-    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
-    max-width:calc(100vw - var(--video-side-safe));
+    width:var(--video-mobile-stage-w);
+    max-width:none;
   }
 
   /* Modal */
@@ -1643,6 +1679,26 @@ body.view-right .inner-shell{
     text-align:right;
     font-weight:500;
     white-space:nowrap;
+  }
+}
+/* -----------------------------------------
+   10-2b. タッチ縦向き
+   中央動画だけ見た目基準で調整
+----------------------------------------- */
+@media (pointer:coarse) and (orientation:portrait){
+  .inner-shell{
+    max-width:none;
+  }
+
+  body.view-center .inner-shell{
+    transform:
+      translate(-50%, -50%)
+      translateY(var(--video-mobile-stage-offset-y));
+  }
+
+  .video-frame{
+    width:var(--video-mobile-stage-w);
+    max-width:none;
   }
 }
 
