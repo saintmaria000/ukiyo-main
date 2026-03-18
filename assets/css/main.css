@@ -97,19 +97,13 @@ a{
   --vv-top:0px;
   --vv-left:0px;
 
-  /* -----------------------------------------
-     3-2. Base Stage Design Size
-     PC基準
-  ----------------------------------------- */
-  --stage-base-w:2400;
-  --stage-base-h:1080;
-
+  /* 1面サイズ */
   --stage-panel-w:2400px;
   --stage-panel-h:1080px;
   --stage-scale:1;
 
   /* -----------------------------------------
-     3-3. Stage / Space
+     3-2. Stage / Space
   ----------------------------------------- */
   --stage-pad-y:40px;
   --stage-pad-x:90px;
@@ -118,7 +112,7 @@ a{
   --stage-header-top:20px;
 
   /* -----------------------------------------
-     3-4. Colors
+     3-3. Colors
   ----------------------------------------- */
   --line-soft:rgba(255,255,255,.08);
   --overlay-dark:rgba(0,0,0,.45);
@@ -129,7 +123,7 @@ a{
   --shadow-modal:0 0 40px rgba(0,0,0,.7);
 
   /* -----------------------------------------
-     3-5. Z-index
+     3-4. Z-index
   ----------------------------------------- */
   --z-stage:2;
   --z-video-flash:40;
@@ -140,13 +134,13 @@ a{
   --z-nav-top:30000;
 
   /* -----------------------------------------
-     3-6. Typography
+     3-5. Typography
   ----------------------------------------- */
   --font-ui-sm:clamp(.9rem, .98vw, 1rem);
   --ls-ui:.25em;
 
   /* -----------------------------------------
-     3-7. Fixed UI
+     3-6. Fixed UI
   ----------------------------------------- */
   --global-mute-top:24px;
   --global-mute-right:32px;
@@ -162,35 +156,37 @@ a{
   --pull-return-link-opacity:.75;
 
   /* -----------------------------------------
-     3-8. Shared Stage UI
+     3-7. Shared Stage UI
   ----------------------------------------- */
   --view-header-size:var(--font-ui-sm);
   --view-header-spacing:var(--ls-ui);
 
   /* -----------------------------------------
-     3-9. Center Media
-     PC基準の移動量を比率で再利用
+     3-8. Center Media
+     PCは旧CSS基準を再現
   ----------------------------------------- */
   --video-w:960px;
   --video-side-safe:48px;
 
-  --video-w-mobile-landscape:min(46vw, 560px);
-  --video-side-safe-mobile-landscape:24px;
+  --video-w-mobile-landscape:94vw;
+  --video-side-safe-mobile-landscape:16px;
 
   --video-w-mobile-portrait:100vw;
   --video-side-safe-mobile-portrait:0px;
 
-  /* PC基準値 */
-  --center-video-shift-side-pc:1680;
-  --center-video-depth-pc:-450px;
+  /* PC 旧基準 */
+  --center-video-shift-side:1680px;
+  --center-video-depth:-450px;
 
-  /* 現在の1面幅に対してPC比率を適用 */
-  --center-video-shift-ratio:calc(var(--center-video-shift-side-pc) / var(--stage-base-w));
-  --center-video-shift-side:calc(var(--stage-panel-w) * var(--center-video-shift-ratio));
-  --center-video-depth:var(--center-video-depth-pc);
+  /* モバイル個別 */
+  --center-video-shift-side-landscape:42vw;
+  --center-video-depth-landscape:-120px;
+
+  --center-video-shift-side-portrait:0px;
+  --center-video-depth-portrait:0px;
 
   /* -----------------------------------------
-     3-10. Edge Button
+     3-9. Edge Button
   ----------------------------------------- */
   --edge-btn-size:1.26rem;
   --edge-btn-spacing:.25em;
@@ -203,7 +199,7 @@ a{
   --edge-offset-bottom-shift:0px;
 
   /* -----------------------------------------
-     3-11. Gallery
+     3-10. Gallery
   ----------------------------------------- */
   --gallery-w:520px;
   --gallery-panel-gap-top:32px;
@@ -223,7 +219,7 @@ a{
   --gallery-meta-gap-top:4px;
 
   /* -----------------------------------------
-     3-12. Contact
+     3-11. Contact
   ----------------------------------------- */
   --contact-w:420px;
   --contact-block-size:.86rem;
@@ -235,7 +231,7 @@ a{
   --contact-value-size:1.14rem;
 
   /* -----------------------------------------
-     3-13. About
+     3-12. About
   ----------------------------------------- */
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
@@ -306,7 +302,7 @@ a{
   --about-back-margin-top:clamp(64px, 10vw, 180px);
 
   /* -----------------------------------------
-     3-14. Modal
+     3-13. Modal
   ----------------------------------------- */
   --modal-width:min(92vw, 1400px);
   --modal-max-w:1400px;
@@ -341,7 +337,7 @@ a{
   --modal-credit-close-spacing:.18em;
 
   /* -----------------------------------------
-     3-15. Flash
+     3-14. Flash
   ----------------------------------------- */
   --video-unlock-flash-blur:14px;
   --video-unlock-flash-scale:.96;
@@ -450,7 +446,6 @@ body.is-pull-hint-visible .pull-return{
   height:var(--vvh);
   min-height:var(--vvh);
   overflow:hidden;
-  isolation:isolate;
 }
 
 .stage{
@@ -542,6 +537,7 @@ body.view-right .outer-space{
 
 /* =========================================================
    5-3. Center Media Layer
+   PCは旧CSS基準を忠実再現
 ========================================================= */
 .center-media-layer{
   position:absolute;
@@ -1225,88 +1221,37 @@ body.view-right .center-media-layer .inner-shell{
   }
 }
 
-/* coarse 共通 */
-@media (pointer:coarse){
-  :root{
-    --stage-panel-w:100vw;
-    --stage-panel-h:100dvh;
-    --stage-scale:1;
-
-    --stage-pad-x:20px;
-    --stage-pad-y:calc(env(safe-area-inset-top) + 18px);
-    --stage-header-top:calc(env(safe-area-inset-top) + 10px);
-
-    --edge-offset:18px;
-    --edge-offset-bottom:max(14px, env(safe-area-inset-bottom));
-    --edge-offset-bottom-shift:0px;
-
-    --global-mute-top:calc(env(safe-area-inset-top) + 14px);
-    --global-mute-right:max(14px, env(safe-area-inset-right));
-    --pull-return-top:calc(env(safe-area-inset-top) + 16px);
-
-    --view-header-size:.95rem;
-
-    /* スマホでもPC基準比率を維持 */
-    --center-video-shift-side:calc(var(--stage-panel-w) * var(--center-video-shift-ratio));
-  }
-
-  .space-wrapper{
-    height:100dvh;
-    min-height:100dvh;
-  }
-
-  .stage{
-    left:50%;
-    top:50%;
-    width:var(--stage-panel-w);
-    height:var(--stage-panel-h);
-    transform:translate(-50%, -50%) scale(1);
-  }
-
-  .view{
-    width:var(--stage-panel-w);
-    height:100%;
-    padding:
-      var(--stage-pad-y)
-      var(--stage-pad-x)
-      calc(env(safe-area-inset-bottom) + 22px);
-  }
-
-  .video-frame{
-    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
-    max-width:100%;
-  }
-}
-
-/* スマホ縦 */
+/* スマホ縦：縦比率1面 + 動画横幅いっぱい */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
+    --stage-panel-w:430px;
+    --stage-panel-h:932px;
+
     --video-w:var(--video-w-mobile-portrait);
     --video-side-safe:var(--video-side-safe-mobile-portrait);
 
-    --center-video-shift-side:0px;
-    --center-video-depth:0px;
+    --center-video-shift-side:var(--center-video-shift-side-portrait);
+    --center-video-depth:var(--center-video-depth-portrait);
 
-    --edge-btn-size:1rem;
+    --edge-offset-bottom:8px;
+    --edge-offset-bottom-shift:6px;
 
-    --gallery-w:min(88vw, 380px);
-    --gallery-panel-gap-top:54px;
-    --gallery-panel-max-h:52dvh;
-    --gallery-panel-min-h:280px;
-    --gallery-panel-vh-offset:260px;
-    --gallery-scroll-pad-right:4px;
+    --view-header-size:1rem;
+
+    --gallery-w:min(84vw, 360px);
+    --gallery-panel-gap-top:20px;
+    --gallery-panel-max-h:62vh;
+    --gallery-panel-min-h:260px;
+    --gallery-panel-vh-offset:220px;
 
     --gallery-item-size:1rem;
     --gallery-item-pad-y:12px;
-    --gallery-meta-size:.8rem;
+    --gallery-meta-size:.82rem;
 
-    --contact-w:min(86vw, 360px);
-    --contact-block-size:.98rem;
-    --contact-block-spacing:.08em;
-    --contact-block-margin-top:56px;
-    --contact-label-size:1rem;
-    --contact-label-margin-top:14px;
-    --contact-value-size:1rem;
+    --contact-w:min(84vw, 360px);
+    --contact-block-size:1rem;
+    --contact-label-size:1.08rem;
+    --contact-value-size:1.02rem;
   }
 
   body.view-left .center-media-layer .inner-shell,
@@ -1318,32 +1263,14 @@ body.view-right .center-media-layer .inner-shell{
       translateZ(0);
   }
 
-  .center-media-layer .inner-shell{
-    top:26%;
-    left:50%;
-    width:100%;
-  }
-
   .video-frame{
-    width:100vw;
-    max-width:100vw;
-    box-shadow:none;
-  }
-
-  .view.view-left .view-header,
-  .view.view-right .view-header{
-    left:50%;
-    right:auto;
-    top:var(--stage-header-top);
-    transform:translateX(-50%);
-    text-align:center;
-    width:auto;
+    width:var(--vvw);
+    max-width:var(--vvw);
   }
 
   .view-left .view-inner,
   .view-right .view-inner{
     justify-content:center;
-    align-items:center;
     padding-top:0;
     padding-bottom:0;
   }
@@ -1351,41 +1278,15 @@ body.view-right .center-media-layer .inner-shell{
   .gallery-panel{
     width:100%;
     max-width:var(--gallery-w);
-    min-width:0;
     margin-top:var(--gallery-panel-gap-top);
-    margin-left:auto;
-    margin-right:auto;
-    height:min(var(--gallery-panel-max-h), calc(100dvh - var(--gallery-panel-vh-offset)));
+    height:min(var(--gallery-panel-max-h), calc(var(--vvh) - var(--gallery-panel-vh-offset)));
     min-height:var(--gallery-panel-min-h);
-  }
-
-  .gallery-scroll{
-    padding-right:var(--gallery-scroll-pad-right);
   }
 
   .view-right .contact-block{
     width:100%;
     max-width:var(--contact-w);
-    margin-top:var(--contact-block-margin-top);
-    text-align:center;
-  }
-
-  .edge-btn--left{
-    left:var(--edge-offset);
-    top:50%;
-    transform:translateY(-50%);
-  }
-
-  .edge-btn--right{
-    right:var(--edge-offset);
-    top:50%;
-    transform:translateY(-50%);
-  }
-
-  .edge-btn--bottom{
-    bottom:var(--edge-offset-bottom);
-    left:50%;
-    transform:translateX(-50%);
+    margin-top:0;
   }
 
   .video-frame iframe{
@@ -1397,40 +1298,50 @@ body.view-right .center-media-layer .inner-shell{
   }
 }
 
-/* スマホ横 / タブレット横 */
+@media (pointer:fine) and (max-width:1366px),
+       (pointer:fine) and (max-height:820px){
+  :root{
+    --view-header-size:clamp(.88rem, .82rem + .22vw, 1rem);
+    --edge-btn-size:clamp(.9rem, .84rem + .18vw, .98rem);
+    --pull-return-link-size:clamp(.72rem, .68rem + .18vw, .9rem);
+    --global-mute-icon-size:clamp(20px, 1.4vw, 22px);
+  }
+}
+
+/* スマホ横 / iPad横：現状思想維持 */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
-    --stage-pad-x:24px;
-    --stage-pad-y:calc(env(safe-area-inset-top) + 16px);
-    --stage-header-top:calc(env(safe-area-inset-top) + 6px);
-    --edge-offset:20px;
+    --stage-panel-w:1600px;
+    --stage-panel-h:900px;
 
-    --edge-btn-size:1.02rem;
-
+    --edge-btn-size:1.4rem;
     --video-w:var(--video-w-mobile-landscape);
     --video-side-safe:var(--video-side-safe-mobile-landscape);
 
-    /* PC基準比率を維持しつつ、奥行きだけ弱める */
-    --center-video-shift-side:calc(var(--stage-panel-w) * var(--center-video-shift-ratio));
-    --center-video-depth:-60px;
+    --center-video-shift-side:var(--center-video-shift-side-landscape);
+    --center-video-depth:var(--center-video-depth-landscape);
 
-    --gallery-w:min(42vw, 430px);
+    --edge-offset-bottom:4px;
+    --edge-offset-bottom-shift:10px;
+
+    --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-gap-top:28px;
-    --gallery-panel-fixed-h:min(56dvh, 360px);
+    --gallery-panel-fixed-h:470px;
 
-    --gallery-item-size:1rem;
-    --gallery-item-pad-y:12px;
-    --gallery-meta-size:.78rem;
-    --gallery-meta-gap-top:4px;
+    --gallery-item-size:1.5rem;
+    --gallery-item-pad-y:18px;
 
-    --contact-w:min(36vw, 360px);
-    --contact-block-size:.92rem;
+    --gallery-meta-size:1.08rem;
+    --gallery-meta-gap-top:8px;
+
+    --contact-w:clamp(520px, 62vw, 760px);
+    --contact-block-size:1.18rem;
     --contact-block-spacing:.08em;
-    --contact-block-margin-top:26px;
-    --contact-label-size:1rem;
+    --contact-block-margin-top:28px;
+    --contact-label-size:1.42rem;
     --contact-label-spacing:.12em;
-    --contact-label-margin-top:16px;
-    --contact-value-size:1rem;
+    --contact-label-margin-top:22px;
+    --contact-value-size:1.34rem;
 
     --about-content-pad-top:0px;
     --about-content-pad-x:7.5vw;
@@ -1487,7 +1398,7 @@ body.view-right .center-media-layer .inner-shell{
     --about-back-spacing:.08em;
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
-    --modal-width:min(78vw, 720px);
+    --modal-width:min(76vw, 720px);
 
     --modal-footer-gap-top:4px;
     --modal-footer-pad-bottom:6px;
@@ -1508,102 +1419,6 @@ body.view-right .center-media-layer .inner-shell{
 
     --modal-credit-row-gap:20px;
     --modal-credit-close-size:.66rem;
-  }
-
-  .view.view-left .view-header{
-    left:0;
-    top:var(--stage-header-top);
-    transform:none;
-    text-align:left;
-  }
-
-  .view.view-right .view-header{
-    right:0;
-    top:var(--stage-header-top);
-    transform:none;
-    text-align:right;
-  }
-
-  .view-left .view-inner{
-    justify-content:center;
-    align-items:flex-start;
-    padding-top:0;
-    padding-bottom:0;
-  }
-
-  .view-right .view-inner{
-    justify-content:center;
-    align-items:flex-end;
-    padding-top:0;
-    padding-bottom:0;
-  }
-
-  .gallery-panel{
-    position:relative;
-    width:var(--gallery-w);
-    max-width:var(--gallery-w);
-    min-width:var(--gallery-w);
-    height:var(--gallery-panel-fixed-h);
-    min-height:var(--gallery-panel-fixed-h);
-    margin-top:var(--gallery-panel-gap-top);
-    align-self:flex-start;
-    display:block;
-    overflow-y:auto;
-    overflow-x:hidden;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior-y:contain;
-    touch-action:pan-y;
-  }
-
-  .gallery-scroll{
-    position:relative;
-    z-index:1;
-    width:100%;
-    min-height:100%;
-    margin:0;
-    padding:0;
-    overflow:visible;
-  }
-
-  .gallery-item{
-    width:100%;
-  }
-
-  .gallery-item-title{
-    line-height:1.4;
-  }
-
-  .gallery-item-meta{
-    line-height:1.35;
-  }
-
-  .view-right .contact-block{
-    width:var(--contact-w);
-    max-width:none;
-    margin-top:var(--contact-block-margin-top);
-  }
-
-  .contact-value p,
-  .contact-value a{
-    line-height:1.65;
-  }
-
-  .video-frame iframe{
-    pointer-events:none;
-  }
-
-  .video-shield{
-    display:block;
-  }
-}
-
-@media (pointer:fine) and (max-width:1366px),
-       (pointer:fine) and (max-height:820px){
-  :root{
-    --view-header-size:clamp(.88rem, .82rem + .22vw, 1rem);
-    --edge-btn-size:clamp(.9rem, .84rem + .18vw, .98rem);
-    --pull-return-link-size:clamp(.72rem, .68rem + .18vw, .9rem);
-    --global-mute-icon-size:clamp(20px, 1.4vw, 22px);
   }
 }
 
@@ -1655,6 +1470,68 @@ body.view-right .center-media-layer .inner-shell{
   .about-item p,
   .about-col li{
     max-width:44ch;
+  }
+
+  .view-left .view-inner{
+    justify-content:center;
+    align-items:flex-start;
+    padding-top:0;
+    padding-bottom:0;
+  }
+
+  .gallery-panel{
+    position:relative;
+    width:var(--gallery-w);
+    max-width:var(--gallery-w);
+    min-width:var(--gallery-w);
+    height:var(--gallery-panel-fixed-h);
+    min-height:var(--gallery-panel-fixed-h);
+    margin-top:var(--gallery-panel-gap-top);
+    align-self:flex-start;
+    display:block;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
+  }
+
+  .gallery-scroll{
+    position:relative;
+    z-index:1;
+    width:100%;
+    min-height:100%;
+    margin:0;
+    padding:0;
+    overflow:visible;
+  }
+
+  .gallery-item{
+    width:100%;
+  }
+
+  .gallery-item-title{
+    line-height:1.45;
+  }
+
+  .gallery-item-meta{
+    line-height:1.35;
+  }
+
+  .view-right .view-inner{
+    justify-content:center;
+    align-items:flex-end;
+  }
+
+  .view-right .contact-block{
+    width:var(--contact-w);
+    max-width:none;
+    margin-top:var(--contact-block-margin-top);
+  }
+
+  .contact-value p,
+  .contact-value a{
+    line-height:1.65;
   }
 
   .modal__content{
@@ -1736,6 +1613,14 @@ body.view-right .center-media-layer .inner-shell{
     z-index:var(--z-nav-top);
   }
 
+  .video-frame iframe{
+    pointer-events:none;
+  }
+
+  .video-shield{
+    display:block;
+  }
+
   body.is-stage-scroll-lock{
     overflow:hidden;
   }
@@ -1746,17 +1631,6 @@ body.view-right .center-media-layer .inner-shell{
 
   .gallery-item.is-centered{
     background:rgba(255,255,255,.04);
-  }
-
-  .gallery-preview,
-  .gallery-preview-img{
-    pointer-events:none;
-  }
-}
-
-@media (pointer:coarse) and (orientation:portrait){
-  .edge-btn{
-    z-index:var(--z-nav-top);
   }
 
   .gallery-preview,
