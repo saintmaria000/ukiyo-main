@@ -1,43 +1,62 @@
 // assets/js/stage.scale.js
 (() => {
-  "use strict";
+  const STAGE_W = 2400;
+  const STAGE_H = 1080;
 
-  const root = document.documentElement;
-  if (!root) return;
-
-  const BASE_W = 2400;
-  const BASE_H = 1080;
-
-  let rafId = 0;
-
-  function updateStageScale() {
-    rafId = 0;
-
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    const scaleX = width / BASE_W;
-    const scaleY = height / BASE_H;
-    const scale = Math.min(scaleX, scaleY);
-
-    root.style.setProperty("--vvw", `${width}px`);
-    root.style.setProperty("--vvh", `${height}px`);
-    root.style.setProperty("--vv-left", "0px");
-    root.style.setProperty("--vv-top", "0px");
-
-    root.style.setProperty("--stage-panel-w", `${BASE_W}px`);
-    root.style.setProperty("--stage-panel-h", `${BASE_H}px`);
-    root.style.setProperty("--stage-scale", `${scale}`);
+  function readVV() {
+    const vv = window.visualViewport;
+    if (vv) {
+      return {
+        w: vv.width,
+        h: vv.height,
+        top: vv.offsetTop || 0,
+        left: vv.offsetLeft || 0,
+      };
+    }
+    return {
+      w: window.innerWidth,
+      h: window.innerHeight,
+      top: 0,
+      left: 0,
+    };
   }
 
-  function requestUpdate() {
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(updateStageScale);
+  function updateStageMetrics() {
+    const { w, h, top, left } = readVV();
+
+    // scale = min(viewportW/2400, viewportH/1080)
+    let scale = Math.min(w / STAGE_W, h / STAGE_H);
+    if (!Number.isFinite(scale) || scale <= 0) scale = 1;
+
+    const root = document.documentElement.style;
+    root.setProperty("--stage-scale", String(scale));
+
+    // ✅ “見えてる領域” をCSSへ渡す（pxで渡す）
+    root.setProperty("--vvw", `${w}px`);
+    root.setProperty("--vvh", `${h}px`);
+    root.setProperty("--vv-top", `${top}px`);
+    root.setProperty("--vv-left", `${left}px`);
+
+    return scale;
   }
 
-  window.addEventListener("resize", requestUpdate, { passive: true });
-  window.addEventListener("orientationchange", requestUpdate, { passive: true });
-  window.addEventListener("pageshow", requestUpdate, { passive: true });
+  window.updateStageScale = updateStageMetrics;
 
-  requestUpdate();
+  // 初回
+  updateStageMetrics();
+
+  // 追従
+  const onLater = () => {
+    updateStageMetrics();
+    setTimeout(updateStageMetrics, 60);
+    setTimeout(updateStageMetrics, 160);
+  };
+
+  window.addEventListener("resize", updateStageMetrics, { passive: true });
+  window.addEventListener("orientationchange", onLater, { passive: true });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", updateStageMetrics, { passive: true });
+    window.visualViewport.addEventListener("scroll", updateStageMetrics, { passive: true });
+  }
 })();
