@@ -711,7 +711,7 @@ body.view-right .inner-shell{
 }
 
 .edge-btn--bottom{
-  bottom:var(--edge-offset);
+  bottom:var(--edge-offset)-16px;
   left:50%;
   transform:translateX(-50%);
 }
@@ -1685,8 +1685,8 @@ body.view-right .inner-shell{
   }
 
   .video-frame{
-    width:calc(100vw - var(--video-side-safe));
-    max-width:calc(100vw - var(--video-side-safe));
+    width:calc(100% - var(--video-side-safe));
+    /* max-width:calc(100vw - var(--video-side-safe)); */
   }
 
   .view-header{
