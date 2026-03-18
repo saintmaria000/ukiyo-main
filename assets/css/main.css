@@ -100,12 +100,16 @@ a{
   --vv-top:0px;
   --vv-left:0px;
 
+  /* 実viewport追従用
+     基本は --vvh を見る */
   --viewport-h:100vh;
   --viewport-h-safe:100svh;
   --viewport-h-dynamic:100dvh;
 
   /* -----------------------------------------
      3-2. 3面空間
+     Gallery / Contact 共通の土台
+     ここを触ると左右まとめて変わる
   ----------------------------------------- */
   --stage-w:2400px;
   --stage-h:1080px;
@@ -118,26 +122,11 @@ a{
 
   /* -----------------------------------------
      3-3. 視点移動
-     基準PCは絶対に固定
-     それ未満の画面だけ media query で再計算する
+     中央動画の逃がし
+     左右view全体に効く
   ----------------------------------------- */
-  --inner-shell-depth:-350px;
-
-  /* 基準PCの固定値 */
   --inner-shell-side-shift:1920px;
-
-  /* translateZ(-350px) を perspective 1600px で見た時の見た目縮尺 */
-  --inner-shell-depth-scale:0.82051282;
-
-  /* 基準PCでの理想の見え残り量 */
-  --pc-bleed:18.46px;
-
-  /* 動画サイズ */
-  --video-w:960px;
-  --video-side-safe:48px;
-  --video-rendered-w:min(var(--video-w), calc(100vw - var(--video-side-safe)));
-
-  --inner-shell-side-safe:24px;
+  --inner-shell-depth:-350px;
 
   /* -----------------------------------------
      3-4. 色
@@ -171,27 +160,28 @@ a{
   /* -----------------------------------------
      3-6. 文字
   ----------------------------------------- */
-  --font-display-xl:clamp(2.8rem, 4.8vw, 5.8rem);
-  --font-display-lg:clamp(1.85rem, 2.8vw, 2.45rem);
+  --font-display-xl:clamp(2.6rem, 4.4vw, 5.6rem);
+  --font-display-lg:clamp(1.7rem, 2.5vw, 2.3rem);
 
-  --font-title-lg:clamp(1.38rem, 2vw, 1.72rem);
-  --font-title-md:clamp(1.16rem, 1.55vw, 1.42rem);
+  --font-title-lg:clamp(1.32rem, 1.9vw, 1.65rem);
+  --font-title-md:clamp(1.12rem, 1.45vw, 1.36rem);
 
-  --font-body-md:clamp(1.02rem, 1.18vw, 1.1rem);
-  --font-body-sm:clamp(.94rem, 1.04vw, 1rem);
-  --font-body-xs:clamp(.84rem, .92vw, .92rem);
+  --font-body-md:clamp(1rem, 1.1vw, 1.06rem);
+  --font-body-sm:clamp(.9rem, 1vw, .98rem);
+  --font-body-xs:clamp(.78rem, .85vw, .86rem);
 
-  --font-ui-xs:clamp(.84rem, .9vw, .92rem);
-  --font-ui-sm:clamp(.96rem, 1.04vw, 1.06rem);
+  --font-ui-xs:clamp(.78rem, .8vw, .86rem);
+  --font-ui-sm:clamp(.9rem, .98vw, 1rem);
 
   --ls-wide:.35em;
-  --ls-title:.24em;
-  --ls-ui:.18em;
-  --ls-body:.05em;
-  --ls-body-tight:.03em;
+  --ls-title:.28em;
+  --ls-ui:.25em;
+  --ls-body:.08em;
+  --ls-body-tight:.05em;
 
   /* -----------------------------------------
      3-7. 固定UI
+     常に出ているUI
   ----------------------------------------- */
   --global-mute-top:24px;
   --global-mute-right:32px;
@@ -201,26 +191,33 @@ a{
 
   --pull-return-top:28px;
   --pull-return-offset-y:-14px;
-  --pull-return-link-size:clamp(.78rem, 1.08vw, 1.12rem);
-  --pull-return-link-letter-spacing:.1em;
-  --pull-return-link-pad-bottom:4px;
-  --pull-return-link-opacity:.9;
+  --pull-return-link-size:clamp(.55rem, 1vw, 1.05rem);
+  --pull-return-link-letter-spacing:.12em;
+  --pull-return-link-pad-bottom:3px;
+  --pull-return-link-opacity:.75;
 
   /* -----------------------------------------
      3-8. ステージ共通UI
+     view見出し / edgeボタン / 中央動画
+     ここは左右共通
   ----------------------------------------- */
-  --view-header-size:clamp(1rem, 1.08vw, 1.12rem);
-  --view-header-spacing:.14em;
+  --view-header-size:var(--font-ui-sm);
+  --view-header-spacing:var(--ls-ui);
 
-  --edge-btn-size:clamp(1.02rem, 1.12vw, 1.18rem);
-  --edge-btn-spacing:.14em;
-  --edge-btn-pad-y:8px;
-  --edge-btn-pad-x:6px;
-  --edge-btn-min-w:88px;
-  --edge-btn-min-h:36px;
+  --video-w:960px;
+  --video-side-safe:48px;
+  --inner-shell-side-safe:24px;
+
+  --edge-btn-size:.86rem;
+  --edge-btn-spacing:.25em;
+  --edge-btn-pad-y:4px;
+  --edge-btn-pad-x:0;
+  --edge-btn-min-w:auto;
+  --edge-btn-min-h:auto;
 
   /* -----------------------------------------
      3-9. Gallery
+     左view専用
   ----------------------------------------- */
   --gallery-w:520px;
   --gallery-panel-gap-top:32px;
@@ -230,51 +227,56 @@ a{
   --gallery-panel-fixed-h:auto;
   --gallery-scroll-pad-right:8px;
 
-  --gallery-item-size:1rem;
-  --gallery-item-spacing:.04em;
+  --gallery-item-size:.96rem;
+  --gallery-item-spacing:.08em;
   --gallery-item-pad-y:10px;
   --gallery-item-pad-x:0;
 
-  --gallery-meta-size:.84rem;
-  --gallery-meta-spacing:.06em;
+  --gallery-meta-size:.78rem;
+  --gallery-meta-spacing:.08em;
   --gallery-meta-gap-top:4px;
 
   /* -----------------------------------------
      3-10. Contact
+     右view専用
   ----------------------------------------- */
   --contact-w:420px;
-  --contact-block-size:.96rem;
-  --contact-block-spacing:.08em;
+  --contact-block-size:.86rem;
+  --contact-block-spacing:.12em;
   --contact-block-margin-top:40px;
-  --contact-label-size:1.18rem;
-  --contact-label-spacing:.08em;
+  --contact-label-size:1.3rem;
+  --contact-label-spacing:.12em;
   --contact-label-margin-top:16px;
-  --contact-value-size:1.08rem;
+  --contact-value-size:1.14rem;
 
   /* -----------------------------------------
      3-11. About
   ----------------------------------------- */
+
+  /* 外側 */
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
   --about-content-pad-x:6vw;
   --about-content-pad-bottom:180px;
 
+  /* hero */
   --about-hero-min-h:100svh;
   --about-hero-pad-top:120px;
   --about-hero-pad-bottom:110px;
   --about-hero-gap:clamp(10px, 1.2vw, 18px);
   --about-hero-max-w:1280px;
 
-  --about-logo-main-size:clamp(3.4rem, 5.2vw, 6.4rem);
-  --about-logo-sub-size:clamp(1.02rem, 1.35vw, 1.28rem);
-  --about-logo-spacing:.22em;
-  --about-logo-sub-spacing:.12em;
+  --about-logo-main-size:clamp(3.2rem, 5vw, 6.2rem);
+  --about-logo-sub-size:clamp(1rem, 1.3vw, 1.24rem);
+  --about-logo-spacing:.28em;
+  --about-logo-sub-spacing:.18em;
 
   --about-lead-max-w:1040px;
-  --about-lead-size:clamp(1.06rem, 1.22vw, 1.22rem);
-  --about-lead-line:1.9;
-  --about-lead-spacing:.03em;
+  --about-lead-size:1.18rem;
+  --about-lead-line:1.95;
+  --about-lead-spacing:.05em;
 
+  /* stack */
   --about-stack-max-w:1320px;
   --about-stack-gap:clamp(120px, 11vw, 220px);
 
@@ -285,15 +287,16 @@ a{
 
   --about-stack-line-protrusion:156px;
 
-  --about-heading-size:clamp(1.5rem, 1.9vw, 1.8rem);
-  --about-heading-spacing:.14em;
+  --about-heading-size:1.7rem;
+  --about-heading-spacing:.20em;
   --about-item-heading-gap:18px;
 
-  --about-body-size:clamp(1.02rem, 1.14vw, 1.14rem);
-  --about-body-line:1.9;
-  --about-body-spacing:.03em;
+  --about-body-size:1.12rem;
+  --about-body-line:1.95;
+  --about-body-spacing:.05em;
   --about-body-max-w:700px;
 
+  /* 2カラム */
   --about-split-gap:clamp(36px, 4vw, 56px);
   --about-split-pad-top:clamp(28px, 3vw, 56px);
   --about-split-pad-x:clamp(22px, 3vw, 54px);
@@ -301,31 +304,34 @@ a{
   --about-split-margin-top:120px;
   --about-split-margin-bottom:clamp(56px, 7vw, 96px);
 
-  --about-col-title-size:clamp(1.28rem, 1.5vw, 1.48rem);
-  --about-col-title-spacing:.12em;
+  --about-col-title-size:1.42rem;
+  --about-col-title-spacing:.16em;
   --about-col-heading-gap:18px;
 
-  --about-col-item-size:clamp(1rem, 1.1vw, 1.1rem);
-  --about-col-item-line:1.9;
-  --about-col-item-spacing:.03em;
+  --about-col-item-size:1.08rem;
+  --about-col-item-line:2;
+  --about-col-item-spacing:.05em;
 
+  /* credit */
   --about-credit-margin-top:0px;
-  --about-credit-title-size:1.02rem;
-  --about-credit-title-spacing:.14em;
+  --about-credit-title-size:1rem;
+  --about-credit-title-spacing:.18em;
   --about-credit-title-gap:12px;
 
-  --about-credit-name-size:clamp(1.5rem, 1.9vw, 1.8rem);
-  --about-credit-name-spacing:.08em;
+  --about-credit-name-size:1.7rem;
+  --about-credit-name-spacing:.12em;
   --about-credit-name-gap:24px;
   --about-credit-block-gap:72px;
   --about-credit-link-size:1rem;
 
-  --about-back-size:1rem;
-  --about-back-spacing:.12em;
+  /* 戻り */
+  --about-back-size:.95rem;
+  --about-back-spacing:.16em;
   --about-back-margin-top:clamp(64px, 10vw, 180px);
 
   /* -----------------------------------------
      3-12. Modal
+     動画詳細
   ----------------------------------------- */
   --modal-width:min(92vw, 1400px);
   --modal-max-w:1400px;
@@ -381,24 +387,15 @@ a{
   }
 }
 
-/* -----------------------------------------
-   基準PC未満だけ横移動量を再計算
-   基準PCの 1920px は絶対に触らない
-========================================================= */
-@media (max-width:2399px), (max-height:1079px){
-  :root{
-    --inner-shell-side-shift:calc(
-      50vw +
-      ((var(--video-rendered-w) * var(--inner-shell-depth-scale)) / 2) -
-      var(--pc-bleed)
-    );
-  }
-}
-
 
 /* =========================================================
    4. 固定UI
+   常に出ているUI
 ========================================================= */
+
+/* -----------------------------------------
+   4-1. ミュート
+----------------------------------------- */
 .global-mute{
   position:fixed;
   top:var(--global-mute-top);
@@ -439,6 +436,9 @@ a{
   display:block;
 }
 
+/* -----------------------------------------
+   4-2. pull return
+----------------------------------------- */
 .pull-return{
   position:fixed;
   top:var(--pull-return-top);
@@ -480,7 +480,13 @@ body.is-pull-hint-visible .pull-return{
 
 /* =========================================================
    5. ステージ
+   GalleryとContactは独立セクションではなく左右viewの中身
 ========================================================= */
+
+/* -----------------------------------------
+   5-1. 土台
+   3面空間の骨組み
+----------------------------------------- */
 .space-wrapper{
   position:relative;
   width:100%;
@@ -535,22 +541,7 @@ body.is-pull-hint-visible .pull-return{
   font-size:var(--view-header-size);
   letter-spacing:var(--view-header-spacing);
   text-transform:uppercase;
-  opacity:.96;
-  font-weight:300;
-  text-shadow:
-    0 0 10px rgba(0,0,0,.35),
-    0 0 22px rgba(0,0,0,.18);
-  transition:opacity .2s ease, filter .2s ease;
-}
-
-.view-header::after{
-  content:"";
-  display:block;
-  margin-top:6px;
-  width:28px;
-  height:1px;
-  background:rgba(255,255,255,.25);
-  opacity:.6;
+  opacity:.8;
 }
 
 .view.view-left .view-header{
@@ -558,8 +549,6 @@ body.is-pull-hint-visible .pull-return{
   top:var(--stage-header-top);
   left:0;
   margin:0;
-  text-align:left;
-  transform:translateX(-2px);
 }
 
 .view.view-right .view-header{
@@ -568,20 +557,12 @@ body.is-pull-hint-visible .pull-return{
   right:0;
   margin:0;
   text-align:right;
-  transform:translateX(2px);
 }
 
-.view.view-right .view-header::after{
-  margin-left:auto;
-}
-
-@media (pointer:fine){
-  .view-header:hover{
-    opacity:1;
-    filter:drop-shadow(0 0 6px rgba(255,255,255,.25));
-  }
-}
-
+/* -----------------------------------------
+   5-2. 視点移動
+   左右viewの切り替え
+----------------------------------------- */
 .inner-shell{
   position:absolute;
   top:50%;
@@ -622,6 +603,10 @@ body.view-right .inner-shell{
     translateX(calc(var(--inner-shell-side-shift) * -1));
 }
 
+/* -----------------------------------------
+   5-3. 共通パーツ
+   左右共通で使うUI
+----------------------------------------- */
 .view-left .view-inner{
   justify-content:center;
   align-items:flex-start;
@@ -633,7 +618,7 @@ body.view-right .inner-shell{
 }
 
 .video-frame{
-  width:var(--video-rendered-w);
+  width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
   max-width:100%;
   aspect-ratio:16 / 9;
   background:#000;
@@ -677,25 +662,19 @@ body.view-right .inner-shell{
   font-size:var(--edge-btn-size);
   letter-spacing:var(--edge-btn-spacing);
   text-transform:uppercase;
-  opacity:.94;
+  opacity:.8;
   cursor:pointer;
   padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
   min-width:var(--edge-btn-min-w);
   min-height:var(--edge-btn-min-h);
   z-index:var(--z-stage-component);
   pointer-events:auto;
-  transition:
-    color .2s ease,
-    filter .2s ease,
-    transform .1s ease,
-    opacity .2s ease;
-  text-shadow:0 0 12px rgba(0,0,0,.3);
+  transition:color .2s ease, filter .2s ease, transform .1s ease;
 }
 
 .edge-btn:hover{
   color:#fff;
-  opacity:1;
-  filter:drop-shadow(0 0 8px rgba(255,255,255,.42));
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
 
 .edge-btn--left{
@@ -711,15 +690,15 @@ body.view-right .inner-shell{
 }
 
 .edge-btn--bottom{
-  bottom:var(--edge-offset(-16px));
+  bottom:var(--edge-offset);
   left:50%;
   transform:translateX(-50%);
 }
 
-
-/* =========================================================
+/* -----------------------------------------
    5-4. Gallery
-========================================================= */
+   左view
+----------------------------------------- */
 .gallery-panel{
   position:relative;
   z-index:var(--z-stage-component);
@@ -799,21 +778,6 @@ body.view-right .inner-shell{
   background:rgba(255,255,255,.03);
 }
 
-.gallery-item-title,
-.contact-value,
-.about-lead,
-.about-item p,
-.about-col li{
-  word-break:keep-all;
-  overflow-wrap:break-word;
-}
-
-.about-lead,
-.about-item p,
-.about-col li{
-  text-wrap:pretty;
-}
-
 .gallery-item-meta{
   opacity:.6;
   font-size:var(--gallery-meta-size);
@@ -821,10 +785,11 @@ body.view-right .inner-shell{
   margin-top:var(--gallery-meta-gap-top);
 }
 
-
-/* =========================================================
+/* -----------------------------------------
    5-5. Contact
-========================================================= */
+   右view
+   通常時は縦中央優先で margin-top を消す
+----------------------------------------- */
 .contact-block{
   position:relative;
   z-index:var(--z-stage-component);
@@ -862,6 +827,10 @@ body.view-right .inner-shell{
 /* =========================================================
    6. About
 ========================================================= */
+
+/* -----------------------------------------
+   6-1. 全体
+----------------------------------------- */
 #about{
   position:relative;
   overflow:hidden;
@@ -896,15 +865,22 @@ body.view-right .inner-shell{
     var(--about-content-pad-bottom);
 }
 
+/* -----------------------------------------
+   6-2. hero
+   1画面使用 / 中身は縦中央 / 横は左寄せ
+----------------------------------------- */
 .about-hero{
   min-height:var(--about-hero-min-h);
   width:100%;
   max-width:var(--about-hero-max-w);
+
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:flex-start;
+
   gap:var(--about-hero-gap);
+
   padding-top:var(--about-hero-pad-top);
   padding-bottom:var(--about-hero-pad-bottom);
 }
@@ -933,19 +909,28 @@ body.view-right .inner-shell{
   opacity:.9;
 }
 
+/* -----------------------------------------
+   6-3. stack
+   heroの下に通常配置
+   ライン演出のみ疑似要素
+----------------------------------------- */
 .about-stack{
   position:relative;
   width:100%;
   max-width:var(--about-stack-max-w);
+
   margin-left:0;
   margin-right:auto;
+
   padding:
     var(--about-stack-pad-top)
     var(--about-stack-pad-x)
     var(--about-stack-pad-bottom)
     var(--about-stack-pad-x);
+
   display:grid;
   gap:var(--about-stack-gap);
+
   border-left:1px solid #fff;
 }
 
@@ -974,6 +959,9 @@ body.view-right .inner-shell{
   max-width:var(--about-body-max-w);
 }
 
+/* -----------------------------------------
+   6-4. 2カラム
+----------------------------------------- */
 .about-split{
   border-left:1px solid #fff;
   display:grid;
@@ -1016,6 +1004,9 @@ body.view-right .inner-shell{
   max-width:34ch;
 }
 
+/* -----------------------------------------
+   6-5. クレジット
+----------------------------------------- */
 .about-credit{
   margin-top:var(--about-credit-margin-top);
 }
@@ -1046,6 +1037,9 @@ body.view-right .inner-shell{
   text-decoration:none;
 }
 
+/* -----------------------------------------
+   6-6. 戻り
+----------------------------------------- */
 .about-actions{
   width:100%;
   margin-top:var(--about-back-margin-top);
@@ -1072,7 +1066,12 @@ body.view-right .inner-shell{
 
 /* =========================================================
    7. Modal
+   動画詳細
 ========================================================= */
+
+/* -----------------------------------------
+   7-1. 全体
+----------------------------------------- */
 .modal{
   position:fixed;
   inset:0;
@@ -1118,6 +1117,9 @@ body.view-right .inner-shell{
   z-index:2;
 }
 
+/* -----------------------------------------
+   7-2. 動画
+----------------------------------------- */
 .modal__video{
   width:100%;
 }
@@ -1139,6 +1141,9 @@ body.view-right .inner-shell{
   display:block;
 }
 
+/* -----------------------------------------
+   7-3. 下導線
+----------------------------------------- */
 .modal__footer{
   margin-top:var(--modal-footer-gap-top);
   display:flex;
@@ -1157,6 +1162,9 @@ body.view-right .inner-shell{
   opacity:.85;
 }
 
+/* -----------------------------------------
+   7-4. クレジット
+----------------------------------------- */
 .modal__credit{
   position:absolute;
   inset:0;
@@ -1226,6 +1234,7 @@ body.view-right .inner-shell{
 
 /* =========================================================
    8. 光演出
+   操作補助
 ========================================================= */
 .video-unlock-flash{
   position:absolute;
@@ -1271,84 +1280,79 @@ body.view-right .inner-shell{
 
 /* =========================================================
    9. レスポンシブ変数
+   値だけ変える
 ========================================================= */
+
+/* -----------------------------------------
+   9-1. 狭い幅
+   まずAbout中心
+----------------------------------------- */
 @media (max-width:900px){
   :root{
-    --about-content-pad-top:92px;
+    --about-content-pad-top:100px;
     --about-content-pad-x:7vw;
     --about-content-pad-bottom:120px;
 
-    --view-header-size:clamp(.92rem, 2.4vw, 1rem);
-    --edge-btn-size:clamp(.98rem, 2.6vw, 1.08rem);
-    --pull-return-link-size:clamp(.82rem, 2.3vw, .96rem);
+    --about-lead-size:.95rem;
+    --about-body-size:.95rem;
+    --about-col-item-size:.95rem;
 
-    --gallery-item-size:clamp(1rem, 2.7vw, 1.08rem);
-    --gallery-meta-size:clamp(.84rem, 2.2vw, .92rem);
-
-    --contact-block-size:clamp(.98rem, 2.6vw, 1.08rem);
-    --contact-label-size:clamp(1.08rem, 2.9vw, 1.22rem);
-    --contact-value-size:clamp(1rem, 2.7vw, 1.1rem);
-
-    --about-logo-main-size:clamp(2.5rem, 8vw, 4rem);
-    --about-logo-sub-size:clamp(.92rem, 2.8vw, 1.08rem);
-
-    --about-lead-size:clamp(1rem, 2.8vw, 1.08rem);
-    --about-body-size:clamp(.98rem, 2.7vw, 1.06rem);
-    --about-col-item-size:clamp(.98rem, 2.7vw, 1.04rem);
-
-    --about-heading-size:clamp(1.22rem, 3.6vw, 1.4rem);
-    --about-col-title-size:clamp(1.12rem, 3vw, 1.24rem);
-    --about-credit-title-size:clamp(.92rem, 2.4vw, 1rem);
-    --about-credit-name-size:clamp(1.22rem, 3.8vw, 1.4rem);
-    --about-back-size:clamp(.92rem, 2.5vw, 1rem);
+    --about-heading-size:1.3rem;
+    --about-col-title-size:1.15rem;
+    --about-credit-name-size:1.25rem;
 
     --video-side-safe:32px;
     --inner-shell-side-safe:16px;
   }
 }
 
+/* -----------------------------------------
+   9-2. 小型PC
+   レイアウトは変えず、UIだけ穏やかに追従
+----------------------------------------- */
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
   :root{
-    --view-header-size:clamp(.94rem, .88rem + .28vw, 1.04rem);
-    --edge-btn-size:clamp(.98rem, .9rem + .24vw, 1.06rem);
-    --pull-return-link-size:clamp(.8rem, .74rem + .22vw, .94rem);
-    --global-mute-icon-size:clamp(20px, 1.5vw, 22px);
-
-    --gallery-item-size:clamp(.98rem, .92rem + .2vw, 1.04rem);
-    --gallery-meta-size:clamp(.82rem, .78rem + .18vw, .9rem);
-
-    --contact-block-size:clamp(.94rem, .9rem + .18vw, 1rem);
-    --contact-label-size:clamp(1.08rem, 1rem + .24vw, 1.18rem);
-    --contact-value-size:clamp(1rem, .96rem + .18vw, 1.08rem);
+    --view-header-size:clamp(.88rem, .82rem + .22vw, 1rem);
+    --edge-btn-size:clamp(.9rem, .84rem + .18vw, .98rem);
+    --pull-return-link-size:clamp(.72rem, .68rem + .18vw, .9rem);
+    --global-mute-icon-size:clamp(20px, 1.4vw, 22px);
   }
 }
 
+/* -----------------------------------------
+   9-3. タッチ横向き
+   スマホ横向き + iPad横向き
+----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
-    --edge-btn-size:1.12rem;
+    /* ステージ共通 */
+    --edge-btn-size:1.4rem;
     --video-side-safe:40px;
     --inner-shell-side-safe:20px;
 
+    /* Gallery */
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-gap-top:28px;
     --gallery-panel-fixed-h:470px;
 
-    --gallery-item-size:1.16rem;
-    --gallery-item-pad-y:16px;
+    --gallery-item-size:1.5rem;
+    --gallery-item-pad-y:18px;
 
-    --gallery-meta-size:.92rem;
-    --gallery-meta-gap-top:6px;
+    --gallery-meta-size:1.08rem;
+    --gallery-meta-gap-top:8px;
 
+    /* Contact */
     --contact-w:clamp(520px, 62vw, 760px);
-    --contact-block-size:1rem;
-    --contact-block-spacing:.06em;
+    --contact-block-size:1.18rem;
+    --contact-block-spacing:.08em;
     --contact-block-margin-top:28px;
-    --contact-label-size:1.14rem;
-    --contact-label-spacing:.08em;
-    --contact-label-margin-top:18px;
-    --contact-value-size:1.08rem;
+    --contact-label-size:1.42rem;
+    --contact-label-spacing:.12em;
+    --contact-label-margin-top:22px;
+    --contact-value-size:1.34rem;
 
+    /* About */
     --about-content-pad-top:0px;
     --about-content-pad-x:7.5vw;
     --about-content-pad-bottom:96px;
@@ -1359,26 +1363,26 @@ body.view-right .inner-shell{
     --about-hero-gap:30px;
     --about-hero-max-w:720px;
 
-    --about-logo-main-size:clamp(2rem, 3.6vw, 3.3rem);
-    --about-logo-sub-size:.82rem;
-    --about-logo-spacing:.1em;
-    --about-logo-sub-spacing:.06em;
+    --about-logo-main-size:clamp(1.7rem, 3vw, 3.2rem);
+    --about-logo-sub-size:.74rem;
+    --about-logo-spacing:.14em;
+    --about-logo-sub-spacing:.08em;
 
-    --about-lead-size:.84rem;
-    --about-lead-line:1.72;
-    --about-lead-spacing:.01em;
+    --about-lead-size:.68rem;
+    --about-lead-line:1.78;
+    --about-lead-spacing:.02em;
 
     --about-stack-gap:clamp(44px, 4vw, 68px);
     --about-stack-pad:clamp(20px, 3vw, 34px);
     --about-stack-line-protrusion:48px;
 
-    --about-heading-size:1.02rem;
-    --about-heading-spacing:.06em;
-    --about-item-heading-gap:14px;
+    --about-heading-size:.96rem;
+    --about-heading-spacing:.10em;
+    --about-item-heading-gap:16px;
 
-    --about-body-size:.86rem;
-    --about-body-line:1.68;
-    --about-body-spacing:.01em;
+    --about-body-size:.8rem;
+    --about-body-line:1.74;
+    --about-body-spacing:.02em;
 
     --about-split-gap:clamp(20px, 2.4vw, 28px);
     --about-split-pad-top:clamp(20px, 3vw, 30px);
@@ -1386,30 +1390,32 @@ body.view-right .inner-shell{
     --about-split-pad-bottom:clamp(40px, 6vw, 68px);
     --about-split-margin-top:58px;
 
-    --about-col-title-size:.94rem;
-    --about-col-title-spacing:.06em;
+    --about-col-title-size:.88rem;
+    --about-col-title-spacing:.08em;
 
-    --about-col-item-size:.84rem;
-    --about-col-item-line:1.68;
-    --about-col-item-spacing:.01em;
+    --about-col-item-size:.8rem;
+    --about-col-item-line:1.74;
+    --about-col-item-spacing:.02em;
 
     --about-credit-margin-top:18px;
-    --about-credit-title-size:.8rem;
-    --about-credit-title-spacing:.08em;
-    --about-credit-name-size:1rem;
-    --about-credit-name-spacing:.04em;
-    --about-credit-link-size:.72rem;
+    --about-credit-title-size:.78rem;
+    --about-credit-title-spacing:.10em;
+    --about-credit-name-size:.96rem;
+    --about-credit-name-spacing:.06em;
+    --about-credit-link-size:.64rem;
 
-    --about-back-size:.74rem;
-    --about-back-spacing:.06em;
+    --about-back-size:.64rem;
+    --about-back-spacing:.08em;
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
+    /* Modal */
     --modal-width:min(76vw, 720px);
 
     --modal-footer-gap-top:4px;
     --modal-footer-pad-bottom:6px;
-    --modal-credit-toggle-size:.78rem;
+    --modal-credit-toggle-size:.72rem;
 
+    /* Credit */
     --modal-credit-inner-width:min(92%, 520px);
     --modal-credit-inner-max-w:270px;
     --modal-credit-inner-pad-top:14px;
@@ -1418,28 +1424,37 @@ body.view-right .inner-shell{
 
     --modal-credit-block-w:min(88%, 420px);
 
-    --modal-credit-title-size:.78rem;
+    --modal-credit-title-size:.74rem;
     --modal-credit-title-gap:10px;
 
-    --modal-credit-list-size:.7rem;
+    --modal-credit-list-size:.64rem;
     --modal-credit-list-line:1.38;
     --modal-credit-list-gap:10px;
 
     --modal-credit-row-gap:20px;
-    --modal-credit-close-size:.7rem;
+
+    --modal-credit-close-size:.66rem;
   }
 }
 
 
 /* =========================================================
    10. レスポンシブレイアウト
+   形だけ変える
 ========================================================= */
+
+/* -----------------------------------------
+   10-1. 狭い幅
+----------------------------------------- */
 @media (max-width:900px){
   .about-split{
     grid-template-columns:1fr;
   }
 }
 
+/* -----------------------------------------
+   10-2. タッチ横向き
+----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   #about .about-content{
     max-width:none;
@@ -1496,6 +1511,7 @@ body.view-right .inner-shell{
     min-height:var(--gallery-panel-fixed-h);
     margin-top:var(--gallery-panel-gap-top);
     align-self:flex-start;
+
     display:block;
     overflow-y:auto;
     overflow-x:hidden;
@@ -1616,6 +1632,7 @@ body.view-right .inner-shell{
 
 /* =========================================================
    11. 端末対策
+   iPhone向け Gallery ロック簡易版
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
   .edge-btn{
@@ -1645,125 +1662,6 @@ body.view-right .inner-shell{
   .gallery-preview,
   .gallery-preview-img{
     pointer-events:none;
-  }
-}
-
-
-/* =========================================================
-   12. 縦画面専用
-   動画は横幅基準 / Centerだけ右縦ナビ
-========================================================= */
-@media (orientation:portrait){
-  :root{
-    --video-side-safe:16px;
-    --inner-shell-side-safe:8px;
-
-    --edge-btn-size:clamp(1.08rem, 3.8vw, 1.22rem);
-    --edge-btn-spacing:.12em;
-    --edge-btn-pad-y:12px;
-    --edge-btn-pad-x:10px;
-    --edge-btn-min-w:112px;
-    --edge-btn-min-h:44px;
-
-    --view-header-size:clamp(1rem, 3.1vw, 1.12rem);
-    --view-header-spacing:.12em;
-
-    --pull-return-link-size:clamp(.86rem, 2.8vw, 1rem);
-    --global-mute-icon-size:clamp(22px, 5.2vw, 26px);
-  }
-
-  .space-wrapper{
-    height:100svh;
-    min-height:100svh;
-  }
-
-  .inner-shell{
-    top:44%;
-    left:50%;
-    transform:translate(-50%, -50%);
-    max-width:100vw;
-  }
-
-  .video-frame{
-    width:calc(100vw - var(--video-side-safe));
-    max-width:calc(100vw - var(--video-side-safe));
-  }
-
-  .view-header{
-    font-size:clamp(1.04rem, 3.2vw, 1.16rem);
-    letter-spacing:.12em;
-    opacity:.98;
-    text-shadow:
-      0 0 12px rgba(0,0,0,.45),
-      0 0 26px rgba(0,0,0,.22);
-  }
-
-  .view.view-center .view-inner{
-    position:relative;
-    justify-content:center;
-    align-items:stretch;
-  }
-
-  .view.view-center .edge-btn{
-    left:auto;
-    right:clamp(14px, 4vw, 22px);
-    justify-content:flex-end;
-    text-align:right;
-    width:auto;
-    min-width:var(--edge-btn-min-w);
-    min-height:var(--edge-btn-min-h);
-    padding-right:2px;
-    border-radius:999px;
-    background:rgba(255,255,255,.02);
-    backdrop-filter:blur(1px);
-    text-shadow:
-      0 0 10px rgba(0,0,0,.42),
-      0 0 18px rgba(0,0,0,.18);
-  }
-
-  .view.view-center .edge-btn:active{
-    background:rgba(255,255,255,.06);
-  }
-
-  .view.view-center .edge-btn--left{
-    top:calc(50% - 74px);
-    transform:none;
-  }
-
-  .view.view-center .edge-btn--right{
-    top:50%;
-    transform:translateY(-50%);
-  }
-
-  .view.view-center .edge-btn--bottom{
-    top:calc(50% + 74px);
-    bottom:auto;
-    left:auto;
-    transform:none;
-  }
-
-  /* 左右viewの Home は従来通り中央 */
-  .view.view-left .edge-btn--right{
-    top:50%;
-    right:var(--edge-offset);
-    left:auto;
-    bottom:auto;
-    transform:translateY(-50%);
-  }
-
-  .view.view-right .edge-btn--left{
-    top:50%;
-    left:var(--edge-offset);
-    right:auto;
-    bottom:auto;
-    transform:translateY(-50%);
-  }
-
-  .view.view-left .edge-btn--right,
-  .view.view-right .edge-btn--left{
-    min-width:96px;
-    min-height:42px;
-    font-size:clamp(1rem, 3.2vw, 1.12rem);
   }
 }
 
