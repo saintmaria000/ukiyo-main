@@ -475,7 +475,6 @@ body.is-pull-hint-visible .pull-return{
   top:calc(var(--vv-top) + (var(--vvh) / 2));
   transform-origin:center;
   transform:translate(-50%, -50%) scale(var(--stage-scale));
-  overflow:hidden;
   perspective:var(--stage-perspective);
 }
 
