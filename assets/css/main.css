@@ -89,7 +89,7 @@ a{
 ========================================================= */
 :root{
   /* -----------------------------------------
-     3-1. Viewport / Stage Scale
+     3-1. Viewport / Stage Metrics
      JS から更新される値
   ----------------------------------------- */
   --vvw:100vw;
@@ -97,8 +97,9 @@ a{
   --vv-top:0px;
   --vv-left:0px;
 
-  --stage-w:2400px;
-  --stage-h:1080px;
+  /* 1面サイズ */
+  --stage-panel-w:2400px;
+  --stage-panel-h:1080px;
   --stage-scale:1;
 
   /* -----------------------------------------
@@ -111,16 +112,9 @@ a{
   --stage-header-top:20px;
 
   /* -----------------------------------------
-     3-3. Camera Shift
-  ----------------------------------------- */
-  --inner-shell-side-shift:1920px;
-  --inner-shell-depth:-350px;
-
-  /* -----------------------------------------
-     3-4. Colors
+     3-3. Colors
   ----------------------------------------- */
   --line-soft:rgba(255,255,255,.08);
-
   --overlay-dark:rgba(0,0,0,.45);
   --overlay-modal:rgba(0,0,0,.65);
   --overlay-credit:rgba(0,0,0,.75);
@@ -129,27 +123,24 @@ a{
   --shadow-modal:0 0 40px rgba(0,0,0,.7);
 
   /* -----------------------------------------
-     3-5. Z-index
-     NAV は最上位
+     3-4. Z-index
   ----------------------------------------- */
   --z-stage:2;
   --z-video-flash:40;
   --z-video-shield:50;
-  --z-video:60;
+  --z-center-media:80;
   --z-stage-component:120;
   --z-modal:10000;
-  --z-pull-return:30000;
   --z-nav-top:30000;
 
   /* -----------------------------------------
-     3-6. Typography
+     3-5. Typography
   ----------------------------------------- */
   --font-ui-sm:clamp(.9rem, .98vw, 1rem);
-
   --ls-ui:.25em;
 
   /* -----------------------------------------
-     3-7. Fixed UI
+     3-6. Fixed UI
   ----------------------------------------- */
   --global-mute-top:24px;
   --global-mute-right:32px;
@@ -165,26 +156,30 @@ a{
   --pull-return-link-opacity:.75;
 
   /* -----------------------------------------
-     3-8. Shared Stage UI
-     中央動画と edge ボタン
+     3-7. Shared Stage UI
   ----------------------------------------- */
   --view-header-size:var(--font-ui-sm);
   --view-header-spacing:var(--ls-ui);
 
-  /* 中央動画 基本 */
+  /* -----------------------------------------
+     3-8. Center Media
+  ----------------------------------------- */
   --video-w:960px;
   --video-side-safe:48px;
-  --inner-shell-side-safe:24px;
 
-  /* スマホ縦: 横幅いっぱい */
   --video-w-mobile-portrait:100vw;
   --video-side-safe-mobile-portrait:0px;
 
-  /* スマホ横: より大きく */
   --video-w-mobile-landscape:94vw;
   --video-side-safe-mobile-landscape:16px;
 
-  /* edge button */
+  /* 左右移動時の見切れ残し量 */
+  --center-video-shift-side:clamp(120px, 28vw, 420px);
+  --center-video-shift-side-portrait:clamp(28px, 8vw, 56px);
+
+  /* -----------------------------------------
+     3-9. Edge Button
+  ----------------------------------------- */
   --edge-btn-size:1.26rem;
   --edge-btn-spacing:.25em;
   --edge-btn-pad-y:4px;
@@ -192,12 +187,11 @@ a{
   --edge-btn-min-w:auto;
   --edge-btn-min-h:auto;
 
-  /* bottom 専用位置 */
   --edge-offset-bottom:20px;
   --edge-offset-bottom-shift:0px;
 
   /* -----------------------------------------
-     3-9. Gallery
+     3-10. Gallery
   ----------------------------------------- */
   --gallery-w:520px;
   --gallery-panel-gap-top:32px;
@@ -217,7 +211,7 @@ a{
   --gallery-meta-gap-top:4px;
 
   /* -----------------------------------------
-     3-10. Contact
+     3-11. Contact
   ----------------------------------------- */
   --contact-w:420px;
   --contact-block-size:.86rem;
@@ -229,7 +223,7 @@ a{
   --contact-value-size:1.14rem;
 
   /* -----------------------------------------
-     3-11. About
+     3-12. About
   ----------------------------------------- */
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
@@ -300,7 +294,7 @@ a{
   --about-back-margin-top:clamp(64px, 10vw, 180px);
 
   /* -----------------------------------------
-     3-12. Modal
+     3-13. Modal
   ----------------------------------------- */
   --modal-width:min(92vw, 1400px);
   --modal-max-w:1400px;
@@ -335,7 +329,7 @@ a{
   --modal-credit-close-spacing:.18em;
 
   /* -----------------------------------------
-     3-13. Flash Effect
+     3-14. Flash Effect
   ----------------------------------------- */
   --video-unlock-flash-blur:14px;
   --video-unlock-flash-scale:.96;
@@ -363,15 +357,12 @@ a{
   position:fixed;
   top:var(--global-mute-top);
   right:var(--global-mute-right);
-  left:auto;
-  bottom:auto;
   z-index:var(--z-nav-top);
   padding:var(--global-mute-pad);
   opacity:.7;
   cursor:pointer;
   transition:opacity .2s ease, transform .2s ease;
   pointer-events:auto;
-  transform:none;
 }
 
 .global-mute:hover{
@@ -451,8 +442,8 @@ body.is-pull-hint-visible .pull-return{
 
 .stage{
   position:absolute;
-  width:var(--stage-w);
-  height:var(--stage-h);
+  width:var(--stage-panel-w);
+  height:var(--stage-panel-h);
   left:calc(var(--vv-left) + (var(--vvw) / 2));
   top:calc(var(--vv-top) + (var(--vvh) / 2));
   transform-origin:center;
@@ -466,14 +457,14 @@ body.is-pull-hint-visible .pull-return{
   position:absolute;
   inset:0;
   display:flex;
-  width:calc(var(--stage-w) * 3);
+  width:calc(var(--stage-panel-w) * 3);
   height:100%;
   transition:transform .8s ease;
   z-index:var(--z-stage);
 }
 
 .view{
-  width:var(--stage-w);
+  width:var(--stage-panel-w);
   height:100%;
   padding:var(--stage-pad-y) var(--stage-pad-x);
   position:relative;
@@ -513,18 +504,8 @@ body.is-pull-hint-visible .pull-return{
   text-align:right;
 }
 
-.inner-shell{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transition:transform .8s ease;
-  z-index:var(--z-video);
-  pointer-events:none;
-  max-width:calc(100vw - var(--inner-shell-side-safe));
-}
-
 body.view-center .outer-space{
-  transform:translateX(calc(var(--stage-w) * -1));
+  transform:translateX(calc(var(--stage-panel-w) * -1));
 }
 
 body.view-left .outer-space{
@@ -532,25 +513,7 @@ body.view-left .outer-space{
 }
 
 body.view-right .outer-space{
-  transform:translateX(calc(var(--stage-w) * -2));
-}
-
-body.view-center .inner-shell{
-  transform:translate(-50%, -50%) translateX(0);
-}
-
-body.view-left .inner-shell{
-  transform:
-    translate(-50%, -50%)
-    translateZ(var(--inner-shell-depth))
-    translateX(var(--inner-shell-side-shift));
-}
-
-body.view-right .inner-shell{
-  transform:
-    translate(-50%, -50%)
-    translateZ(var(--inner-shell-depth))
-    translateX(calc(var(--inner-shell-side-shift) * -1));
+  transform:translateX(calc(var(--stage-panel-w) * -2));
 }
 
 .view-left .view-inner{
@@ -563,11 +526,49 @@ body.view-right .inner-shell{
   align-items:flex-end;
 }
 
-/* 中央動画
-   width 主導で拡大縮小
-   aspect-ratio で 16:9 を維持 */
+
+/* =========================================================
+   5-3b. Center Media Layer
+   中央動画専用レイヤー
+========================================================= */
+.center-media-layer{
+  position:absolute;
+  inset:0;
+  z-index:var(--z-center-media);
+  pointer-events:none;
+}
+
+.center-media-layer .inner-shell{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transition:transform .8s ease;
+  pointer-events:none;
+  max-width:none;
+}
+
+/* center */
+body.view-center .center-media-layer .inner-shell{
+  transform:translate(-50%, -50%) translateX(0);
+}
+
+/* left view: 動画は右へ少し残す */
+body.view-left .center-media-layer .inner-shell{
+  transform:
+    translate(-50%, -50%)
+    translateX(var(--center-video-shift-side));
+}
+
+/* right view: 動画は左へ少し残す */
+body.view-right .center-media-layer .inner-shell{
+  transform:
+    translate(-50%, -50%)
+    translateX(calc(var(--center-video-shift-side) * -1));
+}
+
+/* 中央動画 */
 .video-frame{
-  width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
+  width:min(var(--video-w), calc(var(--vvw) - var(--video-side-safe)));
   max-width:100%;
   aspect-ratio:16 / 9;
   height:auto;
@@ -602,6 +603,10 @@ body.view-right .inner-shell{
   pointer-events:auto;
 }
 
+
+/* =========================================================
+   5-4. Edge Buttons
+========================================================= */
 .edge-btn{
   position:absolute;
   display:inline-flex;
@@ -649,7 +654,7 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   5-4. Gallery
+   6. Gallery
 ========================================================= */
 .gallery-panel{
   position:relative;
@@ -739,7 +744,7 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   5-5. Contact
+   7. Contact
 ========================================================= */
 .contact-block{
   position:relative;
@@ -776,7 +781,7 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   6. About
+   8. About
 ========================================================= */
 #about{
   position:relative;
@@ -987,7 +992,7 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   7. Modal
+   9. Modal
 ========================================================= */
 .modal{
   position:fixed;
@@ -1141,7 +1146,7 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   8. Flash Effect
+   10. Flash Effect
 ========================================================= */
 .video-unlock-flash{
   position:absolute;
@@ -1186,7 +1191,7 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   9. Responsive Variables
+   11. Responsive Variables
 ========================================================= */
 @media (max-width:900px){
   :root{
@@ -1201,22 +1206,89 @@ body.view-right .inner-shell{
     --about-heading-size:1.3rem;
     --about-col-title-size:1.15rem;
     --about-credit-name-size:1.25rem;
-
-    --video-side-safe:32px;
-    --inner-shell-side-safe:16px;
   }
 }
 
-/* スマホ縦
-   動画を横幅いっぱい */
+/* -----------------------------------------
+   11-1. スマホ縦
+   PC / スマホ横はそのまま維持
+   縦だけ 1面を縦比率にし、動画は横幅いっぱい
+----------------------------------------- */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
+    /* 1面サイズを縦比率に */
+    --stage-panel-w:430px;
+    --stage-panel-h:932px;
+
+    /* 中央動画は横幅いっぱい */
     --video-w:var(--video-w-mobile-portrait);
     --video-side-safe:var(--video-side-safe-mobile-portrait);
-    --inner-shell-side-safe:0px;
 
+    /* 見切れ残しは少なめ */
+    --center-video-shift-side:var(--center-video-shift-side-portrait);
+
+    /* ボタン */
     --edge-offset-bottom:8px;
     --edge-offset-bottom-shift:6px;
+
+    /* 読みやすさ */
+    --view-header-size:1rem;
+
+    --gallery-w:min(84vw, 360px);
+    --gallery-panel-gap-top:20px;
+    --gallery-panel-max-h:62vh;
+    --gallery-panel-min-h:260px;
+    --gallery-panel-vh-offset:220px;
+
+    --gallery-item-size:1rem;
+    --gallery-item-pad-y:12px;
+    --gallery-meta-size:.82rem;
+
+    --contact-w:min(84vw, 360px);
+    --contact-block-size:1rem;
+    --contact-label-size:1.08rem;
+    --contact-value-size:1.02rem;
+  }
+
+  /* 縦では左右 view に入っても動画は中央主役寄り */
+  body.view-left .center-media-layer .inner-shell,
+  body.view-center .center-media-layer .inner-shell,
+  body.view-right .center-media-layer .inner-shell{
+    transform:translate(-50%, -50%);
+  }
+
+  .video-frame{
+    width:var(--vvw);
+    max-width:var(--vvw);
+  }
+
+  .view-left .view-inner,
+  .view-right .view-inner{
+    justify-content:center;
+    padding-top:0;
+    padding-bottom:0;
+  }
+
+  .gallery-panel{
+    width:100%;
+    max-width:var(--gallery-w);
+    margin-top:var(--gallery-panel-gap-top);
+    height:min(var(--gallery-panel-max-h), calc(var(--vvh) - var(--gallery-panel-vh-offset)));
+    min-height:var(--gallery-panel-min-h);
+  }
+
+  .view-right .contact-block{
+    width:100%;
+    max-width:var(--contact-w);
+    margin-top:0;
+  }
+
+  .video-frame iframe{
+    pointer-events:auto;
+  }
+
+  .video-shield{
+    display:none;
   }
 }
 
@@ -1230,13 +1302,18 @@ body.view-right .inner-shell{
   }
 }
 
-/* スマホ横 + iPad横 */
+/* -----------------------------------------
+   11-2. スマホ横 + iPad横
+   既存レイアウト維持
+----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
+    --stage-panel-w:1600px;
+    --stage-panel-h:900px;
+
     --edge-btn-size:1.4rem;
     --video-w:var(--video-w-mobile-landscape);
     --video-side-safe:var(--video-side-safe-mobile-landscape);
-    --inner-shell-side-safe:20px;
 
     --edge-offset-bottom:4px;
     --edge-offset-bottom-shift:10px;
@@ -1335,14 +1412,13 @@ body.view-right .inner-shell{
     --modal-credit-list-gap:10px;
 
     --modal-credit-row-gap:20px;
-
     --modal-credit-close-size:.66rem;
   }
 }
 
 
 /* =========================================================
-   10. Responsive Layout
+   12. Responsive Layout
 ========================================================= */
 @media (max-width:900px){
   .about-split{
@@ -1524,7 +1600,7 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   11. Device Handling
+   13. Device Handling
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
   .edge-btn{
