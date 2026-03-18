@@ -1268,7 +1268,7 @@ body.view-right .inner-shell{
     --video-mobile-landscape-visible-ratio:.52;
     --video-mobile-landscape-visible-max:640;
     --video-mobile-landscape-visible-offset-y:0;
-    --inner-shell-side-shift:1480px; /* 横スマホ */
+    --inner-shell-side-shift:2050px; /* 横スマホ */
     /* Gallery */
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-gap-top:28px;
@@ -1597,7 +1597,7 @@ body.view-right .inner-shell{
     --video-mobile-portrait-visible-offset-y:0;
 
     --video-side-safe:24px;
-    --inner-shell-side-shift:1180px; /* 縦スマホ */
+    --inner-shell-side-shift:2420px; /* 縦スマホ */
   }
 
   .inner-shell{
