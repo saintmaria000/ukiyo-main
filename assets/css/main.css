@@ -1456,9 +1456,9 @@ body.view-right .inner-shell{
 @media (pointer:coarse) and (orientation:portrait){
   :root{
     /* 中央動画の見た目サイズ可変 */
-    --video-mobile-landscape-visible-ratio:.78;
-    --video-mobile-landscape-visible-max:980;
-    --video-mobile-landscape-visible-offset-y:0;
+    --video-mobile-portrait-visible-ratio:.88;
+    --video-mobile-portrait-visible-max:620;
+    --video-mobile-portrait-visible-offset-y:0;
 
     --video-side-safe:24px;
   }
