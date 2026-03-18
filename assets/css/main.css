@@ -153,9 +153,10 @@ a{
   --z-video-shield:50;
   --z-video:60;
   --z-stage-component:120;
-  --z-ui:200;
+  --z-ui:30000;
   --z-modal:10000;
-  --z-pull-return:21000;
+  --z-pull-return:30000;
+  --z-nav-top:30000;
 
   /* -----------------------------------------
      3-6. 文字
@@ -204,9 +205,18 @@ a{
   --view-header-size:var(--font-ui-sm);
   --view-header-spacing:var(--ls-ui);
 
+  /* 中央動画 基本 */
   --video-w:960px;
   --video-side-safe:48px;
   --inner-shell-side-safe:24px;
+
+  /* スマホ縦 */
+  --video-w-mobile-portrait:100vw;
+  --video-side-safe-mobile-portrait:0px;
+
+  /* スマホ横 */
+  --video-w-mobile-landscape:94vw;
+  --video-side-safe-mobile-landscape:16px;
 
   --edge-btn-size:.86rem;
   --edge-btn-spacing:.25em;
@@ -214,6 +224,10 @@ a{
   --edge-btn-pad-x:0;
   --edge-btn-min-w:auto;
   --edge-btn-min-h:auto;
+
+  /* bottom専用 */
+  --edge-offset-bottom:20px;
+  --edge-offset-bottom-shift:0px;
 
   /* -----------------------------------------
      3-9. Gallery
@@ -402,7 +416,7 @@ a{
   right:var(--global-mute-right);
   left:auto;
   bottom:auto;
-  z-index:var(--z-ui);
+  z-index:var(--z-nav-top);
   padding:var(--global-mute-pad);
   opacity:.7;
   cursor:pointer;
@@ -446,7 +460,7 @@ a{
   transform:translateX(-50%) translateY(var(--pull-return-offset-y));
   opacity:0;
   pointer-events:auto;
-  z-index:var(--z-pull-return);
+  z-index:var(--z-nav-top);
   transition:opacity .28s ease, transform .28s ease;
 }
 
@@ -621,6 +635,7 @@ body.view-right .inner-shell{
   width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
   max-width:100%;
   aspect-ratio:16 / 9;
+  height:auto;
   background:#000;
   display:flex;
   align-items:center;
@@ -667,7 +682,7 @@ body.view-right .inner-shell{
   padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
   min-width:var(--edge-btn-min-w);
   min-height:var(--edge-btn-min-h);
-  z-index:var(--z-stage-component);
+  z-index:var(--z-nav-top);
   pointer-events:auto;
   transition:color .2s ease, filter .2s ease, transform .1s ease;
 }
@@ -690,9 +705,11 @@ body.view-right .inner-shell{
 }
 
 .edge-btn--bottom{
-  bottom:var(--edge-offset);
+  bottom:var(--edge-offset-bottom);
   left:50%;
-  transform:translateX(-50%);
+  transform:
+    translateX(-50%)
+    translateY(var(--edge-offset-bottom-shift));
 }
 
 /* -----------------------------------------
@@ -1307,7 +1324,22 @@ body.view-right .inner-shell{
 }
 
 /* -----------------------------------------
-   9-2. 小型PC
+   9-2. スマホ縦
+   中央動画を横幅いっぱい
+----------------------------------------- */
+@media (pointer:coarse) and (orientation:portrait){
+  :root{
+    --video-w:var(--video-w-mobile-portrait);
+    --video-side-safe:var(--video-side-safe-mobile-portrait);
+    --inner-shell-side-safe:0px;
+
+    --edge-offset-bottom:8px;
+    --edge-offset-bottom-shift:6px;
+  }
+}
+
+/* -----------------------------------------
+   9-3. 小型PC
    レイアウトは変えず、UIだけ穏やかに追従
 ----------------------------------------- */
 @media (pointer:fine) and (max-width:1366px),
@@ -1321,15 +1353,19 @@ body.view-right .inner-shell{
 }
 
 /* -----------------------------------------
-   9-3. タッチ横向き
+   9-4. タッチ横向き
    スマホ横向き + iPad横向き
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
     /* ステージ共通 */
     --edge-btn-size:1.4rem;
-    --video-side-safe:40px;
+    --video-w:var(--video-w-mobile-landscape);
+    --video-side-safe:var(--video-side-safe-mobile-landscape);
     --inner-shell-side-safe:20px;
+
+    --edge-offset-bottom:4px;
+    --edge-offset-bottom-shift:10px;
 
     /* Gallery */
     --gallery-w:clamp(560px, 68vw, 860px);
@@ -1636,7 +1672,7 @@ body.view-right .inner-shell{
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
   .edge-btn{
-    z-index:20000;
+    z-index:var(--z-nav-top);
   }
 
   .video-frame iframe{
