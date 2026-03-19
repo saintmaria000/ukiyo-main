@@ -235,7 +235,7 @@ a{
   /* -----------------------------------------
      3-10. Contact
   ----------------------------------------- */
-  --contact-w:650px;
+  --contact-w:750px;
   --contact-block-size:.86rem;
   --contact-block-spacing:.12em;
   --contact-block-margin-top:40px;
@@ -486,7 +486,7 @@ body.is-pull-hint-visible .pull-return{
   height:100%;
   transition:transform .8s ease;
   z-index:var(--z-stage);
-  /* pointer-events:none; */
+  pointer-events:none;
 }
 
 .view{
@@ -494,7 +494,7 @@ body.is-pull-hint-visible .pull-return{
   height:100%;
   padding:var(--stage-pad-y) var(--stage-pad-x);
   position:relative;
-  /* pointer-events:none; */
+  pointer-events:none;
 }
 
 .view-inner{
@@ -503,7 +503,7 @@ body.is-pull-hint-visible .pull-return{
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  /* pointer-events:none; */
+  pointer-events:none;
 }
 
 .view-header{
@@ -537,7 +537,7 @@ body.is-pull-hint-visible .pull-return{
   left:50%;
   transition:transform .8s ease;
   z-index:var(--z-video);
-  /* pointer-events:none; */
+  pointer-events:none;
   max-width:calc(100vw - 24px);
 }
 
@@ -1643,44 +1643,6 @@ body.view-right .inner-shell{
     width:var(--video-mobile-stage-w);
     max-width:none;
   }
-    .view,
-  .view-inner{
-    pointer-events:auto;
-  }
-}
-/* =========================================================
-   Modal 下部フロート閉じるボタン
-========================================================= */
-.modal__close-floating{
-  position:fixed;
-  left:50%;
-  bottom:28px;
-  transform:translateX(-50%);
-  z-index:calc(var(--z-modal) + 1);
-
-  font-size:.9rem;
-  letter-spacing:.18em;
-  text-transform:uppercase;
-  color:#fff;
-
-  background:rgba(0,0,0,.55);
-  backdrop-filter:blur(6px);
-
-  border:1px solid rgba(255,255,255,.2);
-  padding:8px 18px;
-
-  opacity:.75;
-  cursor:pointer;
-
-  transition:
-    opacity .2s ease,
-    transform .2s ease,
-    border-color .2s ease;
 }
 
-.modal__close-floating:hover{
-  opacity:1;
-  transform:translateX(-50%) translateY(-2px);
-  border-color:rgba(255,255,255,.4);
-}
 /* git */
