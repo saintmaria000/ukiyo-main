@@ -18,6 +18,17 @@
   /* =========================================================
      Sector 02. Config / 可変値
   ========================================================= */
+  const DEFAULT_MOVE_PROFILE = {
+    driftForceMul: 1,
+    centerBiasMul: 1,
+    maxSpeedMul: 1,
+    noiseFreqMul: 1,
+    wallBounceMul: 1,
+    wallDampingMul: 1,
+    gravityMul: 1,
+    horizonPullMul: 0
+  };
+
   const CONFIG = {
     bg: "#000000",
 
@@ -28,7 +39,7 @@
       background: {
         areaBgColor: "#ff1515",
         areaBgAlpha: 0.60,
-        areaBgSoftAlpha: 0,
+        areaBgSoftAlpha: 0.7,
         showAreaDebugFill: false,
         showAreaDebugStroke: false,
         areaStrokeColor: "rgba(255,255,255,0.10)"
@@ -44,7 +55,7 @@
 
         sideInset: 18,
         topInset: 9,
-        bottomInset: 20,
+        bottomInset: 20
       },
 
       main: {
@@ -67,9 +78,10 @@
           {
             name: "mediumA",
             radius: 30,
-            count: 1,
+            count: 2,
             alpha: 0.95,
             spawnAngleDeg: 214,
+            spawnSpreadStepDeg: 26,
             spawnDistanceMul: 1.0,
             moveProfile: {
               driftForceMul: 0.96,
@@ -85,9 +97,10 @@
           {
             name: "smallA",
             radius: 17,
-            count: 1,
+            count: 3,
             alpha: 0.92,
             spawnAngleDeg: 34,
+            spawnSpreadStepDeg: 24,
             spawnDistanceMul: 1.0,
             moveProfile: {
               driftForceMul: 1.12,
@@ -140,9 +153,9 @@
 
       metaball: {
         joinMul: 1.62,
-        threshold: 132,
-        blur: 14,
-        pad: 34
+        threshold: 148,
+        blur: 9,
+        pad: 28
       },
 
       halo: {
@@ -400,10 +413,6 @@
 
   /* =========================================================
      Sector 07. Logo Target Build
-     ---------------------------------------------------------
-     役割:
-     - revealLogo と同じ位置・サイズを使って
-       文字ターゲット点群を構築する
   ========================================================= */
   function buildLogoTargetPoints() {
     state.logoTargets.length = 0;
@@ -656,19 +665,22 @@
     const safeMargin = 10;
     const minDistFromMain = mainR + r + gap;
 
+    const baseAngleDeg = kindDef.spawnAngleDeg ?? rand(0, 360);
+    const spreadStepDeg = kindDef.spawnSpreadStepDeg ?? 18;
+
     const presets = {
       mediumA: {
-        angleDeg: 214,
+        angleDeg: baseAngleDeg + indexWithinKind * spreadStepDeg,
         distMul: 1.18
       },
       smallA: {
-        angleDeg: 34,
+        angleDeg: baseAngleDeg + indexWithinKind * spreadStepDeg,
         distMul: 1.72
       }
     };
 
     const preset = presets[kindDef.name] || {
-      angleDeg: kindDef.spawnAngleDeg ?? rand(0, 360),
+      angleDeg: baseAngleDeg + indexWithinKind * spreadStepDeg,
       distMul: kindDef.spawnDistanceMul ?? 1.25
     };
 
@@ -734,16 +746,7 @@
       seed: rand(0, 1000),
       indexWithinKind,
 
-      moveProfile: kindDef.moveProfile || {
-        driftForceMul: 1,
-        centerBiasMul: 1,
-        maxSpeedMul: 1,
-        noiseFreqMul: 1,
-        wallBounceMul: 1,
-        wallDampingMul: 1,
-        gravityMul: 1,
-        horizonPullMul: 0
-      },
+      moveProfile: kindDef.moveProfile || DEFAULT_MOVE_PROFILE,
 
       driftTargetX: rand(bounds.minX + r, bounds.maxX - r),
       driftTargetY: rand(bounds.minY + r, bounds.maxY - r),
@@ -974,7 +977,7 @@
 
   function applyWaterBounds(d, bounds) {
     const base = CONFIG.water.aux.wall;
-    const mp = d.moveProfile || {};
+    const mp = d.moveProfile || DEFAULT_MOVE_PROFILE;
 
     const wallBounce = base.wallBounce * (mp.wallBounceMul || 1);
     const wallDamping = base.wallDamping * (mp.wallDampingMul || 1);
@@ -1034,17 +1037,7 @@
     for (const d of state.water.auxDroplets) {
       d.life += dt;
 
-      const mp = d.moveProfile || {
-        driftForceMul: 1,
-        centerBiasMul: 1,
-        maxSpeedMul: 1,
-        noiseFreqMul: 1,
-        wallBounceMul: 1,
-        wallDampingMul: 1,
-        gravityMul: 1,
-        horizonPullMul: 0
-      };
-
+      const mp = d.moveProfile || DEFAULT_MOVE_PROFILE;
       const nf = mp.noiseFreqMul || 1;
 
       d.driftTargetTimer -= dt;
@@ -1393,10 +1386,10 @@
       centerY,
       radius
     );
-    body.addColorStop(0, "rgba(255,255,255,0.12)");
-    body.addColorStop(0.38, "rgba(255,255,255,0.055)");
-    body.addColorStop(0.72, "rgba(255,255,255,0.028)");
-    body.addColorStop(1, "rgba(255,255,255,0.01)");
+    body.addColorStop(0, "rgba(255,255,255,0.10)");
+    body.addColorStop(0.28, "rgba(255,255,255,0.050)");
+    body.addColorStop(0.62, "rgba(255,255,255,0.020)");
+    body.addColorStop(1, "rgba(255,255,255,0.006)");
 
     cctx.fillStyle = body;
     cctx.fillRect(0, 0, bounds.w, bounds.h);
@@ -1405,7 +1398,7 @@
     cctx.drawImage(maskCanvas, 0, 0);
 
     cctx.globalCompositeOperation = "source-over";
-    cctx.globalAlpha = 0.18 + hintK * 0.05;
+    cctx.globalAlpha = 0.11 + hintK * 0.035;
     cctx.drawImage(maskCanvas, 0, 0);
     cctx.globalAlpha = 1;
 
@@ -1421,7 +1414,7 @@
         0,
         Math.PI * 2
       );
-      cctx.fillStyle = "rgba(255,255,255,0.055)";
+      cctx.fillStyle = "rgba(255,255,255,0.040)";
       cctx.fill();
     }
 
@@ -1446,13 +1439,7 @@
     const groups = buildDropletGroups(items);
 
     for (const group of groups) {
-      if (group.length === 1) {
-        const item = group[0];
-        if (item.type === "main") drawMainDroplet(time, hintK);
-        else drawSingleAuxDroplet(item.source, time);
-      } else {
-        drawMetaballGroup(group, hintK);
-      }
+      drawMetaballGroup(group, hintK);
     }
   }
 
@@ -1626,11 +1613,7 @@
     const groups = buildDropletGroups(items);
 
     for (const group of groups) {
-      if (group.length === 1) {
-        drawSingleMirrorReflection(group[0], time, hintK);
-      } else {
-        drawMetaballMirrorReflection(group, hintK);
-      }
+      drawMetaballMirrorReflection(group, hintK);
     }
 
     ctx.restore();
@@ -2289,5 +2272,3 @@
 
   boot();
 })();
-
-// aaaaaa
