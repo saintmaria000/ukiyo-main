@@ -41,7 +41,7 @@
     water: {
       background: {
         areaBgColor: "#ff1515",
-        areaBgAlpha: 0.60,
+        areaBgAlpha: 0,
         areaBgSoftAlpha: 0,
         showAreaDebugFill: false,
         showAreaDebugStroke: false,
