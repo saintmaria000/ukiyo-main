@@ -4,9 +4,6 @@
 
   /* =========================================================
      Sector 01. DOM / Base
-     ---------------------------------------------------------
-     役割:
-     - 描画先 canvas と各DOM参照の取得
   ========================================================= */
   const canvas = document.getElementById("particle-canvas");
   if (!canvas) return;
@@ -20,33 +17,14 @@
 
   /* =========================================================
      Sector 02. Config / 可変値
-     ---------------------------------------------------------
-     役割:
-     - 演出全体の調整値
-     - 水滴系は「完全固定範囲」「サイズ依存分離」
-     - 今回は 3粒構成（主1 + 補助2）
-     - 主水滴は画面サイズに応じてレスポンシブ
-     - 補助水滴は初期位置追従をやめ、範囲内を自由漂流
   ========================================================= */
   const CONFIG = {
-    /* -------------------------------------------------------
-       共通背景
-    ------------------------------------------------------- */
     bg: "#000000",
 
-    /* -------------------------------------------------------
-       水平線の基準帯
-    ------------------------------------------------------- */
     horizonYMin: 0.58,
     horizonYMax: 0.62,
 
-    /* -------------------------------------------------------
-       水滴ワールド全体設定
-    ------------------------------------------------------- */
     water: {
-      /* -----------------------------------------------------
-         水滴範囲内の背景色設定
-      ----------------------------------------------------- */
       background: {
         areaBgColor: "#ff1515",
         areaBgAlpha: 0.60,
@@ -56,9 +34,6 @@
         areaStrokeColor: "rgba(255,255,255,0.10)"
       },
 
-      /* -----------------------------------------------------
-         水滴範囲設定
-      ----------------------------------------------------- */
       area: {
         centerXRatio: 0.5,
         centerYRatio: 0.5,
@@ -72,10 +47,6 @@
         bottomInset: -20
       },
 
-      /* -----------------------------------------------------
-         主水滴
-         - 主張を少し抑え、補助滴との構図バランスを改善
-      ----------------------------------------------------- */
       main: {
         radius: 92,
 
@@ -91,13 +62,6 @@
         rippleAmpB: 0.008
       },
 
-      /* -----------------------------------------------------
-         従水滴
-         - 3粒構成:
-           主1 + 補助2（mediumA / smallA）
-         - 初期配置は範囲内でデザイン的に美しい位置を採用
-         - 移動はアンカー追従を廃止し、自由漂流に変更
-      ----------------------------------------------------- */
       aux: {
         kinds: [
           {
@@ -143,9 +107,6 @@
           smallA: 24
         },
 
-        /* ---------------------------------------------------
-           自由漂流
-        --------------------------------------------------- */
         motion: {
           driftForce: 2.25,
           driftDamping: 0.994,
@@ -155,17 +116,11 @@
           centerBias: 0.42
         },
 
-        /* ---------------------------------------------------
-           壁との反応
-        --------------------------------------------------- */
         wall: {
           wallBounce: 0.76,
           wallDamping: 0.9
         },
 
-        /* ---------------------------------------------------
-           従水滴の見た目
-        --------------------------------------------------- */
         visual: {
           wobbleAmp: 0.11,
           wobbleSpeedA: 1.18,
@@ -178,17 +133,11 @@
         }
       },
 
-      /* -----------------------------------------------------
-         接近変形
-      ----------------------------------------------------- */
       contact: {
         contactStartMul: 1.78,
         contactFullMul: 1.08
       },
 
-      /* -----------------------------------------------------
-         メタボール接合
-      ----------------------------------------------------- */
       metaball: {
         joinMul: 1.62,
         threshold: 132,
@@ -196,27 +145,18 @@
         pad: 34
       },
 
-      /* -----------------------------------------------------
-         ハロー
-      ----------------------------------------------------- */
       halo: {
         radiusRatio: 0.16,
         alphaCore: 0.12,
         alphaMid: 0.05
       },
 
-      /* -----------------------------------------------------
-         水面
-      ----------------------------------------------------- */
       waterSurface: {
         lineCount: 10,
         lineSpacing: 8,
         amp: 0.8
       },
 
-      /* -----------------------------------------------------
-         反射
-      ----------------------------------------------------- */
       reflection: {
         mainBodyAlpha: 0.12,
         auxBodyAlphaMul: 0.08,
@@ -228,9 +168,6 @@
       }
     },
 
-    /* -------------------------------------------------------
-       フェーズ時間
-    ------------------------------------------------------- */
     phase: {
       hint: 0.15,
       burst: 1.0,
@@ -242,9 +179,6 @@
 
     logoHoldAfterReveal: 1.42,
 
-    /* -------------------------------------------------------
-       revealLogo
-    ------------------------------------------------------- */
     reveal: {
       dropFromY: -148,
       dropOvershoot: 18,
@@ -256,9 +190,13 @@
       finalScale: 1.0
     },
 
-    /* -------------------------------------------------------
-       破片演出
-    ------------------------------------------------------- */
+    logoMask: {
+      fallbackText: "憂き世",
+      sampleStep: 4,
+      insetRatio: 0.08,
+      alphaThreshold: 24
+    },
+
     shardCount: 160,
     shardNearRatio: 0.16,
     shardMidRatio: 0.60,
@@ -319,6 +257,9 @@
     flash: 0,
     revealShown: false,
     entranceDoneFired: false,
+
+    logoTargets: [],
+    logoTargetRect: null,
 
     water: {
       auxDroplets: [],
@@ -392,6 +333,14 @@
     };
   }
 
+  function shuffleInPlace(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
   /* =========================================================
      Sector 06. Resize / Layout
   ========================================================= */
@@ -410,11 +359,6 @@
     cx = w * CONFIG.water.area.centerXRatio;
     cy = h * CONFIG.water.area.centerYRatio + CONFIG.water.area.mainOffsetY;
     horizonY = h * lerp(CONFIG.horizonYMin, CONFIG.horizonYMax, 0.5);
-
-    if (!started) {
-      createShardField();
-      initWaterDroplets();
-    }
   }
 
   function getMainBaseRadius() {
@@ -455,7 +399,119 @@
   }
 
   /* =========================================================
-     Sector 07. Shards / Generate
+     Sector 07. Logo Target Build
+     ---------------------------------------------------------
+     役割:
+     - revealLogo と同じ位置・サイズを使って
+       文字ターゲット点群を構築する
+  ========================================================= */
+  function buildLogoTargetPoints() {
+    state.logoTargets.length = 0;
+    state.logoTargetRect = null;
+
+    if (!revealLogo) return;
+
+    const rect = revealLogo.getBoundingClientRect();
+    const width = Math.max(8, Math.round(rect.width));
+    const height = Math.max(8, Math.round(rect.height));
+
+    state.logoTargetRect = {
+      left: rect.left,
+      top: rect.top,
+      width,
+      height
+    };
+
+    const text = (revealLogo.textContent || "").replace(/\s+/g, "").trim() || CONFIG.logoMask.fallbackText;
+    const style = window.getComputedStyle(revealLogo);
+
+    const off = document.createElement("canvas");
+    off.width = width;
+    off.height = height;
+    const octx = off.getContext("2d", { willReadFrequently: true });
+    if (!octx) return;
+
+    octx.clearRect(0, 0, width, height);
+    octx.fillStyle = "#fff";
+    octx.textAlign = "center";
+    octx.textBaseline = "middle";
+
+    const fontStyle = style.fontStyle || "normal";
+    const fontWeight = style.fontWeight || "400";
+    const fontSize = style.fontSize || `${Math.max(24, Math.round(height * 0.7))}px`;
+    const fontFamily = style.fontFamily || `"Yu Mincho", serif`;
+
+    octx.font = `${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`;
+
+    const insetX = width * CONFIG.logoMask.insetRatio;
+    const insetY = height * CONFIG.logoMask.insetRatio;
+
+    octx.save();
+    octx.translate(width * 0.5, height * 0.5);
+    octx.fillText(text, 0, 0);
+    octx.restore();
+
+    const img = octx.getImageData(0, 0, width, height).data;
+    const pts = [];
+    const step = CONFIG.logoMask.sampleStep;
+    const threshold = CONFIG.logoMask.alphaThreshold;
+
+    for (let y = Math.max(0, insetY | 0); y < height - insetY; y += step) {
+      for (let x = Math.max(0, insetX | 0); x < width - insetX; x += step) {
+        const a = img[(x + y * width) * 4 + 3];
+        if (a >= threshold) {
+          pts.push({
+            x: rect.left + x,
+            y: rect.top + y
+          });
+        }
+      }
+    }
+
+    if (!pts.length) {
+      pts.push({
+        x: rect.left + width * 0.5,
+        y: rect.top + height * 0.5
+      });
+    }
+
+    state.logoTargets = shuffleInPlace(pts);
+  }
+
+  function getAnyLogoTarget() {
+    if (state.logoTargets.length) {
+      return state.logoTargets[(Math.random() * state.logoTargets.length) | 0];
+    }
+
+    if (state.logoTargetRect) {
+      return {
+        x: state.logoTargetRect.left + state.logoTargetRect.width * 0.5,
+        y: state.logoTargetRect.top + state.logoTargetRect.height * 0.5
+      };
+    }
+
+    return { x: cx, y: cy };
+  }
+
+  function assignShardTargets() {
+    const pts = state.logoTargets.length ? state.logoTargets.slice() : [getAnyLogoTarget()];
+    shuffleInPlace(pts);
+
+    for (let i = 0; i < state.shards.length; i++) {
+      const p = pts[i % pts.length];
+      state.shards[i].targetX = p.x;
+      state.shards[i].targetY = p.y;
+    }
+
+    for (let i = 0; i < state.inflow.length; i++) {
+      const p = pts[(i + state.shards.length) % pts.length];
+      state.inflow[i].targetX = p.x;
+      state.inflow[i].targetY = p.y;
+    }
+  }
+
+  /* =========================================================
+     Sector 08. Shards / Generate
   ========================================================= */
   function createShardField() {
     state.shards.length = 0;
@@ -473,6 +529,8 @@
     for (let i = 0; i < CONFIG.gravityInflowCount; i++) {
       state.inflow.push(createInflowShard());
     }
+
+    assignShardTargets();
   }
 
   function createShard(depthBand) {
@@ -509,6 +567,8 @@
     const speed = baseSpeed * spreadMul;
     const vz = rand(-1.15, 1.45) * (depth > 0.6 ? 1.35 : 1.0);
 
+    const t = getAnyLogoTarget();
+
     return {
       type: isFlat ? "flat" : "needle",
       depthBand,
@@ -527,7 +587,9 @@
       edgeSeed: rand(0, 1000),
       alpha: lerp(0.28, 0.92, depth),
       fillAlpha: rand(0.02, 0.08),
-      dead: false
+      dead: false,
+      targetX: t.x,
+      targetY: t.y
     };
   }
 
@@ -552,6 +614,7 @@
     const depth = rand(0.18, 0.82);
     const isFlat = Math.random() < 0.28;
     const scale = lerp(0.42, 1.55, depth);
+    const t = getAnyLogoTarget();
 
     return {
       type: isFlat ? "flat" : "needle",
@@ -570,12 +633,14 @@
       edgeSeed: rand(0, 1000),
       alpha: lerp(0.18, 0.78, depth),
       fillAlpha: rand(0.015, 0.06),
-      dead: false
+      dead: false,
+      targetX: t.x,
+      targetY: t.y
     };
   }
 
   /* =========================================================
-     Sector 08. Water System / Generate & Model
+     Sector 09. Water System / Generate & Model
   ========================================================= */
   function createWaterDroplet(kindDef, indexWithinKind) {
     const bounds = getWaterBounds();
@@ -612,9 +677,7 @@
     let y = cy;
 
     for (let i = 0; i < 40; i++) {
-      const angle =
-        (preset.angleDeg + rand(-10, 10)) * Math.PI / 180;
-
+      const angle = (preset.angleDeg + rand(-10, 10)) * Math.PI / 180;
       const dist = minDistFromMain * (preset.distMul + rand(-0.08, 0.08));
 
       const tx = cx + Math.cos(angle) * dist;
@@ -883,7 +946,7 @@
   }
 
   /* =========================================================
-     Sector 09. Phase
+     Sector 10. Phase
   ========================================================= */
   function getPhase(t) {
     if (t < T_HINT) return "hint";
@@ -896,7 +959,7 @@
   }
 
   /* =========================================================
-     Sector 10. Water System / Update
+     Sector 11. Water System / Update
   ========================================================= */
   function limitDropletSpeed(d) {
     const baseMaxV = CONFIG.water.aux.motion.maxSpeed;
@@ -1040,7 +1103,7 @@
   }
 
   /* =========================================================
-     Sector 11. Water System / Draw
+     Sector 12. Water System / Draw
   ========================================================= */
   function tracePath(pts) {
     if (!pts || pts.length < 2) return;
@@ -1394,7 +1457,7 @@
   }
 
   /* =========================================================
-     Sector 12. Background / Halo / Water
+     Sector 13. Background / Halo / Water
   ========================================================= */
   function drawBackground(time) {
     ctx.clearRect(0, 0, w, h);
@@ -1550,7 +1613,7 @@
   }
 
   /* =========================================================
-     Sector 13. Reflection
+     Sector 14. Reflection
   ========================================================= */
   function drawReflection(time, hintK) {
     ctx.save();
@@ -1651,7 +1714,7 @@
   }
 
   /* =========================================================
-     Sector 14. Shards / Update
+     Sector 15. Shards / Update
   ========================================================= */
   function getSnapRadius(s) {
     return s.depthBand === "near" ? CONFIG.gatherSnapRadiusNear : CONFIG.gatherSnapRadius;
@@ -1682,8 +1745,12 @@
   function updateShardGather(s, dt, t) {
     const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
     const pull = lerp(18, CONFIG.gatherMaxPull, easeInExpo(tk));
-    const toX = cx - s.x;
-    const toY = cy - s.y;
+
+    const targetX = s.targetX ?? cx;
+    const targetY = s.targetY ?? cy;
+
+    const toX = targetX - s.x;
+    const toY = targetY - s.y;
     const dist = Math.hypot(toX, toY) || 1;
     const nx = toX / dist;
     const ny = toY / dist;
@@ -1698,8 +1765,8 @@
       const snap = snapT * snapT;
       s.dx = lerp(s.dx, nx * pull * 1.7, snap * 0.32);
       s.dy = lerp(s.dy, ny * pull * 1.7, snap * 0.32);
-      s.x = lerp(s.x, cx, snap * 0.18);
-      s.y = lerp(s.y, cy, snap * 0.18);
+      s.x = lerp(s.x, targetX, snap * 0.18);
+      s.y = lerp(s.y, targetY, snap * 0.18);
       s.z = lerp(s.z, 0, snap * 0.18);
     }
 
@@ -1753,8 +1820,12 @@
 
       const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
       const pull = lerp(160, CONFIG.gatherInflowPull, easeInExpo(tk));
-      const toX = cx - s.x;
-      const toY = cy - s.y;
+
+      const targetX = s.targetX ?? cx;
+      const targetY = s.targetY ?? cy;
+
+      const toX = targetX - s.x;
+      const toY = targetY - s.y;
       const dist = Math.hypot(toX, toY) || 1;
       const nx = toX / dist;
       const ny = toY / dist;
@@ -1765,8 +1836,8 @@
       if (dist < CONFIG.gatherSnapRadius) {
         const snapT = 1 - dist / CONFIG.gatherSnapRadius;
         const snap = snapT * snapT;
-        s.x = lerp(s.x, cx, snap * 0.22);
-        s.y = lerp(s.y, cy, snap * 0.22);
+        s.x = lerp(s.x, targetX, snap * 0.22);
+        s.y = lerp(s.y, targetY, snap * 0.22);
       }
 
       s.x += s.dx * dt;
@@ -1787,7 +1858,7 @@
   }
 
   /* =========================================================
-     Sector 15. Shards / Draw
+     Sector 16. Shards / Draw
   ========================================================= */
   function projectScale(z) {
     return 1 + z / 420;
@@ -1895,7 +1966,7 @@
   }
 
   /* =========================================================
-     Sector 16. Compression Flash
+     Sector 17. Compression Flash
   ========================================================= */
   function drawCompressionFlash() {
     if (state.flash <= 0.001) return;
@@ -1925,7 +1996,7 @@
   }
 
   /* =========================================================
-     Sector 17. Brand / Reveal Logo
+     Sector 18. Brand / Reveal Logo
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
@@ -2012,7 +2083,7 @@
   }
 
   /* =========================================================
-     Sector 18. Gate
+     Sector 19. Gate
   ========================================================= */
   function openEntranceGateFallback() {
     if (!entranceGate) return;
@@ -2037,7 +2108,7 @@
   }
 
   /* =========================================================
-     Sector 19. Render
+     Sector 20. Render
   ========================================================= */
   function render(ts) {
     const now = ts * 0.001;
@@ -2130,7 +2201,7 @@
   }
 
   /* =========================================================
-     Sector 20. Start / Trigger
+     Sector 21. Start / Trigger
   ========================================================= */
   function startEntrance() {
     if (started) return;
@@ -2161,8 +2232,17 @@
   }
 
   /* =========================================================
-     Sector 21. Boot / Events
+     Sector 22. Boot / Resize / Events
   ========================================================= */
+  function rebuildIdleWorld() {
+    if (started) return;
+    prepareLogos();
+    resize();
+    buildLogoTargetPoints();
+    createShardField();
+    initWaterDroplets();
+  }
+
   function boot() {
     window.clearTimeout(doneTimer);
     doneTimer = 0;
@@ -2176,10 +2256,7 @@
     state.revealShown = false;
     state.entranceDoneFired = false;
 
-    resize();
-    createShardField();
-    initWaterDroplets();
-    prepareLogos();
+    rebuildIdleWorld();
 
     if (motionQuery.matches) {
       setBrandOpacity(1);
@@ -2190,7 +2267,7 @@
     rafId = requestAnimationFrame(render);
   }
 
-  window.addEventListener("resize", resize, { passive: true });
+  window.addEventListener("resize", rebuildIdleWorld, { passive: true });
   window.addEventListener("pointerdown", handleTrigger, { passive: false });
   window.addEventListener("keydown", handleTrigger);
 
