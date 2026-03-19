@@ -156,7 +156,7 @@ a{
   --font-body-xs:clamp(.78rem, .85vw, .86rem);
 
   --font-ui-xs:clamp(.78rem, .8vw, .86rem);
-  --font-ui-sm:clamp(.9rem, .98vw, 1rem);
+  --font-ui-sm:clamp(2rem, .98vw, 1rem);
 
   --ls-wide:.35em;
   --ls-title:.28em;
@@ -1284,10 +1284,10 @@ body.view-right .inner-shell{
     --contact-block-size:1.18rem;
     --contact-block-spacing:.08em;
     --contact-block-margin-top:28px;
-    --contact-label-size:1.42rem;
+    --contact-label-size:1.72rem;
     --contact-label-spacing:.12em;
     --contact-label-margin-top:22px;
-    --contact-value-size:1.34rem;
+    --contact-value-size:1.94rem;
 
     /* About */
     --about-content-pad-top:0px;
