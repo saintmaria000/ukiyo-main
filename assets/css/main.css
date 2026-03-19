@@ -1644,5 +1644,39 @@ body.view-right .inner-shell{
     max-width:none;
   }
 }
+/* =========================================================
+   Modal 下部フロート閉じるボタン
+========================================================= */
+.modal__close-floating{
+  position:fixed;
+  left:50%;
+  bottom:28px;
+  transform:translateX(-50%);
+  z-index:calc(var(--z-modal) + 1);
 
+  font-size:.9rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:#fff;
+
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(6px);
+
+  border:1px solid rgba(255,255,255,.2);
+  padding:8px 18px;
+
+  opacity:.75;
+  cursor:pointer;
+
+  transition:
+    opacity .2s ease,
+    transform .2s ease,
+    border-color .2s ease;
+}
+
+.modal__close-floating:hover{
+  opacity:1;
+  transform:translateX(-50%) translateY(-2px);
+  border-color:rgba(255,255,255,.4);
+}
 /* git */
