@@ -1155,7 +1155,44 @@ body.view-right .inner-shell{
   cursor:pointer;
   opacity:.85;
 }
+/* =========================================================
+   Modal 下部クローズ（線のみ）
+========================================================= */
+.modal__close-line{
+  position:fixed;
+  left:50%;
+  bottom:28px;
+  transform:translateX(-50%);
+  z-index:calc(var(--z-modal) + 2);
 
+  width:56px;
+  height:1px;
+  background:rgba(255,255,255,.4);
+
+  border:none;
+  padding:0;
+  margin:0;
+
+  opacity:.55;
+  cursor:pointer;
+
+  transition:
+    opacity .2s ease,
+    transform .2s ease,
+    width .2s ease;
+}
+
+.modal__close-line:hover{
+  opacity:1;
+  transform:translateX(-50%) translateY(-2px);
+  width:72px;
+}
+
+/* モーダル閉時は消す */
+.modal:not(.modal--open) .modal__close-line{
+  opacity:0;
+  pointer-events:none;
+}
 
 /* =========================================================
    8. 光演出
