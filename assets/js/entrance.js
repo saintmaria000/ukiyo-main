@@ -29,8 +29,8 @@
         areaBgColor: "#ff1515",
         areaBgAlpha: 0.60,
         areaBgSoftAlpha: 0.7,
-        showAreaDebugFill: true,
-        showAreaDebugStroke: true,
+        showAreaDebugFill: false,
+        showAreaDebugStroke: false,
         areaStrokeColor: "rgba(255,255,255,0.10)"
       },
 
