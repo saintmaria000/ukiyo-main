@@ -4,9 +4,6 @@
 
   /* =========================================================
      Sector 01. DOM / Base
-     ---------------------------------------------------------
-     役割:
-     - 描画先 canvas と各DOM参照の取得
   ========================================================= */
   const canvas = document.getElementById("particle-canvas");
   if (!canvas) return;
@@ -20,140 +17,188 @@
 
   /* =========================================================
      Sector 02. Config / 可変値
-     ---------------------------------------------------------
-     役割:
-     - 演出全体の調整値
-     - 水滴系は元構造を維持
-     - 今回の変更は「文字収束側」中心
-       1. 破片の gather 先を中央一点 → revealLogo 文字形状へ変更
-       2. revealLogo は落下させず、最終位置にそのまま出す
   ========================================================= */
+  const DEFAULT_MOVE_PROFILE = {
+    driftForceMul: 1,
+    centerBiasMul: 1,
+    maxSpeedMul: 1,
+    noiseFreqMul: 1,
+    wallBounceMul: 1,
+    wallDampingMul: 1,
+    gravityMul: 1,
+    horizonPullMul: 0,
+    targetPullMul: 1,
+    tangentialMul: 0,
+    separationMul: 1
+  };
+
   const CONFIG = {
-    /* -------------------------------------------------------
-       共通背景
-    ------------------------------------------------------- */
     bg: "#000000",
 
-    /* -------------------------------------------------------
-       水平線の基準帯
-    ------------------------------------------------------- */
     horizonYMin: 0.58,
     horizonYMax: 0.62,
 
-    /* -------------------------------------------------------
-       水滴ワールド全体設定
-    ------------------------------------------------------- */
     water: {
-      /* -----------------------------------------------------
-         水滴範囲内の背景色設定
-      ----------------------------------------------------- */
       background: {
         areaBgColor: "#ff1515",
-        areaBgAlpha: 0.60,
-        areaBgSoftAlpha: 0.7,
-        showAreaDebugFill: true,
-        showAreaDebugStroke: true,
+        areaBgAlpha: 0,
+        areaBgSoftAlpha: 0,
+        showAreaDebugFill: false,
+        showAreaDebugStroke: false,
         areaStrokeColor: "rgba(255,255,255,0.10)"
       },
 
-      /* -----------------------------------------------------
-         水滴範囲設定
-      ----------------------------------------------------- */
       area: {
         centerXRatio: 0.5,
         centerYRatio: 0.5,
         mainOffsetY: -54,
 
         fixedWidth: 500,
-        fixedHeight: 315,
+        fixedHeight: 400,
 
         sideInset: 18,
         topInset: 9,
-        bottomInset: -20
+        bottomInset: 20
       },
 
-      /* -----------------------------------------------------
-         主水滴
-      ----------------------------------------------------- */
       main: {
-        radius: 104,
+        radius: 92,
 
-        viewportMinScale: 0.72,
-        viewportMaxScale: 1.18,
+        viewportMinScale: 0.74,
+        viewportMaxScale: 1.12,
         responsiveBaseWidth: 1440,
         responsiveBaseHeight: 900,
 
-        wobbleAmp: 0.108,
+        wobbleAmp: 0.102,
         wobbleSpeedA: 0.92,
         wobbleSpeedB: 1.42,
-        rippleAmpA: 0.012,
-        rippleAmpB: 0.010
+        rippleAmpA: 0.010,
+        rippleAmpB: 0.008
       },
 
-      /* -----------------------------------------------------
-         従水滴
-      ----------------------------------------------------- */
       aux: {
-        kinds: [
+        instances: [
           {
-            name: "mediumA",
-            radius: 22,
-            count: 1,
-            alpha: 0.95,
-            spawnAngleDeg: 220,
-            spawnDistanceMul: 1.02,
-            orbitRadiusX: 62,
-            orbitRadiusY: 44,
+            name: "auxA",
+            radius: 34,
+            alpha: 0.96,
+            spawnPreset: {
+              angleDeg: 214,
+              distMul: 1.10,
+              angleJitterDeg: 14,
+              distJitterMul: 0.10
+            },
             moveProfile: {
-              driftForceMul: 0.84,
-              centerBiasMul: 0.72,
-              maxSpeedMul: 0.84,
+              driftForceMul: 0.92,
+              centerBiasMul: 0.12,
+              maxSpeedMul: 0.82,
               noiseFreqMul: 0.88,
-              wallBounceMul: 0.96,
-              wallDampingMul: 1.00,
-              gravityMul: 0.34,
-              horizonPullMul: 0.18
+              wallBounceMul: 0.94,
+              wallDampingMul: 1.0,
+              gravityMul: 0.26,
+              horizonPullMul: 0.12,
+              targetPullMul: 0.78,
+              tangentialMul: 0.28,
+              separationMul: 1.05
             }
           },
           {
-            name: "smallA",
-            radius: 11,
-            count: 1,
-            alpha: 0.90,
-            spawnAngleDeg: 56,
-            spawnDistanceMul: 1.58,
-            orbitRadiusX: 148,
-            orbitRadiusY: 92,
+            name: "auxB",
+            radius: 27,
+            alpha: 0.94,
+            spawnPreset: {
+              angleDeg: 326,
+              distMul: 1.20,
+              angleJitterDeg: 16,
+              distJitterMul: 0.11
+            },
             moveProfile: {
-              driftForceMul: 1.08,
-              centerBiasMul: 0.20,
-              maxSpeedMul: 1.06,
+              driftForceMul: 0.98,
+              centerBiasMul: 0.10,
+              maxSpeedMul: 0.88,
+              noiseFreqMul: 0.94,
+              wallBounceMul: 0.96,
+              wallDampingMul: 1.0,
+              gravityMul: 0.34,
+              horizonPullMul: 0.16,
+              targetPullMul: 0.92,
+              tangentialMul: 0.36,
+              separationMul: 1.14
+            }
+          },
+          {
+            name: "auxC",
+            radius: 16,
+            alpha: 0.92,
+            spawnPreset: {
+              angleDeg: 46,
+              distMul: 1.68,
+              angleJitterDeg: 22,
+              distJitterMul: 0.15
+            },
+            moveProfile: {
+              driftForceMul: 1.10,
+              centerBiasMul: 0.08,
+              maxSpeedMul: 1.00,
               noiseFreqMul: 1.08,
-              wallBounceMul: 1.03,
+              wallBounceMul: 1.0,
               wallDampingMul: 0.99,
-              gravityMul: 0.72,
-              horizonPullMul: 0.54
+              gravityMul: 0.56,
+              horizonPullMul: 0.38,
+              targetPullMul: 1.04,
+              tangentialMul: 0.50,
+              separationMul: 1.28
+            }
+          },
+          {
+            name: "auxD",
+            radius: 11,
+            alpha: 0.90,
+            spawnPreset: {
+              angleDeg: 136,
+              distMul: 1.52,
+              angleJitterDeg: 24,
+              distJitterMul: 0.16
+            },
+            moveProfile: {
+              driftForceMul: 1.18,
+              centerBiasMul: 0.06,
+              maxSpeedMul: 1.08,
+              noiseFreqMul: 1.16,
+              wallBounceMul: 1.0,
+              wallDampingMul: 0.98,
+              gravityMul: 0.62,
+              horizonPullMul: 0.46,
+              targetPullMul: 1.10,
+              tangentialMul: 0.58,
+              separationMul: 1.36
             }
           }
         ],
 
         spawnGapFromMain: {
-          mediumA: 12,
-          smallA: 28
+          auxA: 18,
+          auxB: 20,
+          auxC: 26,
+          auxD: 30
         },
 
         motion: {
-          driftForce: 1.45,
-          driftDamping: 0.991,
-          driftNoiseX: 2.0,
-          driftNoiseY: 1.6,
-          maxSpeed: 13.6,
-          centerBias: 1.18
+          driftForce: 2.15,
+          driftDamping: 0.994,
+          driftNoiseX: 2.7,
+          driftNoiseY: 2.1,
+          maxSpeed: 15.0,
+          centerBias: 0.34,
+          targetPull: 1.05,
+          tangentialForce: 0.55,
+          separationForce: 1.28,
+          separationRangeMul: 1.9
         },
 
         wall: {
-          wallBounce: 0.78,
-          wallDamping: 0.88
+          wallBounce: 0.76,
+          wallDamping: 0.9
         },
 
         visual: {
@@ -168,45 +213,30 @@
         }
       },
 
-      /* -----------------------------------------------------
-         接近変形
-      ----------------------------------------------------- */
       contact: {
         contactStartMul: 1.78,
         contactFullMul: 1.08
       },
 
-      /* -----------------------------------------------------
-         メタボール接合
-      ----------------------------------------------------- */
       metaball: {
         joinMul: 1.62,
-        threshold: 132,
-        blur: 14,
-        pad: 34
+        threshold: 148,
+        blur: 9,
+        pad: 28
       },
 
-      /* -----------------------------------------------------
-         ハロー
-      ----------------------------------------------------- */
       halo: {
         radiusRatio: 0.16,
         alphaCore: 0.12,
         alphaMid: 0.05
       },
 
-      /* -----------------------------------------------------
-         水面
-      ----------------------------------------------------- */
       waterSurface: {
         lineCount: 10,
         lineSpacing: 8,
         amp: 0.8
       },
 
-      /* -----------------------------------------------------
-         反射
-      ----------------------------------------------------- */
       reflection: {
         mainBodyAlpha: 0.12,
         auxBodyAlphaMul: 0.08,
@@ -218,9 +248,6 @@
       }
     },
 
-    /* -------------------------------------------------------
-       フェーズ時間
-    ------------------------------------------------------- */
     phase: {
       hint: 0.15,
       burst: 1.0,
@@ -232,11 +259,17 @@
 
     logoHoldAfterReveal: 1.42,
 
-    /* -------------------------------------------------------
-       文字ターゲット生成
-       - revealLogo と同じ位置・サイズを使う
-       - gather終点を文字面へ分散
-    ------------------------------------------------------- */
+    reveal: {
+      dropFromY: -148,
+      dropOvershoot: 18,
+      bounceBackY: -10,
+      dropDuration: 0.68,
+      bounceDuration: 0.24,
+      startScale: 0.93,
+      impactScale: 1.02,
+      finalScale: 1.0
+    },
+
     logoMask: {
       fallbackText: "憂き世",
       sampleStep: 4,
@@ -244,9 +277,6 @@
       alphaThreshold: 24
     },
 
-    /* -------------------------------------------------------
-       破片演出
-    ------------------------------------------------------- */
     shardCount: 160,
     shardNearRatio: 0.16,
     shardMidRatio: 0.60,
@@ -313,10 +343,8 @@
 
     water: {
       auxDroplets: [],
-
       metaballMaskCanvas: document.createElement("canvas"),
       metaballMaskCtx: null,
-
       metaballCompositeCanvas: document.createElement("canvas"),
       metaballCompositeCtx: null
     }
@@ -411,11 +439,6 @@
     cx = w * CONFIG.water.area.centerXRatio;
     cy = h * CONFIG.water.area.centerYRatio + CONFIG.water.area.mainOffsetY;
     horizonY = h * lerp(CONFIG.horizonYMin, CONFIG.horizonYMax, 0.5);
-
-    if (!started) {
-      createShardField();
-      initWaterDroplets();
-    }
   }
 
   function getMainBaseRadius() {
@@ -457,26 +480,12 @@
 
   /* =========================================================
      Sector 07. Logo Target Build
-     ---------------------------------------------------------
-     役割:
-     - revealLogo の最終位置を基準に文字ターゲット点群を作る
-     - 落下演出は使わない
   ========================================================= */
   function buildLogoTargetPoints() {
     state.logoTargets.length = 0;
     state.logoTargetRect = null;
 
     if (!revealLogo) return;
-
-    const prevVisibility = revealLogo.style.visibility;
-    const prevOpacity = revealLogo.style.opacity;
-    const prevDisplay = revealLogo.style.display;
-    const prevTransform = revealLogo.style.transform;
-
-    revealLogo.style.display = "block";
-    revealLogo.style.visibility = "hidden";
-    revealLogo.style.opacity = "0";
-    revealLogo.style.transform = "translate(-50%, -50%)";
 
     const rect = revealLogo.getBoundingClientRect();
     const width = Math.max(8, Math.round(rect.width));
@@ -489,23 +498,14 @@
       height
     };
 
-    const text =
-      (revealLogo.textContent || "").replace(/\s+/g, "").trim() ||
-      CONFIG.logoMask.fallbackText;
-
+    const text = (revealLogo.textContent || "").replace(/\s+/g, "").trim() || CONFIG.logoMask.fallbackText;
     const style = window.getComputedStyle(revealLogo);
+
     const off = document.createElement("canvas");
     off.width = width;
     off.height = height;
     const octx = off.getContext("2d", { willReadFrequently: true });
-
-    if (!octx) {
-      revealLogo.style.display = prevDisplay;
-      revealLogo.style.visibility = prevVisibility;
-      revealLogo.style.opacity = prevOpacity;
-      revealLogo.style.transform = prevTransform;
-      return;
-    }
+    if (!octx) return;
 
     octx.clearRect(0, 0, width, height);
     octx.fillStyle = "#fff";
@@ -552,11 +552,6 @@
     }
 
     state.logoTargets = shuffleInPlace(pts);
-
-    revealLogo.style.display = prevDisplay;
-    revealLogo.style.visibility = prevVisibility;
-    revealLogo.style.opacity = prevOpacity;
-    revealLogo.style.transform = prevTransform;
   }
 
   function getAnyLogoTarget() {
@@ -575,10 +570,7 @@
   }
 
   function assignShardTargets() {
-    const pts = state.logoTargets.length
-      ? state.logoTargets.slice()
-      : [getAnyLogoTarget()];
-
+    const pts = state.logoTargets.length ? state.logoTargets.slice() : [getAnyLogoTarget()];
     shuffleInPlace(pts);
 
     for (let i = 0; i < state.shards.length; i++) {
@@ -650,7 +642,8 @@
     const baseSpeed = lerp(180, 1280, depth) * CONFIG.spreadBoost;
     const speed = baseSpeed * spreadMul;
     const vz = rand(-1.15, 1.45) * (depth > 0.6 ? 1.35 : 1.0);
-    const target = getAnyLogoTarget();
+
+    const t = getAnyLogoTarget();
 
     return {
       type: isFlat ? "flat" : "needle",
@@ -671,8 +664,8 @@
       alpha: lerp(0.28, 0.92, depth),
       fillAlpha: rand(0.02, 0.08),
       dead: false,
-      targetX: target.x,
-      targetY: target.y
+      targetX: t.x,
+      targetY: t.y
     };
   }
 
@@ -697,7 +690,7 @@
     const depth = rand(0.18, 0.82);
     const isFlat = Math.random() < 0.28;
     const scale = lerp(0.42, 1.55, depth);
-    const target = getAnyLogoTarget();
+    const t = getAnyLogoTarget();
 
     return {
       type: isFlat ? "flat" : "needle",
@@ -717,79 +710,129 @@
       alpha: lerp(0.18, 0.78, depth),
       fillAlpha: rand(0.015, 0.06),
       dead: false,
-      targetX: target.x,
-      targetY: target.y
+      targetX: t.x,
+      targetY: t.y
     };
   }
 
   /* =========================================================
      Sector 09. Water System / Generate & Model
   ========================================================= */
-  function createWaterDroplet(kindDef, indexWithinKind) {
-    const bounds = getWaterBounds();
-    const mainR = getMainBaseRadius();
-    const r = kindDef.radius;
+function createWaterDroplet(instanceDef, indexWithinKind) {
+  const bounds = getWaterBounds();
+  const mainR = getMainBaseRadius();
+  const r = instanceDef.radius;
 
-    const gapMap = CONFIG.water.aux.spawnGapFromMain;
-    const gap =
-      typeof gapMap === "number"
-        ? gapMap
-        : (gapMap[kindDef.name] ?? 16);
+  const gapMap = CONFIG.water.aux.spawnGapFromMain;
+  const gap =
+    typeof gapMap === "number"
+      ? gapMap
+      : (gapMap[instanceDef.name] ?? 16);
 
-    const minDist = mainR + r + gap;
+  const safeMargin = 10;
+  const minDistFromMain = mainR + r + gap;
 
-    const angleDeg = kindDef.spawnAngleDeg ?? rand(0, 360);
-    const angle = angleDeg * Math.PI / 180;
-    const distMul = kindDef.spawnDistanceMul ?? 1;
-    const initialDist = minDist * distMul;
+  // =========================
+  // サイズごとの距離レンジ定義
+  // =========================
+  let distMinMul = 1.1;
+  let distMaxMul = 1.4;
 
-    let x = cx + Math.cos(angle) * initialDist;
-    let y = cy + Math.sin(angle) * initialDist;
-
-    x = clamp(x, bounds.minX + r, bounds.maxX - r);
-    y = clamp(y, bounds.minY + r, bounds.maxY - r);
-
-    const tangent = angle + (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2);
-
-    return {
-      name: kindDef.name,
-      r,
-      alpha: kindDef.alpha,
-      x,
-      y,
-      vx: Math.cos(tangent) * rand(0.8, 2.0),
-      vy: Math.sin(tangent) * rand(0.6, 1.8),
-      scale: 1,
-      life: 0,
-      seed: rand(0, 1000),
-      indexWithinKind,
-
-      moveProfile: kindDef.moveProfile || {
-        driftForceMul: 1,
-        centerBiasMul: 1,
-        maxSpeedMul: 1,
-        noiseFreqMul: 1,
-        wallBounceMul: 1,
-        wallDampingMul: 1,
-        gravityMul: 1,
-        horizonPullMul: 0
-      },
-
-      anchorX: x,
-      anchorY: y,
-      orbitRadiusX: kindDef.orbitRadiusX ?? 96,
-      orbitRadiusY: kindDef.orbitRadiusY ?? 64,
-      orbitPhase: rand(0, Math.PI * 2)
-    };
+  if (instanceDef.name === "auxA") {
+    // 大 → かなり近い
+    distMinMul = 1.05;
+    distMaxMul = 1.22;
+  } else if (instanceDef.name === "auxB") {
+    // 中 → 中距離
+    distMinMul = 1.2;
+    distMaxMul = 1.6;
+  } else {
+    // 小 → 広くランダム
+    distMinMul = 1.3;
+    distMaxMul = 2.2;
   }
+
+  let placed = false;
+  let x = cx;
+  let y = cy;
+
+  for (let i = 0; i < 120; i++) {
+    const angle = rand(0, Math.PI * 2);
+    const distMul = rand(distMinMul, distMaxMul);
+    const dist = minDistFromMain * distMul;
+
+    const tx = cx + Math.cos(angle) * dist;
+    const ty = cy + Math.sin(angle) * dist;
+
+    const insideX =
+      tx >= bounds.minX + r + safeMargin &&
+      tx <= bounds.maxX - r - safeMargin;
+
+    const insideY =
+      ty >= bounds.minY + r + safeMargin &&
+      ty <= bounds.maxY - r - safeMargin;
+
+    if (insideX && insideY) {
+      x = tx;
+      y = ty;
+      placed = true;
+      break;
+    }
+  }
+
+  if (!placed) {
+    const fallbackAngle = rand(0, Math.PI * 2);
+    const fallbackDist = minDistFromMain * distMinMul;
+
+    x = clamp(
+      cx + Math.cos(fallbackAngle) * fallbackDist,
+      bounds.minX + r + safeMargin,
+      bounds.maxX - r - safeMargin
+    );
+
+    y = clamp(
+      cy + Math.sin(fallbackAngle) * fallbackDist,
+      bounds.minY + r + safeMargin,
+      bounds.maxY - r - safeMargin
+    );
+  }
+
+  const launchAngle = rand(0, Math.PI * 2);
+  const anchorAngle = Math.atan2(y - cy, x - cx);
+  const anchorDist = dist2(x, y, cx, cy);
+
+  return {
+    name: instanceDef.name,
+    r,
+    alpha: instanceDef.alpha,
+    x,
+    y,
+    vx: Math.cos(launchAngle) * rand(0.18, 0.9),
+    vy: Math.sin(launchAngle) * rand(0.14, 0.82),
+    scale: 1,
+    life: 0,
+    seed: rand(0, 1000),
+    indexWithinKind,
+
+    moveProfile: instanceDef.moveProfile || DEFAULT_MOVE_PROFILE,
+
+    anchorAngle,
+    anchorDist,
+    orbitDir: Math.random() < 0.5 ? -1 : 1,
+    targetBias: rand(0.88, 1.16),
+
+    driftTargetX: x,
+    driftTargetY: y,
+    driftTargetTimer: rand(0.9, 2.4)
+  };
+}
 
   function initWaterDroplets() {
     state.water.auxDroplets.length = 0;
 
-    for (const kindDef of CONFIG.water.aux.kinds) {
-      for (let i = 0; i < kindDef.count; i++) {
-        state.water.auxDroplets.push(createWaterDroplet(kindDef, i));
-      }
+    const instances = CONFIG.water.aux.instances || [];
+    for (let i = 0; i < instances.length; i++) {
+      state.water.auxDroplets.push(createWaterDroplet(instances[i], i));
     }
   }
 
@@ -1006,7 +1049,7 @@
 
   function applyWaterBounds(d, bounds) {
     const base = CONFIG.water.aux.wall;
-    const mp = d.moveProfile || {};
+    const mp = d.moveProfile || DEFAULT_MOVE_PROFILE;
 
     const wallBounce = base.wallBounce * (mp.wallBounceMul || 1);
     const wallDamping = base.wallDamping * (mp.wallDampingMul || 1);
@@ -1057,6 +1100,32 @@
     }
   }
 
+  function applyAuxSeparation(d) {
+    const M = CONFIG.water.aux.motion;
+    const mp = d.moveProfile || DEFAULT_MOVE_PROFILE;
+
+    let pushX = 0;
+    let pushY = 0;
+
+    for (const other of state.water.auxDroplets) {
+      if (other === d) continue;
+
+      const dx = d.x - other.x;
+      const dy = d.y - other.y;
+      const dist = Math.hypot(dx, dy) || 0.0001;
+      const desired = (d.r + other.r) * M.separationRangeMul;
+
+      if (dist < desired) {
+        const k = 1 - dist / desired;
+        pushX += (dx / dist) * k;
+        pushY += (dy / dist) * k;
+      }
+    }
+
+    d.vx += pushX * M.separationForce * (mp.separationMul || 1);
+    d.vy += pushY * M.separationForce * (mp.separationMul || 1);
+  }
+
   function updateWaterDroplets(dt, tsSec) {
     if (started) return;
 
@@ -1066,55 +1135,71 @@
     for (const d of state.water.auxDroplets) {
       d.life += dt;
 
-      const mp = d.moveProfile || {
-        driftForceMul: 1,
-        centerBiasMul: 1,
-        maxSpeedMul: 1,
-        noiseFreqMul: 1,
-        wallBounceMul: 1,
-        wallDampingMul: 1,
-        gravityMul: 1,
-        horizonPullMul: 0
-      };
-
+      const mp = d.moveProfile || DEFAULT_MOVE_PROFILE;
       const nf = mp.noiseFreqMul || 1;
 
-      const orbitX =
-        d.anchorX +
-        Math.cos(tsSec * (0.22 * nf) + d.orbitPhase) * d.orbitRadiusX;
+      d.driftTargetTimer -= dt;
+      if (d.driftTargetTimer <= 0) {
+        const orbitBase = d.anchorAngle + Math.sin(tsSec * 0.55 + d.seed * 0.13) * 0.42;
+        const orbitRadius =
+          d.anchorDist * (0.94 + Math.sin(tsSec * 0.38 + d.seed * 0.21) * 0.10);
 
-      const orbitY =
-        d.anchorY +
-        Math.sin(tsSec * (0.18 * nf) + d.orbitPhase * 0.9) * d.orbitRadiusY;
+        d.driftTargetX = clamp(
+          cx + Math.cos(orbitBase) * orbitRadius,
+          bounds.minX + d.r,
+          bounds.maxX - d.r
+        );
 
-      const noiseX =
-        Math.sin(tsSec * (0.34 * nf) + d.seed * 0.63) * C.driftNoiseX +
-        Math.sin(tsSec * (0.61 * nf) + d.seed * 1.11) * C.driftNoiseX * 0.24;
+        d.driftTargetY = clamp(
+          cy + Math.sin(orbitBase) * orbitRadius,
+          bounds.minY + d.r,
+          bounds.maxY - d.r
+        );
 
-      const noiseY =
-        Math.cos(tsSec * (0.37 * nf) + d.seed * 0.47) * C.driftNoiseY +
-        Math.sin(tsSec * (0.69 * nf) + d.seed * 0.81) * C.driftNoiseY * 0.18;
+        d.driftTargetTimer = rand(0.8, 2.1);
+      }
 
-      const toOrbitX = orbitX - d.x;
-      const toOrbitY = orbitY - d.y;
-      const orbitLen = Math.hypot(toOrbitX, toOrbitY) || 1;
+      const flowX =
+        Math.sin(tsSec * (0.42 * nf) + d.seed * 0.73) * C.driftNoiseX +
+        Math.cos(tsSec * (0.21 * nf) + d.seed * 1.12) * C.driftNoiseX * 0.42;
+
+      const flowY =
+        Math.cos(tsSec * (0.36 * nf) + d.seed * 0.44) * C.driftNoiseY +
+        Math.sin(tsSec * (0.19 * nf) + d.seed * 0.86) * C.driftNoiseY * 0.36;
+
+      const toTargetX = d.driftTargetX - d.x;
+      const toTargetY = d.driftTargetY - d.y;
+      const targetLen = Math.hypot(toTargetX, toTargetY) || 1;
+
+      const toCenterX = cx - d.x;
+      const toCenterY = cy - d.y;
+      const centerLen = Math.hypot(toCenterX, toCenterY) || 1;
+
+      const tangentialX = (-toCenterY / centerLen) * d.orbitDir;
+      const tangentialY = (toCenterX / centerLen) * d.orbitDir;
+
+      const gravity = 0.06 * (mp.gravityMul || 1);
 
       const horizonPull =
-        d.y < horizonY - 18
+        d.y < horizonY - 20
           ? 0
-          : (d.y - (horizonY - 18)) * 0.0022 * (mp.horizonPullMul || 0);
-
-      const gravity = 0.075 * (mp.gravityMul || 1);
+          : (d.y - (horizonY - 20)) * 0.0018 * (mp.horizonPullMul || 0);
 
       d.vx +=
-        noiseX * dt * C.driftForce * (mp.driftForceMul || 1) +
-        (toOrbitX / orbitLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
+        flowX * dt * C.driftForce * (mp.driftForceMul || 1) +
+        (toTargetX / targetLen) * dt * C.targetPull * (mp.targetPullMul || 1) * d.targetBias +
+        tangentialX * dt * C.tangentialForce * (mp.tangentialMul || 1) +
+        (toCenterX / centerLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
 
       d.vy +=
-        noiseY * dt * C.driftForce * (mp.driftForceMul || 1) +
-        (toOrbitY / orbitLen) * dt * C.centerBias * (mp.centerBiasMul || 1) +
+        flowY * dt * C.driftForce * (mp.driftForceMul || 1) +
+        (toTargetY / targetLen) * dt * C.targetPull * (mp.targetPullMul || 1) * d.targetBias +
+        tangentialY * dt * C.tangentialForce * (mp.tangentialMul || 1) +
+        (toCenterY / centerLen) * dt * C.centerBias * (mp.centerBiasMul || 1) +
         gravity +
         horizonPull;
+
+      applyAuxSeparation(d);
 
       d.vx *= C.driftDamping;
       d.vy *= C.driftDamping;
@@ -1420,10 +1505,10 @@
       centerY,
       radius
     );
-    body.addColorStop(0, "rgba(255,255,255,0.12)");
-    body.addColorStop(0.38, "rgba(255,255,255,0.055)");
-    body.addColorStop(0.72, "rgba(255,255,255,0.028)");
-    body.addColorStop(1, "rgba(255,255,255,0.01)");
+    body.addColorStop(0, "rgba(255,255,255,0.10)");
+    body.addColorStop(0.28, "rgba(255,255,255,0.050)");
+    body.addColorStop(0.62, "rgba(255,255,255,0.020)");
+    body.addColorStop(1, "rgba(255,255,255,0.006)");
 
     cctx.fillStyle = body;
     cctx.fillRect(0, 0, bounds.w, bounds.h);
@@ -1432,7 +1517,7 @@
     cctx.drawImage(maskCanvas, 0, 0);
 
     cctx.globalCompositeOperation = "source-over";
-    cctx.globalAlpha = 0.18 + hintK * 0.05;
+    cctx.globalAlpha = 0.11 + hintK * 0.035;
     cctx.drawImage(maskCanvas, 0, 0);
     cctx.globalAlpha = 1;
 
@@ -1448,7 +1533,7 @@
         0,
         Math.PI * 2
       );
-      cctx.fillStyle = "rgba(255,255,255,0.055)";
+      cctx.fillStyle = "rgba(255,255,255,0.040)";
       cctx.fill();
     }
 
@@ -1473,13 +1558,7 @@
     const groups = buildDropletGroups(items);
 
     for (const group of groups) {
-      if (group.length === 1) {
-        const item = group[0];
-        if (item.type === "main") drawMainDroplet(time, hintK);
-        else drawSingleAuxDroplet(item.source, time);
-      } else {
-        drawMetaballGroup(group, hintK);
-      }
+      drawMetaballGroup(group, hintK);
     }
   }
 
@@ -1653,11 +1732,7 @@
     const groups = buildDropletGroups(items);
 
     for (const group of groups) {
-      if (group.length === 1) {
-        drawSingleMirrorReflection(group[0], time, hintK);
-      } else {
-        drawMetaballMirrorReflection(group, hintK);
-      }
+      drawMetaballMirrorReflection(group, hintK);
     }
 
     ctx.restore();
@@ -1771,11 +1846,7 @@
 
   function updateShardGather(s, dt, t) {
     const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-    const pull = lerp(
-      8,
-      CONFIG.gatherMaxPull,
-      easeInExpo(Math.max(0, (tk - 0.18) / 0.82))
-    );
+    const pull = lerp(18, CONFIG.gatherMaxPull, easeInExpo(tk));
 
     const targetX = s.targetX ?? cx;
     const targetY = s.targetY ?? cy;
@@ -2028,15 +2099,46 @@
 
   /* =========================================================
      Sector 18. Brand / Reveal Logo
-     ---------------------------------------------------------
-     役割:
-     - revealLogo は最終位置に固定
-     - 落下なし
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
     brand.style.opacity = String(clamp(opacity, 0, 1));
     brand.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
+  }
+
+  function getRevealMotion(k) {
+    const C = CONFIG.reveal;
+    const dropPortion = C.dropDuration / (C.dropDuration + C.bounceDuration);
+
+    let y = 0;
+    let scale = C.finalScale;
+
+    if (k <= dropPortion) {
+      const t = k / Math.max(dropPortion, 0.0001);
+      const e = easeOutCubic(t);
+
+      y = lerp(C.dropFromY, C.dropOvershoot, e);
+      scale = lerp(C.startScale, C.impactScale, e);
+    } else {
+      const t = (k - dropPortion) / Math.max(1 - dropPortion, 0.0001);
+
+      if (t < 0.5) {
+        const t1 = t / 0.5;
+        y = lerp(C.dropOvershoot, C.bounceBackY, easeOutCubic(t1));
+        scale = lerp(C.impactScale, C.finalScale + 0.008, easeOutCubic(t1));
+      } else {
+        const t2 = (t - 0.5) / 0.5;
+        y = lerp(C.bounceBackY, 0, easeInOutCubic(t2));
+        scale = lerp(C.finalScale + 0.008, C.finalScale, easeInOutCubic(t2));
+      }
+    }
+
+    if (k >= 1) {
+      y = 0;
+      scale = C.finalScale;
+    }
+
+    return { y, scale };
   }
 
   function setRevealOpacity(opacity) {
@@ -2045,7 +2147,10 @@
     const k = clamp(opacity, 0, 1);
     revealLogo.style.opacity = String(k);
     revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
-    revealLogo.style.transform = "translate(-50%, -50%)";
+
+    const motion = getRevealMotion(k);
+    revealLogo.style.transform =
+      `translate(-50%, -50%) translateY(${motion.y}px) scale(${motion.scale})`;
   }
 
   function prepareLogos() {
@@ -2068,7 +2173,8 @@
       revealLogo.style.left = revealLogo.style.left || "50%";
       revealLogo.style.top = revealLogo.style.top || "50%";
       revealLogo.style.zIndex = "25";
-      revealLogo.style.transform = "translate(-50%, -50%)";
+      revealLogo.style.transform =
+        `translate(-50%, -50%) translateY(${CONFIG.reveal.dropFromY}px) scale(${CONFIG.reveal.startScale})`;
     }
   }
 
@@ -2181,8 +2287,7 @@
         showRevealLogo();
       }
 
-      const rawLogoK = clamp((t - T_FLASH) / P.logo, 0, 1);
-      const logoK = clamp((rawLogoK - 0.18) / 0.82, 0, 1);
+      const logoK = clamp((t - T_FLASH) / P.logo, 0, 1);
       setRevealOpacity(logoK);
 
       if (phase === "done" && !finished) {
@@ -2229,14 +2334,15 @@
   }
 
   /* =========================================================
-     Sector 22. Boot / Events
+     Sector 22. Boot / Resize / Events
   ========================================================= */
-  function rebuildSceneLayout() {
-    resize();
+  function rebuildIdleWorld() {
+    if (started) return;
     prepareLogos();
+    resize();
     buildLogoTargetPoints();
     createShardField();
-    if (!started) initWaterDroplets();
+    initWaterDroplets();
   }
 
   function boot() {
@@ -2252,7 +2358,7 @@
     state.revealShown = false;
     state.entranceDoneFired = false;
 
-    rebuildSceneLayout();
+    rebuildIdleWorld();
 
     if (motionQuery.matches) {
       setBrandOpacity(1);
@@ -2263,7 +2369,7 @@
     rafId = requestAnimationFrame(render);
   }
 
-  window.addEventListener("resize", rebuildSceneLayout, { passive: true });
+  window.addEventListener("resize", rebuildIdleWorld, { passive: true });
   window.addEventListener("pointerdown", handleTrigger, { passive: false });
   window.addEventListener("keydown", handleTrigger);
 
@@ -2285,3 +2391,5 @@
 
   boot();
 })();
+
+// ddddd
