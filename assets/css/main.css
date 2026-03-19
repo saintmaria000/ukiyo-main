@@ -1158,6 +1158,9 @@ body.view-right .inner-shell{
 /* =========================================================
    Modal 下部クローズ（線のみ）
 ========================================================= */
+/* =========================================================
+   Modal 下部クローズ（線のみ / 常夜灯）
+========================================================= */
 .modal__close-line{
   position:fixed;
   left:50%;
@@ -1165,29 +1168,78 @@ body.view-right .inner-shell{
   transform:translateX(-50%);
   z-index:calc(var(--z-modal) + 2);
 
-  width:56px;
+  width:92vw;
+  max-width:none;
+
   height:1px;
-  background:rgba(255,255,255,.4);
+  background:rgba(255,255,255,.42);
 
   border:none;
   padding:0;
   margin:0;
 
-  opacity:.55;
+  opacity:.7;
   cursor:pointer;
+
+  box-shadow:
+    0 0 6px rgba(255,255,255,.25),
+    0 0 18px rgba(255,255,255,.12);
+
+  animation:closeLineGlow 3.6s ease-in-out infinite;
 
   transition:
     opacity .2s ease,
-    transform .2s ease,
-    width .2s ease;
+    transform .2s ease;
 }
 
 .modal__close-line:hover{
   opacity:1;
-  transform:translateX(-50%) translateY(-2px);
-  width:72px;
+  transform:translateX(-50%) translateY(-1px);
 }
 
+/* タップ領域は広く、見た目は線のまま */
+@media (pointer:coarse){
+  .modal__close-line{
+    height:24px;
+    background:transparent;
+    box-shadow:none;
+  }
+
+  .modal__close-line::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    top:50%;
+    height:1px;
+    background:rgba(255,255,255,.42);
+    transform:translateY(-50%);
+    box-shadow:
+      0 0 6px rgba(255,255,255,.25),
+      0 0 18px rgba(255,255,255,.12);
+  }
+}
+
+@keyframes closeLineGlow{
+  0%{
+    opacity:.55;
+    box-shadow:
+      0 0 4px rgba(255,255,255,.18),
+      0 0 10px rgba(255,255,255,.08);
+  }
+  50%{
+    opacity:.85;
+    box-shadow:
+      0 0 10px rgba(255,255,255,.35),
+      0 0 24px rgba(255,255,255,.18);
+  }
+  100%{
+    opacity:.55;
+    box-shadow:
+      0 0 4px rgba(255,255,255,.18),
+      0 0 10px rgba(255,255,255,.08);
+  }
+}
 /* モーダル閉時は消す */
 .modal:not(.modal--open) .modal__close-line{
   opacity:0;
