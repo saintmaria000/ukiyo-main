@@ -40,7 +40,7 @@
         mainOffsetY: -54,
 
         fixedWidth: 500,
-        fixedHeight: 300,
+        fixedHeight: 400,
 
         sideInset: 18,
         topInset: 9,
