@@ -718,118 +718,114 @@
   /* =========================================================
      Sector 09. Water System / Generate & Model
   ========================================================= */
-  function createWaterDroplet(instanceDef, indexWithinKind) {
-    const bounds = getWaterBounds();
-    const mainR = getMainBaseRadius();
-    const r = instanceDef.radius;
+function createWaterDroplet(instanceDef, indexWithinKind) {
+  const bounds = getWaterBounds();
+  const mainR = getMainBaseRadius();
+  const r = instanceDef.radius;
 
-    const gapMap = CONFIG.water.aux.spawnGapFromMain;
-    const gap =
-      typeof gapMap === "number"
-        ? gapMap
-        : (gapMap[instanceDef.name] ?? 16);
+  const gapMap = CONFIG.water.aux.spawnGapFromMain;
+  const gap =
+    typeof gapMap === "number"
+      ? gapMap
+      : (gapMap[instanceDef.name] ?? 16);
 
-    const safeMargin = 10;
-    const minDistFromMain = mainR + r + gap;
+  const safeMargin = 10;
+  const minDistFromMain = mainR + r + gap;
 
-    const preset = instanceDef.spawnPreset || {
-      angleDeg: rand(0, 360),
-      distMul: instanceDef.spawnDistanceMul ?? 1.25,
-      angleJitterDeg: 18,
-      distJitterMul: 0.14
-    };
+  // =========================
+  // サイズごとの距離レンジ定義
+  // =========================
+  let distMinMul = 1.1;
+  let distMaxMul = 1.4;
 
-    let placed = false;
-    let x = cx;
-    let y = cy;
-
-    for (let i = 0; i < 60; i++) {
-      const angleDeg =
-        preset.angleDeg + rand(-(preset.angleJitterDeg || 0), preset.angleJitterDeg || 0);
-
-      const distMul =
-        preset.distMul * (1 + rand(-(preset.distJitterMul || 0), preset.distJitterMul || 0));
-
-      const angle = angleDeg * Math.PI / 180;
-      const dist = minDistFromMain * distMul;
-
-      const tx = cx + Math.cos(angle) * dist;
-      const ty = cy + Math.sin(angle) * dist;
-
-      const insideX =
-        tx >= bounds.minX + r + safeMargin &&
-        tx <= bounds.maxX - r - safeMargin;
-
-      const insideY =
-        ty >= bounds.minY + r + safeMargin &&
-        ty <= bounds.maxY - r - safeMargin;
-
-      const mainFarEnough = dist2(tx, ty, cx, cy) >= minDistFromMain;
-
-      let farEnoughFromOthers = true;
-      for (const other of state.water.auxDroplets) {
-        const dd = dist2(tx, ty, other.x, other.y);
-        const minPair = r + other.r + Math.max(10, Math.min(r, other.r) * 0.9);
-        if (dd < minPair) {
-          farEnoughFromOthers = false;
-          break;
-        }
-      }
-
-      if (insideX && insideY && mainFarEnough && farEnoughFromOthers) {
-        x = tx;
-        y = ty;
-        placed = true;
-        break;
-      }
-    }
-
-    if (!placed) {
-      const fallbackAngle = preset.angleDeg * Math.PI / 180;
-      const fallbackDist = minDistFromMain * preset.distMul;
-
-      x = clamp(
-        cx + Math.cos(fallbackAngle) * fallbackDist,
-        bounds.minX + r + safeMargin,
-        bounds.maxX - r - safeMargin
-      );
-
-      y = clamp(
-        cy + Math.sin(fallbackAngle) * fallbackDist,
-        bounds.minY + r + safeMargin,
-        bounds.maxY - r - safeMargin
-      );
-    }
-
-    const launchAngle = rand(0, Math.PI * 2);
-    const anchorAngle = Math.atan2(y - cy, x - cx);
-    const anchorDist = dist2(x, y, cx, cy);
-
-    return {
-      name: instanceDef.name,
-      r,
-      alpha: instanceDef.alpha,
-      x,
-      y,
-      vx: Math.cos(launchAngle) * rand(0.18, 0.9),
-      vy: Math.sin(launchAngle) * rand(0.14, 0.82),
-      scale: 1,
-      life: 0,
-      seed: rand(0, 1000),
-      indexWithinKind,
-
-      moveProfile: instanceDef.moveProfile || DEFAULT_MOVE_PROFILE,
-
-      anchorAngle,
-      anchorDist,
-      orbitDir: Math.random() < 0.5 ? -1 : 1,
-      targetBias: rand(0.88, 1.16),
-
-      driftTargetX: x,
-      driftTargetY: y,
-      driftTargetTimer: rand(0.9, 2.4)
-    };
+  if (instanceDef.name === "auxA") {
+    // 大 → かなり近い
+    distMinMul = 1.05;
+    distMaxMul = 1.22;
+  } else if (instanceDef.name === "auxB") {
+    // 中 → 中距離
+    distMinMul = 1.2;
+    distMaxMul = 1.6;
+  } else {
+    // 小 → 広くランダム
+    distMinMul = 1.3;
+    distMaxMul = 2.2;
   }
+
+  let placed = false;
+  let x = cx;
+  let y = cy;
+
+  for (let i = 0; i < 120; i++) {
+    const angle = rand(0, Math.PI * 2);
+    const distMul = rand(distMinMul, distMaxMul);
+    const dist = minDistFromMain * distMul;
+
+    const tx = cx + Math.cos(angle) * dist;
+    const ty = cy + Math.sin(angle) * dist;
+
+    const insideX =
+      tx >= bounds.minX + r + safeMargin &&
+      tx <= bounds.maxX - r - safeMargin;
+
+    const insideY =
+      ty >= bounds.minY + r + safeMargin &&
+      ty <= bounds.maxY - r - safeMargin;
+
+    if (insideX && insideY) {
+      x = tx;
+      y = ty;
+      placed = true;
+      break;
+    }
+  }
+
+  if (!placed) {
+    const fallbackAngle = rand(0, Math.PI * 2);
+    const fallbackDist = minDistFromMain * distMinMul;
+
+    x = clamp(
+      cx + Math.cos(fallbackAngle) * fallbackDist,
+      bounds.minX + r + safeMargin,
+      bounds.maxX - r - safeMargin
+    );
+
+    y = clamp(
+      cy + Math.sin(fallbackAngle) * fallbackDist,
+      bounds.minY + r + safeMargin,
+      bounds.maxY - r - safeMargin
+    );
+  }
+
+  const launchAngle = rand(0, Math.PI * 2);
+  const anchorAngle = Math.atan2(y - cy, x - cx);
+  const anchorDist = dist2(x, y, cx, cy);
+
+  return {
+    name: instanceDef.name,
+    r,
+    alpha: instanceDef.alpha,
+    x,
+    y,
+    vx: Math.cos(launchAngle) * rand(0.18, 0.9),
+    vy: Math.sin(launchAngle) * rand(0.14, 0.82),
+    scale: 1,
+    life: 0,
+    seed: rand(0, 1000),
+    indexWithinKind,
+
+    moveProfile: instanceDef.moveProfile || DEFAULT_MOVE_PROFILE,
+
+    anchorAngle,
+    anchorDist,
+    orbitDir: Math.random() < 0.5 ? -1 : 1,
+    targetBias: rand(0.88, 1.16),
+
+    driftTargetX: x,
+    driftTargetY: y,
+    driftTargetTimer: rand(0.9, 2.4)
+  };
+}
 
   function initWaterDroplets() {
     state.water.auxDroplets.length = 0;
@@ -2395,3 +2391,5 @@
 
   boot();
 })();
+
+// ddddd
