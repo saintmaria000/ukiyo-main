@@ -26,6 +26,7 @@
      - 水滴系は「完全固定範囲」「サイズ依存分離」
      - 今回は 3粒構成（主1 + 補助2）
      - 主水滴は画面サイズに応じてレスポンシブ
+     - 補助水滴は初期位置追従をやめ、範囲内を自由漂流
   ========================================================= */
   const CONFIG = {
     /* -------------------------------------------------------
@@ -73,100 +74,93 @@
 
       /* -----------------------------------------------------
          主水滴
-         - radius: ベース半径
-         - viewportMinScale / viewportMaxScale:
-           レスポンシブ倍率の上下限
+         - 主張を少し抑え、補助滴との構図バランスを改善
       ----------------------------------------------------- */
       main: {
-        radius: 104,
+        radius: 92,
 
-        viewportMinScale: 0.72,
-        viewportMaxScale: 1.18,
+        viewportMinScale: 0.74,
+        viewportMaxScale: 1.12,
         responsiveBaseWidth: 1440,
         responsiveBaseHeight: 900,
 
-        wobbleAmp: 0.108,
+        wobbleAmp: 0.102,
         wobbleSpeedA: 0.92,
         wobbleSpeedB: 1.42,
-        rippleAmpA: 0.012,
-        rippleAmpB: 0.010
+        rippleAmpA: 0.010,
+        rippleAmpB: 0.008
       },
 
       /* -----------------------------------------------------
          従水滴
          - 3粒構成:
            主1 + 補助2（mediumA / smallA）
-         - 初期配置も役割に沿って固定寄りにしてある
+         - 初期配置は範囲内でデザイン的に美しい位置を採用
+         - 移動はアンカー追従を廃止し、自由漂流に変更
       ----------------------------------------------------- */
       aux: {
         kinds: [
           {
             name: "mediumA",
-            radius: 22,
+            radius: 30,
             count: 1,
             alpha: 0.95,
-            spawnAngleDeg: 220,
-            spawnDistanceMul: 1.02,
-            orbitRadiusX: 62,
-            orbitRadiusY: 44,
+            spawnAngleDeg: 214,
+            spawnDistanceMul: 1.0,
             moveProfile: {
-              driftForceMul: 0.84,
-              centerBiasMul: 0.72,
-              maxSpeedMul: 0.84,
-              noiseFreqMul: 0.88,
-              wallBounceMul: 0.96,
-              wallDampingMul: 1.00,
+              driftForceMul: 0.96,
+              centerBiasMul: 0.18,
+              maxSpeedMul: 0.86,
+              noiseFreqMul: 0.92,
+              wallBounceMul: 0.94,
+              wallDampingMul: 1.0,
               gravityMul: 0.34,
               horizonPullMul: 0.18
             }
           },
           {
             name: "smallA",
-            radius: 11,
+            radius: 17,
             count: 1,
-            alpha: 0.90,
-            spawnAngleDeg: 56,
-            spawnDistanceMul: 1.58,
-            orbitRadiusX: 148,
-            orbitRadiusY: 92,
+            alpha: 0.92,
+            spawnAngleDeg: 34,
+            spawnDistanceMul: 1.0,
             moveProfile: {
-              driftForceMul: 1.08,
-              centerBiasMul: 0.20,
-              maxSpeedMul: 1.06,
+              driftForceMul: 1.12,
+              centerBiasMul: 0.10,
+              maxSpeedMul: 1.04,
               noiseFreqMul: 1.08,
-              wallBounceMul: 1.03,
+              wallBounceMul: 1.0,
               wallDampingMul: 0.99,
-              gravityMul: 0.72,
-              horizonPullMul: 0.54
+              gravityMul: 0.66,
+              horizonPullMul: 0.48
             }
           }
         ],
 
         spawnGapFromMain: {
-          mediumA: 12,
-          smallA: 28
+          mediumA: 16,
+          smallA: 24
         },
 
         /* ---------------------------------------------------
-           ノイズ移動
-           - 水滴らしさを壊さないよう全体は抑えめ
+           自由漂流
         --------------------------------------------------- */
         motion: {
-          driftForce: 1.45,
-          driftDamping: 0.991,
-          driftNoiseX: 2.0,
-          driftNoiseY: 1.6,
-          maxSpeed: 13.6,
-          centerBias: 1.18
+          driftForce: 2.25,
+          driftDamping: 0.994,
+          driftNoiseX: 2.9,
+          driftNoiseY: 2.25,
+          maxSpeed: 16.2,
+          centerBias: 0.42
         },
 
         /* ---------------------------------------------------
            壁との反応
-           - 跳ねすぎず、少し勢いを吸われる方向
         --------------------------------------------------- */
         wall: {
-          wallBounce: 0.78,
-          wallDamping: 0.88
+          wallBounce: 0.76,
+          wallDamping: 0.9
         },
 
         /* ---------------------------------------------------
@@ -328,12 +322,8 @@
 
     water: {
       auxDroplets: [],
-
-      /* マスク生成専用 */
       metaballMaskCanvas: document.createElement("canvas"),
       metaballMaskCtx: null,
-
-      /* 合成結果専用 */
       metaballCompositeCanvas: document.createElement("canvas"),
       metaballCompositeCtx: null
     }
@@ -598,20 +588,75 @@
         ? gapMap
         : (gapMap[kindDef.name] ?? 16);
 
-    const minDist = mainR + r + gap;
+    const safeMargin = 10;
+    const minDistFromMain = mainR + r + gap;
 
-    const angleDeg = kindDef.spawnAngleDeg ?? rand(0, 360);
-    const angle = angleDeg * Math.PI / 180;
-    const distMul = kindDef.spawnDistanceMul ?? 1;
-    const initialDist = minDist * distMul;
+    const presets = {
+      mediumA: {
+        angleDeg: 214,
+        distMul: 1.18
+      },
+      smallA: {
+        angleDeg: 34,
+        distMul: 1.72
+      }
+    };
 
-    let x = cx + Math.cos(angle) * initialDist;
-    let y = cy + Math.sin(angle) * initialDist;
+    const preset = presets[kindDef.name] || {
+      angleDeg: kindDef.spawnAngleDeg ?? rand(0, 360),
+      distMul: kindDef.spawnDistanceMul ?? 1.25
+    };
 
-    x = clamp(x, bounds.minX + r, bounds.maxX - r);
-    y = clamp(y, bounds.minY + r, bounds.maxY - r);
+    let placed = false;
+    let x = cx;
+    let y = cy;
 
-    const tangent = angle + (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2);
+    for (let i = 0; i < 40; i++) {
+      const angle =
+        (preset.angleDeg + rand(-10, 10)) * Math.PI / 180;
+
+      const dist = minDistFromMain * (preset.distMul + rand(-0.08, 0.08));
+
+      const tx = cx + Math.cos(angle) * dist;
+      const ty = cy + Math.sin(angle) * dist;
+
+      const insideX =
+        tx >= bounds.minX + r + safeMargin &&
+        tx <= bounds.maxX - r - safeMargin;
+
+      const insideY =
+        ty >= bounds.minY + r + safeMargin &&
+        ty <= bounds.maxY - r - safeMargin;
+
+      const mainFarEnough =
+        dist2(tx, ty, cx, cy) >= minDistFromMain;
+
+      if (insideX && insideY && mainFarEnough) {
+        x = tx;
+        y = ty;
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      const fallbackAngle = (preset.angleDeg || 0) * Math.PI / 180;
+      const fallbackDist = minDistFromMain * preset.distMul;
+
+      x = clamp(
+        cx + Math.cos(fallbackAngle) * fallbackDist,
+        bounds.minX + r + safeMargin,
+        bounds.maxX - r - safeMargin
+      );
+
+      y = clamp(
+        cy + Math.sin(fallbackAngle) * fallbackDist,
+        bounds.minY + r + safeMargin,
+        bounds.maxY - r - safeMargin
+      );
+    }
+
+    const launchAngle = rand(0, Math.PI * 2);
 
     return {
       name: kindDef.name,
@@ -619,8 +664,8 @@
       alpha: kindDef.alpha,
       x,
       y,
-      vx: Math.cos(tangent) * rand(0.8, 2.0),
-      vy: Math.sin(tangent) * rand(0.6, 1.8),
+      vx: Math.cos(launchAngle) * rand(0.25, 1.2),
+      vy: Math.sin(launchAngle) * rand(0.2, 1.0),
       scale: 1,
       life: 0,
       seed: rand(0, 1000),
@@ -637,11 +682,9 @@
         horizonPullMul: 0
       },
 
-      anchorX: x,
-      anchorY: y,
-      orbitRadiusX: kindDef.orbitRadiusX ?? 96,
-      orbitRadiusY: kindDef.orbitRadiusY ?? 64,
-      orbitPhase: rand(0, Math.PI * 2)
+      driftTargetX: rand(bounds.minX + r, bounds.maxX - r),
+      driftTargetY: rand(bounds.minY + r, bounds.maxY - r),
+      driftTargetTimer: rand(1.2, 2.8)
     };
   }
 
@@ -941,40 +984,45 @@
 
       const nf = mp.noiseFreqMul || 1;
 
-      const orbitX =
-        d.anchorX +
-        Math.cos(tsSec * (0.22 * nf) + d.orbitPhase) * d.orbitRadiusX;
+      d.driftTargetTimer -= dt;
+      if (d.driftTargetTimer <= 0) {
+        d.driftTargetX = rand(bounds.minX + d.r, bounds.maxX - d.r);
+        d.driftTargetY = rand(bounds.minY + d.r, bounds.maxY - d.r);
+        d.driftTargetTimer = rand(1.4, 3.2);
+      }
 
-      const orbitY =
-        d.anchorY +
-        Math.sin(tsSec * (0.18 * nf) + d.orbitPhase * 0.9) * d.orbitRadiusY;
+      const flowX =
+        Math.sin(tsSec * (0.42 * nf) + d.seed * 0.73) * C.driftNoiseX +
+        Math.cos(tsSec * (0.21 * nf) + d.seed * 1.12) * C.driftNoiseX * 0.42;
 
-      const noiseX =
-        Math.sin(tsSec * (0.34 * nf) + d.seed * 0.63) * C.driftNoiseX +
-        Math.sin(tsSec * (0.61 * nf) + d.seed * 1.11) * C.driftNoiseX * 0.24;
+      const flowY =
+        Math.cos(tsSec * (0.36 * nf) + d.seed * 0.44) * C.driftNoiseY +
+        Math.sin(tsSec * (0.19 * nf) + d.seed * 0.86) * C.driftNoiseY * 0.36;
 
-      const noiseY =
-        Math.cos(tsSec * (0.37 * nf) + d.seed * 0.47) * C.driftNoiseY +
-        Math.sin(tsSec * (0.69 * nf) + d.seed * 0.81) * C.driftNoiseY * 0.18;
+      const toTargetX = d.driftTargetX - d.x;
+      const toTargetY = d.driftTargetY - d.y;
+      const targetLen = Math.hypot(toTargetX, toTargetY) || 1;
 
-      const toOrbitX = orbitX - d.x;
-      const toOrbitY = orbitY - d.y;
-      const orbitLen = Math.hypot(toOrbitX, toOrbitY) || 1;
+      const toCenterX = cx - d.x;
+      const toCenterY = cy - d.y;
+      const centerLen = Math.hypot(toCenterX, toCenterY) || 1;
+
+      const gravity = 0.06 * (mp.gravityMul || 1);
 
       const horizonPull =
-        d.y < horizonY - 18
+        d.y < horizonY - 20
           ? 0
-          : (d.y - (horizonY - 18)) * 0.0022 * (mp.horizonPullMul || 0);
-
-      const gravity = 0.075 * (mp.gravityMul || 1);
+          : (d.y - (horizonY - 20)) * 0.0018 * (mp.horizonPullMul || 0);
 
       d.vx +=
-        noiseX * dt * C.driftForce * (mp.driftForceMul || 1) +
-        (toOrbitX / orbitLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
+        flowX * dt * C.driftForce * (mp.driftForceMul || 1) +
+        (toTargetX / targetLen) * dt * 0.9 +
+        (toCenterX / centerLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
 
       d.vy +=
-        noiseY * dt * C.driftForce * (mp.driftForceMul || 1) +
-        (toOrbitY / orbitLen) * dt * C.centerBias * (mp.centerBiasMul || 1) +
+        flowY * dt * C.driftForce * (mp.driftForceMul || 1) +
+        (toTargetY / targetLen) * dt * 0.9 +
+        (toCenterY / centerLen) * dt * C.centerBias * (mp.centerBiasMul || 1) +
         gravity +
         horizonPull;
 
