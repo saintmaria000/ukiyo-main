@@ -26,7 +26,10 @@
     wallBounceMul: 1,
     wallDampingMul: 1,
     gravityMul: 1,
-    horizonPullMul: 0
+    horizonPullMul: 0,
+    targetPullMul: 1,
+    tangentialMul: 0,
+    separationMul: 1
   };
 
   const CONFIG = {
@@ -74,59 +77,123 @@
       },
 
       aux: {
-        kinds: [
+        instances: [
           {
-            name: "mediumA",
-            radius: 30,
-            count: 2,
-            alpha: 0.95,
-            spawnAngleDeg: 214,
-            spawnSpreadStepDeg: 26,
-            spawnDistanceMul: 1.0,
+            name: "auxA",
+            radius: 34,
+            alpha: 0.96,
+            spawnPreset: {
+              angleDeg: 214,
+              distMul: 1.10,
+              angleJitterDeg: 14,
+              distJitterMul: 0.10
+            },
             moveProfile: {
-              driftForceMul: 0.96,
-              centerBiasMul: 0.18,
-              maxSpeedMul: 0.86,
-              noiseFreqMul: 0.92,
+              driftForceMul: 0.92,
+              centerBiasMul: 0.12,
+              maxSpeedMul: 0.82,
+              noiseFreqMul: 0.88,
               wallBounceMul: 0.94,
               wallDampingMul: 1.0,
-              gravityMul: 0.34,
-              horizonPullMul: 0.18
+              gravityMul: 0.26,
+              horizonPullMul: 0.12,
+              targetPullMul: 0.78,
+              tangentialMul: 0.28,
+              separationMul: 1.05
             }
           },
           {
-            name: "smallA",
-            radius: 17,
-            count: 3,
-            alpha: 0.92,
-            spawnAngleDeg: 34,
-            spawnSpreadStepDeg: 24,
-            spawnDistanceMul: 1.0,
+            name: "auxB",
+            radius: 27,
+            alpha: 0.94,
+            spawnPreset: {
+              angleDeg: 326,
+              distMul: 1.20,
+              angleJitterDeg: 16,
+              distJitterMul: 0.11
+            },
             moveProfile: {
-              driftForceMul: 1.12,
+              driftForceMul: 0.98,
               centerBiasMul: 0.10,
-              maxSpeedMul: 1.04,
+              maxSpeedMul: 0.88,
+              noiseFreqMul: 0.94,
+              wallBounceMul: 0.96,
+              wallDampingMul: 1.0,
+              gravityMul: 0.34,
+              horizonPullMul: 0.16,
+              targetPullMul: 0.92,
+              tangentialMul: 0.36,
+              separationMul: 1.14
+            }
+          },
+          {
+            name: "auxC",
+            radius: 16,
+            alpha: 0.92,
+            spawnPreset: {
+              angleDeg: 46,
+              distMul: 1.68,
+              angleJitterDeg: 22,
+              distJitterMul: 0.15
+            },
+            moveProfile: {
+              driftForceMul: 1.10,
+              centerBiasMul: 0.08,
+              maxSpeedMul: 1.00,
               noiseFreqMul: 1.08,
               wallBounceMul: 1.0,
               wallDampingMul: 0.99,
-              gravityMul: 0.66,
-              horizonPullMul: 0.48
+              gravityMul: 0.56,
+              horizonPullMul: 0.38,
+              targetPullMul: 1.04,
+              tangentialMul: 0.50,
+              separationMul: 1.28
+            }
+          },
+          {
+            name: "auxD",
+            radius: 11,
+            alpha: 0.90,
+            spawnPreset: {
+              angleDeg: 136,
+              distMul: 1.52,
+              angleJitterDeg: 24,
+              distJitterMul: 0.16
+            },
+            moveProfile: {
+              driftForceMul: 1.18,
+              centerBiasMul: 0.06,
+              maxSpeedMul: 1.08,
+              noiseFreqMul: 1.16,
+              wallBounceMul: 1.0,
+              wallDampingMul: 0.98,
+              gravityMul: 0.62,
+              horizonPullMul: 0.46,
+              targetPullMul: 1.10,
+              tangentialMul: 0.58,
+              separationMul: 1.36
             }
           }
         ],
 
         spawnGapFromMain: {
-          mediumA: 16,
-          smallA: 24
+          auxA: 18,
+          auxB: 20,
+          auxC: 26,
+          auxD: 30
         },
 
         motion: {
-          driftForce: 2.25,
+          driftForce: 2.15,
           driftDamping: 0.994,
-          driftNoiseX: 2.9,
-          driftNoiseY: 2.25,
-          maxSpeed: 16.2,
-          centerBias: 0.42
+          driftNoiseX: 2.7,
+          driftNoiseY: 2.1,
+          maxSpeed: 15.0,
+          centerBias: 0.34,
+          targetPull: 1.05,
+          tangentialForce: 0.55,
+          separationForce: 1.28,
+          separationRangeMul: 1.9
         },
 
         wall: {
@@ -651,46 +718,40 @@
   /* =========================================================
      Sector 09. Water System / Generate & Model
   ========================================================= */
-  function createWaterDroplet(kindDef, indexWithinKind) {
+  function createWaterDroplet(instanceDef, indexWithinKind) {
     const bounds = getWaterBounds();
     const mainR = getMainBaseRadius();
-    const r = kindDef.radius;
+    const r = instanceDef.radius;
 
     const gapMap = CONFIG.water.aux.spawnGapFromMain;
     const gap =
       typeof gapMap === "number"
         ? gapMap
-        : (gapMap[kindDef.name] ?? 16);
+        : (gapMap[instanceDef.name] ?? 16);
 
     const safeMargin = 10;
     const minDistFromMain = mainR + r + gap;
 
-    const baseAngleDeg = kindDef.spawnAngleDeg ?? rand(0, 360);
-    const spreadStepDeg = kindDef.spawnSpreadStepDeg ?? 18;
-
-    const presets = {
-      mediumA: {
-        angleDeg: baseAngleDeg + indexWithinKind * spreadStepDeg,
-        distMul: 1.18
-      },
-      smallA: {
-        angleDeg: baseAngleDeg + indexWithinKind * spreadStepDeg,
-        distMul: 1.72
-      }
-    };
-
-    const preset = presets[kindDef.name] || {
-      angleDeg: baseAngleDeg + indexWithinKind * spreadStepDeg,
-      distMul: kindDef.spawnDistanceMul ?? 1.25
+    const preset = instanceDef.spawnPreset || {
+      angleDeg: rand(0, 360),
+      distMul: instanceDef.spawnDistanceMul ?? 1.25,
+      angleJitterDeg: 18,
+      distJitterMul: 0.14
     };
 
     let placed = false;
     let x = cx;
     let y = cy;
 
-    for (let i = 0; i < 40; i++) {
-      const angle = (preset.angleDeg + rand(-10, 10)) * Math.PI / 180;
-      const dist = minDistFromMain * (preset.distMul + rand(-0.08, 0.08));
+    for (let i = 0; i < 60; i++) {
+      const angleDeg =
+        preset.angleDeg + rand(-(preset.angleJitterDeg || 0), preset.angleJitterDeg || 0);
+
+      const distMul =
+        preset.distMul * (1 + rand(-(preset.distJitterMul || 0), preset.distJitterMul || 0));
+
+      const angle = angleDeg * Math.PI / 180;
+      const dist = minDistFromMain * distMul;
 
       const tx = cx + Math.cos(angle) * dist;
       const ty = cy + Math.sin(angle) * dist;
@@ -703,10 +764,19 @@
         ty >= bounds.minY + r + safeMargin &&
         ty <= bounds.maxY - r - safeMargin;
 
-      const mainFarEnough =
-        dist2(tx, ty, cx, cy) >= minDistFromMain;
+      const mainFarEnough = dist2(tx, ty, cx, cy) >= minDistFromMain;
 
-      if (insideX && insideY && mainFarEnough) {
+      let farEnoughFromOthers = true;
+      for (const other of state.water.auxDroplets) {
+        const dd = dist2(tx, ty, other.x, other.y);
+        const minPair = r + other.r + Math.max(10, Math.min(r, other.r) * 0.9);
+        if (dd < minPair) {
+          farEnoughFromOthers = false;
+          break;
+        }
+      }
+
+      if (insideX && insideY && mainFarEnough && farEnoughFromOthers) {
         x = tx;
         y = ty;
         placed = true;
@@ -715,7 +785,7 @@
     }
 
     if (!placed) {
-      const fallbackAngle = (preset.angleDeg || 0) * Math.PI / 180;
+      const fallbackAngle = preset.angleDeg * Math.PI / 180;
       const fallbackDist = minDistFromMain * preset.distMul;
 
       x = clamp(
@@ -732,35 +802,41 @@
     }
 
     const launchAngle = rand(0, Math.PI * 2);
+    const anchorAngle = Math.atan2(y - cy, x - cx);
+    const anchorDist = dist2(x, y, cx, cy);
 
     return {
-      name: kindDef.name,
+      name: instanceDef.name,
       r,
-      alpha: kindDef.alpha,
+      alpha: instanceDef.alpha,
       x,
       y,
-      vx: Math.cos(launchAngle) * rand(0.25, 1.2),
-      vy: Math.sin(launchAngle) * rand(0.2, 1.0),
+      vx: Math.cos(launchAngle) * rand(0.18, 0.9),
+      vy: Math.sin(launchAngle) * rand(0.14, 0.82),
       scale: 1,
       life: 0,
       seed: rand(0, 1000),
       indexWithinKind,
 
-      moveProfile: kindDef.moveProfile || DEFAULT_MOVE_PROFILE,
+      moveProfile: instanceDef.moveProfile || DEFAULT_MOVE_PROFILE,
 
-      driftTargetX: rand(bounds.minX + r, bounds.maxX - r),
-      driftTargetY: rand(bounds.minY + r, bounds.maxY - r),
-      driftTargetTimer: rand(1.2, 2.8)
+      anchorAngle,
+      anchorDist,
+      orbitDir: Math.random() < 0.5 ? -1 : 1,
+      targetBias: rand(0.88, 1.16),
+
+      driftTargetX: x,
+      driftTargetY: y,
+      driftTargetTimer: rand(0.9, 2.4)
     };
   }
 
   function initWaterDroplets() {
     state.water.auxDroplets.length = 0;
 
-    for (const kindDef of CONFIG.water.aux.kinds) {
-      for (let i = 0; i < kindDef.count; i++) {
-        state.water.auxDroplets.push(createWaterDroplet(kindDef, i));
-      }
+    const instances = CONFIG.water.aux.instances || [];
+    for (let i = 0; i < instances.length; i++) {
+      state.water.auxDroplets.push(createWaterDroplet(instances[i], i));
     }
   }
 
@@ -1028,6 +1104,32 @@
     }
   }
 
+  function applyAuxSeparation(d) {
+    const M = CONFIG.water.aux.motion;
+    const mp = d.moveProfile || DEFAULT_MOVE_PROFILE;
+
+    let pushX = 0;
+    let pushY = 0;
+
+    for (const other of state.water.auxDroplets) {
+      if (other === d) continue;
+
+      const dx = d.x - other.x;
+      const dy = d.y - other.y;
+      const dist = Math.hypot(dx, dy) || 0.0001;
+      const desired = (d.r + other.r) * M.separationRangeMul;
+
+      if (dist < desired) {
+        const k = 1 - dist / desired;
+        pushX += (dx / dist) * k;
+        pushY += (dy / dist) * k;
+      }
+    }
+
+    d.vx += pushX * M.separationForce * (mp.separationMul || 1);
+    d.vy += pushY * M.separationForce * (mp.separationMul || 1);
+  }
+
   function updateWaterDroplets(dt, tsSec) {
     if (started) return;
 
@@ -1042,9 +1144,23 @@
 
       d.driftTargetTimer -= dt;
       if (d.driftTargetTimer <= 0) {
-        d.driftTargetX = rand(bounds.minX + d.r, bounds.maxX - d.r);
-        d.driftTargetY = rand(bounds.minY + d.r, bounds.maxY - d.r);
-        d.driftTargetTimer = rand(1.4, 3.2);
+        const orbitBase = d.anchorAngle + Math.sin(tsSec * 0.55 + d.seed * 0.13) * 0.42;
+        const orbitRadius =
+          d.anchorDist * (0.94 + Math.sin(tsSec * 0.38 + d.seed * 0.21) * 0.10);
+
+        d.driftTargetX = clamp(
+          cx + Math.cos(orbitBase) * orbitRadius,
+          bounds.minX + d.r,
+          bounds.maxX - d.r
+        );
+
+        d.driftTargetY = clamp(
+          cy + Math.sin(orbitBase) * orbitRadius,
+          bounds.minY + d.r,
+          bounds.maxY - d.r
+        );
+
+        d.driftTargetTimer = rand(0.8, 2.1);
       }
 
       const flowX =
@@ -1063,6 +1179,9 @@
       const toCenterY = cy - d.y;
       const centerLen = Math.hypot(toCenterX, toCenterY) || 1;
 
+      const tangentialX = (-toCenterY / centerLen) * d.orbitDir;
+      const tangentialY = (toCenterX / centerLen) * d.orbitDir;
+
       const gravity = 0.06 * (mp.gravityMul || 1);
 
       const horizonPull =
@@ -1072,15 +1191,19 @@
 
       d.vx +=
         flowX * dt * C.driftForce * (mp.driftForceMul || 1) +
-        (toTargetX / targetLen) * dt * 0.9 +
+        (toTargetX / targetLen) * dt * C.targetPull * (mp.targetPullMul || 1) * d.targetBias +
+        tangentialX * dt * C.tangentialForce * (mp.tangentialMul || 1) +
         (toCenterX / centerLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
 
       d.vy +=
         flowY * dt * C.driftForce * (mp.driftForceMul || 1) +
-        (toTargetY / targetLen) * dt * 0.9 +
+        (toTargetY / targetLen) * dt * C.targetPull * (mp.targetPullMul || 1) * d.targetBias +
+        tangentialY * dt * C.tangentialForce * (mp.tangentialMul || 1) +
         (toCenterY / centerLen) * dt * C.centerBias * (mp.centerBiasMul || 1) +
         gravity +
         horizonPull;
+
+      applyAuxSeparation(d);
 
       d.vx *= C.driftDamping;
       d.vy *= C.driftDamping;
