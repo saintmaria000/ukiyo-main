@@ -1,6 +1,7 @@
 (function () {
   const body = document.body;
-  const mq = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
+  const mqPortrait = window.matchMedia('(pointer: coarse) and (orientation: portrait)');
+  const mqLandscape = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
   function isSideView() {
     return (
@@ -9,8 +10,18 @@
     );
   }
 
+  function isCoarsePortrait() {
+    return mqPortrait.matches;
+  }
+
+  function isCoarseLandscape() {
+    return mqLandscape.matches;
+  }
+
   function shouldLockPageScroll() {
-    return mq.matches && isSideView();
+    if (isCoarsePortrait() && isSideView()) return true;
+    if (isCoarseLandscape() && isSideView()) return true;
+    return false;
   }
 
   function updateStageScrollLock() {
@@ -20,10 +31,12 @@
   window.addEventListener('resize', updateStageScrollLock);
   window.addEventListener('orientationchange', updateStageScrollLock);
 
-  if (mq.addEventListener) {
-    mq.addEventListener('change', updateStageScrollLock);
-  } else if (mq.addListener) {
-    mq.addListener(updateStageScrollLock);
+  if (mqPortrait.addEventListener) {
+    mqPortrait.addEventListener('change', updateStageScrollLock);
+    mqLandscape.addEventListener('change', updateStageScrollLock);
+  } else {
+    mqPortrait.addListener(updateStageScrollLock);
+    mqLandscape.addListener(updateStageScrollLock);
   }
 
   const observer = new MutationObserver(() => {
