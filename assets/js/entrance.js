@@ -259,17 +259,6 @@
 
     logoHoldAfterReveal: 1.42,
 
-    reveal: {
-      dropFromY: -148,
-      dropOvershoot: 18,
-      bounceBackY: -10,
-      dropDuration: 0.68,
-      bounceDuration: 0.24,
-      startScale: 0.93,
-      impactScale: 1.02,
-      finalScale: 1.0
-    },
-
     logoMask: {
       fallbackText: "憂き世",
       sampleStep: 4,
@@ -480,12 +469,27 @@
 
   /* =========================================================
      Sector 07. Logo Target Build
+     ---------------------------------------------------------
+     役割:
+     - revealLogo の最終位置そのものを基準に
+       文字ターゲット点群を構築
+     - 落下開始位置ではなく、着地位置基準
   ========================================================= */
   function buildLogoTargetPoints() {
     state.logoTargets.length = 0;
     state.logoTargetRect = null;
 
     if (!revealLogo) return;
+
+    const prevVisibility = revealLogo.style.visibility;
+    const prevOpacity = revealLogo.style.opacity;
+    const prevDisplay = revealLogo.style.display;
+    const prevTransform = revealLogo.style.transform;
+
+    revealLogo.style.display = "block";
+    revealLogo.style.visibility = "hidden";
+    revealLogo.style.opacity = "0";
+    revealLogo.style.transform = "translate(-50%, -50%)";
 
     const rect = revealLogo.getBoundingClientRect();
     const width = Math.max(8, Math.round(rect.width));
@@ -505,7 +509,13 @@
     off.width = width;
     off.height = height;
     const octx = off.getContext("2d", { willReadFrequently: true });
-    if (!octx) return;
+    if (!octx) {
+      revealLogo.style.display = prevDisplay;
+      revealLogo.style.visibility = prevVisibility;
+      revealLogo.style.opacity = prevOpacity;
+      revealLogo.style.transform = prevTransform;
+      return;
+    }
 
     octx.clearRect(0, 0, width, height);
     octx.fillStyle = "#fff";
@@ -552,6 +562,11 @@
     }
 
     state.logoTargets = shuffleInPlace(pts);
+
+    revealLogo.style.display = prevDisplay;
+    revealLogo.style.visibility = prevVisibility;
+    revealLogo.style.opacity = prevOpacity;
+    revealLogo.style.transform = prevTransform;
   }
 
   function getAnyLogoTarget() {
@@ -718,114 +733,108 @@
   /* =========================================================
      Sector 09. Water System / Generate & Model
   ========================================================= */
-function createWaterDroplet(instanceDef, indexWithinKind) {
-  const bounds = getWaterBounds();
-  const mainR = getMainBaseRadius();
-  const r = instanceDef.radius;
+  function createWaterDroplet(instanceDef, indexWithinKind) {
+    const bounds = getWaterBounds();
+    const mainR = getMainBaseRadius();
+    const r = instanceDef.radius;
 
-  const gapMap = CONFIG.water.aux.spawnGapFromMain;
-  const gap =
-    typeof gapMap === "number"
-      ? gapMap
-      : (gapMap[instanceDef.name] ?? 16);
+    const gapMap = CONFIG.water.aux.spawnGapFromMain;
+    const gap =
+      typeof gapMap === "number"
+        ? gapMap
+        : (gapMap[instanceDef.name] ?? 16);
 
-  const safeMargin = 10;
-  const minDistFromMain = mainR + r + gap;
+    const safeMargin = 10;
+    const minDistFromMain = mainR + r + gap;
 
-  // =========================
-  // サイズごとの距離レンジ定義
-  // =========================
-  let distMinMul = 1.1;
-  let distMaxMul = 1.4;
+    let distMinMul = 1.1;
+    let distMaxMul = 1.4;
 
-  if (instanceDef.name === "auxA") {
-    // 大 → かなり近い
-    distMinMul = 1.05;
-    distMaxMul = 1.22;
-  } else if (instanceDef.name === "auxB") {
-    // 中 → 中距離
-    distMinMul = 1.2;
-    distMaxMul = 1.6;
-  } else {
-    // 小 → 広くランダム
-    distMinMul = 1.3;
-    distMaxMul = 2.2;
-  }
-
-  let placed = false;
-  let x = cx;
-  let y = cy;
-
-  for (let i = 0; i < 120; i++) {
-    const angle = rand(0, Math.PI * 2);
-    const distMul = rand(distMinMul, distMaxMul);
-    const dist = minDistFromMain * distMul;
-
-    const tx = cx + Math.cos(angle) * dist;
-    const ty = cy + Math.sin(angle) * dist;
-
-    const insideX =
-      tx >= bounds.minX + r + safeMargin &&
-      tx <= bounds.maxX - r - safeMargin;
-
-    const insideY =
-      ty >= bounds.minY + r + safeMargin &&
-      ty <= bounds.maxY - r - safeMargin;
-
-    if (insideX && insideY) {
-      x = tx;
-      y = ty;
-      placed = true;
-      break;
+    if (instanceDef.name === "auxA") {
+      distMinMul = 1.05;
+      distMaxMul = 1.22;
+    } else if (instanceDef.name === "auxB") {
+      distMinMul = 1.2;
+      distMaxMul = 1.6;
+    } else {
+      distMinMul = 1.3;
+      distMaxMul = 2.2;
     }
+
+    let placed = false;
+    let x = cx;
+    let y = cy;
+
+    for (let i = 0; i < 120; i++) {
+      const angle = rand(0, Math.PI * 2);
+      const distMul = rand(distMinMul, distMaxMul);
+      const dist = minDistFromMain * distMul;
+
+      const tx = cx + Math.cos(angle) * dist;
+      const ty = cy + Math.sin(angle) * dist;
+
+      const insideX =
+        tx >= bounds.minX + r + safeMargin &&
+        tx <= bounds.maxX - r - safeMargin;
+
+      const insideY =
+        ty >= bounds.minY + r + safeMargin &&
+        ty <= bounds.maxY - r - safeMargin;
+
+      if (insideX && insideY) {
+        x = tx;
+        y = ty;
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      const fallbackAngle = rand(0, Math.PI * 2);
+      const fallbackDist = minDistFromMain * distMinMul;
+
+      x = clamp(
+        cx + Math.cos(fallbackAngle) * fallbackDist,
+        bounds.minX + r + safeMargin,
+        bounds.maxX - r - safeMargin
+      );
+
+      y = clamp(
+        cy + Math.sin(fallbackAngle) * fallbackDist,
+        bounds.minY + r + safeMargin,
+        bounds.maxY - r - safeMargin
+      );
+    }
+
+    const launchAngle = rand(0, Math.PI * 2);
+    const anchorAngle = Math.atan2(y - cy, x - cx);
+    const anchorDist = dist2(x, y, cx, cy);
+
+    return {
+      name: instanceDef.name,
+      r,
+      alpha: instanceDef.alpha,
+      x,
+      y,
+      vx: Math.cos(launchAngle) * rand(0.18, 0.9),
+      vy: Math.sin(launchAngle) * rand(0.14, 0.82),
+      scale: 1,
+      life: 0,
+      seed: rand(0, 1000),
+      indexWithinKind,
+
+      moveProfile: instanceDef.moveProfile || DEFAULT_MOVE_PROFILE,
+
+      anchorAngle,
+      anchorDist,
+      orbitDir: Math.random() < 0.5 ? -1 : 1,
+      targetBias: rand(0.88, 1.16),
+
+      driftTargetX: x,
+      driftTargetY: y,
+      driftTargetTimer: rand(0.9, 2.4)
+    };
   }
-
-  if (!placed) {
-    const fallbackAngle = rand(0, Math.PI * 2);
-    const fallbackDist = minDistFromMain * distMinMul;
-
-    x = clamp(
-      cx + Math.cos(fallbackAngle) * fallbackDist,
-      bounds.minX + r + safeMargin,
-      bounds.maxX - r - safeMargin
-    );
-
-    y = clamp(
-      cy + Math.sin(fallbackAngle) * fallbackDist,
-      bounds.minY + r + safeMargin,
-      bounds.maxY - r - safeMargin
-    );
-  }
-
-  const launchAngle = rand(0, Math.PI * 2);
-  const anchorAngle = Math.atan2(y - cy, x - cx);
-  const anchorDist = dist2(x, y, cx, cy);
-
-  return {
-    name: instanceDef.name,
-    r,
-    alpha: instanceDef.alpha,
-    x,
-    y,
-    vx: Math.cos(launchAngle) * rand(0.18, 0.9),
-    vy: Math.sin(launchAngle) * rand(0.14, 0.82),
-    scale: 1,
-    life: 0,
-    seed: rand(0, 1000),
-    indexWithinKind,
-
-    moveProfile: instanceDef.moveProfile || DEFAULT_MOVE_PROFILE,
-
-    anchorAngle,
-    anchorDist,
-    orbitDir: Math.random() < 0.5 ? -1 : 1,
-    targetBias: rand(0.88, 1.16),
-
-    driftTargetX: x,
-    driftTargetY: y,
-    driftTargetTimer: rand(0.9, 2.4)
-  };
-}
 
   function initWaterDroplets() {
     state.water.auxDroplets.length = 0;
@@ -1738,62 +1747,6 @@ function createWaterDroplet(instanceDef, indexWithinKind) {
     ctx.restore();
   }
 
-  function drawSingleMirrorReflection(item, time, hintK) {
-    let pts;
-    let alpha;
-    let lineAlpha;
-    let squashY;
-
-    if (item.type === "main") {
-      pts = buildDropletPathAt(
-        cx,
-        cy,
-        getMainMorph(time, hintK),
-        time,
-        0,
-        getVisualDeformationForMain()
-      );
-      alpha = CONFIG.water.reflection.mainBodyAlpha;
-      lineAlpha = CONFIG.water.reflection.strokeAlphaMain;
-      squashY = CONFIG.water.reflection.squashMain;
-    } else {
-      const d = item.source;
-      const m = getAuxMorph(d, time);
-
-      pts = buildDropletPathAt(
-        d.x,
-        d.y,
-        m,
-        time,
-        d.seed,
-        getVisualDeformationForAux(d)
-      );
-      alpha = CONFIG.water.reflection.auxBodyAlphaMul * d.alpha;
-      lineAlpha = CONFIG.water.reflection.strokeAlphaAux * d.alpha;
-      squashY = CONFIG.water.reflection.squashAux;
-    }
-
-    const reflected = pts.map((p) => {
-      const mirroredY = horizonY + (horizonY - p.y);
-      return {
-        x: p.x,
-        y: horizonY + (mirroredY - horizonY) * squashY
-      };
-    });
-
-    ctx.save();
-
-    tracePath(reflected);
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-    ctx.fill();
-
-    ctx.strokeStyle = `rgba(255,255,255,${lineAlpha})`;
-    ctx.lineWidth = 0.9;
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
   function drawMetaballMirrorReflection(group, hintK) {
     const bounds = buildMetaballComposite(group, hintK);
     const srcCanvas = state.water.metaballCompositeCanvas;
@@ -1846,7 +1799,11 @@ function createWaterDroplet(instanceDef, indexWithinKind) {
 
   function updateShardGather(s, dt, t) {
     const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-    const pull = lerp(18, CONFIG.gatherMaxPull, easeInExpo(tk));
+    const pull = lerp(
+      8,
+      CONFIG.gatherMaxPull,
+      easeInExpo(Math.max(0, (tk - 0.18) / 0.82))
+    );
 
     const targetX = s.targetX ?? cx;
     const targetY = s.targetY ?? cy;
@@ -2099,46 +2056,15 @@ function createWaterDroplet(instanceDef, indexWithinKind) {
 
   /* =========================================================
      Sector 18. Brand / Reveal Logo
+     ---------------------------------------------------------
+     役割:
+     - revealLogo は落下させない
+     - 文字位置にそのまま出す
   ========================================================= */
   function setBrandOpacity(opacity) {
     if (!brand) return;
     brand.style.opacity = String(clamp(opacity, 0, 1));
     brand.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
-  }
-
-  function getRevealMotion(k) {
-    const C = CONFIG.reveal;
-    const dropPortion = C.dropDuration / (C.dropDuration + C.bounceDuration);
-
-    let y = 0;
-    let scale = C.finalScale;
-
-    if (k <= dropPortion) {
-      const t = k / Math.max(dropPortion, 0.0001);
-      const e = easeOutCubic(t);
-
-      y = lerp(C.dropFromY, C.dropOvershoot, e);
-      scale = lerp(C.startScale, C.impactScale, e);
-    } else {
-      const t = (k - dropPortion) / Math.max(1 - dropPortion, 0.0001);
-
-      if (t < 0.5) {
-        const t1 = t / 0.5;
-        y = lerp(C.dropOvershoot, C.bounceBackY, easeOutCubic(t1));
-        scale = lerp(C.impactScale, C.finalScale + 0.008, easeOutCubic(t1));
-      } else {
-        const t2 = (t - 0.5) / 0.5;
-        y = lerp(C.bounceBackY, 0, easeInOutCubic(t2));
-        scale = lerp(C.finalScale + 0.008, C.finalScale, easeInOutCubic(t2));
-      }
-    }
-
-    if (k >= 1) {
-      y = 0;
-      scale = C.finalScale;
-    }
-
-    return { y, scale };
   }
 
   function setRevealOpacity(opacity) {
@@ -2147,10 +2073,7 @@ function createWaterDroplet(instanceDef, indexWithinKind) {
     const k = clamp(opacity, 0, 1);
     revealLogo.style.opacity = String(k);
     revealLogo.style.visibility = k <= 0.001 ? "hidden" : "visible";
-
-    const motion = getRevealMotion(k);
-    revealLogo.style.transform =
-      `translate(-50%, -50%) translateY(${motion.y}px) scale(${motion.scale})`;
+    revealLogo.style.transform = "translate(-50%, -50%)";
   }
 
   function prepareLogos() {
@@ -2173,8 +2096,7 @@ function createWaterDroplet(instanceDef, indexWithinKind) {
       revealLogo.style.left = revealLogo.style.left || "50%";
       revealLogo.style.top = revealLogo.style.top || "50%";
       revealLogo.style.zIndex = "25";
-      revealLogo.style.transform =
-        `translate(-50%, -50%) translateY(${CONFIG.reveal.dropFromY}px) scale(${CONFIG.reveal.startScale})`;
+      revealLogo.style.transform = "translate(-50%, -50%)";
     }
   }
 
@@ -2287,7 +2209,8 @@ function createWaterDroplet(instanceDef, indexWithinKind) {
         showRevealLogo();
       }
 
-      const logoK = clamp((t - T_FLASH) / P.logo, 0, 1);
+      const rawLogoK = clamp((t - T_FLASH) / P.logo, 0, 1);
+      const logoK = clamp((rawLogoK - 0.18) / 0.82, 0, 1);
       setRevealOpacity(logoK);
 
       if (phase === "done" && !finished) {
@@ -2391,5 +2314,3 @@ function createWaterDroplet(instanceDef, indexWithinKind) {
 
   boot();
 })();
-
-// ddddd
