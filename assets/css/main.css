@@ -156,7 +156,7 @@ a{
   --font-body-xs:clamp(.78rem, .85vw, .86rem);
 
   --font-ui-xs:clamp(.78rem, .8vw, .86rem);
-  --font-ui-sm:clamp(0.89rem, .98vw, 1rem);
+  --font-ui-sm:clamp(1.5rem, .98vw, 1rem);
 
   --ls-wide:.35em;
   --ls-title:.28em;
