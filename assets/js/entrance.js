@@ -44,7 +44,7 @@
 
         sideInset: 18,
         topInset: 9,
-        bottomInset: -20
+        bottomInset: -50
       },
 
       main: {
