@@ -1200,7 +1200,7 @@ body.view-right .inner-shell{
 /* タップ領域は広く、見た目は線のまま */
 @media (pointer:coarse){
   .modal__close-line{
-    height:24px;
+    height:1px;
     background:transparent;
     box-shadow:none;
   }
