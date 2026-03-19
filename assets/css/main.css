@@ -156,7 +156,7 @@ a{
   --font-body-xs:clamp(.78rem, .85vw, .86rem);
 
   --font-ui-xs:clamp(.78rem, .8vw, .86rem);
-  --font-ui-sm:clamp(2rem, .98vw, 1rem);
+  --font-ui-sm:clamp(0.89rem, .98vw, 1rem);
 
   --ls-wide:.35em;
   --ls-title:.28em;
@@ -1351,6 +1351,7 @@ body.view-right .inner-shell{
     /* ステージ共通 */
     --edge-btn-size:1.4rem;
     --video-side-safe:40px;
+    --font-ui-sm:clamp(2rem, .98vw, 1rem);
 
     /* 中央動画 */
     --video-mobile-landscape-visible-ratio:.52;
@@ -1683,6 +1684,7 @@ body.view-right .inner-shell{
     /* --- 縦スマホ：文字サイズ補正 --- */
 
     /* ヘッダー / UI */
+    --font-ui-sm:clamp(2rem, .98vw, 1rem);
     --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
     --edge-btn-size:1.45rem;
 
