@@ -1643,6 +1643,10 @@ body.view-right .inner-shell{
     width:var(--video-mobile-stage-w);
     max-width:none;
   }
+    .view,
+  .view-inner{
+    pointer-events:auto;
+  }
 }
 /* =========================================================
    Modal 下部フロート閉じるボタン
