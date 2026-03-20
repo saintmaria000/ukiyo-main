@@ -62,7 +62,7 @@
       },
 
       main: {
-        radius: 92,
+        radius: 82,
 
         viewportMinScale: 0.74,
         viewportMaxScale: 1.12,
