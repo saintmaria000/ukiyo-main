@@ -17,6 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let ticking = false;
   let currentWorkId = null;
+  let items = [];
+  let activeIndex = -1;
+  let lastScrollTop = 0;
+  let panelCenterY = 0;
 
   function isMobileLandscape() {
     return mq.matches;
@@ -102,13 +106,11 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         if (previewImg.src === src) {
-          previewImg.src = "";
-          requestAnimationFrame(() => {
-            previewImg.src = src;
-          });
-        } else {
-          previewImg.src = src;
+          resolve(src);
+          return;
         }
+
+        previewImg.src = src;
       }
 
       tryNext();
@@ -140,56 +142,112 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function getGalleryItems() {
-    return Array.from(content.querySelectorAll(".gallery-item"));
+  function collectItems() {
+    items = Array.from(
+      content.querySelectorAll(".gallery-item:not([data-loop-clone])")
+    );
   }
 
   function clearCenteredState() {
-    getGalleryItems().forEach((item) => item.classList.remove("is-centered"));
+    for (const item of items) {
+      item.classList.remove("is-centered");
+    }
   }
 
-  function getCenteredItem() {
-    const items = getGalleryItems();
-    if (!items.length) return null;
+  function refreshPanelCenter() {
+    const rect = panel.getBoundingClientRect();
+    panelCenterY = rect.top + rect.height / 2;
+  }
 
-    const panelRect = panel.getBoundingClientRect();
-    const centerY = panelRect.top + panelRect.height / 2;
+  function getItemCenterY(item) {
+    const rect = item.getBoundingClientRect();
+    return rect.top + rect.height / 2;
+  }
 
-    let closestItem = null;
+  function findClosestIndexFullScan() {
+    if (!items.length) return -1;
+
+    let closestIndex = 0;
     let closestDistance = Infinity;
 
-    items.forEach((item) => {
-      const rect = item.getBoundingClientRect();
-      const itemCenterY = rect.top + rect.height / 2;
-      const distance = Math.abs(centerY - itemCenterY);
-
+    for (let i = 0; i < items.length; i++) {
+      const distance = Math.abs(getItemCenterY(items[i]) - panelCenterY);
       if (distance < closestDistance) {
         closestDistance = distance;
-        closestItem = item;
+        closestIndex = i;
       }
-    });
+    }
 
-    return closestItem;
+    return closestIndex;
+  }
+
+  function findClosestIndexNearActive(scrollDirection) {
+    if (!items.length) return -1;
+    if (activeIndex < 0 || activeIndex >= items.length) {
+      return findClosestIndexFullScan();
+    }
+
+    // 今のactive周辺だけを見る
+    const candidateIndexes = new Set([
+      activeIndex,
+      activeIndex - 1,
+      activeIndex + 1,
+      activeIndex - 2,
+      activeIndex + 2,
+    ]);
+
+    // スクロール方向に少し寄せる
+    if (scrollDirection > 0) {
+      candidateIndexes.add(activeIndex + 3);
+    } else if (scrollDirection < 0) {
+      candidateIndexes.add(activeIndex - 3);
+    }
+
+    let closestIndex = activeIndex;
+    let closestDistance = Infinity;
+
+    for (const i of candidateIndexes) {
+      if (i < 0 || i >= items.length) continue;
+      const distance = Math.abs(getItemCenterY(items[i]) - panelCenterY);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
+    }
+
+    return closestIndex;
+  }
+
+  function applyActive(index) {
+    if (index < 0 || index >= items.length) return;
+    if (index === activeIndex) return;
+
+    clearCenteredState();
+
+    const item = items[index];
+    item.classList.add("is-centered");
+    activeIndex = index;
+
+    const workId = item.dataset.workId || item.getAttribute("data-work-id");
+    if (!workId) return;
+
+    updatePreviewByWorkId(workId);
   }
 
   function updateCenteredPreview() {
     if (!isMobileLandscape()) return;
+    if (!items.length) return;
 
-    const centered = getCenteredItem();
-    if (!centered) return;
+    const scrollTop = panel.scrollTop;
+    const direction = scrollTop > lastScrollTop ? 1 : scrollTop < lastScrollTop ? -1 : 0;
+    lastScrollTop = scrollTop;
 
-    clearCenteredState();
-    centered.classList.add("is-centered");
+    const nextIndex =
+      activeIndex === -1
+        ? findClosestIndexFullScan()
+        : findClosestIndexNearActive(direction);
 
-    const workId =
-      centered.dataset.workId ||
-      centered.dataset.originWorkId ||
-      centered.getAttribute("data-work-id") ||
-      centered.getAttribute("data-origin-work-id");
-
-    if (!workId) return;
-
-    updatePreviewByWorkId(workId);
+    applyActive(nextIndex);
   }
 
   function requestCenteredPreviewUpdate() {
@@ -208,12 +266,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleResize() {
+    collectItems();
+    refreshPanelCenter();
+
     if (!isMobileLandscape()) return;
     requestCenteredPreviewUpdate();
   }
 
   panel.addEventListener("scroll", handleScroll, { passive: true });
-  panel.addEventListener("galleryloopready", requestCenteredPreviewUpdate);
+  panel.addEventListener("galleryloopready", () => {
+    collectItems();
+    refreshPanelCenter();
+    requestCenteredPreviewUpdate();
+  });
+
   window.addEventListener("resize", handleResize);
   window.addEventListener("orientationchange", handleResize);
 
@@ -222,6 +288,9 @@ document.addEventListener("DOMContentLoaded", () => {
   } else if (mq.addListener) {
     mq.addListener(handleResize);
   }
+
+  collectItems();
+  refreshPanelCenter();
 
   if (isMobileLandscape()) {
     requestAnimationFrame(() => {
