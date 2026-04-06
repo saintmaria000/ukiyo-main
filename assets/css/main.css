@@ -1712,7 +1712,7 @@ body.view-right .inner-shell{
     /* Header / UI */
     --font-ui-sm:clamp(2rem, .98vw, 1rem);
     --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
-    --edge-btn-size:1.45rem;
+    --edge-btn-size:3.25rem;
 
     /* Body text */
     --font-body-md:clamp(1.08rem, 3.8vw, 1.2rem);
