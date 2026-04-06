@@ -1411,6 +1411,52 @@ body.view-right .inner-shell{
     background:rgba(255,255,255,.04);
   }
 
+  .view-left .view-inner{
+    justify-content:center;
+    align-items:flex-start;
+    padding-top:0;
+    padding-bottom:0;
+  }
+
+  .gallery-panel{
+    position:relative;
+    width:100%;
+    max-width:var(--gallery-w);
+    min-width:0;
+    margin-top:var(--gallery-panel-gap-top);
+    min-height:0;
+
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  .gallery-scroll{
+    position:relative;
+    z-index:1;
+    width:100%;
+
+    flex:1 1 auto;
+    min-height:0;
+    height:100%;
+    max-height:100%;
+
+    margin:0;
+    padding:0;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    touch-action:pan-y;
+  }
+
+  .gallery-item{
+    width:100%;
+    flex:0 0 auto;
+  }
+
   .modal__content{
     width:var(--modal-width);
     max-width:var(--modal-max-w);
@@ -1481,7 +1527,6 @@ body.view-right .inner-shell{
     white-space:nowrap;
   }
 }
-
 /* -----------------------------------------
    13-04. タッチ横向き
 ----------------------------------------- */
@@ -1642,51 +1687,13 @@ body.view-right .inner-shell{
     max-width:44ch;
   }
 
-  .view-left .view-inner{
-    justify-content:center;
-    align-items:flex-start;
-    padding-top:0;
-    padding-bottom:0;
-  }
-
   .gallery-panel{
-    position:relative;
     width:var(--gallery-w);
     max-width:var(--gallery-w);
     min-width:var(--gallery-w);
     height:var(--gallery-panel-fixed-h);
     min-height:var(--gallery-panel-fixed-h);
-    margin-top:var(--gallery-panel-gap-top);
     align-self:flex-start;
-
-    display:flex;
-    flex-direction:column;
-
-    overflow:hidden;
-  }
-
-  .gallery-scroll{
-    position:relative;
-    z-index:1;
-    width:100%;
-
-    flex:1;
-    min-height:0;
-    height:auto;
-
-    margin:0;
-    padding:0;
-
-    overflow-y:auto;
-    overflow-x:hidden;
-
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior-y:contain;
-    touch-action:pan-y;
-  }
-  
-  .gallery-item{
-    width:100%;
   }
 
   .gallery-item-title{
@@ -1748,6 +1755,7 @@ body.view-right .inner-shell{
     --about-col-item-size:1.02rem;
     --about-hero-pad-top:0px;
     --about-stack-line-protrusion:136;
+
     /* Modal */
     --modal-credit-title-size:1rem;
     --modal-credit-list-size:.92rem;
@@ -1761,6 +1769,19 @@ body.view-right .inner-shell{
 
     /* 縦スマホ時の視点補正 */
     --inner-shell-side-shift:2420px;
+  }
+
+  .gallery-panel{
+    height:min(var(--gallery-panel-max-h), calc(100svh - var(--gallery-panel-vh-offset)));
+    min-height:var(--gallery-panel-min-h);
+  }
+
+  .gallery-item-title{
+    line-height:1.45;
+  }
+
+  .gallery-item-meta{
+    line-height:1.35;
   }
 }
 
