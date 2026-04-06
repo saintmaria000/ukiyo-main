@@ -1,20 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const panel =
-    document.querySelector(".view.view-left .gallery-panel") ||
-    document.querySelector(".view.view-left .gallery-scroll");
-
-  const content =
-    document.querySelector(".view.view-left .gallery-scroll") ||
-    panel;
+  const panel = document.querySelector(".view.view-left .gallery-panel");
+  const content = document.querySelector(".view.view-left .gallery-scroll");
 
   if (!panel || !content) return;
 
+  const scroller = content;
   const mq = window.matchMedia("(pointer: coarse)");
 
   let built = false;
   let segmentHeight = 0;
   let isNormalizing = false;
   let raf = 0;
+  let resizeTimer = null;
 
   function isTouchDevice() {
     return mq.matches;
@@ -34,6 +31,25 @@ document.addEventListener("DOMContentLoaded", () => {
     return clone;
   }
 
+  function measure() {
+    if (!built) return;
+    segmentHeight = content.scrollHeight / 3;
+  }
+
+  function jumpToMiddle() {
+    if (!segmentHeight) return;
+    scroller.scrollTop = segmentHeight;
+  }
+
+  function dispatchReady() {
+    panel.dispatchEvent(
+      new CustomEvent("galleryloopready", {
+        bubbles: true,
+        detail: { segmentHeight }
+      })
+    );
+  }
+
   function buildLoop() {
     if (!isTouchDevice() || built) return;
 
@@ -43,8 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const top = document.createDocumentFragment();
     const bottom = document.createDocumentFragment();
 
-    originals.forEach((i) => top.appendChild(cloneItem(i)));
-    originals.forEach((i) => bottom.appendChild(cloneItem(i)));
+    originals.forEach((item) => top.appendChild(cloneItem(item)));
+    originals.forEach((item) => bottom.appendChild(cloneItem(item)));
 
     content.prepend(top);
     content.appendChild(bottom);
@@ -58,13 +74,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function measure() {
-    segmentHeight = content.scrollHeight / 3;
-  }
+  function destroyLoop() {
+    if (!built) return;
 
-  function jumpToMiddle() {
-    if (!segmentHeight) return;
-    panel.scrollTop = segmentHeight;
+    content.querySelectorAll("[data-loop-clone='true']").forEach((node) => {
+      node.remove();
+    });
+
+    built = false;
+    segmentHeight = 0;
+    isNormalizing = false;
   }
 
   function normalize() {
@@ -72,24 +91,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const max = segmentHeight * 2;
     const threshold = 32;
-    const top = panel.scrollTop;
+    const top = scroller.scrollTop;
 
     if (top <= threshold) {
       isNormalizing = true;
-      panel.scrollTop = top + segmentHeight;
+      scroller.scrollTop = top + segmentHeight;
     } else if (top >= max - threshold) {
       isNormalizing = true;
-      panel.scrollTop = top - segmentHeight;
+      scroller.scrollTop = top - segmentHeight;
+    } else {
+      return;
     }
 
     requestAnimationFrame(() => {
       isNormalizing = false;
       dispatchReady();
     });
-  }
-
-  function dispatchReady() {
-    panel.dispatchEvent(new CustomEvent("galleryloopready"));
   }
 
   function onScroll() {
@@ -102,7 +119,42 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  panel.addEventListener("scroll", onScroll, { passive: true });
+  function rebuild() {
+    if (!isTouchDevice()) {
+      destroyLoop();
+      return;
+    }
 
-  if (isTouchDevice()) buildLoop();
+    if (!built) {
+      buildLoop();
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      measure();
+      jumpToMiddle();
+      dispatchReady();
+    });
+  }
+
+  function handleResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      rebuild();
+    }, 120);
+  }
+
+  scroller.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", handleResize);
+  window.addEventListener("orientationchange", handleResize);
+
+  if (mq.addEventListener) {
+    mq.addEventListener("change", handleResize);
+  } else if (mq.addListener) {
+    mq.addListener(handleResize);
+  }
+
+  if (isTouchDevice()) {
+    buildLoop();
+  }
 });
