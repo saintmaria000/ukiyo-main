@@ -1368,7 +1368,7 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    13-03. タッチ端末 共通
-   横/縦共通の touch 挙動を先に集約
+   横/縦共通の touch 挙動と構造をここに集約
 ----------------------------------------- */
 @media (pointer:coarse){
   .inner-shell{
@@ -1398,6 +1398,14 @@ body.view-right .inner-shell{
     overflow:hidden;
   }
 
+  /* side view のタッチ面を安定化 */
+  .view.view-left,
+  .view.view-left .view-inner,
+  .view.view-right,
+  .view.view-right .view-inner{
+    pointer-events:auto;
+  }
+
   .gallery-preview,
   .gallery-preview-img{
     pointer-events:none;
@@ -1411,6 +1419,10 @@ body.view-right .inner-shell{
     background:rgba(255,255,255,.04);
   }
 
+  /* ------------------------------
+     Gallery structure
+     縦横共通で完全統一
+  ------------------------------ */
   .view-left .view-inner{
     justify-content:center;
     align-items:flex-start;
@@ -1425,10 +1437,13 @@ body.view-right .inner-shell{
     min-width:0;
     margin-top:var(--gallery-panel-gap-top);
     min-height:0;
+    align-self:flex-start;
 
     display:flex;
     flex-direction:column;
     overflow:hidden;
+
+    isolation:isolate;
   }
 
   .gallery-scroll{
@@ -1444,12 +1459,15 @@ body.view-right .inner-shell{
     margin:0;
     padding:0;
 
-    overflow-y:auto;
+    overflow-y:scroll;
     overflow-x:hidden;
 
     -webkit-overflow-scrolling:touch;
     overscroll-behavior:contain;
     touch-action:pan-y;
+
+    transform:translateZ(0);
+    will-change:scroll-position;
   }
 
   .gallery-item{
@@ -1457,6 +1475,9 @@ body.view-right .inner-shell{
     flex:0 0 auto;
   }
 
+  /* ------------------------------
+     Modal
+  ------------------------------ */
   .modal__content{
     width:var(--modal-width);
     max-width:var(--modal-max-w);
@@ -1529,6 +1550,7 @@ body.view-right .inner-shell{
 }
 /* -----------------------------------------
    13-04. タッチ横向き
+   構造は持たず、数値だけ持つ
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
@@ -1693,7 +1715,6 @@ body.view-right .inner-shell{
     min-width:var(--gallery-w);
     height:var(--gallery-panel-fixed-h);
     min-height:var(--gallery-panel-fixed-h);
-    align-self:flex-start;
   }
 
   .gallery-item-title{
@@ -1720,9 +1741,9 @@ body.view-right .inner-shell{
     line-height:1.65;
   }
 }
-
 /* -----------------------------------------
    13-05. タッチ縦向き
+   構造は持たず、数値だけ持つ
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
@@ -1741,6 +1762,7 @@ body.view-right .inner-shell{
     /* Gallery */
     --gallery-item-size:2.25rem;
     --gallery-meta-size:1rem;
+    --gallery-panel-fixed-h:min(68svh, 760px);
 
     /* Contact */
     --contact-block-size:2.1rem;
@@ -1772,8 +1794,11 @@ body.view-right .inner-shell{
   }
 
   .gallery-panel{
-    height:min(var(--gallery-panel-max-h), calc(100svh - var(--gallery-panel-vh-offset)));
-    min-height:var(--gallery-panel-min-h);
+    width:var(--gallery-w);
+    max-width:var(--gallery-w);
+    min-width:0;
+    height:var(--gallery-panel-fixed-h);
+    min-height:var(--gallery-panel-fixed-h);
   }
 
   .gallery-item-title{
@@ -1784,5 +1809,4 @@ body.view-right .inner-shell{
     line-height:1.35;
   }
 }
-
 /* git */
