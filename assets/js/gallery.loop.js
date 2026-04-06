@@ -1,23 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const panel = document.querySelector(".view.view-left .gallery-panel");
-  const content = document.querySelector(".view.view-left .gallery-scroll");
+  const panel =
+    document.querySelector(".view.view-left .gallery-panel") ||
+    document.querySelector(".view.view-left .gallery-scroll");
+
+  const content =
+    document.querySelector(".view.view-left .gallery-scroll") ||
+    panel;
 
   if (!panel || !content) return;
+
+  const mq = window.matchMedia("(pointer: coarse) and (orientation: landscape)");
 
   let built = false;
   let originals = [];
   let segmentHeight = 0;
-  let currentScroller = null;
-  let ticking = false;
+  let isNormalizing = false;
   let resizeTimer = null;
-  let isJumping = false;
+  let scrollRaf = 0;
 
-  function isCoarse() {
-    return window.matchMedia("(pointer: coarse)").matches;
-  }
-
-  function getScroller() {
-    return isCoarse() ? panel : content;
+  function isMobileLandscape() {
+    return mq.matches;
   }
 
   function getOriginalItems() {
@@ -34,7 +36,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return clone;
   }
 
+  function measureSegmentHeight() {
+    const total = content.scrollHeight;
+    segmentHeight = total > 0 ? total / 3 : 0;
+    originals = getOriginalItems();
+  }
+
   function buildLoop() {
+    if (!isMobileLandscape()) return;
     if (built) return;
 
     originals = getOriginalItems();
@@ -50,6 +59,12 @@ document.addEventListener("DOMContentLoaded", () => {
     content.appendChild(bottomFrag);
 
     built = true;
+
+    requestAnimationFrame(() => {
+      measureSegmentHeight();
+      jumpToMiddle();
+      dispatchLoopReady();
+    });
   }
 
   function destroyLoop() {
@@ -62,57 +77,36 @@ document.addEventListener("DOMContentLoaded", () => {
     built = false;
     originals = [];
     segmentHeight = 0;
+    isNormalizing = false;
   }
 
-  function measureSegmentHeight() {
-    originals = getOriginalItems();
-    if (!originals.length) return;
-
-    // 3ブロック構成（clone + original + clone）なのでこちらの方がズレに強い
-    segmentHeight = content.scrollHeight / 3;
-  }
-
-  function jumpToMiddle(force = false) {
-    const scroller = getScroller();
-    if (!scroller || !segmentHeight) return;
-
-    isJumping = true;
-    scroller.scrollTop = segmentHeight;
-
-    if (force) {
-      requestAnimationFrame(() => {
-        isJumping = false;
-      });
-    } else {
-      setTimeout(() => {
-        isJumping = false;
-      }, 30);
-    }
+  function jumpToMiddle() {
+    if (!segmentHeight) return;
+    panel.scrollTop = segmentHeight;
   }
 
   function normalizeScrollPosition() {
-    if (!built || !segmentHeight || isJumping || !currentScroller) return;
+    if (!built || !segmentHeight || isNormalizing) return;
 
-    const scroller = currentScroller;
     const max = segmentHeight * 2;
+    const threshold = 32;
+    const top = panel.scrollTop;
 
-    // 端ギリギリまで行った時だけ補正する
-    const threshold = Math.max(48, segmentHeight * 0.12);
+    if (top <= threshold) {
+      isNormalizing = true;
+      panel.scrollTop = top + segmentHeight;
 
-    if (scroller.scrollTop <= threshold) {
-      isJumping = true;
-      scroller.scrollTop += segmentHeight;
       requestAnimationFrame(() => {
-        isJumping = false;
+        isNormalizing = false;
+        dispatchLoopReady();
       });
-      return;
-    }
+    } else if (top >= max - threshold) {
+      isNormalizing = true;
+      panel.scrollTop = top - segmentHeight;
 
-    if (scroller.scrollTop >= max - threshold) {
-      isJumping = true;
-      scroller.scrollTop -= segmentHeight;
       requestAnimationFrame(() => {
-        isJumping = false;
+        isNormalizing = false;
+        dispatchLoopReady();
       });
     }
   }
@@ -126,68 +120,45 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  function onScroll() {
-    if (!built || ticking) return;
+  function handleScroll() {
+    if (!isMobileLandscape() || !built) return;
+    if (scrollRaf) return;
 
-    ticking = true;
-    requestAnimationFrame(() => {
+    scrollRaf = requestAnimationFrame(() => {
       normalizeScrollPosition();
-      ticking = false;
-    });
-  }
-
-  function bindScroller() {
-    const nextScroller = getScroller();
-
-    if (currentScroller === nextScroller) return;
-
-    if (currentScroller) {
-      currentScroller.removeEventListener("scroll", onScroll);
-    }
-
-    currentScroller = nextScroller;
-    currentScroller.addEventListener("scroll", onScroll, { passive: true });
-  }
-
-  function rebuild() {
-    if (!built) buildLoop();
-    bindScroller();
-
-    requestAnimationFrame(() => {
-      measureSegmentHeight();
-      jumpToMiddle(true);
-      dispatchLoopReady();
+      scrollRaf = 0;
     });
   }
 
   function handleResize() {
     clearTimeout(resizeTimer);
+
     resizeTimer = setTimeout(() => {
-      rebuild();
-    }, 180);
+      if (isMobileLandscape()) {
+        if (!built) buildLoop();
+
+        requestAnimationFrame(() => {
+          measureSegmentHeight();
+          jumpToMiddle();
+          dispatchLoopReady();
+        });
+      } else {
+        destroyLoop();
+      }
+    }, 120);
   }
 
-  content.addEventListener("click", (e) => {
-    const clone = e.target.closest("[data-loop-clone='true']");
-    if (!clone) return;
-
-    const workId = clone.getAttribute("data-origin-work-id");
-    if (!workId) return;
-
-    const original = content.querySelector(
-      `.gallery-item[data-work-id="${workId}"]:not([data-loop-clone])`
-    );
-
-    if (!original) return;
-
-    e.preventDefault();
-    original.click();
-  });
-
-  buildLoop();
-  bindScroller();
-  rebuild();
-
+  panel.addEventListener("scroll", handleScroll, { passive: true });
   window.addEventListener("resize", handleResize);
   window.addEventListener("orientationchange", handleResize);
+
+  if (mq.addEventListener) {
+    mq.addEventListener("change", handleResize);
+  } else if (mq.addListener) {
+    mq.addListener(handleResize);
+  }
+
+  if (isMobileLandscape()) {
+    buildLoop();
+  }
 });
