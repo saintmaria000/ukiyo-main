@@ -179,7 +179,7 @@ a{
   --global-mute-icon-size:22px;
   --global-mute-hover-scale:1.05;
 
-  --pull-return-top:28px;
+  --pull-return-top:8px;
   --pull-return-offset-y:-14px;
   --pull-return-link-size:clamp(.55rem, 1vw, 1.05rem);
   --pull-return-link-letter-spacing:.12em;
