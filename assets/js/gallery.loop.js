@@ -1,21 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const panel =
-    document.querySelector(".view.view-left .gallery-panel") ||
-    document.querySelector(".view.view-left .gallery-scroll");
-
-  const content =
-    document.querySelector(".view.view-left .gallery-scroll") ||
-    panel;
+  const panel = document.querySelector(".view.view-left .gallery-panel");
+  const content = document.querySelector(".view.view-left .gallery-scroll");
 
   if (!panel || !content) return;
 
   let built = false;
   let originals = [];
   let segmentHeight = 0;
-  let isNormalizing = false;
+  let currentScroller = null;
+  let ticking = false;
+  let resizeTimer = null;
+  let isJumping = false;
 
-  function isMobileLandscape() {
-    return window.innerWidth <= 900 && window.innerWidth > window.innerHeight;
+  function isCoarse() {
+    return window.matchMedia("(pointer: coarse)").matches;
+  }
+
+  function getScroller() {
+    return isCoarse() ? panel : content;
   }
 
   function getOriginalItems() {
@@ -28,16 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const clone = item.cloneNode(true);
     clone.setAttribute("data-loop-clone", "true");
     clone.setAttribute("data-origin-work-id", item.dataset.workId || "");
+    clone.setAttribute("aria-hidden", "true");
     return clone;
   }
 
-  function measureSegmentHeight() {
-    originals = getOriginalItems();
-    segmentHeight = originals.reduce((sum, item) => sum + item.offsetHeight, 0);
-  }
-
   function buildLoop() {
-    if (!isMobileLandscape()) return;
     if (built) return;
 
     originals = getOriginalItems();
@@ -53,12 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
     content.appendChild(bottomFrag);
 
     built = true;
-
-    requestAnimationFrame(() => {
-      measureSegmentHeight();
-      jumpToMiddle();
-      dispatchLoopReady();
-    });
   }
 
   function destroyLoop() {
@@ -73,25 +64,56 @@ document.addEventListener("DOMContentLoaded", () => {
     segmentHeight = 0;
   }
 
-  function jumpToMiddle() {
-    if (!segmentHeight) return;
-    panel.scrollTop = segmentHeight;
+  function measureSegmentHeight() {
+    originals = getOriginalItems();
+    if (!originals.length) return;
+
+    // 3ブロック構成（clone + original + clone）なのでこちらの方がズレに強い
+    segmentHeight = content.scrollHeight / 3;
+  }
+
+  function jumpToMiddle(force = false) {
+    const scroller = getScroller();
+    if (!scroller || !segmentHeight) return;
+
+    isJumping = true;
+    scroller.scrollTop = segmentHeight;
+
+    if (force) {
+      requestAnimationFrame(() => {
+        isJumping = false;
+      });
+    } else {
+      setTimeout(() => {
+        isJumping = false;
+      }, 30);
+    }
   }
 
   function normalizeScrollPosition() {
-    if (!built || !segmentHeight || isNormalizing) return;
+    if (!built || !segmentHeight || isJumping || !currentScroller) return;
 
-    const upperBound = segmentHeight * 0.5;
-    const lowerBound = segmentHeight * 1.5;
+    const scroller = currentScroller;
+    const max = segmentHeight * 2;
 
-    if (panel.scrollTop < upperBound) {
-      isNormalizing = true;
-      panel.scrollTop += segmentHeight;
-      isNormalizing = false;
-    } else if (panel.scrollTop > lowerBound) {
-      isNormalizing = true;
-      panel.scrollTop -= segmentHeight;
-      isNormalizing = false;
+    // 端ギリギリまで行った時だけ補正する
+    const threshold = Math.max(48, segmentHeight * 0.12);
+
+    if (scroller.scrollTop <= threshold) {
+      isJumping = true;
+      scroller.scrollTop += segmentHeight;
+      requestAnimationFrame(() => {
+        isJumping = false;
+      });
+      return;
+    }
+
+    if (scroller.scrollTop >= max - threshold) {
+      isJumping = true;
+      scroller.scrollTop -= segmentHeight;
+      requestAnimationFrame(() => {
+        isJumping = false;
+      });
     }
   }
 
@@ -104,32 +126,68 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  function handleScroll() {
-    if (!isMobileLandscape() || !built) return;
-    normalizeScrollPosition();
+  function onScroll() {
+    if (!built || ticking) return;
+
+    ticking = true;
+    requestAnimationFrame(() => {
+      normalizeScrollPosition();
+      ticking = false;
+    });
+  }
+
+  function bindScroller() {
+    const nextScroller = getScroller();
+
+    if (currentScroller === nextScroller) return;
+
+    if (currentScroller) {
+      currentScroller.removeEventListener("scroll", onScroll);
+    }
+
+    currentScroller = nextScroller;
+    currentScroller.addEventListener("scroll", onScroll, { passive: true });
+  }
+
+  function rebuild() {
+    if (!built) buildLoop();
+    bindScroller();
+
+    requestAnimationFrame(() => {
+      measureSegmentHeight();
+      jumpToMiddle(true);
+      dispatchLoopReady();
+    });
   }
 
   function handleResize() {
-    if (isMobileLandscape()) {
-      if (!built) {
-        buildLoop();
-      } else {
-        requestAnimationFrame(() => {
-          measureSegmentHeight();
-          normalizeScrollPosition();
-          dispatchLoopReady();
-        });
-      }
-    } else {
-      destroyLoop();
-    }
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      rebuild();
+    }, 180);
   }
 
-  panel.addEventListener("scroll", handleScroll, { passive: true });
+  content.addEventListener("click", (e) => {
+    const clone = e.target.closest("[data-loop-clone='true']");
+    if (!clone) return;
+
+    const workId = clone.getAttribute("data-origin-work-id");
+    if (!workId) return;
+
+    const original = content.querySelector(
+      `.gallery-item[data-work-id="${workId}"]:not([data-loop-clone])`
+    );
+
+    if (!original) return;
+
+    e.preventDefault();
+    original.click();
+  });
+
+  buildLoop();
+  bindScroller();
+  rebuild();
+
   window.addEventListener("resize", handleResize);
   window.addEventListener("orientationchange", handleResize);
-
-  if (isMobileLandscape()) {
-    buildLoop();
-  }
 });
