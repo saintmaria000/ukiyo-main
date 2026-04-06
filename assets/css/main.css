@@ -688,7 +688,6 @@ body.view-right .inner-shell{
   pointer-events:auto;
 }
 
-
 /* =========================================================
    08. Gallery
 ========================================================= */
@@ -703,6 +702,7 @@ body.view-right .inner-shell{
   display:flex;
   flex-direction:column;
   overflow:hidden;
+  align-self:flex-start;
 }
 
 .gallery-preview{
@@ -733,9 +733,9 @@ body.view-right .inner-shell{
 .gallery-scroll{
   position:relative;
   z-index:1;
-  flex:1;
-  min-height:0;
   width:100%;
+  flex:1 1 auto;
+  min-height:0;
   overflow-y:auto;
   overflow-x:hidden;
   padding-right:0;
@@ -774,11 +774,16 @@ body.view-right .inner-shell{
   background:rgba(255,255,255,.03);
 }
 
+.gallery-item-title{
+  line-height:1.45;
+}
+
 .gallery-item-meta{
   opacity:.6;
   font-size:var(--gallery-meta-size);
   letter-spacing:var(--gallery-meta-spacing);
   margin-top:var(--gallery-meta-gap-top);
+  line-height:1.35;
 }
 
 /* =========================================================
@@ -1368,7 +1373,7 @@ body.view-right .inner-shell{
 
 /* -----------------------------------------
    13-03. タッチ端末 共通
-   横/縦共通の touch 挙動と構造をここに集約
+   横/縦共通の touch 挙動とスマホ固有差分を集約
 ----------------------------------------- */
 @media (pointer:coarse){
   .inner-shell{
@@ -1398,7 +1403,6 @@ body.view-right .inner-shell{
     overflow:hidden;
   }
 
-  /* side view のタッチ面を安定化 */
   .view.view-left,
   .view.view-left .view-inner,
   .view.view-right,
@@ -1413,71 +1417,24 @@ body.view-right .inner-shell{
 
   .gallery-item{
     transition:opacity .2s ease, background .2s ease;
+    flex:0 0 auto;
   }
 
   .gallery-item.is-centered{
     background:rgba(255,255,255,.04);
   }
 
-  /* ------------------------------
-     Gallery structure
-     縦横共通で完全統一
-  ------------------------------ */
-  .view-left .view-inner{
-    justify-content:center;
-    align-items:flex-start;
-    padding-top:0;
-    padding-bottom:0;
-  }
-
   .gallery-panel{
-    position:relative;
-    width:100%;
-    max-width:var(--gallery-w);
-    min-width:0;
-    margin-top:var(--gallery-panel-gap-top);
-    min-height:0;
-    align-self:flex-start;
-
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-
     isolation:isolate;
   }
 
   .gallery-scroll{
-    position:relative;
-    z-index:1;
-    width:100%;
-
-    flex:1 1 auto;
-    min-height:0;
-    height:100%;
-    max-height:100%;
-
-    margin:0;
-    padding:0;
-
     overflow-y:scroll;
-    overflow-x:hidden;
-
-    -webkit-overflow-scrolling:touch;
     overscroll-behavior:contain;
-    touch-action:pan-y;
-
     transform:translateZ(0);
     will-change:scroll-position;
   }
 
-  .gallery-item{
-    width:100%;
-    flex:0 0 auto;
-  }
-
-  /* ------------------------------
-     Modal
-  ------------------------------ */
   .modal__content{
     width:var(--modal-width);
     max-width:var(--modal-max-w);
@@ -1550,35 +1507,27 @@ body.view-right .inner-shell{
 }
 /* -----------------------------------------
    13-04. タッチ横向き
-   構造は持たず、数値だけ持つ
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
-    /* Stage 共通 */
     --edge-btn-size:1.4rem;
     --video-side-safe:40px;
     --font-ui-sm:clamp(2rem, .98vw, 1rem);
 
-    /* 横スマホ時の視点補正 */
     --inner-shell-side-shift:2050px;
 
-    /* 中央動画 */
     --video-mobile-landscape-visible-ratio:.52;
     --video-mobile-landscape-visible-max:640;
     --video-mobile-landscape-visible-offset-y:0;
 
-    /* Gallery */
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-gap-top:28px;
     --gallery-panel-fixed-h:470px;
-
     --gallery-item-size:1.5rem;
     --gallery-item-pad-y:18px;
-
     --gallery-meta-size:1.08rem;
     --gallery-meta-gap-top:8px;
 
-    /* Contact */
     --contact-w:clamp(520px, 62vw, 760px);
     --contact-block-size:1.18rem;
     --contact-block-spacing:.08em;
@@ -1588,7 +1537,6 @@ body.view-right .inner-shell{
     --contact-label-margin-top:22px;
     --contact-value-size:1.94rem;
 
-    /* About */
     --about-content-pad-top:0px;
     --about-content-pad-x:7.5vw;
     --about-content-pad-bottom:96px;
@@ -1644,9 +1592,7 @@ body.view-right .inner-shell{
     --about-back-spacing:.08em;
     --about-back-margin-top:clamp(30px, 4vw, 54px);
 
-    /* Modal */
     --modal-width:min(76vw, 720px);
-
     --modal-footer-gap-top:4px;
     --modal-footer-pad-bottom:6px;
     --modal-credit-toggle-size:.72rem;
@@ -1658,14 +1604,11 @@ body.view-right .inner-shell{
     --modal-credit-inner-pad-bottom:12px;
 
     --modal-credit-block-w:min(88%, 420px);
-
     --modal-credit-title-size:.74rem;
     --modal-credit-title-gap:10px;
-
     --modal-credit-list-size:.64rem;
     --modal-credit-list-line:1.38;
     --modal-credit-list-gap:10px;
-
     --modal-credit-row-gap:20px;
     --modal-credit-close-size:.66rem;
   }
@@ -1717,14 +1660,6 @@ body.view-right .inner-shell{
     min-height:var(--gallery-panel-fixed-h);
   }
 
-  .gallery-item-title{
-    line-height:1.45;
-  }
-
-  .gallery-item-meta{
-    line-height:1.35;
-  }
-
   .view-right .view-inner{
     justify-content:center;
     align-items:flex-end;
@@ -1741,35 +1676,28 @@ body.view-right .inner-shell{
     line-height:1.65;
   }
 }
+
 /* -----------------------------------------
    13-05. タッチ縦向き
-   構造は持たず、数値だけ持つ
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
-    /* 縦スマホ：文字サイズ補正 */
-
-    /* Header / UI */
     --font-ui-sm:clamp(1.8rem, .98vw, 1rem);
     --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
     --edge-btn-size:3.25rem;
 
-    /* Body text */
     --font-body-md:clamp(1.08rem, 3.8vw, 1.2rem);
     --font-body-sm:clamp(1rem, 3.4vw, 1.1rem);
     --font-body-xs:clamp(.92rem, 3vw, 1rem);
 
-    /* Gallery */
     --gallery-item-size:2.25rem;
     --gallery-meta-size:1rem;
     --gallery-panel-fixed-h:min(68svh, 760px);
 
-    /* Contact */
     --contact-block-size:2.1rem;
     --contact-label-size:2.35rem;
     --contact-value-size:2.2rem;
 
-    /* About */
     --about-lead-size:1.08rem;
     --about-body-size:1.05rem;
     --about-heading-size:1.4rem;
@@ -1778,18 +1706,14 @@ body.view-right .inner-shell{
     --about-hero-pad-top:0px;
     --about-stack-line-protrusion:136;
 
-    /* Modal */
     --modal-credit-title-size:1rem;
     --modal-credit-list-size:.92rem;
 
-    /* 中央動画 */
     --video-mobile-portrait-visible-ratio:.84;
     --video-mobile-portrait-visible-max:500;
     --video-mobile-portrait-visible-offset-y:0;
 
     --video-side-safe:24px;
-
-    /* 縦スマホ時の視点補正 */
     --inner-shell-side-shift:2420px;
   }
 
@@ -1799,14 +1723,6 @@ body.view-right .inner-shell{
     min-width:0;
     height:var(--gallery-panel-fixed-h);
     min-height:var(--gallery-panel-fixed-h);
-  }
-
-  .gallery-item-title{
-    line-height:1.45;
-  }
-
-  .gallery-item-meta{
-    line-height:1.35;
   }
 }
 /* git */
