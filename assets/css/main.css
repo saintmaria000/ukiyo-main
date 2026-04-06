@@ -702,6 +702,7 @@ body.view-right .inner-shell{
   min-height:var(--gallery-panel-min-h);
   display:flex;
   flex-direction:column;
+  overflow:hidden;
 }
 
 .gallery-preview{
@@ -740,6 +741,9 @@ body.view-right .inner-shell{
   padding-right:0;
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.16) transparent;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
 }
 
 .gallery-item{
@@ -776,7 +780,6 @@ body.view-right .inner-shell{
   letter-spacing:var(--gallery-meta-spacing);
   margin-top:var(--gallery-meta-gap-top);
 }
-
 
 /* =========================================================
    09. Contact
@@ -1646,7 +1649,7 @@ body.view-right .inner-shell{
     padding-bottom:0;
   }
 
-  .gallery-panel{
+    .gallery-panel{
     position:relative;
     width:var(--gallery-w);
     max-width:var(--gallery-w);
@@ -1656,11 +1659,7 @@ body.view-right .inner-shell{
     margin-top:var(--gallery-panel-gap-top);
     align-self:flex-start;
     display:block;
-    overflow-y:auto;
-    overflow-x:hidden;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior-y:contain;
-    touch-action:pan-y;
+    overflow:hidden;
   }
 
   .gallery-scroll{
@@ -1670,9 +1669,13 @@ body.view-right .inner-shell{
     min-height:100%;
     margin:0;
     padding:0;
-    overflow:visible;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
   }
-
+  
   .gallery-item{
     width:100%;
   }
