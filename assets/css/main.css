@@ -1710,7 +1710,7 @@ body.view-right .inner-shell{
     /* 縦スマホ：文字サイズ補正 */
 
     /* Header / UI */
-    --font-ui-sm:clamp(2rem, .98vw, 1rem);
+    --font-ui-sm:clamp(1.8rem, .98vw, 1rem);
     --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
     --edge-btn-size:3.25rem;
 
