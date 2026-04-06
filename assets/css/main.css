@@ -547,7 +547,7 @@ body.is-pull-hint-visible .pull-return{
 ========================================================= */
 .inner-shell{
   position:absolute;
-  top:50%;
+  top:48%;
   left:50%;
   transition:transform .8s ease;
   z-index:var(--z-video);
