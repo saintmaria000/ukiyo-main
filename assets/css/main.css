@@ -1649,7 +1649,7 @@ body.view-right .inner-shell{
     padding-bottom:0;
   }
 
-    .gallery-panel{
+  .gallery-panel{
     position:relative;
     width:var(--gallery-w);
     max-width:var(--gallery-w);
@@ -1658,7 +1658,10 @@ body.view-right .inner-shell{
     min-height:var(--gallery-panel-fixed-h);
     margin-top:var(--gallery-panel-gap-top);
     align-self:flex-start;
-    display:block;
+
+    display:flex;
+    flex-direction:column;
+
     overflow:hidden;
   }
 
@@ -1666,11 +1669,17 @@ body.view-right .inner-shell{
     position:relative;
     z-index:1;
     width:100%;
-    min-height:100%;
+
+    flex:1;
+    min-height:0;
+    height:auto;
+
     margin:0;
     padding:0;
+
     overflow-y:auto;
     overflow-x:hidden;
+
     -webkit-overflow-scrolling:touch;
     overscroll-behavior-y:contain;
     touch-action:pan-y;
