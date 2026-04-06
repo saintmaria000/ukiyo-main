@@ -9,22 +9,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!panel || !content) return;
 
-  const mq = window.matchMedia("(pointer: coarse) and (orientation: landscape)");
+  const mq = window.matchMedia("(pointer: coarse)");
 
   let built = false;
-  let originals = [];
   let segmentHeight = 0;
   let isNormalizing = false;
-  let resizeTimer = null;
-  let scrollRaf = 0;
+  let raf = 0;
 
-  function isMobileLandscape() {
+  function isTouchDevice() {
     return mq.matches;
   }
 
   function getOriginalItems() {
     return Array.from(content.querySelectorAll(".gallery-item")).filter(
-      (item) => !item.hasAttribute("data-loop-clone")
+      (el) => !el.hasAttribute("data-loop-clone")
     );
   }
 
@@ -36,48 +34,32 @@ document.addEventListener("DOMContentLoaded", () => {
     return clone;
   }
 
-  function measureSegmentHeight() {
-    const total = content.scrollHeight;
-    segmentHeight = total > 0 ? total / 3 : 0;
-    originals = getOriginalItems();
-  }
-
   function buildLoop() {
-    if (!isMobileLandscape()) return;
-    if (built) return;
+    if (!isTouchDevice() || built) return;
 
-    originals = getOriginalItems();
+    const originals = getOriginalItems();
     if (!originals.length) return;
 
-    const topFrag = document.createDocumentFragment();
-    const bottomFrag = document.createDocumentFragment();
+    const top = document.createDocumentFragment();
+    const bottom = document.createDocumentFragment();
 
-    originals.forEach((item) => topFrag.appendChild(cloneItem(item)));
-    originals.forEach((item) => bottomFrag.appendChild(cloneItem(item)));
+    originals.forEach((i) => top.appendChild(cloneItem(i)));
+    originals.forEach((i) => bottom.appendChild(cloneItem(i)));
 
-    content.prepend(topFrag);
-    content.appendChild(bottomFrag);
+    content.prepend(top);
+    content.appendChild(bottom);
 
     built = true;
 
     requestAnimationFrame(() => {
-      measureSegmentHeight();
+      measure();
       jumpToMiddle();
-      dispatchLoopReady();
+      dispatchReady();
     });
   }
 
-  function destroyLoop() {
-    if (!built) return;
-
-    content
-      .querySelectorAll("[data-loop-clone='true']")
-      .forEach((node) => node.remove());
-
-    built = false;
-    originals = [];
-    segmentHeight = 0;
-    isNormalizing = false;
+  function measure() {
+    segmentHeight = content.scrollHeight / 3;
   }
 
   function jumpToMiddle() {
@@ -85,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     panel.scrollTop = segmentHeight;
   }
 
-  function normalizeScrollPosition() {
+  function normalize() {
     if (!built || !segmentHeight || isNormalizing) return;
 
     const max = segmentHeight * 2;
@@ -95,70 +77,32 @@ document.addEventListener("DOMContentLoaded", () => {
     if (top <= threshold) {
       isNormalizing = true;
       panel.scrollTop = top + segmentHeight;
-
-      requestAnimationFrame(() => {
-        isNormalizing = false;
-        dispatchLoopReady();
-      });
     } else if (top >= max - threshold) {
       isNormalizing = true;
       panel.scrollTop = top - segmentHeight;
-
-      requestAnimationFrame(() => {
-        isNormalizing = false;
-        dispatchLoopReady();
-      });
     }
-  }
 
-  function dispatchLoopReady() {
-    panel.dispatchEvent(
-      new CustomEvent("galleryloopready", {
-        bubbles: true,
-        detail: { segmentHeight }
-      })
-    );
-  }
-
-  function handleScroll() {
-    if (!isMobileLandscape() || !built) return;
-    if (scrollRaf) return;
-
-    scrollRaf = requestAnimationFrame(() => {
-      normalizeScrollPosition();
-      scrollRaf = 0;
+    requestAnimationFrame(() => {
+      isNormalizing = false;
+      dispatchReady();
     });
   }
 
-  function handleResize() {
-    clearTimeout(resizeTimer);
-
-    resizeTimer = setTimeout(() => {
-      if (isMobileLandscape()) {
-        if (!built) buildLoop();
-
-        requestAnimationFrame(() => {
-          measureSegmentHeight();
-          jumpToMiddle();
-          dispatchLoopReady();
-        });
-      } else {
-        destroyLoop();
-      }
-    }, 120);
+  function dispatchReady() {
+    panel.dispatchEvent(new CustomEvent("galleryloopready"));
   }
 
-  panel.addEventListener("scroll", handleScroll, { passive: true });
-  window.addEventListener("resize", handleResize);
-  window.addEventListener("orientationchange", handleResize);
+  function onScroll() {
+    if (!isTouchDevice() || !built) return;
+    if (raf) return;
 
-  if (mq.addEventListener) {
-    mq.addEventListener("change", handleResize);
-  } else if (mq.addListener) {
-    mq.addListener(handleResize);
+    raf = requestAnimationFrame(() => {
+      normalize();
+      raf = 0;
+    });
   }
 
-  if (isMobileLandscape()) {
-    buildLoop();
-  }
+  panel.addEventListener("scroll", onScroll, { passive: true });
+
+  if (isTouchDevice()) buildLoop();
 });
