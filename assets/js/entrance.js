@@ -1042,6 +1042,54 @@
     return "done";
   }
 
+  function getLogoCenter() {
+    if (state.logoTargetRect) {
+      return {
+        x: state.logoTargetRect.left + state.logoTargetRect.width * 0.5,
+        y: state.logoTargetRect.top + state.logoTargetRect.height * 0.5
+      };
+    }
+
+    if (!revealLogo) return { x: cx, y: cy };
+
+    const prevVisibility = revealLogo.style.visibility;
+    const prevOpacity = revealLogo.style.opacity;
+    const prevDisplay = revealLogo.style.display;
+    const prevTransform = revealLogo.style.transform;
+
+    revealLogo.style.display = "block";
+    revealLogo.style.visibility = "hidden";
+    revealLogo.style.opacity = "0";
+    revealLogo.style.transform = "translate(-50%, -50%)";
+
+    const rect = revealLogo.getBoundingClientRect();
+
+    revealLogo.style.display = prevDisplay;
+    revealLogo.style.visibility = prevVisibility;
+    revealLogo.style.opacity = prevOpacity;
+    revealLogo.style.transform = prevTransform;
+
+    return {
+      x: rect.left + rect.width * 0.5,
+      y: rect.top + rect.height * 0.5
+    };
+  }
+
+  function getGlowFocusPoint(phase, t) {
+    const logo = getLogoCenter();
+
+    if (phase === "gather" || phase === "flash" || phase === "logo" || phase === "done") {
+      const k = clamp((t - T_DRIFT) / Math.max(T_LOGO - T_DRIFT, 0.0001), 0, 1);
+      const e = easeOutCubic(k);
+      return {
+        x: lerp(cx, logo.x, e),
+        y: lerp(cy - 10, logo.y, e)
+      };
+    }
+
+    return { x: cx, y: cy - 10 };
+  }
+
   /* =========================================================
      Sector 11. Water System / Update
   ========================================================= */
@@ -1574,13 +1622,13 @@
   /* =========================================================
      Sector 13. Background / Halo / Water
   ========================================================= */
-  function drawBackground(time) {
+  function drawBackground(time, phase, t) {
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = CONFIG.bg;
     ctx.fillRect(0, 0, w, h);
 
     drawWaterAreaBackground();
-    drawHalo(time);
+    drawHalo(time, phase, t);
     drawHorizon(time);
     drawWater(time);
   }
@@ -1637,19 +1685,20 @@
     ctx.restore();
   }
 
-  function drawHalo(time) {
+  function drawHalo(time, phase, t) {
     const H = CONFIG.water.halo;
     const pulse = 0.93 + Math.sin(time * 1.1) * 0.03;
     const r = Math.max(w, h) * H.radiusRatio * pulse;
+    const focus = getGlowFocusPoint(phase, t);
 
-    const g = ctx.createRadialGradient(cx, cy - 10, 0, cx, cy - 10, r);
+    const g = ctx.createRadialGradient(focus.x, focus.y, 0, focus.x, focus.y, r);
     g.addColorStop(0, `rgba(255,255,255,${H.alphaCore})`);
     g.addColorStop(0.33, `rgba(255,255,255,${H.alphaMid})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy - 10, r, 0, Math.PI * 2);
+    ctx.arc(focus.x, focus.y, r, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -1665,304 +1714,230 @@
     g.addColorStop(0.82, "rgba(255,255,255,0.028)");
     g.addColorStop(1, "rgba(255,255,255,0)");
 
+    ctx.save();
     ctx.strokeStyle = g;
     ctx.lineWidth = 1;
+
     ctx.beginPath();
-
-    const startX = cx - lineW * 0.5;
-    const endX = cx + lineW * 0.5;
-
-    for (let x = startX; x <= endX; x += 8) {
-      const local = (x - startX) / lineW;
-      const centerWeight = 1 - Math.abs(local - 0.5) * 2;
-      const y =
-        yBase +
-        Math.sin(time * 0.45 + x * 0.01) * amp * 0.5 * centerWeight +
-        Math.sin(time * 0.22 + x * 0.004) * amp * 0.35;
-
-      if (x === startX) ctx.moveTo(x, y);
+    for (let i = 0; i <= 80; i++) {
+      const x = cx - lineW * 0.5 + (lineW * i) / 80;
+      const y = yBase + Math.sin(time * 0.9 + i * 0.18) * amp;
+      if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-
     ctx.stroke();
+    ctx.restore();
   }
 
   function drawWater(time) {
-    const W = CONFIG.water.waterSurface;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, horizonY, w, h - horizonY);
-    ctx.clip();
-
-    const g = ctx.createLinearGradient(0, horizonY, 0, h);
-    g.addColorStop(0, "rgba(8,8,8,1)");
-    g.addColorStop(0.08, "rgba(4,4,4,1)");
-    g.addColorStop(1, "rgba(0,0,0,1)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, horizonY, w, h - horizonY);
-
-    for (let i = 0; i < W.lineCount; i++) {
-      const y = horizonY + 6 + i * W.lineSpacing;
-      const a = 0.018 * (1 - i / W.lineCount);
-      const wave = Math.sin(time * 0.8 + i * 0.9) * 8;
-      const grad = ctx.createLinearGradient(0, 0, w, 0);
-      grad.addColorStop(0, "rgba(255,255,255,0)");
-      grad.addColorStop(0.2, `rgba(255,255,255,${a * 0.35})`);
-      grad.addColorStop(0.5, `rgba(255,255,255,${a})`);
-      grad.addColorStop(0.8, `rgba(255,255,255,${a * 0.35})`);
-      grad.addColorStop(1, "rgba(255,255,255,0)");
-
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = 0; x <= w; x += 22) {
-        const yy = y + Math.sin(x * 0.012 + wave) * W.amp;
-        if (x === 0) ctx.moveTo(x, yy);
-        else ctx.lineTo(x, yy);
-      }
-      ctx.stroke();
-    }
-
-    ctx.restore();
+    const hintK = started ? 0 : 0;
+    drawWaterDropletSystem(time, hintK);
   }
 
   /* =========================================================
      Sector 14. Reflection
   ========================================================= */
   function drawReflection(time, hintK) {
+    const R = CONFIG.water.reflection;
+    const yMirror = horizonY + (cy - horizonY) * 1.05;
+    const squashMain = R.squashMain;
+    const squashAux = R.squashAux;
+
     ctx.save();
+    ctx.globalCompositeOperation = "screen";
+
+    const main = getMainMorph(time, hintK);
+    ctx.save();
+    ctx.translate(cx, yMirror + (cy - horizonY) * 0.12);
+    ctx.scale(1, squashMain);
+
+    const body = ctx.createRadialGradient(
+      -18,
+      10,
+      3,
+      0,
+      8,
+      main.r * 1.15
+    );
+    body.addColorStop(0, `rgba(255,255,255,${R.mainBodyAlpha})`);
+    body.addColorStop(0.45, "rgba(255,255,255,0.045)");
+    body.addColorStop(1, "rgba(255,255,255,0)");
+
+    const pts = buildDropletPathAt(
+      0,
+      0,
+      main,
+      time,
+      0,
+      null
+    );
 
     ctx.beginPath();
-    ctx.rect(0, horizonY, w, h - horizonY);
-    ctx.clip();
-
-    const items = [getMainRenderDroplet(time, hintK), ...getAuxRenderDroplets(time)];
-    const groups = buildDropletGroups(items);
-
-    for (const group of groups) {
-      drawMetaballMirrorReflection(group, hintK);
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length - 2; i++) {
+      const xc = (pts[i].x + pts[i + 1].x) / 2;
+      const yc = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
     }
+    ctx.quadraticCurveTo(pts[pts.length - 1].x, pts[pts.length - 1].y, pts[0].x, pts[0].y);
+    ctx.closePath();
 
+    ctx.fillStyle = body;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(255,255,255,${R.strokeAlphaMain})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
     ctx.restore();
-  }
 
-  function drawMetaballMirrorReflection(group, hintK) {
-    const bounds = buildMetaballComposite(group, hintK);
-    const srcCanvas = state.water.metaballCompositeCanvas;
-    const squashY = CONFIG.water.reflection.squashMetaball;
+    for (const d of state.water.auxDroplets) {
+      const m = getAuxMorph(d, time);
+      ctx.save();
+      ctx.translate(d.x, yMirror + (d.y - horizonY) * 0.12);
+      ctx.scale(1, squashAux);
 
-    const srcBottom = bounds.maxY;
-    const reflectedTop = horizonY + (horizonY - srcBottom) * squashY;
-    const reflectedHeight = bounds.h * squashY;
+      const g = ctx.createRadialGradient(
+        -m.r * 0.18,
+        8,
+        1,
+        0,
+        8,
+        m.r * 1.15
+      );
+      g.addColorStop(0, `rgba(255,255,255,${R.auxBodyAlphaMul * d.alpha})`);
+      g.addColorStop(0.55, "rgba(255,255,255,0.02)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
 
-    ctx.save();
-    ctx.globalAlpha = 0.11;
+      const pts2 = buildDropletPathAt(0, 0, m, time, d.seed, null);
 
-    ctx.drawImage(
-      srcCanvas,
-      0, 0, bounds.w, bounds.h,
-      bounds.minX, reflectedTop, bounds.w, reflectedHeight
-    );
+      ctx.beginPath();
+      ctx.moveTo(pts2[0].x, pts2[0].y);
+      for (let i = 1; i < pts2.length - 2; i++) {
+        const xc = (pts2[i].x + pts2[i + 1].x) / 2;
+        const yc = (pts2[i].y + pts2[i + 1].y) / 2;
+        ctx.quadraticCurveTo(pts2[i].x, pts2[i].y, xc, yc);
+      }
+      ctx.quadraticCurveTo(pts2[pts2.length - 1].x, pts2[pts2.length - 1].y, pts2[0].x, pts2[0].y);
+      ctx.closePath();
+
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255,255,255,${R.strokeAlphaAux * d.alpha})`;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+      ctx.restore();
+    }
 
     ctx.restore();
   }
 
   /* =========================================================
-     Sector 15. Shards / Update
+     Sector 15. Shards Update
   ========================================================= */
-  function getSnapRadius(s) {
-    return s.depthBand === "near" ? CONFIG.gatherSnapRadiusNear : CONFIG.gatherSnapRadius;
-  }
+  function updateSingleShard(s, dt, t, isInflow = false) {
+    const phase = getPhase(t);
 
-  function getVanishRadius(s) {
-    return s.depthBand === "near" ? CONFIG.vanishRadiusNear : CONFIG.vanishRadius;
-  }
+    if (phase === "burst" || phase === "drift") {
+      s.x += s.dx * dt;
+      s.y += s.dy * dt;
+      s.z += s.dz * dt;
+      s.rot += s.spin * dt;
 
-  function updateShardBurst(s, dt, t) {
-    const k = easeOutExpo((t - T_HINT) / P.burst);
-    const noiseX = Math.sin(t * 5.3 + s.edgeSeed) * 4.5 * s.driftNoise;
-    const noiseY = Math.cos(t * 4.7 + s.edgeSeed * 0.7) * 4.5 * s.driftNoise;
-
-    s.x += s.dx * dt * (0.88 + 0.38 * k) + noiseX * dt;
-    s.y += s.dy * dt * (0.88 + 0.38 * k) + noiseY * dt;
-    s.z += s.dz * dt;
-    s.rot += s.spin * dt;
-  }
-
-  function updateShardDrift(s, dt, t) {
-    s.x += s.dx * dt * 0.3 + Math.sin(t * 2.6 + s.edgeSeed) * 5 * dt;
-    s.y += s.dy * dt * 0.3 + Math.cos(t * 2.2 + s.edgeSeed * 0.9) * 5 * dt;
-    s.z += s.dz * dt * 0.18;
-    s.rot += s.spin * dt * 0.38;
-  }
-
-  function updateShardGather(s, dt, t) {
-    const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-    const pull = lerp(
-      8,
-      CONFIG.gatherMaxPull,
-      easeInExpo(Math.max(0, (tk - 0.18) / 0.82))
-    );
-
-    const targetX = s.targetX ?? cx;
-    const targetY = s.targetY ?? cy;
-
-    const toX = targetX - s.x;
-    const toY = targetY - s.y;
-    const dist = Math.hypot(toX, toY) || 1;
-    const nx = toX / dist;
-    const ny = toY / dist;
-
-    s.dx = lerp(s.dx, nx * pull, dt * CONFIG.gatherSteer);
-    s.dy = lerp(s.dy, ny * pull, dt * CONFIG.gatherSteer);
-    s.dz = lerp(s.dz, -s.z * 10.0, dt * CONFIG.gatherZSteer);
-
-    const snapR = getSnapRadius(s);
-    if (dist < snapR) {
-      const snapT = 1 - dist / snapR;
-      const snap = snapT * snapT;
-      s.dx = lerp(s.dx, nx * pull * 1.7, snap * 0.32);
-      s.dy = lerp(s.dy, ny * pull * 1.7, snap * 0.32);
-      s.x = lerp(s.x, targetX, snap * 0.18);
-      s.y = lerp(s.y, targetY, snap * 0.18);
-      s.z = lerp(s.z, 0, snap * 0.18);
+      if (!isInflow) {
+        const outMarginX = w * CONFIG.offscreenBoost;
+        const outMarginY = h * CONFIG.offscreenBoost;
+        if (
+          s.x < -outMarginX || s.x > w + outMarginX ||
+          s.y < -outMarginY || s.y > h + outMarginY
+        ) {
+          s.dead = true;
+        }
+      }
+      return;
     }
 
-    s.x += s.dx * dt;
-    s.y += s.dy * dt;
-    s.z += s.dz * dt;
-    s.rot += s.spin * dt * 0.62;
+    if (phase === "gather" || phase === "flash" || phase === "logo" || phase === "done") {
+      const pullBase = isInflow ? CONFIG.gatherInflowPull : CONFIG.gatherMaxPull;
+      const toX = s.targetX - s.x;
+      const toY = s.targetY - s.y;
+      const d = Math.hypot(toX, toY) || 1;
 
-    if (tk > 0.97) {
-      s.alpha *= 0.997;
-      s.fillAlpha *= 0.994;
-    }
+      const nearBoost = s.depthBand === "near" ? 1.08 : 1;
+      const pull = Math.min(pullBase, (pullBase / Math.max(d * 0.36, 1))) * nearBoost;
 
-    const vanishR = getVanishRadius(s);
-    if (dist < vanishR && Math.abs(s.z) < CONFIG.vanishZ) {
-      s.dead = true;
-      s.alpha = 0;
-      s.fillAlpha = 0;
+      s.dx += (toX / d) * pull * dt;
+      s.dy += (toY / d) * pull * dt;
+
+      s.dx *= 0.94;
+      s.dy *= 0.94;
+      s.dz += ((0 - s.z) * CONFIG.gatherZSteer) * dt;
+
+      s.x += s.dx * dt;
+      s.y += s.dy * dt;
+      s.z += s.dz * dt;
+      s.rot += s.spin * dt * 0.8;
+
+      const snapR = s.depthBand === "near" ? CONFIG.gatherSnapRadiusNear : CONFIG.gatherSnapRadius;
+      const vanishR = s.depthBand === "near" ? CONFIG.vanishRadiusNear : CONFIG.vanishRadius;
+      const vanishZ = isInflow ? CONFIG.vanishZInflow : CONFIG.vanishZ;
+
+      if (d < snapR) {
+        s.x = lerp(s.x, s.targetX, 0.22);
+        s.y = lerp(s.y, s.targetY, 0.22);
+      }
+
+      if (d < vanishR && Math.abs(s.z) < vanishZ) {
+        s.dead = true;
+      }
     }
   }
 
   function updateShards(dt, t) {
-    const phase = getPhase(t);
-
     for (const s of state.shards) {
-      if (s.dead) continue;
-
-      if (phase === "hint") {
-        s.rot += s.spin * dt * 0.16;
-        continue;
-      }
-
-      if (phase === "burst") {
-        updateShardBurst(s, dt, t);
-        continue;
-      }
-
-      if (phase === "drift") {
-        updateShardDrift(s, dt, t);
-        continue;
-      }
-
-      if (phase === "gather" || phase === "flash" || phase === "logo" || phase === "done") {
-        updateShardGather(s, dt, t);
-      }
+      if (!s.dead) updateSingleShard(s, dt, t, false);
     }
 
     for (const s of state.inflow) {
-      if (s.dead) continue;
-      if (phase !== "gather" && phase !== "flash" && phase !== "logo" && phase !== "done") continue;
-
-      const tk = clamp((t - T_DRIFT) / P.gather, 0, 1);
-      const pull = lerp(160, CONFIG.gatherInflowPull, easeInExpo(tk));
-
-      const targetX = s.targetX ?? cx;
-      const targetY = s.targetY ?? cy;
-
-      const toX = targetX - s.x;
-      const toY = targetY - s.y;
-      const dist = Math.hypot(toX, toY) || 1;
-      const nx = toX / dist;
-      const ny = toY / dist;
-
-      s.dx = lerp(s.dx, nx * pull, dt * 5.2);
-      s.dy = lerp(s.dy, ny * pull, dt * 5.2);
-
-      if (dist < CONFIG.gatherSnapRadius) {
-        const snapT = 1 - dist / CONFIG.gatherSnapRadius;
-        const snap = snapT * snapT;
-        s.x = lerp(s.x, targetX, snap * 0.22);
-        s.y = lerp(s.y, targetY, snap * 0.22);
-      }
-
-      s.x += s.dx * dt;
-      s.y += s.dy * dt;
-      s.rot += s.spin * dt * 0.8;
-
-      if (tk > 0.975) {
-        s.alpha *= 0.997;
-        s.fillAlpha *= 0.994;
-      }
-
-      if (dist < CONFIG.vanishRadius && Math.abs(s.z) < CONFIG.vanishZInflow) {
-        s.dead = true;
-        s.alpha = 0;
-        s.fillAlpha = 0;
-      }
+      if (!s.dead) updateSingleShard(s, dt, t, true);
     }
   }
 
   /* =========================================================
-     Sector 16. Shards / Draw
+     Sector 16. Shards Draw
   ========================================================= */
   function projectScale(z) {
-    return 1 + z / 420;
+    return clamp(1 + z / 420, 0.35, 2.6);
   }
 
   function buildShardShape(s) {
-    const len = s.len;
-    const wid = s.wid;
+    const len = s.len * projectScale(s.z);
+    const wid = s.wid * projectScale(s.z);
 
     if (s.type === "flat") {
       return [
-        { x: -len * 0.58, y: -wid * 0.32 },
-        { x: -len * 0.18, y: -wid * 0.58 },
-        { x: len * 0.54, y: -wid * 0.24 },
-        { x: len * 0.36, y: wid * 0.52 },
-        { x: -len * 0.46, y: wid * 0.28 }
+        { x: -len * 0.56, y: -wid * 0.42 },
+        { x: len * 0.34, y: -wid * 0.56 },
+        { x: len * 0.60, y: 0 },
+        { x: len * 0.18, y: wid * 0.54 },
+        { x: -len * 0.48, y: wid * 0.28 }
       ];
     }
 
     return [
-      { x: -len * 0.55, y: -wid * 0.18 },
-      { x: len * 0.52, y: -wid * 0.44 },
-      { x: len * 0.65, y: 0 },
-      { x: len * 0.44, y: wid * 0.34 },
-      { x: -len * 0.52, y: wid * 0.18 }
+      { x: -len * 0.58, y: -wid * 0.22 },
+      { x: len * 0.66, y: 0 },
+      { x: -len * 0.52, y: wid * 0.22 }
     ];
   }
 
   function drawSingleShard(s, fadeMul = 1) {
-    if (s.dead) return;
-
-    const sc = projectScale(s.z * 0.35);
-    const alpha = clamp(s.alpha * fadeMul, 0, 1);
-    if (alpha < 0.01) return;
-
-    const padX = w * 0.55 * CONFIG.offscreenBoost;
-    const padY = h * 0.55 * CONFIG.offscreenBoost;
-    if (s.x < -padX || s.x > w + padX || s.y < -padY || s.y > h + padY) return;
+    const alpha = s.alpha * fadeMul;
+    if (alpha <= 0.001) return;
 
     const shape = buildShardShape(s);
 
     ctx.save();
     ctx.translate(s.x, s.y);
     ctx.rotate(s.rot);
-    ctx.scale(sc, sc);
 
     ctx.beginPath();
     ctx.moveTo(shape[0].x, shape[0].y);
@@ -2027,14 +2002,15 @@
   /* =========================================================
      Sector 17. Compression Flash
   ========================================================= */
-  function drawCompressionFlash() {
+  function drawCompressionFlash(phase, t) {
     if (state.flash <= 0.001) return;
 
     const k = state.flash;
     const coreR = lerp(2, 20, k);
     const ringR = lerp(4, 84, k);
+    const focus = getGlowFocusPoint(phase, t);
 
-    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, ringR);
+    const g = ctx.createRadialGradient(focus.x, focus.y, 0, focus.x, focus.y, ringR);
     g.addColorStop(0, `rgba(255,255,255,${0.9 * k})`);
     g.addColorStop(0.15, `rgba(255,255,255,${0.7 * k})`);
     g.addColorStop(0.45, `rgba(255,255,255,${0.18 * k})`);
@@ -2044,11 +2020,11 @@
     ctx.globalCompositeOperation = "screen";
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+    ctx.arc(focus.x, focus.y, ringR, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+    ctx.arc(focus.x, focus.y, coreR, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(255,255,255,${0.95 * k})`;
     ctx.fill();
     ctx.restore();
@@ -2143,7 +2119,7 @@
     const t = clamp(now - startTime, 0, 99);
     const phase = getPhase(t);
 
-    drawBackground(now);
+    drawBackground(now, phase, t);
 
     const hintK = phase === "hint" ? easeOutCubic(t / P.hint) : 0;
 
@@ -2193,7 +2169,7 @@
       updateShards(dt, t);
       drawShards(t);
       state.flash = 1 - clamp((t - T_GATHER) / P.flash, 0, 1);
-      drawCompressionFlash();
+      drawCompressionFlash(phase, t);
 
       rafId = requestAnimationFrame(render);
       return;
