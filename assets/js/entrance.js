@@ -1,3 +1,4 @@
+// assets/js/entrance.js
 (() => {
   "use strict";
 
@@ -227,15 +228,7 @@
       halo: {
         radiusRatio: 0.16,
         alphaCore: 0.12,
-        alphaMid: 0.05,
-
-        followRevealLogo: true,
-        useLogoSizeRadius: true,
-        radiusMulFromLogo: 2.1,
-        minRadius: 72,
-        maxRadius: 280,
-        offsetX: 0,
-        offsetY: 0
+        alphaMid: 0.05
       },
 
       waterSurface: {
@@ -474,61 +467,13 @@
     };
   }
 
-  function getRevealLogoMetrics() {
-    const H = CONFIG.water.halo;
-
-    const fallback = {
-      x: cx + (H.offsetX || 0),
-      y: cy - 10 + (H.offsetY || 0),
-      width: 0,
-      height: 0,
-      hasRect: false
-    };
-
-    if (!H.followRevealLogo || !revealLogo) {
-      return fallback;
-    }
-
-    const rect = revealLogo.getBoundingClientRect();
-    const hasRect = rect.width > 0 && rect.height > 0;
-
-    if (hasRect) {
-      return {
-        x: rect.left + rect.width * 0.5 + (H.offsetX || 0),
-        y: rect.top + rect.height * 0.5 + (H.offsetY || 0),
-        width: rect.width,
-        height: rect.height,
-        hasRect: true
-      };
-    }
-
-    if (state.logoTargetRect) {
-      return {
-        x: state.logoTargetRect.left + state.logoTargetRect.width * 0.5 + (H.offsetX || 0),
-        y: state.logoTargetRect.top + state.logoTargetRect.height * 0.5 + (H.offsetY || 0),
-        width: state.logoTargetRect.width,
-        height: state.logoTargetRect.height,
-        hasRect: true
-      };
-    }
-
-    return fallback;
-  }
-
-  function getHaloRadius(pulse) {
-    const H = CONFIG.water.halo;
-    const m = getRevealLogoMetrics();
-
-    if (H.useLogoSizeRadius && m.hasRect) {
-      const base = Math.max(m.width, m.height) * H.radiusMulFromLogo;
-      return clamp(base * pulse, H.minRadius, H.maxRadius);
-    }
-
-    return Math.max(w, h) * H.radiusRatio * pulse;
-  }
-
   /* =========================================================
      Sector 07. Logo Target Build
+     ---------------------------------------------------------
+     役割:
+     - revealLogo の最終位置そのものを基準に
+       文字ターゲット点群を構築
+     - 落下開始位置ではなく、着地位置基準
   ========================================================= */
   function buildLogoTargetPoints() {
     state.logoTargets.length = 0;
@@ -695,32 +640,92 @@
   function drawHalo(time) {
     const H = CONFIG.water.halo;
     const pulse = 0.93 + Math.sin(time * 1.1) * 0.03;
+    const r = Math.max(w, h) * H.radiusRatio * pulse;
 
-    const m = getRevealLogoMetrics();
-    const r = getHaloRadius(pulse);
-
-    const g = ctx.createRadialGradient(
-      m.x,
-      m.y,
-      0,
-      m.x,
-      m.y,
-      r
-    );
+    const g = ctx.createRadialGradient(cx, cy - 10, 0, cx, cy - 10, r);
     g.addColorStop(0, `rgba(255,255,255,${H.alphaCore})`);
     g.addColorStop(0.33, `rgba(255,255,255,${H.alphaMid})`);
     g.addColorStop(1, "rgba(255,255,255,0)");
 
-    ctx.save();
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+    ctx.arc(cx, cy - 10, r, 0, Math.PI * 2);
     ctx.fill();
-    ctx.restore();
   }
 
-  /* 以下は既存のまま */
-})();
+  function drawHorizon(time) {
+    const lineW = w * 0.44;
+    const amp = 0.8;
+    const yBase = horizonY;
+
+    const g = ctx.createLinearGradient(cx - lineW * 0.5, 0, cx + lineW * 0.5, 0);
+    g.addColorStop(0, "rgba(255,255,255,0)");
+    g.addColorStop(0.18, "rgba(255,255,255,0.028)");
+    g.addColorStop(0.5, "rgba(255,255,255,0.075)");
+    g.addColorStop(0.82, "rgba(255,255,255,0.028)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+
+    const startX = cx - lineW * 0.5;
+    const endX = cx + lineW * 0.5;
+
+    for (let x = startX; x <= endX; x += 8) {
+      const local = (x - startX) / lineW;
+      const centerWeight = 1 - Math.abs(local - 0.5) * 2;
+      const y =
+        yBase +
+        Math.sin(time * 0.45 + x * 0.01) * amp * 0.5 * centerWeight +
+        Math.sin(time * 0.22 + x * 0.004) * amp * 0.35;
+
+      if (x === startX) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    ctx.stroke();
+  }
+
+  function drawWater(time) {
+    const W = CONFIG.water.waterSurface;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, horizonY, w, h - horizonY);
+    ctx.clip();
+
+    const g = ctx.createLinearGradient(0, horizonY, 0, h);
+    g.addColorStop(0, "rgba(8,8,8,1)");
+    g.addColorStop(0.08, "rgba(4,4,4,1)");
+    g.addColorStop(1, "rgba(0,0,0,1)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, horizonY, w, h - horizonY);
+
+    for (let i = 0; i < W.lineCount; i++) {
+      const y = horizonY + 6 + i * W.lineSpacing;
+      const a = 0.018 * (1 - i / W.lineCount);
+      const wave = Math.sin(time * 0.8 + i * 0.9) * 8;
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, "rgba(255,255,255,0)");
+      grad.addColorStop(0.2, `rgba(255,255,255,${a * 0.35})`);
+      grad.addColorStop(0.5, `rgba(255,255,255,${a})`);
+      grad.addColorStop(0.8, `rgba(255,255,255,${a * 0.35})`);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += 22) {
+        const yy = y + Math.sin(x * 0.012 + wave) * W.amp;
+        if (x === 0) ctx.moveTo(x, yy);
+        else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
 
   /* =========================================================
      Sector 14. Reflection
