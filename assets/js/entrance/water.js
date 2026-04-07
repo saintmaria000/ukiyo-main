@@ -5,7 +5,7 @@ import { clamp, rand, dist2 } from "./utils.js";
 import { getMainBaseRadius, getWaterBounds } from "./layout.js";
 
 export function createWaterDroplet(runtime, instanceDef, indexWithinKind) {
-  const { state, viewport } = runtime;
+  const { viewport } = runtime;
   const bounds = getWaterBounds(runtime);
   const mainR = getMainBaseRadius(runtime);
   const r = instanceDef.radius;
@@ -174,8 +174,12 @@ export function getPairContactK(ax, ay, ar, bx, by, br) {
 export function getMainVisualContactForAux(runtime, d) {
   const { viewport } = runtime;
   const k = getPairContactK(
-    d.x, d.y, d.r * d.scale,
-    viewport.cx, viewport.cy, getMainBaseRadius(runtime)
+    d.x,
+    d.y,
+    d.r * d.scale,
+    viewport.cx,
+    viewport.cy,
+    getMainBaseRadius(runtime)
   );
 
   if (k <= 0) return null;
@@ -198,8 +202,12 @@ export function getAuxVisualContactForAux(runtime, d) {
     if (other === d) continue;
 
     const k = getPairContactK(
-      d.x, d.y, d.r * d.scale,
-      other.x, other.y, other.r * other.scale
+      d.x,
+      d.y,
+      d.r * d.scale,
+      other.x,
+      other.y,
+      other.r * other.scale
     );
 
     if (k > bestK) {
@@ -237,8 +245,12 @@ export function getVisualDeformationForMain(runtime) {
 
   for (const d of state.water.auxDroplets) {
     const k = getPairContactK(
-      viewport.cx, viewport.cy, getMainBaseRadius(runtime),
-      d.x, d.y, d.r * d.scale
+      viewport.cx,
+      viewport.cy,
+      getMainBaseRadius(runtime),
+      d.x,
+      d.y,
+      d.r * d.scale
     );
 
     if (k > bestK) {
@@ -258,7 +270,14 @@ export function getVisualDeformationForMain(runtime) {
   };
 }
 
-export function buildDropletPathAt(x, y, m, time, seed = 0, deformation = null) {
+export function buildDropletPathAt(
+  x,
+  y,
+  m,
+  time,
+  seed = 0,
+  deformation = null
+) {
   const pts = [];
   const n = 72;
 
@@ -280,9 +299,17 @@ export function buildDropletPathAt(x, y, m, time, seed = 0, deformation = null) 
     const ux = Math.cos(a);
     const uy = Math.sin(a);
 
-    const n1 = Math.sin(a * 3 + time * 1.7 + seed) * m.warpA * 0.12 * calm;
-    const n2 = Math.sin(a * 5 - time * 2.4 + 0.6 + seed * 0.7) * m.warpB * 0.08 * calm;
-    const n3 = Math.cos(a * 2 + time * 1.1 - 0.8 + seed * 0.3) * 0.03 * (0.75 + calm * 0.25);
+    const n1 =
+      Math.sin(a * 3 + time * 1.7 + seed) * m.warpA * 0.12 * calm;
+    const n2 =
+      Math.sin(a * 5 - time * 2.4 + 0.6 + seed * 0.7) *
+      m.warpB *
+      0.08 *
+      calm;
+    const n3 =
+      Math.cos(a * 2 + time * 1.1 - 0.8 + seed * 0.3) *
+      0.03 *
+      (0.75 + calm * 0.25);
 
     let rr = 1 + n1 + n2 + n3;
 
@@ -292,7 +319,7 @@ export function buildDropletPathAt(x, y, m, time, seed = 0, deformation = null) 
     const side = 1 - Math.abs(along);
 
     rr += frontPull * frontPull * pullStrength * 0.48;
-    rr -= backPull * squash * 0.10;
+    rr -= backPull * squash * 0.1;
     rr -= side * neckWidth * 0.11;
     rr += side * pullStrength * 0.02;
 
@@ -412,9 +439,11 @@ export function updateWaterDroplets(runtime, dt, tsSec) {
 
     d.driftTargetTimer -= dt;
     if (d.driftTargetTimer <= 0) {
-      const orbitBase = d.anchorAngle + Math.sin(tsSec * 0.55 + d.seed * 0.13) * 0.42;
+      const orbitBase =
+        d.anchorAngle + Math.sin(tsSec * 0.55 + d.seed * 0.13) * 0.42;
       const orbitRadius =
-        d.anchorDist * (0.94 + Math.sin(tsSec * 0.38 + d.seed * 0.21) * 0.10);
+        d.anchorDist *
+        (0.94 + Math.sin(tsSec * 0.38 + d.seed * 0.21) * 0.1);
 
       d.driftTargetX = clamp(
         viewport.cx + Math.cos(orbitBase) * orbitRadius,
@@ -433,11 +462,15 @@ export function updateWaterDroplets(runtime, dt, tsSec) {
 
     const flowX =
       Math.sin(tsSec * (0.42 * nf) + d.seed * 0.73) * C.driftNoiseX +
-      Math.cos(tsSec * (0.21 * nf) + d.seed * 1.12) * C.driftNoiseX * 0.42;
+      Math.cos(tsSec * (0.21 * nf) + d.seed * 1.12) *
+        C.driftNoiseX *
+        0.42;
 
     const flowY =
       Math.cos(tsSec * (0.36 * nf) + d.seed * 0.44) * C.driftNoiseY +
-      Math.sin(tsSec * (0.19 * nf) + d.seed * 0.86) * C.driftNoiseY * 0.36;
+      Math.sin(tsSec * (0.19 * nf) + d.seed * 0.86) *
+        C.driftNoiseY *
+        0.36;
 
     const toTargetX = d.driftTargetX - d.x;
     const toTargetY = d.driftTargetY - d.y;
@@ -455,17 +488,27 @@ export function updateWaterDroplets(runtime, dt, tsSec) {
     const horizonPull =
       d.y < viewport.horizonY - 20
         ? 0
-        : (d.y - (viewport.horizonY - 20)) * 0.0018 * (mp.horizonPullMul || 0);
+        : (d.y - (viewport.horizonY - 20)) *
+          0.0018 *
+          (mp.horizonPullMul || 0);
 
     d.vx +=
       flowX * dt * C.driftForce * (mp.driftForceMul || 1) +
-      (toTargetX / targetLen) * dt * C.targetPull * (mp.targetPullMul || 1) * d.targetBias +
+      (toTargetX / targetLen) *
+        dt *
+        C.targetPull *
+        (mp.targetPullMul || 1) *
+        d.targetBias +
       tangentialX * dt * C.tangentialForce * (mp.tangentialMul || 1) +
       (toCenterX / centerLen) * dt * C.centerBias * (mp.centerBiasMul || 1);
 
     d.vy +=
       flowY * dt * C.driftForce * (mp.driftForceMul || 1) +
-      (toTargetY / targetLen) * dt * C.targetPull * (mp.targetPullMul || 1) * d.targetBias +
+      (toTargetY / targetLen) *
+        dt *
+        C.targetPull *
+        (mp.targetPullMul || 1) *
+        d.targetBias +
       tangentialY * dt * C.tangentialForce * (mp.tangentialMul || 1) +
       (toCenterY / centerLen) * dt * C.centerBias * (mp.centerBiasMul || 1) +
       gravity +
@@ -505,19 +548,21 @@ export function tracePath(ctx, pts) {
   ctx.closePath();
 }
 
-export function drawMainDroplet(dom, runtime, time, hintK) {
+export function getRenderPathForDroplet(item, time) {
+  return buildDropletPathAt(
+    item.x,
+    item.y,
+    item.morph,
+    time,
+    item.seed,
+    item.deformation || null
+  );
+}
+
+export function drawMainDroplet(dom, runtime, item, time, hintK) {
   const { ctx } = dom;
   const { viewport } = runtime;
-
-  const deformation = getVisualDeformationForMain(runtime);
-  const pts = buildDropletPathAt(
-    viewport.cx,
-    viewport.cy,
-    getMainMorph(runtime, time, hintK),
-    time,
-    0,
-    deformation
-  );
+  const pts = getRenderPathForDroplet(item, time);
 
   ctx.save();
 
@@ -527,7 +572,7 @@ export function drawMainDroplet(dom, runtime, time, hintK) {
     5,
     viewport.cx,
     viewport.cy,
-    getMainBaseRadius(runtime) * 1.1
+    item.morph.r * 1.1
   );
   body.addColorStop(0, "rgba(255,255,255,0.12)");
   body.addColorStop(0.38, "rgba(255,255,255,0.055)");
@@ -538,18 +583,34 @@ export function drawMainDroplet(dom, runtime, time, hintK) {
   ctx.fillStyle = body;
   ctx.fill();
 
-  const mainContactBoost = deformation ? deformation.pullStrength : 0;
+  const mainContactBoost = item.deformation ? item.deformation.pullStrength : 0;
   ctx.strokeStyle = `rgba(255,255,255,${0.17 + hintK * 0.08 + mainContactBoost * 0.08})`;
   ctx.lineWidth = 1.05;
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.ellipse(viewport.cx - 18, viewport.cy - 22, 9, 16, -0.4, 0, Math.PI * 2);
+  ctx.ellipse(
+    viewport.cx - 18,
+    viewport.cy - 22,
+    9,
+    16,
+    -0.4,
+    0,
+    Math.PI * 2
+  );
   ctx.fillStyle = "rgba(255,255,255,0.05)";
   ctx.fill();
 
   ctx.beginPath();
-  ctx.ellipse(viewport.cx + 6, viewport.cy + 8, 28, 17, 0.42, 0, Math.PI * 2);
+  ctx.ellipse(
+    viewport.cx + 6,
+    viewport.cy + 8,
+    28,
+    17,
+    0.42,
+    0,
+    Math.PI * 2
+  );
   ctx.strokeStyle = "rgba(255,255,255,0.035)";
   ctx.lineWidth = 1;
   ctx.stroke();
@@ -557,47 +618,46 @@ export function drawMainDroplet(dom, runtime, time, hintK) {
   ctx.restore();
 }
 
-export function drawSingleAuxDroplet(dom, runtime, d, time) {
+export function drawSingleAuxDroplet(dom, runtime, item, time) {
   const { ctx } = dom;
-  const m = getAuxMorph(d, time);
-  const deformation = getVisualDeformationForAux(runtime, d);
-  const pts = buildDropletPathAt(d.x, d.y, m, time, d.seed, deformation);
+  const m = item.morph;
+  const pts = getRenderPathForDroplet(item, time);
   const V = CONFIG.water.aux.visual;
 
   ctx.save();
 
   const g = ctx.createRadialGradient(
-    d.x - m.r * 0.18,
-    d.y - m.r * 0.22,
+    item.x - m.r * 0.18,
+    item.y - m.r * 0.22,
     1,
-    d.x,
-    d.y,
+    item.x,
+    item.y,
     m.r * 1.18
   );
-  g.addColorStop(0, `rgba(255,255,255,${V.fillAlphaCenter * d.alpha})`);
-  g.addColorStop(0.42, `rgba(255,255,255,${V.fillAlphaMid * d.alpha})`);
-  g.addColorStop(1, `rgba(255,255,255,${V.fillAlphaEdge * d.alpha})`);
+  g.addColorStop(0, `rgba(255,255,255,${V.fillAlphaCenter * item.alpha})`);
+  g.addColorStop(0.42, `rgba(255,255,255,${V.fillAlphaMid * item.alpha})`);
+  g.addColorStop(1, `rgba(255,255,255,${V.fillAlphaEdge * item.alpha})`);
 
   tracePath(ctx, pts);
   ctx.fillStyle = g;
   ctx.fill();
 
-  const contactBoost = deformation ? deformation.pullStrength : 0;
-  ctx.strokeStyle = `rgba(255,255,255,${(V.strokeAlphaBase + contactBoost * 0.08) * d.alpha})`;
+  const contactBoost = item.deformation ? item.deformation.pullStrength : 0;
+  ctx.strokeStyle = `rgba(255,255,255,${(V.strokeAlphaBase + contactBoost * 0.08) * item.alpha})`;
   ctx.lineWidth = m.r > 18 ? 0.92 : 0.78;
   ctx.stroke();
 
   ctx.beginPath();
   ctx.ellipse(
-    d.x - m.r * 0.18,
-    d.y - m.r * 0.22,
+    item.x - m.r * 0.18,
+    item.y - m.r * 0.22,
     Math.max(1.3, m.r * 0.18),
     Math.max(2.0, m.r * 0.25),
     -0.34,
     0,
     Math.PI * 2
   );
-  ctx.fillStyle = `rgba(255,255,255,${0.05 * d.alpha})`;
+  ctx.fillStyle = `rgba(255,255,255,${0.05 * item.alpha})`;
   ctx.fill();
 
   ctx.restore();
@@ -605,35 +665,44 @@ export function drawSingleAuxDroplet(dom, runtime, d, time) {
 
 export function getMainRenderDroplet(runtime, time, hintK) {
   const { viewport } = runtime;
-  const m = getMainMorph(runtime, time, hintK);
+  const morph = getMainMorph(runtime, time, hintK);
+  const deformation = getVisualDeformationForMain(runtime);
+
   return {
     id: "main",
     type: "main",
     x: viewport.cx,
     y: viewport.cy,
-    r: m.r,
-    rx: m.rx,
-    ry: m.ry,
+    r: morph.r,
+    rx: morph.rx,
+    ry: morph.ry,
     alpha: 1,
-    seed: 0
+    seed: 0,
+    morph,
+    deformation
   };
 }
 
 export function getAuxRenderDroplets(runtime, time) {
   const { state } = runtime;
+
   return state.water.auxDroplets.map((d, i) => {
-    const m = getAuxMorph(d, time);
+    const morph = getAuxMorph(d, time);
+    const deformation = getVisualDeformationForAux(runtime, d);
+
     return {
       id: `aux-${i}`,
       type: "aux",
       source: d,
       x: d.x,
       y: d.y,
-      r: m.r,
-      rx: m.rx,
-      ry: m.ry,
+      r: morph.r,
+      rx: morph.rx,
+      ry: morph.ry,
       alpha: d.alpha,
-      seed: d.seed
+      seed: d.seed,
+      morph,
+      deformation
     };
   });
 }
@@ -702,7 +771,7 @@ export function getGroupBounds(group) {
   };
 }
 
-export function buildMetaballMask(runtime, group) {
+export function buildMetaballMask(runtime, group, time) {
   const { state } = runtime;
   const off = state.water.metaballMaskCanvas;
   const octx = state.water.metaballMaskCtx;
@@ -719,17 +788,13 @@ export function buildMetaballMask(runtime, group) {
   octx.fillStyle = "#fff";
   octx.filter = `blur(${blur}px)`;
 
-  for (const d of group) {
-    octx.beginPath();
-    octx.ellipse(
-      d.x - b.minX,
-      d.y - b.minY,
-      d.rx,
-      d.ry,
-      0,
-      0,
-      Math.PI * 2
-    );
+  for (const item of group) {
+    const pts = getRenderPathForDroplet(item, time).map((p) => ({
+      x: p.x - b.minX,
+      y: p.y - b.minY
+    }));
+
+    tracePath(octx, pts);
     octx.fill();
   }
 
@@ -757,9 +822,9 @@ export function buildMetaballMask(runtime, group) {
   return b;
 }
 
-export function buildMetaballComposite(runtime, group, hintK) {
+export function buildMetaballComposite(runtime, group, hintK, time) {
   const { state } = runtime;
-  const bounds = buildMetaballMask(runtime, group);
+  const bounds = buildMetaballMask(runtime, group, time);
 
   const maskCanvas = state.water.metaballMaskCanvas;
   const compCanvas = state.water.metaballCompositeCanvas;
@@ -799,13 +864,13 @@ export function buildMetaballComposite(runtime, group, hintK) {
   cctx.globalAlpha = 1;
 
   cctx.globalCompositeOperation = "lighter";
-  for (const d of group) {
+  for (const item of group) {
     cctx.beginPath();
     cctx.ellipse(
-      (d.x - bounds.minX) - d.rx * 0.18,
-      (d.y - bounds.minY) - d.ry * 0.22,
-      Math.max(1.5, d.rx * 0.18),
-      Math.max(2.2, d.ry * 0.24),
+      (item.x - bounds.minX) - item.rx * 0.18,
+      (item.y - bounds.minY) - item.ry * 0.22,
+      Math.max(1.5, item.rx * 0.18),
+      Math.max(2.2, item.ry * 0.24),
       -0.35,
       0,
       Math.PI * 2
@@ -818,9 +883,9 @@ export function buildMetaballComposite(runtime, group, hintK) {
   return bounds;
 }
 
-export function drawMetaballGroup(dom, runtime, group, hintK) {
+export function drawMetaballGroup(dom, runtime, group, hintK, time) {
   const { ctx } = dom;
-  const bounds = buildMetaballComposite(runtime, group, hintK);
+  const bounds = buildMetaballComposite(runtime, group, hintK, time);
 
   ctx.save();
   ctx.drawImage(
@@ -832,13 +897,18 @@ export function drawMetaballGroup(dom, runtime, group, hintK) {
 }
 
 export function drawWaterDropletSystem(dom, runtime, time, hintK) {
-  const items = [
-    getMainRenderDroplet(runtime, time, hintK),
-    ...getAuxRenderDroplets(runtime, time)
-  ];
+  const mainItem = getMainRenderDroplet(runtime, time, hintK);
+  const auxItems = getAuxRenderDroplets(runtime, time);
+  const items = [mainItem, ...auxItems];
   const groups = buildDropletGroups(items);
 
   for (const group of groups) {
-    drawMetaballGroup(dom, runtime, group, hintK);
+    drawMetaballGroup(dom, runtime, group, hintK, time);
+  }
+
+  drawMainDroplet(dom, runtime, mainItem, time, hintK);
+
+  for (const item of auxItems) {
+    drawSingleAuxDroplet(dom, runtime, item, time);
   }
 }
