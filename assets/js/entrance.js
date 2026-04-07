@@ -332,17 +332,11 @@
 
     water: {
       auxDroplets: [],
-      fx: {
-      dissolve: 0,
-      reappear: 0,
-      active: false
-      },
       metaballMaskCanvas: document.createElement("canvas"),
       metaballMaskCtx: null,
       metaballCompositeCanvas: document.createElement("canvas"),
       metaballCompositeCtx: null
     }
-    
   };
 
   state.water.metaballMaskCtx = state.water.metaballMaskCanvas.getContext("2d", {
@@ -1617,69 +1611,12 @@
   }
 
   function drawWaterDropletSystem(time, hintK) {
-    const fx = state.water.fx;
-
-    // 崩壊
-    if (fx.active && fx.dissolve > 0 && fx.dissolve < 1) {
-      drawWaterDissolve(time, fx.dissolve);
-      return;
-    }
-
-    // 完全消失
-    if (fx.dissolve >= 1 && fx.reappear === 0) {
-      return;
-    }
-
-    // 再出現
-    if (fx.reappear > 0) {
-      ctx.globalAlpha = fx.reappear;
-    }
-
-    const items = [
-      getMainRenderDroplet(time, hintK),
-      ...getAuxRenderDroplets(time)
-    ];
-
+    const items = [getMainRenderDroplet(time, hintK), ...getAuxRenderDroplets(time)];
     const groups = buildDropletGroups(items);
 
     for (const group of groups) {
       drawMetaballGroup(group, hintK);
     }
-
-    ctx.globalAlpha = 1;
-  }
-
-  function drawWaterDissolve(time, k) {
-  const items = [
-    getMainRenderDroplet(time, 0),
-    ...getAuxRenderDroplets(time)
-  ];
-
-  ctx.save();
-
-  for (const d of items) {
-    const count = Math.floor(16 + d.r * 0.7);
-
-    for (let i = 0; i < count; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const spread = k * d.r * 2.2;
-      const dist = Math.random() * spread;
-
-      const x = d.x + Math.cos(a) * dist;
-      const y = d.y + Math.sin(a) * dist;
-
-      const size = (1 - k) * 2.4;
-
-      ctx.globalAlpha = (1 - k) * 0.28;
-
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fillStyle = "#fff";
-      ctx.fill();
-    }
-  }
-
-  ctx.restore();
   }
 
   /* =========================================================
@@ -2181,23 +2118,6 @@
 
     const t = clamp(now - startTime, 0, 99);
     const phase = getPhase(t);
-
-    // ===== Water FX =====
-    if (phase === "burst") {
-      state.water.fx.active = true;
-    }
-
-    if (phase === "gather") {
-      state.water.fx.dissolve = Math.min(1, (t - T_DRIFT) / 0.6);
-    }
-
-    if (phase === "flash") {
-      state.water.fx.dissolve = 1;
-    }
-
-    if (phase === "logo") {
-      state.water.fx.reappear = Math.min(1, (t - T_FLASH) / 0.8);
-    }
 
     drawBackground(now, phase, t);
 
