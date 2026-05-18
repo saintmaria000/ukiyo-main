@@ -2,6 +2,93 @@
 // data-id と一致するキーで管理（HTMLの data-id と同名）
 
 window.WORKS = {
+  
+    nike_lunar_roam: {
+    title: "NIKE - lunar Roam presented by GR8",
+    video: "https://www.youtube.com/embed/iLoUU-hTWNg?autoplay=1&rel=0&enablejsapi=1",
+    youtubeId: "iLoUU-hTWNg",
+    credits: [
+      { role: "Creative Direction", name: "NUGA" },
+      { role: "Video Director", name: "Matias Maehama" },
+      { role: "Cinematographer", name: "Ryosuke Sato" },
+      { role: "Colorist", name: "James Clayton Daniels" },
+      { role: "Model", name: "Hikaru Kawasaki" },
+      { role: "Music", name: "Bailey Ibbs" },
+      { role: "Music Edit", name: "Dr.Pay" },
+      { role: "Costume", name: "GR8" },
+      { role: "Costume", name: "JIAN YE" },
+      { role: "Styling / Casting / Production", name: "NUGA" },
+      { role: "Production Manager", name: "Shota Watanabe" },
+      { role: "Video Assistant", name: "Sho Shimooka" },
+      { role: "Creative Assistant", name: "Manato Sano" },
+      { role: "Creative Assistant", name: "Mashiba Okano" }
+    ]
+  },
+
+  ult_power_sound_series: {
+    title: "SONY - ULT POWER SOUND series - Unveiling ULT TOWER 9/ULT TOWER 9AC",
+    video: "https://www.youtube.com/embed/PaqF2M_FWgg?autoplay=1&rel=0&enablejsapi=1",
+    youtubeId: "PaqF2M_FWgg",
+    credits: []
+  },
+
+  nike_lunar_roam_gr8: {
+    title: "NIKE - Lunar Roam GR8",
+    video: "https://www.youtube.com/embed/ZMHqwtaxis8?autoplay=1&rel=0&enablejsapi=1",
+    youtubeId: "ZMHqwtaxis8",
+    credits: [
+      { role: "Creative Direction", name: "NUGA" },
+      { role: "Video Director", name: "Matias Maehama" },
+      { role: "Cinematographer", name: "Ryosuke Sato" },
+      { role: "Colorist", name: "Max Golomidov" },
+      { role: "VFX", name: "Kosuke Nakajima" },
+      { role: "Radio Singer", name: "Kyoichi Mikuriya" },
+      { role: "Track Maker", name: "Dr.Pay" },
+      { role: "Moon Sculpture", name: "REON TOKUTAKE" },
+      { role: "Styling / Casting / Production", name: "NUGA" },
+      { role: "Creative Assistant", name: "PercyPoGotcha" },
+      { role: "Assistant Camera", name: "Guillo" },
+      { role: "Production Manager", name: "Shota Watanabe" },
+      { role: "Online Editor", name: "Kosuke Nakajima" },
+      { role: "Sozai Guy", name: "Santamaria" },
+      { role: "Astronaut Costume Designer", name: "Daijiro" },
+      { role: "Cast - Loner Roamer", name: "Harutaro" },
+      { role: "Cast - Boy Look Up at the Sky", name: "NATA" },
+      { role: "Cast - Schoolers", name: "Ryusei" },
+      { role: "Cast - Schoolers", name: "SARA" },
+      { role: "Cast - Office Work Gossipy", name: "Toyota" },
+      { role: "Cast - Office Work Gossipy", name: "Daijiro" },
+      { role: "Cast - Office Work Gossipy", name: "PercyPoGotcha" },
+      { role: "Cast - Office Work Gossipy", name: "Guillo" },
+      { role: "Cast - Office Work Gossipy", name: "nave" },
+      { role: "Cast - Office Work Gossipy", name: "Naoki Umemoto" }
+    ]
+  },
+
+  oh: {
+    title: "luvis - Oh",
+    video: "https://www.youtube.com/embed/cnPduALSpLo?autoplay=1&rel=0&enablejsapi=1",
+    youtubeId: "cnPduALSpLo",
+    credits: [
+      { role: "Director", name: "Matias Maehama" },
+      { role: "Director of Photography", name: "Ryosuke Sato" },
+      { role: "Production Manager", name: "Shota Watanabe" },
+      { role: "Stylist", name: "Ko Nakagawara" },
+      { role: "Stylist Assistant", name: "Raiki Shintani" },
+      { role: "Photographer", name: "Rintaro Miyawaki" },
+      { role: "Film Process and 4K Scan", name: "HIGHLAND SUPER 8 LAB" },
+      { role: "Production", name: "Ukiyo Film" },
+      { role: "Fisherman", name: "Hitoshi Saitou" },
+      { role: "Fisherman", name: "Tamotsu Fuyuki" },
+      { role: "Fisherman", name: "Haruhiko Onuma" },
+      { role: "Fisherman", name: "Kazuo Kimizaki" },
+      { role: "Fisherman", name: "Keiitirou Okada" },
+      { role: "Fisherman", name: "Eiiti Sakamoto" },
+      { role: "Special Thanks", name: "Kasumigaura City Tourist Association" },
+      { role: "Special Thanks", name: "Black Cat White Cat Music" }
+    ]
+  },
+
   kanzo: {
     title: "She Her Her Hers - KANZO",
     video: "https://www.youtube.com/embed/BXSi5kvypRA?autoplay=1&rel=0&enablejsapi=1",
@@ -22,7 +109,7 @@ window.WORKS = {
   },
 
   misfits: {
-    title: "ドレスコーズ 「ミスフィッツ」",
+    title: "ドレスコーズ - ミスフィッツ」",
     video: "https://www.youtube.com/embed/h9MxX39Di_4?autoplay=1&rel=0&enablejsapi=1",
     youtubeId: "h9MxX39Di_4",
     credits: [
