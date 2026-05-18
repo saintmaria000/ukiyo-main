@@ -1717,6 +1717,34 @@ body.view-right .inner-shell{
     --inner-shell-side-shift:2420px;
   }
 
+  .inner-shell{
+    top:50%;
+    left:50%;
+
+    transform:translate(-50%, -50%) !important;
+  }
+
+  .video-frame{
+    width:100vw;
+    height:100svh;
+
+    overflow:hidden;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .video-frame iframe{
+
+    /* cover化 */
+    width:177.78svh;
+    height:100svh;
+
+    border:0;
+    flex-shrink:0;
+  }
+
   .gallery-panel{
     width:var(--gallery-w);
     max-width:var(--gallery-w);
