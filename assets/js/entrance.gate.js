@@ -10,57 +10,19 @@
     sessionKeyDone: "ukiyo_lang_gate_done",
     sessionKeyLang: "ukiyo_lang_gate_lang",
 
-    entranceQueryKey: "from",
-    entranceQueryValue: "entrance"
+    // 言語選択表示までの時間
+    openDelay: 4000
   };
 
   const gate = document.getElementById("entranceGate");
+
   if (!gate) return;
 
-  const langButtons = gate.querySelectorAll(".entrance-gate__link[data-lang]");
+  const langButtons = gate.querySelectorAll(
+    ".entrance-gate__link[data-lang]"
+  );
 
   let gateOpened = false;
-
-  function cameFromEntrance() {
-    try {
-      const url = new URL(window.location.href);
-      return url.searchParams.get(CONFIG.entranceQueryKey) === CONFIG.entranceQueryValue;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function cleanEntranceQuery() {
-    try {
-      const url = new URL(window.location.href);
-
-      if (
-        url.searchParams.get(CONFIG.entranceQueryKey)
-        !== CONFIG.entranceQueryValue
-      ) return;
-
-      url.searchParams.delete(CONFIG.entranceQueryKey);
-
-      const nextUrl =
-        url.pathname +
-        url.search +
-        url.hash;
-
-      window.history.replaceState({}, "", nextUrl);
-
-    } catch (_) {}
-  }
-
-  function shouldSkip() {
-    if (cameFromEntrance()) return false;
-    if (!CONFIG.oncePerSession) return false;
-
-    try {
-      return sessionStorage.getItem(CONFIG.sessionKeyDone) === "1";
-    } catch (_) {
-      return false;
-    }
-  }
 
   function markDone(lang) {
 
@@ -112,8 +74,6 @@
       "false"
     );
 
-    cleanEntranceQuery();
-
   }
 
   function closeGate() {
@@ -129,6 +89,7 @@
 
   function bind() {
 
+    // 言語ボタン
     langButtons.forEach((btn) => {
 
       btn.addEventListener(
@@ -152,19 +113,7 @@
 
     });
 
-    // アニメーション終了後 1秒で表示
-    window.addEventListener(
-      "entrance:done",
-      () => {
-
-        setTimeout(() => {
-          openGate();
-        }, 1000);
-
-      }
-    );
-
-    // クリックしたら即表示
+    // クリックで即表示
     document.addEventListener(
       "click",
       () => {
@@ -183,11 +132,12 @@
 
     bind();
 
-    if (!shouldSkip() && cameFromEntrance()) {
+    // 自動表示
+    setTimeout(() => {
 
-      // entrance:done を待つ
+      openGate();
 
-    }
+    }, CONFIG.openDelay);
 
   }
 
