@@ -1378,8 +1378,7 @@ body.view-right .inner-shell {
     perspective: none;
   }
 
-  .outer-space,
-  .inner-shell {
+  .outer-space{
     transition: none;
   }
 
@@ -1593,7 +1592,6 @@ body.view-right .inner-shell {
   .inner-shell {
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) !important;
   }
 
   .video-frame {
