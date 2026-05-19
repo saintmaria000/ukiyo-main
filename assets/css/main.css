@@ -1720,7 +1720,6 @@ body.view-right .inner-shell{
   .inner-shell{
     top:50%;
     left:50%;
-
     transform:translate(-50%, -50%) !important;
   }
 
@@ -1750,7 +1749,11 @@ body.view-right .inner-shell{
     max-width:var(--gallery-w);
     min-width:0;
     height:var(--gallery-panel-fixed-h);
+      min-height:0;
     min-height:var(--gallery-panel-fixed-h);
   }
+.gallery-scroll{
+  min-height:0;
+}
 }
 /* git */
