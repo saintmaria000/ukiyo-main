@@ -1804,7 +1804,7 @@ body.view-right .inner-shell{
 
     min-height:0;
 
-    overflow-y:auto !important;
+    overflow-y:scroll !important;
     overflow-x:hidden;
 
     -webkit-overflow-scrolling:touch;
