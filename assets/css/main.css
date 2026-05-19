@@ -1371,14 +1371,24 @@ body.view-right .inner-shell{
   }
 }
 
-/* -----------------------------------------
-   13-03. タッチ端末 共通
-   横/縦共通の touch 挙動とスマホ固有差分を集約
------------------------------------------ */
+```css
 /* -----------------------------------------
    13-03. タッチ端末 共通
 ----------------------------------------- */
 @media (pointer:coarse){
+
+  .space-wrapper{
+    overflow:visible;
+  }
+
+  .stage{
+    perspective:none;
+  }
+
+  .outer-space,
+  .inner-shell{
+    transition:none;
+  }
 
   .inner-shell{
     max-width:none;
@@ -1393,14 +1403,17 @@ body.view-right .inner-shell{
   .video-frame{
     width:var(--video-mobile-stage-w);
     max-width:none;
+    pointer-events:auto;
   }
 
+  /* Safari iframe touch swallowing 対策 */
   .video-frame iframe{
     pointer-events:none;
   }
 
   .video-shield{
     display:block;
+    pointer-events:auto;
   }
 
   body.is-stage-scroll-lock{
@@ -1420,7 +1433,10 @@ body.view-right .inner-shell{
   }
 
   .gallery-item{
-    transition:opacity .2s ease, background .2s ease;
+    transition:
+      opacity .2s ease,
+      background .2s ease;
+
     flex:0 0 auto;
   }
 
@@ -1430,12 +1446,27 @@ body.view-right .inner-shell{
 
   .gallery-panel{
     isolation:isolate;
+    position:relative;
+    z-index:20000;
+    pointer-events:auto;
   }
 
   /* Safari compositor bug対策 */
   .gallery-scroll{
+
+    position:relative;
+    z-index:20010;
+
     overflow-y:scroll;
-    overscroll-behavior:contain;
+    overflow-x:hidden;
+
+    -webkit-overflow-scrolling:touch;
+
+    overscroll-behavior-y:contain;
+
+    touch-action:pan-y;
+
+    pointer-events:auto;
   }
 
   .modal__content{
@@ -1452,15 +1483,20 @@ body.view-right .inner-shell{
   .modal__credit{
     align-items:flex-start;
     justify-content:center;
+
     overflow-y:auto;
+
     -webkit-overflow-scrolling:touch;
+
     padding:10px 0;
   }
 
   .modal__credit-inner{
     width:var(--modal-credit-inner-width);
     max-width:var(--modal-credit-inner-max-w);
+
     margin:0 auto;
+
     padding:
       var(--modal-credit-inner-pad-top)
       var(--modal-credit-inner-pad-x)
@@ -1470,7 +1506,9 @@ body.view-right .inner-shell{
   .modal__credit-title,
   .modal__credit-list{
     width:var(--modal-credit-block-w, auto);
+
     max-width:100%;
+
     margin-left:auto;
     margin-right:auto;
   }
@@ -1485,7 +1523,9 @@ body.view-right .inner-shell{
   .modal__credit-list{
     font-size:var(--modal-credit-list-size);
     line-height:var(--modal-credit-list-line);
+
     margin-bottom:var(--modal-credit-list-gap);
+
     overflow:visible;
   }
 
@@ -1493,6 +1533,7 @@ body.view-right .inner-shell{
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
+
     gap:var(--modal-credit-row-gap);
   }
 
@@ -1508,11 +1549,14 @@ body.view-right .inner-shell{
     white-space:nowrap;
   }
 }
+
 /* -----------------------------------------
    13-04. タッチ横向き
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
+
   :root{
+
     --edge-btn-size:1.4rem;
     --video-side-safe:40px;
     --font-ui-sm:clamp(2rem, .98vw, 1rem);
@@ -1526,139 +1570,32 @@ body.view-right .inner-shell{
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-gap-top:28px;
     --gallery-panel-fixed-h:470px;
+
     --gallery-item-size:1.5rem;
     --gallery-item-pad-y:18px;
+
     --gallery-meta-size:1.08rem;
     --gallery-meta-gap-top:8px;
 
     --contact-w:clamp(520px, 62vw, 760px);
+
     --contact-block-size:1.18rem;
     --contact-block-spacing:.08em;
     --contact-block-margin-top:28px;
+
     --contact-label-size:1.72rem;
     --contact-label-spacing:.12em;
     --contact-label-margin-top:22px;
+
     --contact-value-size:1.94rem;
-
-    --about-content-pad-top:0px;
-    --about-content-pad-x:7.5vw;
-    --about-content-pad-bottom:96px;
-
-    --about-hero-min-h:100svh;
-    --about-hero-pad-top:64px;
-    --about-hero-pad-bottom:84px;
-    --about-hero-gap:30px;
-    --about-hero-max-w:720px;
-
-    --about-logo-main-size:clamp(1.7rem, 3vw, 3.2rem);
-    --about-logo-sub-size:.74rem;
-    --about-logo-spacing:.14em;
-    --about-logo-sub-spacing:.08em;
-
-    --about-lead-size:.68rem;
-    --about-lead-line:1.78;
-    --about-lead-spacing:.02em;
-
-    --about-stack-gap:clamp(44px, 4vw, 68px);
-    --about-stack-pad:clamp(20px, 3vw, 34px);
-    --about-stack-line-protrusion:48px;
-
-    --about-heading-size:.96rem;
-    --about-heading-spacing:.10em;
-    --about-item-heading-gap:16px;
-
-    --about-body-size:.8rem;
-    --about-body-line:1.74;
-    --about-body-spacing:.02em;
-
-    --about-split-gap:clamp(20px, 2.4vw, 28px);
-    --about-split-pad-top:clamp(20px, 3vw, 30px);
-    --about-split-pad-x:clamp(20px, 3vw, 30px);
-    --about-split-pad-bottom:clamp(40px, 6vw, 68px);
-    --about-split-margin-top:58px;
-
-    --about-col-title-size:.88rem;
-    --about-col-title-spacing:.08em;
-
-    --about-col-item-size:.8rem;
-    --about-col-item-line:1.74;
-    --about-col-item-spacing:.02em;
-
-    --about-credit-margin-top:18px;
-    --about-credit-title-size:.78rem;
-    --about-credit-title-spacing:.10em;
-    --about-credit-name-size:.96rem;
-    --about-credit-name-spacing:.06em;
-    --about-credit-link-size:.64rem;
-
-    --about-back-size:.64rem;
-    --about-back-spacing:.08em;
-    --about-back-margin-top:clamp(30px, 4vw, 54px);
-
-    --modal-width:min(76vw, 720px);
-    --modal-footer-gap-top:4px;
-    --modal-footer-pad-bottom:6px;
-    --modal-credit-toggle-size:.72rem;
-
-    --modal-credit-inner-width:min(92%, 520px);
-    --modal-credit-inner-max-w:270px;
-    --modal-credit-inner-pad-top:14px;
-    --modal-credit-inner-pad-x:16px;
-    --modal-credit-inner-pad-bottom:12px;
-
-    --modal-credit-block-w:min(88%, 420px);
-    --modal-credit-title-size:.74rem;
-    --modal-credit-title-gap:10px;
-    --modal-credit-list-size:.64rem;
-    --modal-credit-list-line:1.38;
-    --modal-credit-list-gap:10px;
-    --modal-credit-row-gap:20px;
-    --modal-credit-close-size:.66rem;
-  }
-
-  #about .about-content{
-    max-width:none;
-  }
-
-  .about-hero{
-    width:min(82vw, 720px);
-    max-width:none;
-    min-height:var(--about-hero-min-h);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:flex-start;
-    padding-top:var(--about-hero-pad-top);
-    padding-bottom:var(--about-hero-pad-bottom);
-  }
-
-  .about-lead{
-    width:100%;
-    max-width:none;
-  }
-
-  .about-stack{
-    margin-top:0;
-    padding:
-      calc(var(--about-stack-pad) + 26px)
-      var(--about-stack-pad)
-      calc(var(--about-stack-pad) + 30px)
-      var(--about-stack-pad);
-  }
-
-  .about-stack > :first-child{
-    margin-top:0;
-  }
-
-  .about-item p,
-  .about-col li{
-    max-width:44ch;
   }
 
   .gallery-panel{
     width:var(--gallery-w);
     max-width:var(--gallery-w);
+
     min-width:var(--gallery-w);
+
     height:var(--gallery-panel-fixed-h);
     min-height:var(--gallery-panel-fixed-h);
   }
@@ -1671,6 +1608,7 @@ body.view-right .inner-shell{
   .view-right .contact-block{
     width:var(--contact-w);
     max-width:none;
+
     margin-top:var(--contact-block-margin-top);
   }
 
@@ -1683,14 +1621,14 @@ body.view-right .inner-shell{
 /* -----------------------------------------
    13-05. タッチ縦向き
 ----------------------------------------- */
-/* -----------------------------------------
-   13-05. タッチ縦向き
------------------------------------------ */
 @media (pointer:coarse) and (orientation:portrait){
 
   :root{
+
     --font-ui-sm:clamp(1.8rem, .98vw, 1rem);
+
     --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
+
     --edge-btn-size:3.25rem;
 
     --font-body-md:clamp(1.08rem, 3.8vw, 1.2rem);
@@ -1699,52 +1637,24 @@ body.view-right .inner-shell{
 
     --gallery-item-size:2.25rem;
     --gallery-meta-size:1rem;
+
     --gallery-panel-fixed-h:min(68svh, 760px);
 
     --contact-block-size:2.1rem;
     --contact-label-size:2.35rem;
     --contact-value-size:2.2rem;
 
-    --about-lead-size:1.08rem;
-    --about-body-size:1.05rem;
-    --about-heading-size:1.4rem;
-    --about-col-title-size:1.2rem;
-    --about-col-item-size:1.02rem;
-    --about-hero-pad-top:0px;
-    --about-stack-line-protrusion:136;
-
-    --modal-credit-title-size:1rem;
-    --modal-credit-list-size:.92rem;
-
-    --video-mobile-portrait-visible-ratio:.84;
-    --video-mobile-portrait-visible-max:500;
-    --video-mobile-portrait-visible-offset-y:0;
-
     --video-side-safe:24px;
-    --inner-shell-side-shift:2420px;
-  }
 
-  /* =====================================================
-     STAGE
-  ===================================================== */
-  .space-wrapper{
-    overflow:visible !important;
-  }
-  .stage{
-    perspective:none !important;
+    --inner-shell-side-shift:2420px;
   }
 
   .inner-shell{
     top:50%;
     left:50%;
+
     transform:translate(-50%, -50%) !important;
-
-    pointer-events:auto;
   }
-
-  /* =====================================================
-     VIDEO
-  ===================================================== */
 
   .video-frame{
 
@@ -1756,9 +1666,6 @@ body.view-right .inner-shell{
     display:flex;
     align-items:center;
     justify-content:center;
-
-    /* Safari touch奪い防止 */
-    pointer-events: auto;
   }
 
   .video-frame iframe{
@@ -1767,18 +1674,11 @@ body.view-right .inner-shell{
     height:100svh;
 
     border:0;
+
     flex-shrink:0;
 
-    pointer-events:auto;
+    pointer-events:none !important;
   }
-
-  .video-shield{
-    pointer-events:auto;
-  }
-
-  /* =====================================================
-     GALLERY
-  ===================================================== */
 
   .gallery-panel{
 
@@ -1792,48 +1692,19 @@ body.view-right .inner-shell{
     min-height:0;
 
     overflow:hidden;
-
-    position:relative;
-    z-index:20;
-
-    pointer-events:auto;
   }
 
   .gallery-scroll{
-
-    position:relative;
-    z-index:30;
 
     width:100%;
     height:100%;
 
     min-height:0;
-
-    overflow-y:scroll !important;
-    overflow-x:hidden;
-
-    -webkit-overflow-scrolling:touch;
-
-    overscroll-behavior-y:contain;
-
-    touch-action:pan-y !important;
-
-    pointer-events:auto;
-
-    /* Safariバグ対策 */
-    transform:none !important;
-    will-change:auto !important;
   }
 
   .gallery-item{
-
     position:relative;
     z-index:40;
-
-    pointer-events:auto;
-
-    flex:0 0 auto;
   }
-
 }
 /* git */
