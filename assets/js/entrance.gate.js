@@ -19,6 +19,8 @@
 
   const langButtons = gate.querySelectorAll(".entrance-gate__link[data-lang]");
 
+  let gateOpened = false;
+
   function cameFromEntrance() {
     try {
       const url = new URL(window.location.href);
@@ -32,11 +34,17 @@
     try {
       const url = new URL(window.location.href);
 
-      if (url.searchParams.get(CONFIG.entranceQueryKey) !== CONFIG.entranceQueryValue) return;
+      if (
+        url.searchParams.get(CONFIG.entranceQueryKey)
+        !== CONFIG.entranceQueryValue
+      ) return;
 
       url.searchParams.delete(CONFIG.entranceQueryKey);
 
-      const nextUrl = url.pathname + url.search + url.hash;
+      const nextUrl =
+        url.pathname +
+        url.search +
+        url.hash;
 
       window.history.replaceState({}, "", nextUrl);
 
@@ -55,62 +63,119 @@
   }
 
   function markDone(lang) {
+
     if (!CONFIG.oncePerSession) return;
 
     try {
-      sessionStorage.setItem(CONFIG.sessionKeyDone, "1");
+
+      sessionStorage.setItem(
+        CONFIG.sessionKeyDone,
+        "1"
+      );
 
       if (lang) {
-        sessionStorage.setItem(CONFIG.sessionKeyLang, lang);
+
+        sessionStorage.setItem(
+          CONFIG.sessionKeyLang,
+          lang
+        );
+
       }
 
     } catch (_) {}
+
   }
 
   function goToLanguage(lang) {
-    const url = lang === "ja"
-      ? CONFIG.jaUrl
-      : CONFIG.enUrl;
+
+    const url =
+      lang === "ja"
+        ? CONFIG.jaUrl
+        : CONFIG.enUrl;
 
     markDone(lang);
 
     window.location.href = url;
+
   }
 
   function openGate() {
+
+    if (gateOpened) return;
+
+    gateOpened = true;
+
     gate.classList.add("is-visible");
-    gate.setAttribute("aria-hidden", "false");
+
+    gate.setAttribute(
+      "aria-hidden",
+      "false"
+    );
 
     cleanEntranceQuery();
+
   }
 
   function closeGate() {
+
     gate.classList.remove("is-visible");
-    gate.setAttribute("aria-hidden", "true");
+
+    gate.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
   }
 
   function bind() {
 
     langButtons.forEach((btn) => {
 
-      btn.addEventListener("click", function (e) {
+      btn.addEventListener(
+        "click",
+        function (e) {
 
-        e.preventDefault();
-        e.stopPropagation();
+          e.preventDefault();
+          e.stopPropagation();
 
-        const lang = btn.getAttribute("data-lang");
+          const lang =
+            btn.getAttribute("data-lang");
 
-        if (!lang) return;
+          if (!lang) return;
 
-        closeGate();
+          closeGate();
 
-        goToLanguage(lang);
+          goToLanguage(lang);
 
-      });
+        }
+      );
 
     });
 
-    window.addEventListener("entrance:done", openGate);
+    // アニメーション終了後 1秒で表示
+    window.addEventListener(
+      "entrance:done",
+      () => {
+
+        setTimeout(() => {
+          openGate();
+        }, 1000);
+
+      }
+    );
+
+    // クリックしたら即表示
+    document.addEventListener(
+      "click",
+      () => {
+
+        if (!gateOpened) {
+          openGate();
+        }
+
+      },
+      { once: true }
+    );
 
   }
 
@@ -119,7 +184,9 @@
     bind();
 
     if (!shouldSkip() && cameFromEntrance()) {
-      openGate();
+
+      // entrance:done を待つ
+
     }
 
   }
