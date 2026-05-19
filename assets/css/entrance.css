@@ -309,10 +309,6 @@ body.is-transitioning .brand-sub{
 }
 
 .entrance-gate__panel{
-  display:none;
-}
-
-.entrance-gate__panel.is-active{
   display:block;
 }
 
