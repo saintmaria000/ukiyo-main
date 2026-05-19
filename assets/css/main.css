@@ -504,7 +504,7 @@ body.is-pull-hint-visible .pull-return{
   height:100%;
   padding:var(--stage-pad-y) var(--stage-pad-x);
   position:relative;
-  pointer-events:none;
+  pointer-events:auto;
 }
 
 .view-inner{
