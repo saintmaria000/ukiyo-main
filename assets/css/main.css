@@ -496,7 +496,7 @@ body.is-pull-hint-visible .pull-return{
   height:100%;
   transition:transform .8s ease;
   z-index:var(--z-stage);
-  pointer-events:none;
+  pointer-events:auto;
 }
 
 .view{
@@ -1724,7 +1724,9 @@ body.view-right .inner-shell{
   /* =====================================================
      STAGE
   ===================================================== */
-
+  .stage{
+    perspective:none !important;
+  }
 
   .inner-shell{
     top:50%;
