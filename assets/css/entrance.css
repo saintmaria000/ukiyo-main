@@ -302,6 +302,11 @@ body.is-transitioning .brand-sub{
   pointer-events:auto;
 }
 
+.entrance-gate,
+.entrance-gate *{
+  pointer-events:auto;
+}
+
 .entrance-gate__inner{
   width:min(88vw, 420px);
   padding:24px 20px;
