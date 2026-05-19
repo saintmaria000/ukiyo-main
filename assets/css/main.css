@@ -1734,7 +1734,7 @@ body.view-right .inner-shell{
     left:50%;
     transform:translate(-50%, -50%) !important;
 
-    pointer-events:none;
+    pointer-events:auto;
   }
 
   /* =====================================================
@@ -1753,7 +1753,7 @@ body.view-right .inner-shell{
     justify-content:center;
 
     /* Safari touch奪い防止 */
-    pointer-events:none;
+    pointer-events: auto;
   }
 
   .video-frame iframe{
@@ -1764,7 +1764,7 @@ body.view-right .inner-shell{
     border:0;
     flex-shrink:0;
 
-    pointer-events:none;
+    pointer-events:auto;
   }
 
   .video-shield{
