@@ -513,7 +513,7 @@ body.is-pull-hint-visible .pull-return{
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  pointer-events:none;
+  pointer-events:auto;
 }
 
 .view-header{
