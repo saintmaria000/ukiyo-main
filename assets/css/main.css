@@ -1754,6 +1754,8 @@ body.view-right .inner-shell{
   }
 .gallery-scroll{
   min-height:0;
+    transform:none !important;
+    will-change:auto !important;
 }
 }
 /* git */
