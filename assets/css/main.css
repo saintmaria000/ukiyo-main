@@ -1724,6 +1724,9 @@ body.view-right .inner-shell{
   /* =====================================================
      STAGE
   ===================================================== */
+  .space-wrapper{
+    overflow:visible !important;
+  }
   .stage{
     perspective:none !important;
   }
