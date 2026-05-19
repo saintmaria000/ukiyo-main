@@ -703,6 +703,7 @@ body.view-right .inner-shell{
   flex-direction:column;
   overflow:hidden;
   align-self:flex-start;
+  z-index: 2;
 }
 
 .gallery-preview{
@@ -732,7 +733,7 @@ body.view-right .inner-shell{
 
 .gallery-scroll{
   position:relative;
-  z-index:1;
+  z-index:3;
   width:100%;
   flex:1 1 auto;
   min-height:0;
@@ -749,7 +750,7 @@ body.view-right .inner-shell{
 .gallery-item{
   display:block;
   position:relative;
-  z-index:1;
+  z-index:4;
   width:100%;
   text-align:left;
   background:transparent;
