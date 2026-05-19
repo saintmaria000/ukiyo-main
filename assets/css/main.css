@@ -1375,7 +1375,11 @@ body.view-right .inner-shell{
    13-03. タッチ端末 共通
    横/縦共通の touch 挙動とスマホ固有差分を集約
 ----------------------------------------- */
+/* -----------------------------------------
+   13-03. タッチ端末 共通
+----------------------------------------- */
 @media (pointer:coarse){
+
   .inner-shell{
     max-width:none;
   }
@@ -1428,11 +1432,10 @@ body.view-right .inner-shell{
     isolation:isolate;
   }
 
+  /* Safari compositor bug対策 */
   .gallery-scroll{
     overflow-y:scroll;
     overscroll-behavior:contain;
-    transform:translateZ(0);
-    will-change:scroll-position;
   }
 
   .modal__content{
