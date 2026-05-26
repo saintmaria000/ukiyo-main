@@ -1317,13 +1317,7 @@ body.view-right .inner-shell{
 
 
 /* =========================================================
-   13. Responsive
-   順番:
-   1) 狭い幅 共通
-   2) 小型PC
-   3) タッチ共通
-   4) タッチ横
-   5) タッチ縦
+   13. Responsive - 文字サイズ調整重視版
 ========================================================= */
 
 /* -----------------------------------------
@@ -1334,356 +1328,95 @@ body.view-right .inner-shell{
     --about-content-pad-top:100px;
     --about-content-pad-x:7vw;
     --about-content-pad-bottom:120px;
-
-    --about-lead-size:.95rem;
-    --about-body-size:.95rem;
-    --about-col-item-size:.95rem;
-
-    --about-heading-size:1.3rem;
-    --about-col-title-size:1.15rem;
-    --about-credit-name-size:1.25rem;
-
     --video-side-safe:32px;
   }
 
-  .about-split{
-    grid-template-columns:1fr;
-  }
-
-  .inner-shell{
-    max-width:calc(100vw - 16px);
-  }
-
-  .video-frame{
-    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
-  }
+  .about-split{ grid-template-columns:1fr; }
 }
 
 /* -----------------------------------------
-   13-02. 小型PC / 低い画面
+   13-02. 小型PC
 ----------------------------------------- */
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
   :root{
     --view-header-size:clamp(.88rem, .82rem + .22vw, 1rem);
     --edge-btn-size:clamp(.9rem, .84rem + .18vw, .98rem);
-    --pull-return-link-size:clamp(.72rem, .68rem + .18vw, .9rem);
-    --global-mute-icon-size:clamp(20px, 1.4vw, 22px);
   }
 }
 
-/* -----------------------------------------
-   13-03. タッチ端末 共通
-   横/縦共通の touch 挙動とスマホ固有差分を集約
------------------------------------------ */
+/* =========================================================
+   13-03. タッチ端末 共通（ベース値）
+========================================================= */
 @media (pointer:coarse){
-  .inner-shell{
-    max-width:none;
-  }
+  .inner-shell{ max-width: none; }
 
   body.view-center .inner-shell{
-    transform:
-      translate(-50%, -50%)
-      translateY(var(--video-mobile-stage-offset-y));
+    transform: translate(-50%, -50%) translateY(var(--video-mobile-stage-offset-y));
   }
 
-  .video-frame{
-    width:var(--video-mobile-stage-w);
-    max-width:none;
-  }
+  .video-frame{ width:var(--video-mobile-stage-w); max-width:none; }
+  .video-frame iframe{ pointer-events:none; }
+  .video-shield{ display:block; }
 
-  .video-frame iframe{
-    pointer-events:none;
-  }
-
-  .video-shield{
-    display:block;
-  }
-
-  body.is-stage-scroll-lock{
-    overflow:hidden;
-  }
+  body.is-stage-scroll-lock{ overflow:hidden; }
 
   .view.view-left,
-  .view.view-left .view-inner,
-  .view.view-right,
-  .view.view-right .view-inner{
-    pointer-events:auto;
-  }
+  .view.view-right .view-inner{ pointer-events:auto; }
 
-  .gallery-preview,
-  .gallery-preview-img{
-    pointer-events:none;
-  }
-
-  .gallery-item{
-    transition:opacity .2s ease, background .2s ease;
-    flex:0 0 auto;
-  }
-
-  .gallery-item.is-centered{
-    background:rgba(255,255,255,.04);
-  }
-
-  .gallery-panel{
-    isolation:isolate;
-  }
+  .gallery-panel{ isolation: isolate; }
 
   .gallery-scroll{
-    overflow-y:scroll;
-    overscroll-behavior:contain;
-    transform:translateZ(0);
-    will-change:scroll-position;
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+    will-change: auto;
   }
 
-  .modal__content{
-    width:var(--modal-width);
-    max-width:var(--modal-max-w);
-    overflow:hidden;
-  }
-
-  .modal__video-frame{
-    aspect-ratio:16 / 9;
-    max-height:none;
-  }
-
-  .modal__credit{
-    align-items:flex-start;
-    justify-content:center;
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-    padding:10px 0;
-  }
-
-  .modal__credit-inner{
-    width:var(--modal-credit-inner-width);
-    max-width:var(--modal-credit-inner-max-w);
-    margin:0 auto;
-    padding:
-      var(--modal-credit-inner-pad-top)
-      var(--modal-credit-inner-pad-x)
-      var(--modal-credit-inner-pad-bottom);
-  }
-
-  .modal__credit-title,
-  .modal__credit-list{
-    width:var(--modal-credit-block-w, auto);
-    max-width:100%;
-    margin-left:auto;
-    margin-right:auto;
-  }
-
-  .modal__credit-title{
-    font-size:var(--modal-credit-title-size);
-    line-height:1.3;
-    text-align:center;
-    margin-bottom:var(--modal-credit-title-gap);
-  }
-
-  .modal__credit-list{
-    font-size:var(--modal-credit-list-size);
-    line-height:var(--modal-credit-list-line);
-    margin-bottom:var(--modal-credit-list-gap);
-    overflow:visible;
-  }
-
-  .credit-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:var(--modal-credit-row-gap);
-  }
-
-  .credit-role{
-    opacity:.7;
-    text-align:left;
-    white-space:nowrap;
-  }
-
-  .credit-name{
-    text-align:right;
-    font-weight:500;
-    white-space:nowrap;
-  }
+  .gallery-item{ flex: 0 0 auto; min-height: 1px; }
 }
 
-/* -----------------------------------------
+/* =========================================================
    13-04. タッチ横向き
------------------------------------------ */
+========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
     --edge-btn-size:1.4rem;
     --video-side-safe:40px;
-    --font-ui-sm:clamp(2rem, .98vw, 1rem);
-
     --inner-shell-side-shift:2050px;
 
-    --video-mobile-landscape-visible-ratio:.52;
-    --video-mobile-landscape-visible-max:640;
-    --video-mobile-landscape-visible-offset-y:0;
-
-    --gallery-w:clamp(560px, 68vw, 860px);
-    --gallery-panel-gap-top:28px;
-    --gallery-panel-fixed-h:470px;
+    /* 文字サイズ調整（横画面用） */
+    --font-ui-sm:clamp(2rem, .98vw, 1rem);
     --gallery-item-size:1.5rem;
-    --gallery-item-pad-y:18px;
     --gallery-meta-size:1.08rem;
-    --gallery-meta-gap-top:8px;
-
-    --contact-w:clamp(520px, 62vw, 760px);
     --contact-block-size:1.18rem;
-    --contact-block-spacing:.08em;
-    --contact-block-margin-top:28px;
-    --contact-label-size:1.72rem;
-    --contact-label-spacing:.12em;
-    --contact-label-margin-top:22px;
     --contact-value-size:1.94rem;
-
-    --about-content-pad-top:0px;
-    --about-content-pad-x:7.5vw;
-    --about-content-pad-bottom:96px;
-
-    --about-hero-min-h:100svh;
-    --about-hero-pad-top:64px;
-    --about-hero-pad-bottom:84px;
-    --about-hero-gap:30px;
-    --about-hero-max-w:720px;
-
-    --about-logo-main-size:clamp(1.7rem, 3vw, 3.2rem);
-    --about-logo-sub-size:.74rem;
-    --about-logo-spacing:.14em;
-    --about-logo-sub-spacing:.08em;
-
-    --about-lead-size:.68rem;
-    --about-lead-line:1.78;
-    --about-lead-spacing:.02em;
-
-    --about-stack-gap:clamp(44px, 4vw, 68px);
-    --about-stack-pad:clamp(20px, 3vw, 34px);
-    --about-stack-line-protrusion:48px;
-
-    --about-heading-size:.96rem;
-    --about-heading-spacing:.10em;
-    --about-item-heading-gap:16px;
-
     --about-body-size:.8rem;
-    --about-body-line:1.74;
-    --about-body-spacing:.02em;
-
-    --about-split-gap:clamp(20px, 2.4vw, 28px);
-    --about-split-pad-top:clamp(20px, 3vw, 30px);
-    --about-split-pad-x:clamp(20px, 3vw, 30px);
-    --about-split-pad-bottom:clamp(40px, 6vw, 68px);
-    --about-split-margin-top:58px;
-
-    --about-col-title-size:.88rem;
-    --about-col-title-spacing:.08em;
-
-    --about-col-item-size:.8rem;
-    --about-col-item-line:1.74;
-    --about-col-item-spacing:.02em;
-
-    --about-credit-margin-top:18px;
-    --about-credit-title-size:.78rem;
-    --about-credit-title-spacing:.10em;
-    --about-credit-name-size:.96rem;
-    --about-credit-name-spacing:.06em;
-    --about-credit-link-size:.64rem;
-
-    --about-back-size:.64rem;
-    --about-back-spacing:.08em;
-    --about-back-margin-top:clamp(30px, 4vw, 54px);
-
-    --modal-width:min(76vw, 720px);
-    --modal-footer-gap-top:4px;
-    --modal-footer-pad-bottom:6px;
-    --modal-credit-toggle-size:.72rem;
-
-    --modal-credit-inner-width:min(92%, 520px);
-    --modal-credit-inner-max-w:270px;
-    --modal-credit-inner-pad-top:14px;
-    --modal-credit-inner-pad-x:16px;
-    --modal-credit-inner-pad-bottom:12px;
-
-    --modal-credit-block-w:min(88%, 420px);
-    --modal-credit-title-size:.74rem;
-    --modal-credit-title-gap:10px;
-    --modal-credit-list-size:.64rem;
-    --modal-credit-list-line:1.38;
-    --modal-credit-list-gap:10px;
-    --modal-credit-row-gap:20px;
-    --modal-credit-close-size:.66rem;
-  }
-
-  #about .about-content{
-    max-width:none;
-  }
-
-  .about-hero{
-    width:min(82vw, 720px);
-    max-width:none;
-    min-height:var(--about-hero-min-h);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:flex-start;
-    padding-top:var(--about-hero-pad-top);
-    padding-bottom:var(--about-hero-pad-bottom);
-  }
-
-  .about-lead{
-    width:100%;
-    max-width:none;
-  }
-
-  .about-stack{
-    margin-top:0;
-    padding:
-      calc(var(--about-stack-pad) + 26px)
-      var(--about-stack-pad)
-      calc(var(--about-stack-pad) + 30px)
-      var(--about-stack-pad);
-  }
-
-  .about-stack > :first-child{
-    margin-top:0;
-  }
-
-  .about-item p,
-  .about-col li{
-    max-width:44ch;
   }
 
   .gallery-panel{
-    width:var(--gallery-w);
-    max-width:var(--gallery-w);
-    min-width:var(--gallery-w);
-    height:var(--gallery-panel-fixed-h);
-    min-height:var(--gallery-panel-fixed-h);
+    width: clamp(560px, 68vw, 860px);
+    height: 470px;
+    min-height: 470px;
   }
 
-  .view-right .view-inner{
-    justify-content:center;
-    align-items:flex-end;
-  }
-
-  .view-right .contact-block{
-    width:var(--contact-w);
-    max-width:none;
-    margin-top:var(--contact-block-margin-top);
-  }
-
-  .contact-value p,
-  .contact-value a{
-    line-height:1.65;
-  }
+  .gallery-scroll{ height: 100%; }
 }
 
-/* -----------------------------------------
-   13-05. タッチ縦向き
------------------------------------------ */
+/* =========================================================
+   13-05. タッチ縦向き（文字サイズをしっかり調整）
+========================================================= */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
+    /* ここに文字サイズなどスマホ縦持ちで重要な調整を集中 */
     --font-ui-sm:clamp(1.8rem, .98vw, 1rem);
     --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
     --edge-btn-size:3.25rem;
@@ -1705,18 +1438,9 @@ body.view-right .inner-shell{
     --about-heading-size:1.4rem;
     --about-col-title-size:1.2rem;
     --about-col-item-size:1.02rem;
-    --about-hero-pad-top:0px;
-    --about-stack-line-protrusion:136;
 
-    --modal-credit-title-size:1rem;
-    --modal-credit-list-size:.92rem;
-
-    --video-mobile-portrait-visible-ratio:.84;
-    --video-mobile-portrait-visible-max:500;
-    --video-mobile-portrait-visible-offset-y:0;
-
-    --video-side-safe:24px;
     --inner-shell-side-shift:2420px;
+    --video-side-safe:24px;
   }
 
   .inner-shell{
@@ -1728,36 +1452,30 @@ body.view-right .inner-shell{
   .video-frame{
     width:100vw;
     height:100svh;
-
     overflow:hidden;
-
     display:flex;
     align-items:center;
     justify-content:center;
   }
 
   .video-frame iframe{
-
-    /* cover化 */
     width:177.78svh;
     height:100svh;
-
-    border:0;
     flex-shrink:0;
   }
 
   .gallery-panel{
-    width:var(--gallery-w);
-    max-width:var(--gallery-w);
-    min-width:0;
-    height:var(--gallery-panel-fixed-h);
-      min-height:0;
-    min-height:var(--gallery-panel-fixed-h);
+    height: var(--gallery-panel-fixed-h);
+    min-height: var(--gallery-panel-fixed-h);
+    max-height: var(--gallery-panel-fixed-h);
+    overflow: hidden;
   }
-.gallery-scroll{
-  min-height:0;
-    transform:none !important;
-    will-change:auto !important;
+
+  .gallery-scroll{
+    height: 100%;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
 }
-}
-/* gitdafwd */
