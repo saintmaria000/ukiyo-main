@@ -1318,6 +1318,10 @@ body.view-right .inner-shell{
 
 /* =========================================================
    13. Responsive
+   方針:
+   - 現在のレイアウトを尊重（特に3D Stage + Gallery + Mobile Video）
+   - Safari実機スクロール安定化を最優先
+   - 冗長な記述を削減し、保守性を向上
 ========================================================= */
 
 /* -----------------------------------------
@@ -1332,25 +1336,16 @@ body.view-right .inner-shell{
     --about-lead-size:.95rem;
     --about-body-size:.95rem;
     --about-col-item-size:.95rem;
-
     --about-heading-size:1.3rem;
     --about-col-title-size:1.15rem;
     --about-credit-name-size:1.25rem;
-
     --video-side-safe:32px;
   }
 
-  .about-split{
-    grid-template-columns:1fr;
-  }
+  .about-split{ grid-template-columns:1fr; }
 
-  .inner-shell{
-    max-width:calc(100vw - 16px);
-  }
-
-  .video-frame{
-    width:min(var(--video-w), calc(100vw - var(--video-side-safe)));
-  }
+  .inner-shell{ max-width:calc(100vw - 16px); }
+  .video-frame{ width:min(var(--video-w), calc(100vw - var(--video-side-safe))); }
 }
 
 /* -----------------------------------------
@@ -1362,17 +1357,14 @@ body.view-right .inner-shell{
     --view-header-size:clamp(.88rem, .82rem + .22vw, 1rem);
     --edge-btn-size:clamp(.9rem, .84rem + .18vw, .98rem);
     --pull-return-link-size:clamp(.72rem, .68rem + .18vw, .9rem);
-    --global-mute-icon-size:clamp(20px, 1.4vw, 22px);
   }
 }
 
 /* =========================================================
-   13-03. タッチ端末 共通
+   13-03. タッチ端末 共通（Safari対策重視）
 ========================================================= */
 @media (pointer:coarse){
-  .inner-shell{
-    max-width:none;
-  }
+  .inner-shell{ max-width:none; }
 
   body.view-center .inner-shell{
     transform: translate(-50%, -50%) translateY(var(--video-mobile-stage-offset-y));
@@ -1383,17 +1375,8 @@ body.view-right .inner-shell{
     max-width:none;
   }
 
-  .video-frame iframe{
-    pointer-events:none;
-  }
-
-  .video-shield{
-    display:block;
-  }
-
-  body.is-stage-scroll-lock{
-    overflow:hidden;
-  }
+  .video-frame iframe{ pointer-events:none; }
+  .video-shield{ display:block; }
 
   .view.view-left,
   .view.view-left .view-inner,
@@ -1402,9 +1385,9 @@ body.view-right .inner-shell{
     pointer-events:auto;
   }
 
-  /* Gallery 基本対策 */
+  /* Gallery - Safari実機スクロール安定化 */
   .gallery-panel{
-    contain: layout style paint;
+    contain: layout paint;           /* styleは重いので省略 */
     isolation: isolate;
     overflow: hidden;
   }
@@ -1416,35 +1399,65 @@ body.view-right .inner-shell{
     flex: 1 1 auto;
     min-height: 0;
 
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch !important;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
 
+    /* Safariで比較的安全な記述 */
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
 
     overscroll-behavior-y: contain;
     touch-action: pan-y;
-    will-change: auto;
+    will-change: auto;               /* scroll-positionは避ける */
   }
 
   .gallery-item{
     flex: 0 0 auto;
-    min-height: 1px;
+    min-height: 1px;                 /* 高さ計算の安定化 */
+  }
+
+  .gallery-preview,
+  .gallery-preview-img{ pointer-events:none; }
+
+  /* Modal */
+  .modal__content{
+    width:var(--modal-width);
+    max-width:var(--modal-max-w);
+    overflow:hidden;
+  }
+
+  .modal__video-frame{ max-height:none; }
+
+  .modal__credit{
+    align-items:flex-start;
+    justify-content:center;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:10px 0;
   }
 }
 
 /* -----------------------------------------
-   13-04. タッチ横向き（Landscape）
+   13-04. タッチ横向き (Landscape)
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
+    --edge-btn-size:1.4rem;
+    --video-side-safe:40px;
+    --inner-shell-side-shift:2050px;
+
     --gallery-w:clamp(560px, 68vw, 860px);
     --gallery-panel-fixed-h:470px;
     --gallery-item-size:1.5rem;
     --gallery-item-pad-y:18px;
     --gallery-meta-size:1.08rem;
-    /* ... 他のlandscape設定は省略（変更なし） ... */
+
+    --contact-w:clamp(520px, 62vw, 760px);
+    --contact-block-size:1.18rem;
+    --contact-value-size:1.94rem;
+
+    --about-hero-max-w:720px;
+    --about-body-size:.8rem;
   }
 
   .gallery-panel{
@@ -1454,21 +1467,16 @@ body.view-right .inner-shell{
 }
 
 /* -----------------------------------------
-   13-05. タッチ縦向き（Portrait）← ここを大幅強化
+   13-05. タッチ縦向き (Portrait) ← 最も問題が出やすい
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
-    --font-ui-sm:clamp(1.8rem, .98vw, 1rem);
     --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
     --edge-btn-size:3.25rem;
 
     --gallery-item-size:2.25rem;
     --gallery-meta-size:1rem;
     --gallery-panel-fixed-h:min(68svh, 760px);
-
-    --video-mobile-portrait-visible-ratio:.84;
-    --video-mobile-portrait-visible-max:500;
-    --video-mobile-portrait-visible-offset-y:0;
 
     --video-side-safe:24px;
     --inner-shell-side-shift:2420px;
@@ -1492,43 +1500,24 @@ body.view-right .inner-shell{
   .video-frame iframe{
     width:177.78svh;
     height:100svh;
-    border:0;
     flex-shrink:0;
   }
 
-  /* ==================== 縦画面Gallery 強力対策 ==================== */
+  /* 縦画面Gallery対策 */
   .gallery-panel{
-    width:var(--gallery-w);
-    max-width:var(--gallery-w);
-    min-width:0;
-    height:var(--gallery-panel-fixed-h) !important;
-    min-height:var(--gallery-panel-fixed-h) !important;
-    max-height:var(--gallery-panel-fixed-h) !important;
-    overflow: hidden;
-    flex-shrink: 0;
+    height:var(--gallery-panel-fixed-h);
+    min-height:var(--gallery-panel-fixed-h);
+    max-height:var(--gallery-panel-fixed-h);
+    overflow:hidden;
   }
 
   .gallery-scroll{
-    height: calc(100% - 1px) !important;     /* 高さを明示 */
-    max-height: none !important;
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch !important;
-    
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-transform: translate3d(0, 0, 0) !important;
-    backface-visibility: hidden !important;
-    -webkit-backface-visibility: hidden !important;
-    
-    touch-action: pan-y !important;
-    overscroll-behavior-y: contain;
-    will-change: auto;
-  }
+    height:100%;
+    overflow-y:scroll !important;
+    -webkit-overflow-scrolling:touch !important;
 
-  .gallery-item{
-    flex: 0 0 auto;
-    min-height: 1px;
-    padding: 20px 0;   /* タップ領域を確保 */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    touch-action: pan-y;
   }
 }
-
-/* gitdafwd */
