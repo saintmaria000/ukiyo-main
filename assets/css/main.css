@@ -1341,7 +1341,7 @@ body.view-right .inner-shell{
        (pointer:fine) and (max-height:820px){
   :root{
     --view-header-size:clamp(.88rem, .82rem + .22vw, 1rem);
-    --edge-btn-size:clamp(1.4rem, .84rem + .18vw, .98rem);
+    --edge-btn-size:1.5rem;
   }
 }
 
