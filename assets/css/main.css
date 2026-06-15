@@ -260,7 +260,7 @@ a{
 
   --about-hero-min-h:100svh;
   --about-hero-pad-top:120px;
-  --about-hero-pad-bottom:110px;
+  --about-hero-pad-bottom:0px;
   --about-hero-gap:clamp(10px, 1.2vw, 18px);
   --about-hero-max-w:1280px;
 
