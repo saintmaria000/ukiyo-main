@@ -261,7 +261,7 @@ a{
   --about-hero-min-h:88svh;
   --about-hero-pad-top:45px;
   --about-hero-pad-bottom:0px;
-  --about-hero-gap:clamp(10px, 1.2vw, 18px);
+  --about-hero-gap:clamp(10px, 2.2vw, 28px);
   --about-hero-max-w:1280px;
 
   --about-logo-main-size:clamp(3.2rem, 5vw, 6.2rem);
