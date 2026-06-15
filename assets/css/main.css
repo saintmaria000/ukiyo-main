@@ -258,7 +258,7 @@ a{
   --about-content-pad-x:6vw;
   --about-content-pad-bottom:180px;
 
-  --about-hero-min-h:100svh;
+  --about-hero-min-h:85svh;
   --about-hero-pad-top:35px;
   --about-hero-pad-bottom:0px;
   --about-hero-gap:clamp(10px, 1.2vw, 18px);
