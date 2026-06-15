@@ -276,7 +276,7 @@ a{
 
   --about-stack-max-w:1320px;
   --about-stack-gap:clamp(120px, 11vw, 220px);
-  --about-stack-pad-top:36px;
+  --about-stack-pad-top:90px;
   --about-stack-pad-x:clamp(22px, 3vw, 54px);
   --about-stack-pad-bottom:240px;
   --about-stack-pad:clamp(22px, 3vw, 54px);
