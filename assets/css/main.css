@@ -912,7 +912,7 @@ body.view-right .inner-shell{
   border-left:1px solid #fff;
 }
 
-.about-stack::before{
+/* .about-stack::before{
   content:"";
   position:absolute;
   left:-1px;
@@ -921,7 +921,7 @@ body.view-right .inner-shell{
   height:var(--about-stack-line-protrusion);
   background:#fff;
   pointer-events:none;
-}
+} */
 
 .about-item h3{
   font-size:var(--about-heading-size);
