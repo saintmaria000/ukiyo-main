@@ -1408,8 +1408,8 @@ body.view-right .inner-shell{
     --edge-btn-size:1.35rem;
 
     /* Gallery リスト */
-    --gallery-item-size:1rem;
-    --gallery-meta-size:.82rem;
+    --gallery-item-size:1.1rem;
+    --gallery-meta-size:1rem;
 
     /* Contact 本文 */
     --contact-block-size:.92rem;
@@ -1420,7 +1420,7 @@ body.view-right .inner-shell{
     --about-lead-size:.95rem;
 
     /* About リスト本文 */
-    --about-heading-size:1.5rem;
+    --about-heading-size:1.4rem;
     --about-body-size:1rem;
   }
 }
