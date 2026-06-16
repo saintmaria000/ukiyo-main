@@ -1327,7 +1327,7 @@ body.view-right .inner-shell{
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
   :root{
-    --view-header-size:1rem;
+    --view-header-size:1.8rem;
   }
 }
 
