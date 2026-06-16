@@ -141,6 +141,7 @@ a{
   ----------------------------------------- */
   --z-stage:10020;
   --z-video-flash:9;
+  --z-video-shield:10;
   --z-ui:9000;
   --z-video:9999;
   --z-modal:10000;
@@ -618,6 +619,18 @@ body.view-right .inner-shell{
   display:block;
 }
 
+.video-shield{
+  position:absolute;
+  inset:0;
+  background:transparent;
+  border:0;
+  padding:0;
+  margin:0;
+  display:none;
+  z-index:var(--z-video-shield);
+  cursor:pointer;
+  pointer-events:auto;
+}
 
 .edge-btn{
   position:absolute;
@@ -669,6 +682,9 @@ body.view-right .inner-shell{
 .contact-block,
 .contact-value a,
 .video-frame,
+.video-shield{
+  pointer-events:auto;
+}
 
 /* =========================================================
    08. Gallery
@@ -1311,156 +1327,89 @@ body.view-right .inner-shell{
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
   :root{
-    --view-header-size:1.2rem;
-    --edge-btn-size:1.35rem;
-
-    --gallery-item-size:.9rem;
-    --gallery-meta-size:.72rem;
-
-    --contact-block-size:.82rem;
-    --contact-label-size:1.16rem;
-    --contact-value-size:1.04rem;
-
-    --about-lead-size:.95rem;
-    --about-heading-size:1.5rem;
-    --about-body-size:1rem;
+    --view-header-size:1.8rem;
   }
 }
 
 /* =========================================================
-   13-03. タッチ端末 共通
-   役割:
-   - スマホ / タブレットで必要な操作補正だけを入れる
-   - 動画上の透明判定は置かず、YouTube操作を優先する
+   13-03. タッチ端末 共通（ベース値）
 ========================================================= */
 @media (pointer:coarse){
-  .inner-shell{ max-width:none; }
+  .inner-shell{ max-width: none; }
 
   body.view-center .inner-shell{
-    transform:translate(-50%, -50%) translateY(var(--video-mobile-stage-offset-y));
+    transform: translate(-50%, -50%) translateY(var(--video-mobile-stage-offset-y));
   }
 
-  .video-frame{
-    width:var(--video-mobile-stage-w);
-    max-width:none;
-  }
-
-  .video-frame iframe{
-    pointer-events:auto;
-  }
+  .video-frame{ width:var(--video-mobile-stage-w); max-width:none; }
+  .video-frame iframe{ pointer-events:none; }
+  .video-shield{ display:block; }
 
   body.is-stage-scroll-lock{ overflow:hidden; }
 
   .view.view-left,
   .view.view-right .view-inner{ pointer-events:auto; }
 
-  .gallery-panel{ isolation:isolate; }
+  .gallery-panel{ isolation: isolate; }
 
   .gallery-scroll{
-    position:relative;
-    z-index:3;
-    width:100%;
-    flex:1 1 auto;
-    min-height:0;
-    overflow-y:scroll;
-    -webkit-overflow-scrolling:touch;
-    transform:translate3d(0, 0, 0);
-    backface-visibility:hidden;
-    overscroll-behavior-y:contain;
-    touch-action:pan-y;
-    will-change:auto;
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+    will-change: auto;
   }
 
-  .gallery-item{
-    flex:0 0 auto;
-    min-height:1px;
-  }
+  .gallery-item{ flex: 0 0 auto; min-height: 1px; }
 }
 
 /* =========================================================
-   13-04. タブレット
-   役割:
-   - iPad などの中間画面でPC基準を少し大きく読む
-   - 数値は固定値のみ
+   13-04. タッチ横向き
 ========================================================= */
-@media (pointer:coarse) and (min-width:768px) and (min-height:600px){
+@media (pointer:coarse) and (orientation:landscape){
   :root{
-    --font-ui-sm:1.5rem;
-    --view-header-size:1.5rem;
-    --edge-btn-size:1.8rem;
-
-    --gallery-item-size:1.2rem;
-    --gallery-meta-size:.9rem;
-
-    --contact-block-size:1.05rem;
-    --contact-label-size:1.35rem;
-    --contact-value-size:1.45rem;
-
-    --about-logo-main-size:5rem;
-    --about-logo-sub-size:1.12rem;
-    --about-lead-size:1rem;
-    --about-heading-size:1.45rem;
-    --about-body-size:1rem;
-    --about-col-title-size:1.18rem;
-    --about-col-item-size:1rem;
-  }
-}
-
-/* =========================================================
-   13-05. スマホ横向き
-   役割:
-   - 高さが浅い画面で文字が詰まりすぎないようにする
-   - 数値は固定値のみ
-========================================================= */
-@media (pointer:coarse) and (orientation:landscape) and (max-height:540px){
-  :root{
-    --font-ui-sm:1.6rem;
-    --view-header-size:1.6rem;
     --edge-btn-size:1.4rem;
-
     --video-side-safe:40px;
     --inner-shell-side-shift:2050px;
 
+    /* 文字サイズ調整（横画面用） */
+    --font-ui-sm:2rem;
     --gallery-item-size:1.5rem;
     --gallery-meta-size:1.08rem;
-
     --contact-block-size:1.18rem;
-    --contact-label-size:1.4rem;
     --contact-value-size:1.94rem;
-
-    --about-logo-main-size:4rem;
-    --about-logo-sub-size:1rem;
-    --about-lead-size:.9rem;
-    --about-heading-size:1.2rem;
-    --about-body-size:.95rem;
-    --about-col-title-size:1.05rem;
-    --about-col-item-size:.95rem;
+    --about-body-size:.8rem;
   }
 
   .gallery-panel{
-    width:clamp(560px, 68vw, 860px);
-    height:470px;
-    min-height:470px;
+    width: clamp(560px, 68vw, 860px);
+    height: 470px;
+    min-height: 470px;
   }
 
-  .gallery-scroll{ height:100%; }
+  .gallery-scroll{ height: 100%; }
 }
 
 /* =========================================================
-   13-06. スマホ縦向き
-   役割:
-   - ステージ縮小の影響を受ける文字を実機で読める大きさにする
-   - 数値は固定値のみ
+   13-05. タッチ縦向き（文字サイズをしっかり調整）
 ========================================================= */
-@media (pointer:coarse) and (orientation:portrait) and (max-width:767px){
+@media (pointer:coarse) and (orientation:portrait){
   :root{
+    /* ここに文字サイズなどスマホ縦持ちで重要な調整を集中 */
     --font-ui-sm:1.8rem;
-    --view-header-size:2.2rem;
+    --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
     --edge-btn-size:3.25rem;
 
-    --font-body-md:1.2rem;
-    --font-body-sm:1.1rem;
-    --font-body-xs:1rem;
+    --font-body-md:clamp(1.08rem, 3.8vw, 1.2rem);
+    --font-body-sm:clamp(1rem, 3.4vw, 1.1rem);
+    --font-body-xs:clamp(.92rem, 3vw, 1rem);
 
     --gallery-item-size:2.25rem;
     --gallery-meta-size:1rem;
@@ -1470,8 +1419,6 @@ body.view-right .inner-shell{
     --contact-label-size:2.35rem;
     --contact-value-size:2.2rem;
 
-    --about-logo-main-size:3.6rem;
-    --about-logo-sub-size:1rem;
     --about-lead-size:1.08rem;
     --about-body-size:1.05rem;
     --about-heading-size:1.4rem;
@@ -1504,17 +1451,17 @@ body.view-right .inner-shell{
   }
 
   .gallery-panel{
-    height:var(--gallery-panel-fixed-h);
-    min-height:var(--gallery-panel-fixed-h);
-    max-height:var(--gallery-panel-fixed-h);
-    overflow:hidden;
+    height: var(--gallery-panel-fixed-h);
+    min-height: var(--gallery-panel-fixed-h);
+    max-height: var(--gallery-panel-fixed-h);
+    overflow: hidden;
   }
 
   .gallery-scroll{
-    height:100%;
-    overflow-y:scroll !important;
-    -webkit-overflow-scrolling:touch !important;
-    transform:translate3d(0, 0, 0);
-    backface-visibility:hidden;
+    height: 100%;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
   }
 }
