@@ -1436,7 +1436,7 @@ body.view-right .inner-shell{
   }
 
   .video-frame{ width:var(--video-mobile-stage-w); max-width:none; }
-  .video-frame iframe{ pointer-events:none; }
+  /* .video-frame iframe{ pointer-events:none; } */
   .video-shield{ display:block; }
 
   body.is-stage-scroll-lock{ overflow:hidden; }
