@@ -1404,17 +1404,17 @@ body.view-right .inner-shell{
   :root{
     /* ===== FONT ===== */
     /* 画面ナビ / 戻る導線 */
-    --view-header-size:1.2rem;
+    --view-header-size:1.5rem;
     --edge-btn-size:1.35rem;
 
     /* Gallery リスト */
-    --gallery-item-size:.9rem;
-    --gallery-meta-size:.72rem;
+    --gallery-item-size:1rem;
+    --gallery-meta-size:.82rem;
 
     /* Contact 本文 */
-    --contact-block-size:.82rem;
-    --contact-label-size:1.16rem;
-    --contact-value-size:1.04rem;
+    --contact-block-size:.92rem;
+    --contact-label-size:1.36rem;
+    --contact-value-size:1.24rem;
 
     /* About 紹介文 */
     --about-lead-size:.95rem;
@@ -1515,7 +1515,7 @@ body.view-right .inner-shell{
 }
 
 /* =========================================================
-   13-05. タッチ縦向き（文字サイズをしっかり調整）
+   13-05. タッチ縦向き
 ========================================================= */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
