@@ -656,6 +656,7 @@ body.view-right .inner-shell{
   max-height:100%;
   border:0;
   display:block;
+  pointer-events:auto;
 }
 
 
@@ -1422,6 +1423,7 @@ body.view-right .inner-shell{
   }
 
   .video-frame{ width:var(--video-mobile-stage-w); max-width:none; }
+  .video-frame iframe{ pointer-events:auto; }
 
   body.is-stage-scroll-lock{ overflow:hidden; }
 
