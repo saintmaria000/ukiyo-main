@@ -138,7 +138,6 @@ a{
   ----------------------------------------- */
   --z-stage:10020;
   --z-video-flash:9;
-  --z-video-shield:10;
   --z-ui:9000;
   --z-video:9999;
   --z-modal:10000;
@@ -659,18 +658,6 @@ body.view-right .inner-shell{
   display:block;
 }
 
-.video-shield{
-  position:absolute;
-  inset:0;
-  background:transparent;
-  border:0;
-  padding:0;
-  margin:0;
-  display:none;
-  z-index:var(--z-video-shield);
-  cursor:pointer;
-  pointer-events:auto;
-}
 
 .edge-btn{
   position:absolute;
@@ -721,8 +708,7 @@ body.view-right .inner-shell{
 .gallery-item,
 .contact-block,
 .contact-value a,
-.video-frame,
-.video-shield{
+.video-frame{
   pointer-events:auto;
 }
 
@@ -1436,8 +1422,6 @@ body.view-right .inner-shell{
   }
 
   .video-frame{ width:var(--video-mobile-stage-w); max-width:none; }
-  /* .video-frame iframe{ pointer-events:none; } */
-  .video-shield{ display:block; }
 
   body.is-stage-scroll-lock{ overflow:hidden; }
 
