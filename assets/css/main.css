@@ -1546,6 +1546,30 @@ body.view-right .inner-shell{
     /* ===== OTHER ===== */
     --inner-shell-side-shift:2420px;
   }
+  .space-wrapper{
+  height:100svh;
+  overflow:hidden;
+}
+
+  .stage{
+    position:relative;
+    width:100vw;
+    height:100svh;
+    left:0;
+    top:0;
+    transform:none !important;
+    perspective:none;
+  }
+
+  .outer-space{
+    width:300vw;
+    height:100svh;
+  }
+
+  .view{
+    width:100vw;
+    height:100svh;
+  }
 
   .inner-shell{
     top:50%;
