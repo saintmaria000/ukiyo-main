@@ -151,18 +151,18 @@ a{
   /* -----------------------------------------
      03-06. Typography
   ----------------------------------------- */
-  --font-display-xl:clamp(2.6rem, 4.4vw, 5.6rem);
-  --font-display-lg:clamp(1.7rem, 2.5vw, 2.3rem);
+  --font-display-xl:5.6rem;
+  --font-display-lg:2.3rem;
 
-  --font-title-lg:clamp(1.32rem, 1.9vw, 1.65rem);
-  --font-title-md:clamp(1.12rem, 1.45vw, 1.36rem);
+  --font-title-lg:1.65rem;
+  --font-title-md:1.36rem;
 
-  --font-body-md:clamp(1rem, 1.1vw, 1.06rem);
-  --font-body-sm:clamp(.9rem, 1vw, .98rem);
-  --font-body-xs:clamp(.78rem, .85vw, .86rem);
+  --font-body-md:1.06rem;
+  --font-body-sm:.98rem;
+  --font-body-xs:.86rem;
 
-  --font-ui-xs:clamp(.78rem, .8vw, .86rem);
-  --font-ui-sm:clamp(1.5rem, .98vw, 1rem);
+  --font-ui-xs:.86rem;
+  --font-ui-sm:1.5rem;
 
   --ls-wide:.35em;
   --ls-title:.28em;
@@ -181,7 +181,7 @@ a{
 
   --pull-return-top:8px;
   --pull-return-offset-y:-14px;
-  --pull-return-link-size:clamp(.55rem, 1vw, 1.05rem);
+  --pull-return-link-size:1.05rem;
   --pull-return-link-letter-spacing:.12em;
   --pull-return-link-pad-bottom:3px;
   --pull-return-link-opacity:.75;
@@ -195,7 +195,7 @@ a{
   --video-w:960px;
   --video-side-safe:48px;
 
-  --edge-btn-size:1.26rem;
+  --edge-btn-size:1.5rem;
   --edge-btn-spacing:.25em;
   --edge-btn-pad-y:4px;
   --edge-btn-pad-x:0;
@@ -261,11 +261,11 @@ a{
   --about-hero-min-h:88svh;
   --about-hero-pad-top:45px;
   --about-hero-pad-bottom:0px;
-  --about-hero-gap:clamp(10px, 2.2vw, 25px);
+  --about-hero-gap:25px;
   --about-hero-max-w:1280px;
 
-  --about-logo-main-size:clamp(3.2rem, 5vw, 6.2rem);
-  --about-logo-sub-size:clamp(1rem, 1.3vw, 1.24rem);
+  --about-logo-main-size:6.2rem;
+  --about-logo-sub-size:1.24rem;
   --about-logo-spacing:.28em;
   --about-logo-sub-spacing:.18em;
 
@@ -275,12 +275,10 @@ a{
   --about-lead-spacing:.05em;
 
   --about-stack-max-w:1320px;
-  --about-stack-gap:clamp(120px, 11vw, 220px);
+  --about-stack-gap:220px;
   --about-stack-pad-top:90px;
-  --about-stack-pad-x:clamp(22px, 3vw, 54px);
+  --about-stack-pad-x:54px;
   --about-stack-pad-bottom:240px;
-  --about-stack-pad:clamp(22px, 3vw, 54px);
-  --about-stack-line-protrusion:156px;
 
   --about-heading-size:1.7rem;
   --about-heading-spacing:.20em;
@@ -291,12 +289,12 @@ a{
   --about-body-spacing:.05em;
   --about-body-max-w:700px;
 
-  --about-split-gap:clamp(36px, 4vw, 56px);
-  --about-split-pad-top:clamp(28px, 3vw, 56px);
-  --about-split-pad-x:clamp(22px, 3vw, 54px);
-  --about-split-pad-bottom:clamp(72px, 10vw, 100px);
+  --about-split-gap:56px;
+  --about-split-pad-top:56px;
+  --about-split-pad-x:54px;
+  --about-split-pad-bottom:100px;
   --about-split-margin-top:120px;
-  --about-split-margin-bottom:clamp(56px, 7vw, 96px);
+  --about-split-margin-bottom:96px;
 
   --about-col-title-size:1.42rem;
   --about-col-title-spacing:.16em;
@@ -319,7 +317,7 @@ a{
 
   --about-back-size:.95rem;
   --about-back-spacing:.16em;
-  --about-back-margin-top:clamp(64px, 10vw, 180px);
+  --about-back-margin-top:180px;
 
   /* -----------------------------------------
      03-13. Modal
@@ -912,17 +910,6 @@ body.view-right .inner-shell{
   border-left:1px solid #fff;
 }
 
-/* .about-stack::before{
-  content:"";
-  position:absolute;
-  left:-1px;
-  bottom:100%;
-  width:1px;
-  height:var(--about-stack-line-protrusion);
-  background:#fff;
-  pointer-events:none;
-} */
-
 .about-item h3{
   font-size:var(--about-heading-size);
   letter-spacing:var(--about-heading-spacing);
@@ -1340,8 +1327,7 @@ body.view-right .inner-shell{
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
   :root{
-    --view-header-size:clamp(.88rem, .82rem + .22vw, 1rem);
-    --edge-btn-size:1.5rem;
+    --view-header-size:1rem;
   }
 }
 
@@ -1394,7 +1380,7 @@ body.view-right .inner-shell{
     --inner-shell-side-shift:2050px;
 
     /* 文字サイズ調整（横画面用） */
-    --font-ui-sm:clamp(2rem, .98vw, 1rem);
+    --font-ui-sm:2rem;
     --gallery-item-size:1.5rem;
     --gallery-meta-size:1.08rem;
     --contact-block-size:1.18rem;
@@ -1417,7 +1403,7 @@ body.view-right .inner-shell{
 @media (pointer:coarse) and (orientation:portrait){
   :root{
     /* ここに文字サイズなどスマホ縦持ちで重要な調整を集中 */
-    --font-ui-sm:clamp(1.8rem, .98vw, 1rem);
+    --font-ui-sm:1.8rem;
     --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
     --edge-btn-size:3.25rem;
 
