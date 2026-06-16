@@ -1596,16 +1596,14 @@ body.view-right .inner-shell{
      何を: 中央動画
      どのように: 画面幅に収まる16:9で中央配置
   ----------------------------------------- */
-  .inner-shell{
-    position:absolute;
+ .inner-shell{
+    position:fixed;
     top:50%;
     left:50%;
-    width:calc(100vw - 40px);
-    max-width:none;
-    z-index:var(--z-video);
-    pointer-events:auto;
+    width:100vw;
+    height:100svh;
     transform:translate(-50%, -50%) !important;
-    transition:transform .8s ease;
+    z-index:1;
   }
 
   body.view-left .inner-shell,
@@ -1622,23 +1620,21 @@ body.view-right .inner-shell{
   }
 
   .video-frame{
-    width:100%;
-    height:auto;
-    aspect-ratio:16 / 9;
-    max-width:none;
+    width:100vw;
+    height:100svh;
     overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    pointer-events:auto;
+    box-shadow:none;
   }
 
   .video-frame iframe{
-    width:100%;
-    height:100%;
-    max-width:none;
-    max-height:none;
-    pointer-events:auto;
+    position:absolute;
+    top:50%;
+    left:50%;
+
+    width:177.78svh;
+    height:100svh;
+
+    transform:translate(-50%, -50%);
   }
 
   /* -----------------------------------------
