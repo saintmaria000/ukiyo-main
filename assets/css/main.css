@@ -1554,18 +1554,15 @@ body.view-right .inner-shell{
   }
 
   .video-frame{
-    width:100vw;
-    height:100svh;
+    width:min(var(--video-w), calc(100vw - 24px));
+    aspect-ratio:16 / 9;
+    height:auto;
     overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
   }
 
   .video-frame iframe{
-    width:177.78svh;
-    height:100svh;
-    flex-shrink:0;
+    width:100%;
+    height:100%;
   }
 
   .gallery-panel{
