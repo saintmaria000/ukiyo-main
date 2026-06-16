@@ -1596,14 +1596,16 @@ body.view-right .inner-shell{
      何を: 中央動画
      どのように: 画面幅に収まる16:9で中央配置
   ----------------------------------------- */
- .inner-shell{
-    position:fixed;
+  .inner-shell{
+    position:absolute;
     top:50%;
     left:50%;
-    width:100vw;
-    height:100svh;
+    width:calc(100vw - 40px);
+    max-width:none;
+    z-index:var(--z-video);
+    pointer-events:auto;
     transform:translate(-50%, -50%) !important;
-    z-index:1;
+    transition:transform .8s ease;
   }
 
   body.view-left .inner-shell,
