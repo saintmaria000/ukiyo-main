@@ -1,14 +1,14 @@
 // assets/js/video.enable.js
 (() => {
   const body = document.body;
-  const mainShield = document.querySelector('.video-frame .video-shield');
   const mainVideo = document.getElementById('mainVideo');
   const flash = document.querySelector('.video-frame .video-unlock-flash');
 
-  if (!body || !mainShield || !mainVideo) return;
+  if (!body || !mainVideo) return;
 
   function ytCommandTo(iframeEl, func) {
     if (!iframeEl || !iframeEl.contentWindow) return;
+
     try {
       iframeEl.contentWindow.postMessage(
         JSON.stringify({ event: 'command', func, args: [] }),
@@ -19,16 +19,13 @@
 
   function playUnlockEffect() {
     if (!flash) return;
+
     flash.classList.remove('is-active');
     void flash.offsetWidth;
     flash.classList.add('is-active');
   }
 
-  function isEnabled() {
-    return body.classList.contains('video-enabled');
-  }
-
-  function enableAndPlay() {
+  function enableVideo() {
     body.classList.add('video-enabled');
     playUnlockEffect();
 
@@ -37,35 +34,25 @@
     });
   }
 
-  function lockAndStop() {
-    ytCommandTo(mainVideo, 'stopVideo');
+  function stopVideo() {
     ytCommandTo(mainVideo, 'pauseVideo');
     body.classList.remove('video-enabled');
   }
 
-  function toggleMainVideo() {
-    if (isEnabled()) {
-      lockAndStop();
-    } else {
-      enableAndPlay();
-    }
-  }
-
-  mainShield.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleMainVideo();
-  });
+  // iframeのクリックを邪魔しない。
+  // 画面中央動画はYouTube iframeを直接触らせる。
+  mainVideo.addEventListener('pointerdown', () => {
+    enableVideo();
+  }, { passive: true });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isEnabled()) {
-      lockAndStop();
+    if (e.key === 'Escape') {
+      stopVideo();
     }
   });
 
   window.MainVideoControl = {
-    play: enableAndPlay,
-    stop: lockAndStop,
-    toggle: toggleMainVideo
+    play: enableVideo,
+    stop: stopVideo
   };
 })();
