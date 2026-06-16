@@ -1322,12 +1322,48 @@ body.view-right .inner-shell{
 }
 
 /* -----------------------------------------
+   13-01b. タブレット文字サイズのみ
+----------------------------------------- */
+@media (pointer:coarse) and (min-width:768px) and (min-height:600px){
+  :root{
+    --font-ui-sm:1.5rem;
+    --view-header-size:1.5rem;
+    --edge-btn-size:1.8rem;
+
+    --gallery-item-size:1.2rem;
+    --gallery-meta-size:.9rem;
+
+    --contact-block-size:1.05rem;
+    --contact-label-size:1.35rem;
+    --contact-value-size:1.45rem;
+
+    --about-lead-size:1rem;
+    --about-heading-size:1.45rem;
+    --about-body-size:1rem;
+    --about-col-title-size:1.18rem;
+    --about-col-item-size:1rem;
+  }
+}
+
+/* -----------------------------------------
    13-02. 小型PC
 ----------------------------------------- */
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
   :root{
-    --view-header-size:1.8rem;
+    --view-header-size:1.2rem;
+    --edge-btn-size:1.35rem;
+
+    --gallery-item-size:.9rem;
+    --gallery-meta-size:.72rem;
+
+    --contact-block-size:.82rem;
+    --contact-label-size:1.16rem;
+    --contact-value-size:1.04rem;
+
+    --about-lead-size:.95rem;
+    --about-heading-size:1.5rem;
+    --about-body-size:1rem;
   }
 }
 
@@ -1380,12 +1416,18 @@ body.view-right .inner-shell{
     --inner-shell-side-shift:2050px;
 
     /* 文字サイズ調整（横画面用） */
-    --font-ui-sm:2rem;
+    --font-ui-sm:1.6rem;
+    --view-header-size:1.6rem;
     --gallery-item-size:1.5rem;
     --gallery-meta-size:1.08rem;
     --contact-block-size:1.18rem;
+    --contact-label-size:1.4rem;
     --contact-value-size:1.94rem;
-    --about-body-size:.8rem;
+    --about-lead-size:.9rem;
+    --about-heading-size:1.2rem;
+    --about-body-size:.95rem;
+    --about-col-title-size:1.05rem;
+    --about-col-item-size:.95rem;
   }
 
   .gallery-panel{
@@ -1404,12 +1446,12 @@ body.view-right .inner-shell{
   :root{
     /* ここに文字サイズなどスマホ縦持ちで重要な調整を集中 */
     --font-ui-sm:1.8rem;
-    --view-header-size:clamp(2rem, 3.2vw, 2.2rem);
+    --view-header-size:2.2rem;
     --edge-btn-size:3.25rem;
 
-    --font-body-md:clamp(1.08rem, 3.8vw, 1.2rem);
-    --font-body-sm:clamp(1rem, 3.4vw, 1.1rem);
-    --font-body-xs:clamp(.92rem, 3vw, 1rem);
+    --font-body-md:1.2rem;
+    --font-body-sm:1.1rem;
+    --font-body-xs:1rem;
 
     --gallery-item-size:2.25rem;
     --gallery-meta-size:1rem;
