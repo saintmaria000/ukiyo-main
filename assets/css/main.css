@@ -51,7 +51,6 @@ a{
   min-height:100vh;
 }
 
-
 /* =========================================================
    02. Scrollbar
 ========================================================= */
@@ -81,7 +80,6 @@ a{
   background-clip:content-box;
 }
 
-
 /* =========================================================
    03. Root Variables
    役割:
@@ -97,47 +95,46 @@ a{
   --vvh:100vh;
   --vv-top:0px;
   --vv-left:0px;
-
   /* -----------------------------------------
-     03-02. Stage / 3面空間の基準サイズ
-     サイト全体の舞台サイズ
+     03-02. Stage / 画面の土台
+     サイト全体の舞台サイズと3面空間の基準
   ----------------------------------------- */
   --stage-w:2400px;
   --stage-h:1080px;
   --stage-scale:1;
-  --stage-pad-y:40px;
-  --stage-pad-x:90px;
-  --edge-offset:32px;
   --stage-perspective:1600px;
   --stage-header-top:20px;
-
   /* -----------------------------------------
-     03-03. Camera / 視点移動
-     左右移動時の基準視点量
+     03-03. Camera / 横移動の見え方
+     Gallery / Contact へ移動するときの視点補正
   ----------------------------------------- */
   --inner-shell-side-shift:1920px;
   --inner-shell-depth:-350px;
-
   /* -----------------------------------------
      03-04. Color
+     色だけをここに集約
   ----------------------------------------- */
+  /* 文字色 */
   --text-main:#fff;
   --text-soft:rgba(255,255,255,.85);
   --text-muted:rgba(255,255,255,.6);
 
+  /* 線 */
   --line-soft:rgba(255,255,255,.08);
   --line-mid:rgba(255,255,255,.22);
 
+  /* 背景オーバーレイ */
   --overlay-dark:rgba(0,0,0,.45);
   --overlay-modal:rgba(0,0,0,.65);
   --overlay-credit:rgba(0,0,0,.75);
 
+  /* 影 */
   --shadow-video:0 0 40px rgba(255,255,255,.3);
   --shadow-modal:0 0 40px rgba(0,0,0,.7);
 
   /* -----------------------------------------
      03-05. Z-index
-     navi は全端末で動画より上
+     前後関係だけをここに集約
   ----------------------------------------- */
   --z-stage:10020;
   --z-video-flash:9;
@@ -147,80 +144,114 @@ a{
   --z-modal:10000;
   --z-stage-component:10030;
   --z-pull-return:21000;
-
   /* -----------------------------------------
-     03-06. Typography
+     03-06. FONT
+     文字サイズだけをここに集約
   ----------------------------------------- */
+  /* 基本フォント */
   --font-display-xl:5.6rem;
   --font-display-lg:2.3rem;
-
   --font-title-lg:1.65rem;
   --font-title-md:1.36rem;
-
   --font-body-md:1.06rem;
   --font-body-sm:.98rem;
   --font-body-xs:.86rem;
-
   --font-ui-xs:.86rem;
   --font-ui-sm:1.5rem;
 
-  --ls-wide:.35em;
-  --ls-title:.28em;
-  --ls-ui:.25em;
-  --ls-body:.08em;
-  --ls-body-tight:.05em;
+  /* 画面ナビ / 戻る導線 */
+  --view-header-size:var(--font-ui-sm);
+  --edge-btn-size:1.5rem;
+  --pull-return-link-size:1.05rem;
+
+  /* Gallery リスト */
+  --gallery-item-size:.96rem;
+  --gallery-meta-size:.78rem;
+
+  /* Contact 本文 */
+  --contact-block-size:.86rem;
+  --contact-label-size:1.3rem;
+  --contact-value-size:1.14rem;
+
+  /* About ロゴ */
+  --about-logo-main-size:6.2rem;
+  --about-logo-sub-size:1.24rem;
+
+  /* About 紹介文 */
+  --about-lead-size:1rem;
+
+  /* About リスト本文 */
+  --about-heading-size:1.7rem;
+  --about-body-size:1.12rem;
+
+  /* About 会社情報リスト */
+  --about-col-title-size:1.42rem;
+  --about-col-item-size:1.08rem;
+
+  /* About クレジット */
+  --about-credit-title-size:1rem;
+  --about-credit-name-size:1.7rem;
+  --about-credit-link-size:1rem;
+
+  /* About 戻るリンク */
+  --about-back-size:.95rem;
+
+  /* Modal 閉じるボタン */
+  --modal-close-size:1.2rem;
+
+  /* Modal クレジット表示ボタン */
+  --modal-credit-toggle-size:.86rem;
+
+  /* Modal クレジット本文 */
+  --modal-credit-title-size:1.05rem;
+  --modal-credit-list-size:.86rem;
+
+  /* Modal クレジット閉じる */
+  --modal-credit-close-size:.78rem;
 
   /* -----------------------------------------
-     03-07. Fixed UI
+     03-07. SPACING
+     余白 / 幅 / 高さ / 最大幅をここに集約
   ----------------------------------------- */
+  /* 画面余白 / 端ボタン位置 */
+  --stage-pad-y:40px;
+  --stage-pad-x:90px;
+  --edge-offset:32px;
+
+  /* 音声ボタン */
   --global-mute-top:24px;
   --global-mute-right:32px;
   --global-mute-pad:8px;
   --global-mute-icon-size:22px;
   --global-mute-hover-scale:1.05;
 
+  /* 上部に戻る導線 */
   --pull-return-top:8px;
   --pull-return-offset-y:-14px;
-  --pull-return-link-size:1.05rem;
-  --pull-return-link-letter-spacing:.12em;
   --pull-return-link-pad-bottom:3px;
   --pull-return-link-opacity:.75;
 
-  /* -----------------------------------------
-     03-08. Stage common UI
-  ----------------------------------------- */
-  --view-header-size:var(--font-ui-sm);
-  --view-header-spacing:var(--ls-ui);
-
+  /* 中央動画 */
   --video-w:960px;
   --video-side-safe:48px;
 
-  --edge-btn-size:1.5rem;
-  --edge-btn-spacing:.25em;
+  /* 画面ナビボタン */
   --edge-btn-pad-y:4px;
   --edge-btn-pad-x:0;
   --edge-btn-min-w:auto;
   --edge-btn-min-h:auto;
 
-  /* -----------------------------------------
-     03-09. Mobile center video
-     構造は同じまま、JS側が stage scale を考慮して逆算
-     ここはスマホ補正用の初期値
-  ----------------------------------------- */
+  /* スマホ中央動画 */
   --video-mobile-portrait-visible-ratio:.84;
   --video-mobile-portrait-visible-max:500;
   --video-mobile-portrait-visible-offset-y:0;
-
   --video-mobile-landscape-visible-ratio:.52;
   --video-mobile-landscape-visible-max:640;
   --video-mobile-landscape-visible-offset-y:0;
-
   --video-mobile-stage-w:960px;
   --video-mobile-stage-offset-y:0px;
 
-  /* -----------------------------------------
-     03-10. Gallery
-  ----------------------------------------- */
+  /* Gallery エリア */
   --gallery-w:520px;
   --gallery-panel-gap-top:32px;
   --gallery-panel-max-h:760px;
@@ -229,133 +260,146 @@ a{
   --gallery-panel-fixed-h:auto;
   --gallery-scroll-pad-right:8px;
 
-  --gallery-item-size:.96rem;
-  --gallery-item-spacing:.08em;
+  /* Gallery リスト内 */
   --gallery-item-pad-y:10px;
   --gallery-item-pad-x:0;
-
-  --gallery-meta-size:.78rem;
-  --gallery-meta-spacing:.08em;
   --gallery-meta-gap-top:4px;
 
-  /* -----------------------------------------
-     03-11. Contact
-  ----------------------------------------- */
+  /* Contact エリア */
   --contact-w:750px;
-  --contact-block-size:.86rem;
-  --contact-block-spacing:.12em;
   --contact-block-margin-top:40px;
-  --contact-label-size:1.3rem;
-  --contact-label-spacing:.12em;
   --contact-label-margin-top:16px;
-  --contact-value-size:1.14rem;
 
-  /* -----------------------------------------
-     03-12. About
-  ----------------------------------------- */
+  /* About 全体 */
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
   --about-content-pad-x:6vw;
   --about-content-pad-bottom:180px;
 
+  /* About ロゴ */
   --about-hero-min-h:88svh;
   --about-hero-pad-top:45px;
   --about-hero-pad-bottom:0px;
   --about-hero-gap:25px;
   --about-hero-max-w:1280px;
 
-  --about-logo-main-size:6.2rem;
-  --about-logo-sub-size:1.24rem;
-  --about-logo-spacing:.28em;
-  --about-logo-sub-spacing:.18em;
-
+  /* About 紹介文 */
   --about-lead-max-w:1040px;
-  --about-lead-size:1rem;
   --about-lead-line:1.95;
-  --about-lead-spacing:.05em;
 
+  /* About リスト本文 */
   --about-stack-max-w:1320px;
   --about-stack-gap:220px;
   --about-stack-pad-top:90px;
   --about-stack-pad-x:54px;
   --about-stack-pad-bottom:240px;
-
-  --about-heading-size:1.7rem;
-  --about-heading-spacing:.20em;
   --about-item-heading-gap:18px;
-
-  --about-body-size:1.12rem;
   --about-body-line:1.95;
-  --about-body-spacing:.05em;
   --about-body-max-w:700px;
 
+  /* About 会社情報リスト */
   --about-split-gap:56px;
   --about-split-pad-top:56px;
   --about-split-pad-x:54px;
   --about-split-pad-bottom:100px;
   --about-split-margin-top:120px;
   --about-split-margin-bottom:96px;
-
-  --about-col-title-size:1.42rem;
-  --about-col-title-spacing:.16em;
   --about-col-heading-gap:18px;
-
-  --about-col-item-size:1.08rem;
   --about-col-item-line:2;
-  --about-col-item-spacing:.05em;
 
+  /* About クレジット */
   --about-credit-margin-top:0px;
-  --about-credit-title-size:1rem;
-  --about-credit-title-spacing:.18em;
   --about-credit-title-gap:12px;
-
-  --about-credit-name-size:1.7rem;
-  --about-credit-name-spacing:.12em;
   --about-credit-name-gap:24px;
   --about-credit-block-gap:72px;
-  --about-credit-link-size:1rem;
 
-  --about-back-size:.95rem;
-  --about-back-spacing:.16em;
+  /* About 戻るリンク */
   --about-back-margin-top:180px;
 
-  /* -----------------------------------------
-     03-13. Modal
-  ----------------------------------------- */
+  /* Modal 表示枠 */
   --modal-width:min(92vw, 1400px);
   --modal-max-w:1400px;
-  --modal-close-top:8px;
-  --modal-close-right:12px;
-  --modal-close-size:1.2rem;
   --modal-video-max-h:80vh;
 
+  /* Modal 閉じるボタン */
+  --modal-close-top:8px;
+  --modal-close-right:12px;
+
+  /* Modal 下部ボタン */
   --modal-footer-gap-top:10px;
   --modal-footer-pad-bottom:10px;
 
-  --modal-credit-toggle-size:.86rem;
-  --modal-credit-toggle-spacing:.18em;
-
+  /* Modal クレジット枠 */
   --modal-credit-inner-max-w:520px;
   --modal-credit-inner-width:auto;
   --modal-credit-inner-pad-top:24px;
   --modal-credit-inner-pad-x:32px;
   --modal-credit-inner-pad-bottom:20px;
 
-  --modal-credit-title-size:1.05rem;
-  --modal-credit-title-spacing:.16em;
+  /* Modal クレジット本文 */
   --modal-credit-title-gap:18px;
-
-  --modal-credit-list-size:.86rem;
   --modal-credit-list-line:1.8;
   --modal-credit-list-gap:18px;
-
   --modal-credit-row-gap:16px;
 
-  --modal-credit-close-size:.78rem;
+  /* -----------------------------------------
+     03-08. LETTER SPACING
+     字間だけをここに集約
+  ----------------------------------------- */
+  /* 基本字間 */
+  --ls-wide:.35em;
+  --ls-title:.28em;
+  --ls-ui:.25em;
+  --ls-body:.08em;
+  --ls-body-tight:.05em;
+
+  /* 画面ナビ / 戻る導線 */
+  --view-header-spacing:var(--ls-ui);
+  --edge-btn-spacing:.25em;
+  --pull-return-link-letter-spacing:.12em;
+
+  /* Gallery リスト */
+  --gallery-item-spacing:.08em;
+  --gallery-meta-spacing:.08em;
+
+  /* Contact 本文 */
+  --contact-block-spacing:.12em;
+  --contact-label-spacing:.12em;
+
+  /* About ロゴ */
+  --about-logo-spacing:.28em;
+  --about-logo-sub-spacing:.18em;
+
+  /* About 紹介文 */
+  --about-lead-spacing:.05em;
+
+  /* About リスト本文 */
+  --about-heading-spacing:.20em;
+  --about-body-spacing:.05em;
+
+  /* About 会社情報リスト */
+  --about-col-title-spacing:.16em;
+  --about-col-item-spacing:.05em;
+
+  /* About クレジット */
+  --about-credit-title-spacing:.18em;
+  --about-credit-name-spacing:.12em;
+
+  /* About 戻るリンク */
+  --about-back-spacing:.16em;
+
+  /* Modal クレジット表示ボタン */
+  --modal-credit-toggle-spacing:.18em;
+
+  /* Modal クレジット本文 */
+  --modal-credit-title-spacing:.16em;
+
+  /* Modal クレジット閉じる */
   --modal-credit-close-spacing:.18em;
 
   /* -----------------------------------------
-     03-14. Light effect
+     03-09. Effects
+     動画クリック時の光演出
   ----------------------------------------- */
   --video-unlock-flash-blur:14px;
   --video-unlock-flash-scale:.96;
@@ -377,7 +421,6 @@ a{
     --vvh:100dvh;
   }
 }
-
 
 /* =========================================================
    04. Fixed UI
@@ -460,7 +503,6 @@ body.is-pull-hint-visible .pull-return{
   transform:translateY(-1px);
 }
 
-
 /* =========================================================
    05. Stage / World
    役割:
@@ -536,7 +578,6 @@ body.is-pull-hint-visible .pull-return{
   text-align:right;
 }
 
-
 /* =========================================================
    06. Camera / Focus shift
    役割:
@@ -582,7 +623,6 @@ body.view-right .inner-shell{
     translateZ(var(--inner-shell-depth))
     translateX(calc(var(--inner-shell-side-shift) * -1));
 }
-
 
 /* =========================================================
    07. Shared Stage Parts
@@ -819,7 +859,6 @@ body.view-right .inner-shell{
   text-decoration:underline;
 }
 
-
 /* =========================================================
    10. About
 ========================================================= */
@@ -1014,7 +1053,6 @@ body.view-right .inner-shell{
 .about-actions a:hover{
   filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
-
 
 /* =========================================================
    11. Modal
@@ -1257,7 +1295,6 @@ body.view-right .inner-shell{
   }
 }
 
-
 /* =========================================================
    12. Effects
 ========================================================= */
@@ -1302,7 +1339,6 @@ body.view-right .inner-shell{
   }
 }
 
-
 /* =========================================================
    13. Responsive - 文字サイズ調整重視版
 ========================================================= */
@@ -1312,10 +1348,14 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 @media (max-width:900px){
   :root{
+    /* ===== SPACING ===== */
+    /* 中央動画 */
+    --video-side-safe:32px;
+
+    /* About 全体 */
     --about-content-pad-top:100px;
     --about-content-pad-x:7vw;
     --about-content-pad-bottom:120px;
-    --video-side-safe:32px;
   }
 
   .about-split{ grid-template-columns:1fr; }
@@ -1326,20 +1366,31 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 @media (pointer:coarse) and (min-width:768px) and (min-height:600px){
   :root{
+    /* ===== FONT ===== */
+    /* 基本フォント */
     --font-ui-sm:1.5rem;
+
+    /* 画面ナビ / 戻る導線 */
     --view-header-size:1.5rem;
     --edge-btn-size:1.8rem;
 
+    /* Gallery リスト */
     --gallery-item-size:1.2rem;
     --gallery-meta-size:.9rem;
 
+    /* Contact 本文 */
     --contact-block-size:1.05rem;
     --contact-label-size:1.35rem;
     --contact-value-size:1.45rem;
 
+    /* About 紹介文 */
     --about-lead-size:1rem;
+
+    /* About リスト本文 */
     --about-heading-size:1.45rem;
     --about-body-size:1rem;
+
+    /* About 会社情報リスト */
     --about-col-title-size:1.18rem;
     --about-col-item-size:1rem;
   }
@@ -1351,17 +1402,24 @@ body.view-right .inner-shell{
 @media (pointer:fine) and (max-width:1366px),
        (pointer:fine) and (max-height:820px){
   :root{
+    /* ===== FONT ===== */
+    /* 画面ナビ / 戻る導線 */
     --view-header-size:1.2rem;
     --edge-btn-size:1.35rem;
 
+    /* Gallery リスト */
     --gallery-item-size:.9rem;
     --gallery-meta-size:.72rem;
 
+    /* Contact 本文 */
     --contact-block-size:.82rem;
     --contact-label-size:1.16rem;
     --contact-value-size:1.04rem;
 
+    /* About 紹介文 */
     --about-lead-size:.95rem;
+
+    /* About リスト本文 */
     --about-heading-size:1.5rem;
     --about-body-size:1rem;
   }
@@ -1411,23 +1469,40 @@ body.view-right .inner-shell{
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
-    --edge-btn-size:1.4rem;
-    --video-side-safe:40px;
-    --inner-shell-side-shift:2050px;
-
-    /* 文字サイズ調整（横画面用） */
+    /* ===== FONT ===== */
+    /* 基本フォント */
     --font-ui-sm:1.6rem;
+
+    /* 画面ナビ / 戻る導線 */
     --view-header-size:1.6rem;
+    --edge-btn-size:1.4rem;
+
+    /* Gallery リスト */
     --gallery-item-size:1.5rem;
     --gallery-meta-size:1.08rem;
+
+    /* Contact 本文 */
     --contact-block-size:1.18rem;
     --contact-label-size:1.4rem;
     --contact-value-size:1.94rem;
+
+    /* About 紹介文 */
     --about-lead-size:.9rem;
+
+    /* About リスト本文 */
     --about-heading-size:1.2rem;
     --about-body-size:.95rem;
+
+    /* About 会社情報リスト */
     --about-col-title-size:1.05rem;
     --about-col-item-size:.95rem;
+
+    /* ===== SPACING ===== */
+    /* 中央動画 */
+    --video-side-safe:40px;
+
+    /* ===== OTHER ===== */
+    --inner-shell-side-shift:2050px;
   }
 
   .gallery-panel{
@@ -1444,31 +1519,46 @@ body.view-right .inner-shell{
 ========================================================= */
 @media (pointer:coarse) and (orientation:portrait){
   :root{
-    /* ここに文字サイズなどスマホ縦持ちで重要な調整を集中 */
-    --font-ui-sm:1.8rem;
-    --view-header-size:2.2rem;
-    --edge-btn-size:3.25rem;
-
+    /* ===== FONT ===== */
+    /* 基本フォント */
     --font-body-md:1.2rem;
     --font-body-sm:1.1rem;
     --font-body-xs:1rem;
+    --font-ui-sm:1.8rem;
 
+    /* 画面ナビ / 戻る導線 */
+    --view-header-size:2.2rem;
+    --edge-btn-size:3.25rem;
+
+    /* Gallery リスト */
     --gallery-item-size:2.25rem;
     --gallery-meta-size:1rem;
-    --gallery-panel-fixed-h:min(68svh, 760px);
 
+    /* Contact 本文 */
     --contact-block-size:2.1rem;
     --contact-label-size:2.35rem;
     --contact-value-size:2.2rem;
 
+    /* About 紹介文 */
     --about-lead-size:1.08rem;
-    --about-body-size:1.05rem;
+
+    /* About リスト本文 */
     --about-heading-size:1.4rem;
+    --about-body-size:1.05rem;
+
+    /* About 会社情報リスト */
     --about-col-title-size:1.2rem;
     --about-col-item-size:1.02rem;
 
-    --inner-shell-side-shift:2420px;
+    /* ===== SPACING ===== */
+    /* 中央動画 */
     --video-side-safe:24px;
+
+    /* Gallery エリア */
+    --gallery-panel-fixed-h:min(68svh, 760px);
+
+    /* ===== OTHER ===== */
+    --inner-shell-side-shift:2420px;
   }
 
   .inner-shell{
