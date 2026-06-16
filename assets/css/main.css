@@ -1503,17 +1503,17 @@ body.view-right .inner-shell{
 /* =========================================================
    13-05. タッチ縦向き
    役割:
-   - スマホ縦だけトップステージを1画面化
-   - 中央動画を背景化
-   - Gallery / Contact / About ナビを右上縦並び
-   - ミュートは最前面
-   - About以降のCSSは触らない
+   - スマホ縦でも Gallery | Video | Contact の横三面構造を保つ
+   - 中央動画は背景として表示
+   - Gallery / Contact はナビから横スライドで表示
+   - About は通常の下スクロールで表示
+   - About背景動画は既存のまま残す
 ========================================================= */
 @media (pointer:coarse) and (orientation:portrait){
 
   :root{
     --view-header-size:1rem;
-    --edge-btn-size:.95rem;
+    --edge-btn-size:.92rem;
 
     --gallery-item-size:1rem;
     --gallery-meta-size:.78rem;
@@ -1547,7 +1547,7 @@ body.view-right .inner-shell{
     display:flex;
     width:300vw;
     height:100svh;
-    z-index:10;
+    z-index:20;
     pointer-events:auto;
     transition:transform .8s ease;
   }
@@ -1581,7 +1581,7 @@ body.view-right .inner-shell{
     transform:translateX(-200vw) !important;
   }
 
-  /* 背景動画 */
+  /* 中央動画：背景扱い */
   .inner-shell{
     position:fixed;
     inset:0;
@@ -1593,12 +1593,16 @@ body.view-right .inner-shell{
     opacity:1;
   }
 
-  body.view-left .inner-shell,
-  body.view-center .inner-shell,
+  body.view-left .inner-shell{
+    transform:translateX(100vw) !important;
+  }
+
+  body.view-center .inner-shell{
+    transform:translateX(0) !important;
+  }
+
   body.view-right .inner-shell{
-    transform:none !important;
-    opacity:1;
-    pointer-events:none;
+    transform:translateX(-100vw) !important;
   }
 
   .video-frame{
@@ -1609,13 +1613,16 @@ body.view-right .inner-shell{
     pointer-events:none;
   }
 
-  .video-frame iframe{
+  .video-frame iframe,
+  .video-frame video,
+  .video-frame .main-video{
     position:absolute;
     top:50%;
     left:50%;
     width:177.78svh;
     height:100svh;
     transform:translate(-50%, -50%);
+    object-fit:cover;
     pointer-events:none;
   }
 
@@ -1623,21 +1630,21 @@ body.view-right .inner-shell{
     display:none;
   }
 
-  /* ナビゲーション：右上・縦並び・背景透明 */
+  /* 中央ナビ：左上・縦並び・透明 */
   .view-center .edge-btn{
     position:fixed !important;
-    left:auto !important;
-    right:22px !important;
+    left:22px !important;
+    right:auto !important;
     bottom:auto !important;
     transform:none !important;
 
-    z-index:30000 !important;
+    z-index:40000 !important;
     display:flex !important;
     visibility:visible !important;
     opacity:1 !important;
     pointer-events:auto !important;
 
-    justify-content:flex-end;
+    justify-content:flex-start;
     width:auto;
     padding:0;
     background:transparent !important;
@@ -1661,7 +1668,7 @@ body.view-right .inner-shell{
   }
 
   .global-mute{
-    z-index:40000 !important;
+    z-index:50000 !important;
     pointer-events:auto !important;
   }
 
