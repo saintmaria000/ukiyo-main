@@ -1502,140 +1502,273 @@ body.view-right .inner-shell{
 
 /* =========================================================
    13-05. タッチ縦向き
+   役割:
+   - スマホ縦だけ、PC用2400pxステージをやめる
+   - 1画面 = 100vw / 100svh にする
+   - About以降のCSSは触らない
 ========================================================= */
 @media (pointer:coarse) and (orientation:portrait){
+
   :root{
-    /* ===== FONT ===== */
-    /* 基本フォント */
-    --font-body-md:1.2rem;
-    --font-body-sm:1.1rem;
-    --font-body-xs:1rem;
-    --font-ui-sm:1.8rem;
+    /* 画面ナビ */
+    --view-header-size:1rem;
+    --edge-btn-size:.95rem;
 
-    /* 画面ナビ / 戻る導線 */
-    --view-header-size:2.2rem;
-    --edge-btn-size:3.25rem;
+    /* Gallery */
+    --gallery-item-size:1rem;
+    --gallery-meta-size:.78rem;
 
-    /* Gallery リスト */
-    --gallery-item-size:2.25rem;
-    --gallery-meta-size:1rem;
+    /* Contact */
+    --contact-block-size:1rem;
+    --contact-label-size:.78rem;
+    --contact-value-size:1rem;
 
-    /* Contact 本文 */
-    --contact-block-size:2.1rem;
-    --contact-label-size:2.35rem;
-    --contact-value-size:2.2rem;
-
-    /* About 紹介文 */
-    --about-lead-size:1.08rem;
-
-    /* About リスト本文 */
-    --about-heading-size:1.4rem;
-    --about-body-size:1.05rem;
-
-    /* About 会社情報リスト */
-    --about-col-title-size:1.2rem;
-    --about-col-item-size:1.02rem;
-
-    /* ===== SPACING ===== */
-    /* 中央動画 */
+    /* Aboutは既存の狭幅設定を優先したいので、ここでは上書きしない */
     --video-side-safe:24px;
-
-    /* Gallery エリア */
-    --gallery-panel-fixed-h:min(68svh, 760px);
-
-    /* ===== OTHER ===== */
-    --inner-shell-side-shift:2420px;
   }
+
+  /* -----------------------------------------
+     画面全体
+     どこで: スマホ縦のトップステージ
+     何を: PC用の巨大な2400px舞台
+     どのように: 100vw / 100svh の1画面サイズに変換
+  ----------------------------------------- */
   .space-wrapper{
-  height:100svh;
-  overflow:hidden;
-}
+    height:100svh;
+    overflow:hidden;
+  }
 
   .stage{
     position:relative;
     width:100vw;
     height:100svh;
-    left:0;
-    top:0;
+    left:auto;
+    top:auto;
     transform:none !important;
+    transform-origin:center;
     perspective:none;
+    overflow:hidden;
   }
 
   .outer-space{
+    position:absolute;
+    inset:0;
+    display:flex;
     width:300vw;
     height:100svh;
+    z-index:var(--z-stage);
+    pointer-events:auto;
+    transition:transform .8s ease;
   }
 
   .view{
+    position:relative;
     width:100vw;
     height:100svh;
+    flex:0 0 100vw;
+    padding:24px 20px;
+    pointer-events:auto;
+    overflow:hidden;
   }
 
-  .edge-btn{
-    display:block !important;
-    visibility:visible !important;
-    opacity:1 !important;
-
-    position:fixed !important;
-    z-index:999999 !important;
-
-    top:100px !important;
-    left:20px !important;
-
-    transform:none !important;
-
-    background:red !important;
-    color:white !important;
+  .view-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    pointer-events:auto;
   }
 
-  .edge-btn--left{
-    top:50%;
-    left:14px;
-    transform:translateY(-50%);
+  body.view-left .outer-space{
+    transform:translateX(0) !important;
   }
 
-  .edge-btn--right{
-    top:50%;
-    right:14px;
-    transform:translateY(-50%);
+  body.view-center .outer-space{
+    transform:translateX(-100vw) !important;
   }
 
-  .edge-btn--bottom{
-    left:50%;
-    bottom:28px;
-    transform:translateX(-50%);
+  body.view-right .outer-space{
+    transform:translateX(-200vw) !important;
   }
 
+  /* -----------------------------------------
+     中央動画
+     どこで: スマホ縦のHome画面
+     何を: 中央動画
+     どのように: 画面幅に収まる16:9で中央配置
+  ----------------------------------------- */
   .inner-shell{
+    position:absolute;
     top:50%;
     left:50%;
+    width:calc(100vw - 40px);
+    max-width:none;
+    z-index:var(--z-video);
+    pointer-events:auto;
     transform:translate(-50%, -50%) !important;
+    transition:transform .8s ease;
+  }
+
+  body.view-left .inner-shell,
+  body.view-right .inner-shell{
+    transform:translate(-50%, -50%) !important;
+    opacity:.18;
+    pointer-events:none;
+  }
+
+  body.view-center .inner-shell{
+    transform:translate(-50%, -50%) !important;
+    opacity:1;
+    pointer-events:auto;
   }
 
   .video-frame{
-    width:min(var(--video-w), calc(100vw - 24px));
-    aspect-ratio:16 / 9;
+    width:100%;
     height:auto;
+    aspect-ratio:16 / 9;
+    max-width:none;
     overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:auto;
   }
 
   .video-frame iframe{
     width:100%;
     height:100%;
+    max-width:none;
+    max-height:none;
+    pointer-events:auto;
+  }
+
+  /* -----------------------------------------
+     ナビゲーション
+     どこで: スマホ縦のHome画面
+     何を: Gallery / Contact / About ボタン
+     どのように: 画面固定で必ず見える位置へ配置
+  ----------------------------------------- */
+  .edge-btn{
+    position:fixed !important;
+    z-index:30000 !important;
+    display:inline-flex !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
+    font-size:var(--edge-btn-size);
+    line-height:1;
+    letter-spacing:.18em;
+    padding:10px 10px;
+    background:rgba(0,0,0,.28);
+    color:#fff;
+  }
+
+  .edge-btn--left{
+    top:50%;
+    left:14px;
+    right:auto;
+    bottom:auto;
+    transform:translateY(-50%) !important;
+  }
+
+  .edge-btn--right{
+    top:50%;
+    right:14px;
+    left:auto;
+    bottom:auto;
+    transform:translateY(-50%) !important;
+  }
+
+  .edge-btn--bottom{
+    left:50%;
+    bottom:28px;
+    top:auto;
+    right:auto;
+    transform:translateX(-50%) !important;
+  }
+
+  /* -----------------------------------------
+     Gallery
+     どこで: スマホ縦のGallery画面
+     何を: 作品一覧
+     どのように: 画面内で縦スクロール可能にする
+  ----------------------------------------- */
+  .view-left .view-inner{
+    justify-content:flex-start;
+    align-items:stretch;
+  }
+
+  .view-left .view-header{
+    position:relative;
+    top:auto;
+    left:auto;
+    margin:0 0 18px;
+    font-size:var(--view-header-size);
   }
 
   .gallery-panel{
-    height: var(--gallery-panel-fixed-h);
-    min-height: var(--gallery-panel-fixed-h);
-    max-height: var(--gallery-panel-fixed-h);
-    overflow: hidden;
+    width:100%;
+    max-width:none;
+    height:calc(100svh - 92px);
+    min-height:0;
+    max-height:none;
+    margin-top:0;
+    overflow:hidden;
+    align-self:stretch;
   }
 
   .gallery-scroll{
-    height: 100%;
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch !important;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
+    width:100%;
+    height:100%;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    touch-action:pan-y;
+  }
+
+  .gallery-item{
+    width:100%;
+    padding:14px 0;
+    font-size:var(--gallery-item-size);
+  }
+
+  .gallery-meta{
+    font-size:var(--gallery-meta-size);
+  }
+
+  /* -----------------------------------------
+     Contact
+     どこで: スマホ縦のContact画面
+     何を: 連絡先情報
+     どのように: 画面内に収めて右寄せ表示
+  ----------------------------------------- */
+  .view-right .view-inner{
+    justify-content:center;
+    align-items:flex-end;
+  }
+
+  .view-right .view-header{
+    position:absolute;
+    top:24px;
+    right:20px;
+    font-size:var(--view-header-size);
+  }
+
+  .contact-block{
+    max-width:calc(100vw - 48px);
+    margin-top:0;
+    font-size:var(--contact-block-size);
+    line-height:1.7;
+    text-align:right;
+  }
+
+  .contact-label{
+    font-size:var(--contact-label-size);
+    margin-top:14px;
+  }
+
+  .contact-value p,
+  .contact-value a{
+    font-size:var(--contact-value-size);
   }
 }
+
