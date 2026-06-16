@@ -255,6 +255,8 @@
           <div class="video-frame">
             <!-- <button class="video-shield" type="button" aria-label="Enable video controls"></button> -->
             <div class="video-unlock-flash" aria-hidden="true"></div>
+
+            <!--
             <iframe
               id="mainVideo"
               src="https://www.youtube.com/embed/iLoUU-hTWNg?autoplay=1&rel=0&enablejsapi=1"
@@ -262,6 +264,19 @@
               allow="autoplay; encrypted-media"
               allowfullscreen>
             </iframe>
+            -->
+
+            <video
+              id="mainVideo"
+              class="main-video"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="auto"
+            >
+              <source src="../images/NIKE lunar Roam presented by GR8.mp4" type="video/mp4">
+            </video>
           </div>
         </div>
 
