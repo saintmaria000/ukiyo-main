@@ -1675,28 +1675,28 @@ d faefbheavbhjaefjvbasfjlv
     pointer-events:none;
   }
 
-  .edge-btn{
-    position:fixed !important;
-    left:auto !important;
-    right:var(--mobile-nav-right) !important;
-    bottom:auto !important;
-    transform:none !important;
-    z-index:100 !important;
-    display:flex !important;
-    visibility:visible !important;
-    opacity:1 !important;
-    width:auto;
-    padding:0 0 4px 0;
-    background:transparent !important;
-    color:#fff;
-    font-size:var(--edge-btn-size);
-    line-height:1;
-    letter-spacing:.18em;
-    text-align:right;
-    justify-content:flex-end;
-    border-bottom:1px solid transparent;
-    pointer-events:auto !important;
-  }
+ .edge-btn{
+  position:fixed !important;
+  left:auto !important;
+  right:var(--mobile-nav-right) !important;
+  bottom:auto !important;
+  transform:none !important;
+  z-index:100 !important;
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  width:auto;
+  padding:0 0 4px 0;
+  background:transparent !important;
+  color:#fff;
+  font-size:var(--edge-btn-size);
+  line-height:1;
+  letter-spacing:.18em;
+  text-align:right;
+  justify-content:flex-end;
+  border-bottom:1px solid transparent;
+  pointer-events:auto !important;
+}
 
   .view-center .edge-btn[data-stage-view="left"]{
     top:var(--mobile-nav-top) !important;
