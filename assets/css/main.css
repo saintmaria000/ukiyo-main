@@ -1807,22 +1807,22 @@ d faefbheavbhjaefjvbasfjlv
   }
 
   .view.view-center > .view-inner > .edge-btn{
-    position:fixed !important;
-    right:var(--mobile-ui-inset-x) !important;
+    position:absolute !important;
+    right:0 !important;
     transform:none !important;
     z-index:140 !important;
   }
 
   .view.view-center > .view-inner > .edge-btn[data-stage-view="left"]{
-    top:var(--mobile-nav-top) !important;
+    top:calc(var(--mobile-nav-top) - var(--mobile-ui-inset-y)) !important;
   }
 
   .view.view-center > .view-inner > .edge-btn[data-stage-view="right"]{
-    top:calc(var(--mobile-nav-top) + var(--mobile-nav-step)) !important;
+    top:calc(var(--mobile-nav-top) - var(--mobile-ui-inset-y) + var(--mobile-nav-step)) !important;
   }
 
   .view.view-center > .view-inner > .edge-btn[data-scroll-to="#about"]{
-    top:calc(var(--mobile-nav-top) + var(--mobile-nav-step) * 2) !important;
+    top:calc(var(--mobile-nav-top) - var(--mobile-ui-inset-y) + var(--mobile-nav-step) * 2) !important;
   }
 
   .view.view-left .edge-btn[data-stage-view="center"],
