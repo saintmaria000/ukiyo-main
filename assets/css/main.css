@@ -1491,40 +1491,48 @@ body.view-right .inner-shell{
     --inner-shell-side-shift:2050px;
   }
 
-  .gallery-panel{
-    width: clamp(560px, 68vw, 860px);
-    height: 470px;
-    min-height: 470px;
+  .view.view-left,
+  .view-left .view-inner,
+  .view-left .gallery-panel,
+  .view-left .gallery-scroll{
+    pointer-events:auto;
   }
 
-  .gallery-scroll{ height: 100%; }
+  .gallery-panel{
+    display:flex;
+    flex-direction:column;
+    height:min(470px, calc(100svh - 72px));
+    min-height:0;
+    overflow:hidden;
+  }
+
+  .gallery-scroll{
+    flex:1 1 auto;
+    min-height:0;
+    height:100%;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y !important;
+  }
 }
 
-/* =========================================================
-   13-05. タッチ縦向き
-   役割:
-   - Gallery | Video | Contact の三面構造を維持
-   - 中央動画は黒背景の中央配置
-   - 上下の黒余白を残す
-   - NAVは各view内でabsolute配置
-   - HomeはGallery / Contact時だけ右下
-   - Galleryは左寄せ / Contactは右寄せ
-   - Gallery / Contactに薄い黒背景を入れて文字を読みやすくする
-   - Headerは表示
-   - Aboutは既存のまま
-========================================================= */
 @media (pointer:coarse) and (orientation:portrait){
-
   :root{
     --view-header-size:1rem;
     --edge-btn-size:.92rem;
-
-    --gallery-item-size:1rem;
-    --gallery-meta-size:.78rem;
-
+    --gallery-item-size:.92rem;
+    --gallery-meta-size:.68rem;
     --contact-block-size:1rem;
     --contact-label-size:.78rem;
     --contact-value-size:1rem;
+
+    --mobile-video-frame-w:100vw;
+    --mobile-video-frame-h:56.25vw;
+    --mobile-nav-right:24px;
+    --mobile-nav-top:72px;
+    --mobile-nav-gap:32px;
   }
 
   .space-wrapper{
@@ -1543,44 +1551,56 @@ body.view-right .inner-shell{
     overflow:hidden;
   }
 
-  .outer-space{
+  .outer-space,
+  body.view-left .outer-space,
+  body.view-center .outer-space,
+  body.view-right .outer-space{
     position:absolute;
     inset:0;
-    display:flex;
-    width:300vw;
+    display:block;
+    width:100vw;
     height:100svh;
+    transform:none !important;
+    transition:none;
     z-index:20;
-    pointer-events:auto;
-    transition:transform .8s ease;
+    pointer-events:none;
   }
 
   .view{
-    position:relative;
+    position:absolute;
+    inset:0;
     width:100vw;
     height:100svh;
-    flex:0 0 100vw;
     padding:24px 20px;
-    pointer-events:auto;
     overflow:hidden;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .28s ease, visibility .28s ease;
   }
 
   .view-inner{
     position:relative;
     width:100%;
     height:100%;
+    display:flex;
+    flex-direction:column;
+    pointer-events:none;
+  }
+
+  .view-center{
+    opacity:1;
+    visibility:visible;
+    z-index:80;
+    pointer-events:none;
+  }
+
+  body.view-left .view-left,
+  body.view-right .view-right{
+    opacity:1;
+    visibility:visible;
+    z-index:50;
     pointer-events:auto;
-  }
-
-  body.view-left .outer-space{
-    transform:translateX(0) !important;
-  }
-
-  body.view-center .outer-space{
-    transform:translateX(-100vw) !important;
-  }
-
-  body.view-right .outer-space{
-    transform:translateX(-200vw) !important;
   }
 
   .inner-shell{
@@ -1588,70 +1608,73 @@ body.view-right .inner-shell{
     inset:0;
     width:100vw;
     height:100svh;
-    z-index:1;
-    pointer-events:none;
+    z-index:10;
     display:flex;
     align-items:center;
     justify-content:center;
     background:#000;
     transform:none !important;
+    pointer-events:none;
+    transition:opacity .28s ease;
+  }
+
+  body.view-center .inner-shell{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  body.view-left .inner-shell,
+  body.view-right .inner-shell{
+    opacity:0;
+    pointer-events:none;
   }
 
   .video-frame{
-    position:relative;
-    width:100vw;
-    height:auto;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#000;
+    width:var(--mobile-video-frame-w);
+    height:var(--mobile-video-frame-h);
+    aspect-ratio:16 / 9;
+    max-width:none;
     box-shadow:none;
-    pointer-events:none;
+    pointer-events:auto;
   }
 
   .video-frame iframe,
   .video-frame video,
   .video-frame .main-video{
-    position:relative;
-    width:100vw;
-    height:auto;
-    max-width:100vw;
+    width:100%;
+    height:100%;
+    max-width:none;
     object-fit:contain;
-    pointer-events:none;
-    transform:none;
-    top:auto;
-    left:auto;
+    pointer-events:auto;
   }
 
   .video-unlock-flash{
     display:none;
   }
 
-  /* Headerは表示。各画面の左上に置く */
   .view-header{
     display:block !important;
-    position:absolute !important;
+    position:fixed !important;
     top:24px !important;
     left:20px !important;
     right:auto !important;
     margin:0 !important;
     font-size:var(--view-header-size);
     text-align:left !important;
-    z-index:2;
+    z-index:70;
+    pointer-events:none;
   }
 
-  /* NAVはfixed禁止。各view内のabsolute配置 */
   .edge-btn{
-    position:absolute !important;
-    z-index:40000 !important;
+    position:fixed !important;
+    left:auto !important;
+    right:var(--mobile-nav-right) !important;
+    bottom:auto !important;
+    transform:none !important;
+    z-index:100 !important;
     display:flex !important;
     visibility:visible !important;
     opacity:1 !important;
-    pointer-events:auto !important;
-    left:auto !important;
-    right:24px !important;
-    bottom:auto !important;
-    transform:none !important;
     width:auto;
     padding:0 0 4px 0;
     background:transparent !important;
@@ -1662,29 +1685,35 @@ body.view-right .inner-shell{
     text-align:right;
     justify-content:flex-end;
     border-bottom:1px solid transparent;
+    pointer-events:auto !important;
   }
 
-  .view-center .edge-btn[data-stage-view="left"]{
-    top:72px !important;
-  }
-
-  .view-center .edge-btn[data-stage-view="right"]{
-    top:104px !important;
-  }
-
-  .view-center .edge-btn[data-scroll-to="#about"]{
-    top:136px !important;
-  }
+  .view-center .edge-btn[data-stage-view="left"]{ top:var(--mobile-nav-top) !important; }
+  .view-center .edge-btn[data-stage-view="right"]{ top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap)) !important; }
+  .view-center .edge-btn[data-scroll-to="#about"]{ top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap) * 2) !important; }
 
   .view-left .edge-btn[data-stage-view="center"],
   .view-right .edge-btn[data-stage-view="center"]{
-    top:auto !important;
-    bottom:28px !important;
-    right:24px !important;
+    top:var(--mobile-nav-top) !important;
+  }
+
+  body.view-left .view-center .edge-btn[data-stage-view="left"],
+  body.view-right .view-center .edge-btn[data-stage-view="left"]{
+    top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap)) !important;
+  }
+
+  body.view-left .view-center .edge-btn[data-stage-view="right"],
+  body.view-right .view-center .edge-btn[data-stage-view="right"]{
+    top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap) * 2) !important;
+  }
+
+  body.view-left .view-center .edge-btn[data-scroll-to="#about"],
+  body.view-right .view-center .edge-btn[data-scroll-to="#about"]{
+    top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap) * 3) !important;
   }
 
   .global-mute{
-    z-index:50000 !important;
+    z-index:120 !important;
     pointer-events:auto !important;
     top:24px;
     right:24px;
@@ -1696,47 +1725,55 @@ body.view-right .inner-shell{
     position:absolute;
     inset:0;
     z-index:0;
+    background:rgba(0,0,0,.18);
     pointer-events:none;
-  }
-
-  .view-left::before{
-    background:
-      linear-gradient(
-        to right,
-        rgba(0,0,0,.55),
-        rgba(0,0,0,.15)
-      );
-  }
-
-  .view-right::before{
-    background:
-      linear-gradient(
-        to left,
-        rgba(0,0,0,.55),
-        rgba(0,0,0,.15)
-      );
   }
 
   .view-left .view-inner,
   .view-right .view-inner{
-    position:relative;
-    z-index:1;
+    justify-content:center;
+    align-items:center;
+    z-index:2;
   }
 
-  .view-left .view-inner{
-    justify-content:flex-start;
-    align-items:flex-start;
+  .view-left .gallery-preview{
+    position:absolute;
+    inset:auto;
+    left:50%;
+    top:50%;
+    width:100vw;
+    height:var(--mobile-video-frame-h);
+    aspect-ratio:16 / 9;
+    transform:translate(-50%, -50%);
+    z-index:1;
+    background:#000;
+    pointer-events:none;
+  }
+
+  .view-left .gallery-preview-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+
+  .view-left .gallery-preview.is-visible .gallery-preview-img{
+    opacity:.46;
   }
 
   .gallery-panel{
-    width:100%;
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:100vw;
+    height:var(--mobile-video-frame-h);
     max-width:none;
-    height:calc(100svh - 92px);
     min-height:0;
     max-height:none;
-    margin-top:72px;
+    margin:0;
+    transform:translate(-50%, -50%);
     overflow:hidden;
-    align-self:flex-start;
+    z-index:3;
+    pointer-events:auto;
     text-align:left;
   }
 
@@ -1746,53 +1783,78 @@ body.view-right .inner-shell{
     overflow-y:auto !important;
     overflow-x:hidden !important;
     -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior-y:contain;
     touch-action:pan-y;
-    text-align:left;
-  }
-  .view-left .gallery-preview{
-    inset:auto;
-    left:50%;
-    top:50%;
-    width:100vw;
-    height:auto;
-    aspect-ratio:16 / 9;
-    transform:translate(-50%, -50%);
-    max-width:none;
+    scrollbar-width:none;
   }
 
-  .view-left .gallery-preview-img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
+  .gallery-scroll::-webkit-scrollbar{
+    display:none;
   }
+
   .gallery-item{
     width:100%;
-    padding:14px 0;
+    height:20%;
+    min-height:20%;
+    max-height:20%;
+    padding:4px 20px;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
     font-size:var(--gallery-item-size);
     text-align:left;
+    overflow:hidden;
+  }
+
+  .gallery-item-title,
+  .gallery-item-meta{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .gallery-item-title{
+    line-height:1.18;
   }
 
   .gallery-item-meta{
     font-size:var(--gallery-meta-size);
-  }
-
-  .view-right .view-inner{
-    justify-content:center;
-    align-items:flex-end;
+    line-height:1.15;
+    margin-top:2px;
   }
 
   .contact-block{
-    max-width:calc(100vw - 48px);
-    margin-top:0;
+    position:absolute;
+    right:50%;
+    top:50%;
+    width:100vw;
+    height:var(--mobile-video-frame-h);
+    max-width:none;
+    margin:0;
+    padding:0 20px;
+    box-sizing:border-box;
+    transform:translate(50%, -50%);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:flex-end;
+    z-index:3;
+    background:#000;
     font-size:var(--contact-block-size);
     line-height:1.7;
     text-align:right;
+    pointer-events:auto;
   }
 
   .contact-label{
     font-size:var(--contact-label-size);
-    margin-top:14px;
+    margin-top:12px;
     text-align:right;
+  }
+
+  .contact-label:first-child{
+    margin-top:0;
   }
 
   .contact-value,
