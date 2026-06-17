@@ -502,10 +502,6 @@ body.is-pull-hint-visible .pull-return{
   transform:translateY(-1px);
 }
 
-.mobile-stage-nav{
-  display:none;
-}
-
 /* =========================================================
    05. Stage / World
    役割:
@@ -1605,6 +1601,27 @@ d faefbheavbhjaefjvbasfjlv
     pointer-events:none;
   }
 
+  .view.view-center{
+    z-index:60;
+  }
+
+  body.view-center .view.view-center{
+    transform:none;
+  }
+
+  body.view-left .view.view-center{
+    transform:translateX(-100vw);
+  }
+
+  body.view-right .view.view-center{
+    transform:translateX(100vw);
+  }
+
+  .view.view-left,
+  .view.view-right{
+    z-index:30;
+  }
+
   body.view-left .view-left,
   body.view-right .view-right{
     pointer-events:auto;
@@ -1765,9 +1782,20 @@ d faefbheavbhjaefjvbasfjlv
     pointer-events:auto !important;
   }
 
-  .view-center .edge-btn[data-stage-view],
-  .view-center .edge-btn[data-scroll-to]{
-    display:none !important;
+  .view-center .edge-btn[data-stage-view="left"]{
+    top:var(--mobile-nav-top) !important;
+  }
+
+  .view-center .edge-btn[data-stage-view="right"]{
+    top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap)) !important;
+  }
+
+  .view-center .edge-btn[data-scroll-to="#about"]{
+    top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap) * 2) !important;
+  }
+
+  .view-center .edge-btn{
+    transform:none !important;
   }
 
   .view.view-left .edge-btn[data-stage-view="center"],
@@ -1778,37 +1806,9 @@ d faefbheavbhjaefjvbasfjlv
     border-bottom-color:transparent !important;
   }
 
-  .mobile-stage-nav{
-    position:fixed;
-    top:var(--mobile-nav-top);
-    right:var(--mobile-nav-right);
-    z-index:130;
-    display:grid;
-    gap:var(--mobile-nav-gap);
-    justify-items:end;
-    pointer-events:auto;
-  }
-
-  .mobile-stage-nav__link{
-    position:relative;
-    display:inline-flex;
-    align-items:center;
-    justify-content:flex-end;
-    width:auto;
-    padding:0 0 4px;
-    color:#fff;
-    font-size:var(--edge-btn-size);
-    line-height:1;
-    letter-spacing:0;
-    text-transform:uppercase;
-    opacity:1;
-    cursor:pointer;
-    border-bottom:1px solid transparent;
-  }
-
-  body.view-left:not(.is-about-active) .mobile-stage-nav__link[data-stage-view="left"],
-  body.view-right:not(.is-about-active) .mobile-stage-nav__link[data-stage-view="right"],
-  body.is-about-active .mobile-stage-nav__link[data-scroll-to="#about"]{
+  body.view-left:not(.is-about-active) .view-center .edge-btn[data-stage-view="left"],
+  body.view-right:not(.is-about-active) .view-center .edge-btn[data-stage-view="right"],
+  body.is-about-active .view-center .edge-btn[data-scroll-to="#about"]{
     border-bottom-color:rgba(255,255,255,.9);
   }
 
@@ -1866,9 +1866,9 @@ d faefbheavbhjaefjvbasfjlv
     position:absolute;
     left:0;
     top:50%;
-    width:min(50vw, 220px);
+    width:min(58vw, 250px);
     max-width:none;
-    height:calc(var(--mobile-video-frame-h) - 64px);
+    height:min(64svh, calc(var(--mobile-video-frame-h) + 170px));
     min-height:0;
     max-height:none;
     margin-top:0;
@@ -1897,9 +1897,9 @@ d faefbheavbhjaefjvbasfjlv
 
   .gallery-item{
     width:100%;
-    height:20%;
-    min-height:20%;
-    max-height:20%;
+    height:16.666%;
+    min-height:16.666%;
+    max-height:16.666%;
     padding:1px 0;
     box-sizing:border-box;
     display:flex;
