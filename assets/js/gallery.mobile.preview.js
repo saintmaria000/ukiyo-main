@@ -1,13 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const preview = document.querySelector(".view.view-left .gallery-preview");
-  const previewImg = document.querySelector(".view.view-left .gallery-preview-img");
+  const previewTargets = Array.from(
+    document.querySelectorAll(".view.view-left .gallery-preview, .center-gallery-preview")
+  );
+  const previewImgs = previewTargets
+    .map((target) => target.querySelector("img"))
+    .filter(Boolean);
+  const previewImg = previewImgs[0];
   const panel = document.querySelector(".view.view-left .gallery-panel");
   const content = document.querySelector(".view.view-left .gallery-scroll");
 
   const WORKS = window.WORKS || {};
   const mq = window.matchMedia("(pointer: coarse)");
 
-  if (!preview || !previewImg || !panel || !content) return;
+  if (!previewTargets.length || !previewImg || !panel || !content) return;
 
   const scroller = content;
 
@@ -47,7 +52,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showPreview() {
-    preview.classList.add("is-visible");
+    previewTargets.forEach((target) => {
+      target.classList.add("is-visible");
+    });
+  }
+
+  function setPreviewSrc(src) {
+    previewImgs.forEach((img) => {
+      img.src = src;
+    });
+  }
+
+  function hasPreviewSrc() {
+    return previewImgs.some((img) => img.getAttribute("src"));
   }
 
   function getYoutubeId(url) {
@@ -129,13 +146,13 @@ document.addEventListener("DOMContentLoaded", () => {
   async function updatePreview(workId) {
     if (!workId) return;
 
-    if (workId === currentWorkId && previewImg.getAttribute("src")) {
+    if (workId === currentWorkId && hasPreviewSrc()) {
       showPreview();
       return;
     }
 
     if (cache.has(workId)) {
-      previewImg.src = cache.get(workId);
+      setPreviewSrc(cache.get(workId));
       currentWorkId = workId;
       showPreview();
       return;
@@ -150,11 +167,11 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const src = await loadImageSequential(getThumbnailUrls(youtubeId));
       cache.set(workId, src);
-      previewImg.src = src;
+      setPreviewSrc(src);
       currentWorkId = workId;
       showPreview();
     } catch {
-      if (previewImg.getAttribute("src")) {
+      if (hasPreviewSrc()) {
         showPreview();
       }
     }
