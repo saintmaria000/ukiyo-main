@@ -1517,19 +1517,25 @@ body.view-right .inner-shell{
     touch-action:pan-y !important;
   }
 }
-
+/* 13-5 sndafilwdbsvak
+d faefbheavbhjaefjvbasfjlv
+ｓんｈｆｂjdwkbvjk*/
 @media (pointer:coarse) and (orientation:portrait){
+
   :root{
     --view-header-size:1rem;
     --edge-btn-size:.92rem;
+
     --gallery-item-size:.92rem;
     --gallery-meta-size:.68rem;
+
     --contact-block-size:1rem;
     --contact-label-size:.78rem;
     --contact-value-size:1rem;
 
     --mobile-video-frame-w:100vw;
     --mobile-video-frame-h:56.25vw;
+
     --mobile-nav-right:24px;
     --mobile-nav-top:72px;
     --mobile-nav-gap:32px;
@@ -1576,7 +1582,7 @@ body.view-right .inner-shell{
     opacity:0;
     visibility:hidden;
     pointer-events:none;
-    transition:opacity .28s ease, visibility .28s ease;
+    transition:opacity .32s ease, visibility .32s ease;
   }
 
   .view-inner{
@@ -1599,12 +1605,12 @@ body.view-right .inner-shell{
   body.view-right .view-right{
     opacity:1;
     visibility:visible;
-    z-index:50;
+    z-index:60;
     pointer-events:auto;
   }
 
   .inner-shell{
-    position:fixed;
+    position:absolute;
     inset:0;
     width:100vw;
     height:100svh;
@@ -1615,7 +1621,7 @@ body.view-right .inner-shell{
     background:#000;
     transform:none !important;
     pointer-events:none;
-    transition:opacity .28s ease;
+    transition:opacity .32s ease;
   }
 
   body.view-center .inner-shell{
@@ -1623,9 +1629,13 @@ body.view-right .inner-shell{
     pointer-events:auto;
   }
 
-  body.view-left .inner-shell,
-  body.view-right .inner-shell{
+  body.view-left .inner-shell{
     opacity:0;
+    pointer-events:none;
+  }
+
+  body.view-right .inner-shell{
+    opacity:1;
     pointer-events:none;
   }
 
@@ -1654,19 +1664,19 @@ body.view-right .inner-shell{
 
   .view-header{
     display:block !important;
-    position:fixed !important;
+    position:absolute !important;
     top:24px !important;
     left:20px !important;
     right:auto !important;
     margin:0 !important;
     font-size:var(--view-header-size);
     text-align:left !important;
-    z-index:70;
+    z-index:30;
     pointer-events:none;
   }
 
   .edge-btn{
-    position:fixed !important;
+    position:absolute !important;
     left:auto !important;
     right:var(--mobile-nav-right) !important;
     bottom:auto !important;
@@ -1688,28 +1698,35 @@ body.view-right .inner-shell{
     pointer-events:auto !important;
   }
 
-  .view-center .edge-btn[data-stage-view="left"]{ top:var(--mobile-nav-top) !important; }
-  .view-center .edge-btn[data-stage-view="right"]{ top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap)) !important; }
-  .view-center .edge-btn[data-scroll-to="#about"]{ top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap) * 2) !important; }
-
-  .view-left .edge-btn[data-stage-view="center"],
-  .view-right .edge-btn[data-stage-view="center"]{
+  .view-center .edge-btn[data-stage-view="left"]{
     top:var(--mobile-nav-top) !important;
   }
 
-  body.view-left .view-center .edge-btn[data-stage-view="left"],
-  body.view-right .view-center .edge-btn[data-stage-view="left"]{
+  .view-center .edge-btn[data-stage-view="right"]{
     top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap)) !important;
   }
 
-  body.view-left .view-center .edge-btn[data-stage-view="right"],
-  body.view-right .view-center .edge-btn[data-stage-view="right"]{
+  .view-center .edge-btn[data-scroll-to="#about"]{
     top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap) * 2) !important;
+  }
+
+  .view-left .edge-btn[data-stage-view="center"],
+  .view-right .edge-btn[data-stage-view="center"]{
+    top:auto !important;
+    right:24px !important;
+    bottom:28px !important;
+  }
+
+  body.view-left .view-center .edge-btn[data-stage-view="left"],
+  body.view-right .view-center .edge-btn[data-stage-view="right"]{
+    border-bottom-color:rgba(255,255,255,.9);
   }
 
   body.view-left .view-center .edge-btn[data-scroll-to="#about"],
   body.view-right .view-center .edge-btn[data-scroll-to="#about"]{
-    top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap) * 3) !important;
+    opacity:0 !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
   }
 
   .global-mute{
@@ -1725,8 +1742,20 @@ body.view-right .inner-shell{
     position:absolute;
     inset:0;
     z-index:0;
-    background:rgba(0,0,0,.18);
     pointer-events:none;
+  }
+
+  .view-left::before{
+    background:rgba(0,0,0,.18);
+  }
+
+  .view-right::before{
+    background:
+      linear-gradient(
+        to left,
+        rgba(0,0,0,.58),
+        rgba(0,0,0,.16)
+      );
   }
 
   .view-left .view-inner,
@@ -1734,6 +1763,7 @@ body.view-right .inner-shell{
     justify-content:center;
     align-items:center;
     z-index:2;
+    pointer-events:auto;
   }
 
   .view-left .gallery-preview{
@@ -1757,7 +1787,8 @@ body.view-right .inner-shell{
   }
 
   .view-left .gallery-preview.is-visible .gallery-preview-img{
-    opacity:.46;
+    opacity:.68;
+    filter:brightness(.9);
   }
 
   .gallery-panel{
@@ -1770,11 +1801,18 @@ body.view-right .inner-shell{
     min-height:0;
     max-height:none;
     margin:0;
-    transform:translate(-50%, -50%);
+    transform:translate(calc(-50% - 42px), -50%);
+    opacity:0;
     overflow:hidden;
     z-index:3;
     pointer-events:auto;
     text-align:left;
+    transition:transform .42s ease, opacity .32s ease;
+  }
+
+  body.view-left .gallery-panel{
+    transform:translate(-50%, -50%);
+    opacity:1;
   }
 
   .gallery-scroll{
@@ -1834,17 +1872,24 @@ body.view-right .inner-shell{
     margin:0;
     padding:0 20px;
     box-sizing:border-box;
-    transform:translate(50%, -50%);
+    transform:translate(calc(50% + 42px), -50%);
+    opacity:0;
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:flex-end;
     z-index:3;
-    background:#000;
+    background:transparent;
     font-size:var(--contact-block-size);
     line-height:1.7;
     text-align:right;
     pointer-events:auto;
+    transition:transform .42s ease, opacity .32s ease;
+  }
+
+  body.view-right .contact-block{
+    transform:translate(50%, -50%);
+    opacity:1;
   }
 
   .contact-label{
