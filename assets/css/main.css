@@ -1676,7 +1676,7 @@ d faefbheavbhjaefjvbasfjlv
   }
 
   .edge-btn{
-    position:absolute !important;
+    position:fixed !important;
     left:auto !important;
     right:var(--mobile-nav-right) !important;
     bottom:auto !important;
@@ -1708,14 +1708,6 @@ d faefbheavbhjaefjvbasfjlv
 
   .view-center .edge-btn[data-scroll-to="#about"]{
     top:calc(var(--mobile-nav-top) + var(--mobile-nav-gap) * 2) !important;
-  }
-
-  body.view-left .view-center .edge-btn{
-    transform:translateX(-100vw) !important;
-  }
-
-  body.view-right .view-center .edge-btn{
-    transform:translateX(100vw) !important;
   }
 
   body.view-left .view-center .edge-btn[data-stage-view="left"],
