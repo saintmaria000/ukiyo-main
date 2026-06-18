@@ -1695,10 +1695,25 @@ body.view-right .inner-shell{
 
     /* ===== SPACING ===== */
     /* 中央動画 */
+    --stage-w:var(--vvw);
+    --stage-h:var(--vvh);
+    --video-w:min(58vw, 118svh, 960px);
     --video-side-safe:40px;
 
     /* ===== OTHER ===== */
-    --inner-shell-side-shift:2050px;
+    --inner-shell-side-shift:80vw;
+  }
+
+  .stage{
+    transform:translate(-50%, -50%) scale(1) !important;
+  }
+
+  body.view-center .inner-shell{
+    transform:translate(-50%, -50%) translateY(-44px);
+  }
+
+  .video-frame{
+    width:var(--video-w);
   }
 
   .view.view-left,
@@ -1728,8 +1743,8 @@ body.view-right .inner-shell{
   }
 }
 
-/* Touch landscape is viewport-native. Desktop keeps the fixed 2400px stage. */
-@media (pointer:coarse) and (orientation:landscape){
+/* Retired: landscape must keep the desktop panel/nav structure. */
+@media (pointer:coarse) and (orientation:landscape) and (max-width:0px){
   :root{
     --view-header-size:.82rem;
     --edge-btn-size:.86rem;
@@ -1754,7 +1769,6 @@ body.view-right .inner-shell{
     --mobile-landscape-video-w:min(62svw, 124svh, 680px);
     --mobile-landscape-panel-w:min(34svw, 360px);
     --mobile-landscape-panel-h:min(76svh, 420px);
-    --mobile-landscape-contact-w:min(32svw, 340px);
   }
 
   body.is-stage-scroll-lock{
@@ -2025,17 +2039,6 @@ body.view-right .inner-shell{
     pointer-events:auto;
   }
 
-  .edge-btn--bottom{
-    bottom:clamp(10px, 3svh, 22px);
-  }
-
-  body.view-left .view.view-center > .view-inner > .edge-btn,
-  body.view-right .view.view-center > .view-inner > .edge-btn{
-    opacity:0 !important;
-    visibility:hidden !important;
-    pointer-events:none !important;
-  }
-
   .global-mute{
     z-index:120 !important;
     pointer-events:auto !important;
@@ -2112,12 +2115,11 @@ body.view-right .inner-shell{
   }
 
   .contact-block{
-    width:var(--mobile-landscape-contact-w);
+    width:min(38svw, 360px);
     max-width:calc(100svw - (var(--mobile-landscape-pad-x) * 2));
     margin-top:0;
     background:transparent;
     font-size:var(--contact-block-size);
-    letter-spacing:.06em;
     line-height:1.58;
     text-align:right;
     pointer-events:auto;
@@ -2139,16 +2141,6 @@ body.view-right .inner-shell{
   #about{
     position:relative;
     z-index:2;
-  }
-}
-
-@media (pointer:coarse) and (orientation:landscape) and (max-height:480px){
-  :root{
-    --mobile-landscape-video-w:min(56svw, 100svh, 620px);
-    --mobile-landscape-contact-w:min(25svw, 260px);
-    --contact-block-size:.76rem;
-    --contact-label-size:.66rem;
-    --contact-value-size:.76rem;
   }
 }
 /* =========================================================
