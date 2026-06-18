@@ -30,7 +30,7 @@
 
   <div class="page">
     <div class="pull-return">
-      <a href="../index.html" class="pull-return-link">entrance</a>
+      <a href="../index.html" class="pull-return-link">Entrance</a>
     </div>
 
     <div class="space-wrapper" id="top">
@@ -49,6 +49,21 @@
 
               <div class="gallery-panel">
                 <div class="gallery-scroll">
+
+                  <button class="gallery-item" type="button" data-work-id="nike_lunar_roam">
+                    <div class="gallery-item-title">NIKE - lunar Roam presented by GR8</div>
+                    <div class="gallery-item-meta">COMMERCIAL FILM / 2025</div>
+                  </button>
+
+                  <button class="gallery-item" type="button" data-work-id="ult_power_sound_series">
+                    <div class="gallery-item-title">SONY - ULT POWER SOUND series</div>
+                    <div class="gallery-item-meta">COMMERCIAL FILM / 2025</div>
+                  </button>
+
+                  <button class="gallery-item" type="button" data-work-id="oh">
+                    <div class="gallery-item-title">luvis - Oh</div>
+                    <div class="gallery-item-meta">MUSIC VIDEO / 2025</div>
+                  </button>
 
                   <button class="gallery-item" type="button" data-work-id="kanzo">
                     <div class="gallery-item-title">She Her Her Hers - KANZO</div>
@@ -88,6 +103,11 @@
                   <button class="gallery-item" type="button" data-work-id="tokyo_mushuku">
                     <div class="gallery-item-title">BLYY - Tokyo Mushuku</div>
                     <div class="gallery-item-meta">SHORT FILM / 2024</div>
+                  </button>
+
+                  <button class="gallery-item" type="button" data-work-id="nike_lunar_roam_gr8">
+                    <div class="gallery-item-title">NIKE - Lunar Roam GR8</div>
+                    <div class="gallery-item-meta">COMMERCIAL FILM / 2023</div>
                   </button>
 
                   <button class="gallery-item" type="button" data-work-id="revenge">
@@ -233,15 +253,30 @@
 
         <div class="inner-shell" id="innerShell">
           <div class="video-frame">
-            <button class="video-shield" type="button" aria-label="Enable video controls"></button>
+            <!-- <button class="video-shield" type="button" aria-label="Enable video controls"></button> -->
             <div class="video-unlock-flash" aria-hidden="true"></div>
+
+            <!--
             <iframe
               id="mainVideo"
-              src="https://www.youtube.com/embed/vOEBTZCBKDM?autoplay=0&rel=0&enablejsapi=1"
+              src="https://www.youtube.com/embed/iLoUU-hTWNg?autoplay=1&rel=0&enablejsapi=1"
               frameborder="0"
               allow="autoplay; encrypted-media"
               allowfullscreen>
             </iframe>
+            -->
+
+            <video
+              id="mainVideo"
+              class="main-video"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="auto"
+            >
+              <source src="../images/NIKE lunar Roam presented by GR8.mp4" type="video/mp4">
+            </video>
           </div>
 
           <div class="center-gallery-preview" aria-hidden="true">
@@ -362,6 +397,12 @@
         </button>
       </div>
     </div>
+    <button
+      type="button"
+      class="modal__close-line"
+      data-modal-close
+      aria-label="Close"
+    ></button>
   </div>
 
   <!-- script order: data → stage → gallery → modal → media → background -->

@@ -1758,9 +1758,9 @@ body.view-right .inner-shell{
     --mobile-ui-inset-y:24px;
     --mobile-nav-right:var(--mobile-ui-inset-x);
     --mobile-nav-top:72px;
-    --mobile-nav-gap:44px;
-    --mobile-nav-step:44px;
-    --mobile-nav-video-gap:28px;
+    --mobile-nav-gap:42px;
+    --mobile-nav-step:42px;
+    --mobile-nav-video-gap:52px;
   }
 
   /* 13-05-02. Page and stage shell */
@@ -2022,7 +2022,7 @@ body.view-right .inner-shell{
      carries it away; do not convert this back to position:fixed. */
   .view.view-center > .view-inner > .edge-btn[data-stage-view="left"]{
     top:auto !important;
-    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) + var(--mobile-nav-step)) !important;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 2) !important;
   }
 
   .view.view-center > .view-inner > .edge-btn[data-stage-view="right"]{
@@ -2037,9 +2037,9 @@ body.view-right .inner-shell{
 
   .view.view-left .edge-btn[data-stage-view="center"],
   .view.view-right .edge-btn[data-stage-view="center"]{
-    top:calc(var(--mobile-nav-top) - var(--mobile-ui-inset-y)) !important;
+    top:auto !important;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 3) !important;
     right:0 !important;
-    bottom:auto !important;
     opacity:0 !important;
     pointer-events:none !important;
     border-bottom-color:transparent !important;
