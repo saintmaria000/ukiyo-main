@@ -1,60 +1,84 @@
 /* =========================================================
    01. Reset / Base
 ========================================================= */
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
 
-html {
-  background: #000;
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,.22) transparent;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+html{
+  background:#000;
+  font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue","Segoe UI", sans-serif;
+  scroll-behavior:smooth;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.22) transparent;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
 }
 
-body {
-  width: 100%;
-  min-height: 100%;
-  background: #000;
-  color: #fff;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+body{
+  width:100%;
+  min-height:100%;
+  height:auto;
+  background:#000;
+  color:#fff;
+  overflow-x:hidden;
+  overflow-y:auto;
+  transition:background .6s ease, color .6s ease;
+  -webkit-overflow-scrolling:touch;
 }
 
-button, a { -webkit-tap-highlight-color: transparent; }
-
-button {
-  appearance: none;
-  -webkit-appearance: none;
-  background: none;
-  border: none;
-  font: inherit;
-  color: inherit;
+button,
+a{
+  -webkit-tap-highlight-color:transparent;
 }
 
-a { color: inherit; }
+button{
+  appearance:none;
+  -webkit-appearance:none;
+  background:none;
+  border:none;
+  font:inherit;
+  color:inherit;
+}
 
-.page { min-height: 100vh; }
+a{
+  color:inherit;
+}
+
+.page{
+  min-height:100vh;
+}
 
 /* =========================================================
    02. Scrollbar
 ========================================================= */
-::-webkit-scrollbar        { width: 12px; height: 12px; }
-::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,.22);
-  border: 5px solid transparent;
-  background-clip: content-box;
-  border-radius: 999px;
+::-webkit-scrollbar{
+  width:12px;
+  height:12px;
 }
-::-webkit-scrollbar-thumb:hover  { background: rgba(255,255,255,.90); background-clip: content-box; }
-::-webkit-scrollbar-thumb:active { background: #fff; background-clip: content-box; }
+
+::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.22);
+  border:5px solid transparent;
+  background-clip:content-box;
+  border-radius:999px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:rgba(255,255,255,.90);
+  background-clip:content-box;
+}
+
+::-webkit-scrollbar-thumb:active{
+  background:#fff;
+  background-clip:content-box;
+}
 
 /* =========================================================
    03. Root Variables
@@ -249,7 +273,7 @@ a { color: inherit; }
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
   --about-content-pad-x:6vw;
-  --about-content-pad-bottom:30px;
+  --about-content-pad-bottom:0px;
 
   /* About ロゴ */
   --about-hero-min-h:100svh;
