@@ -252,7 +252,7 @@ a{
 
   /* Gallery エリア */
   --gallery-w:520px;
-  --gallery-panel-gap-top:32px;
+  /* --gallery-panel-gap-top:32px; */
   --gallery-panel-max-h:760px;
   --gallery-panel-min-h:320px;
   --gallery-panel-vh-offset:180px;
