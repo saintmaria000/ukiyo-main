@@ -1666,21 +1666,21 @@ body.view-right .inner-shell{
   :root{
     /* ===== FONT ===== */
     /* 基本フォント */
-    --font-ui-sm:1.6rem;
+    --font-ui-sm:.82rem;
 
     /* 画面ナビ / 戻る導線 */
-    --view-header-size:1.6rem;
-    --edge-btn-size:1.25rem;
+    --view-header-size:.72rem;
+    --edge-btn-size:.76rem;
 
     /* Gallery リスト */
-    --gallery-item-size:1.05rem;
-    --gallery-meta-size:.74rem;
-    --gallery-item-pad-y:7px;
+    --gallery-item-size:.66rem;
+    --gallery-meta-size:.48rem;
+    --gallery-item-pad-y:6px;
 
     /* Contact 本文 */
-    --contact-block-size:1.18rem;
-    --contact-label-size:1.4rem;
-    --contact-value-size:1.94rem;
+    --contact-block-size:.72rem;
+    --contact-label-size:.68rem;
+    --contact-value-size:.82rem;
 
     /* About 紹介文 */
     --about-lead-size:.9rem;
@@ -1697,8 +1697,16 @@ body.view-right .inner-shell{
     /* 中央動画 */
     --stage-w:var(--vvw);
     --stage-h:var(--vvh);
-    --video-w:min(58vw, 118svh, 960px);
+    --stage-pad-y:clamp(14px, 3.7svh, 24px);
+    --stage-pad-x:clamp(24px, 3.75svw, 44px);
+    --stage-header-top:clamp(10px, 2.2svh, 20px);
+    --edge-offset:clamp(18px, 2.1svw, 32px);
+    --video-w:min(48svw, 88svh, 960px);
     --video-side-safe:40px;
+    --gallery-w:clamp(178px, 22svw, 260px);
+    --contact-w:clamp(220px, 30svw, 360px);
+    --global-mute-top:clamp(14px, 4svh, 24px);
+    --global-mute-right:clamp(18px, 4svw, 32px);
 
     /* ===== OTHER ===== */
     --inner-shell-side-shift:80vw;
@@ -1709,7 +1717,7 @@ body.view-right .inner-shell{
   }
 
   body.view-center .inner-shell{
-    transform:translate(-50%, -50%) translateY(-44px);
+    transform:translate(-50%, -50%);
   }
 
   .video-frame{
@@ -1726,9 +1734,19 @@ body.view-right .inner-shell{
   .gallery-panel{
     display:flex;
     flex-direction:column;
-    height:min(560px, calc(100svh - 48px));
+    max-width:var(--gallery-w);
+    height:min(70svh, 360px);
     min-height:0;
     overflow:hidden;
+  }
+
+  .contact-block{
+    max-width:var(--contact-w);
+    line-height:1.62;
+  }
+
+  .contact-label{
+    margin-top:clamp(8px, 2svh, 14px);
   }
 
   .gallery-scroll{
