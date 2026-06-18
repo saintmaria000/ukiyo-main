@@ -1,9 +1,11 @@
 (function () {
   const body = document.body;
   const galleryScroll = document.querySelector('.view.view-left .gallery-scroll');
+
   const mqCoarse = window.matchMedia('(pointer: coarse)');
   const mqPortrait = window.matchMedia('(pointer: coarse) and (orientation: portrait)');
   const mqLandscape = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
+
   let touchState = null;
 
   function isSideView() {
@@ -13,18 +15,17 @@
     );
   }
 
-  function isCoarsePortrait() {
-    return mqPortrait.matches;
+  function isTouchStage() {
+    return mqPortrait.matches || mqLandscape.matches;
   }
 
-  function isCoarseLandscape() {
-    return mqLandscape.matches;
+  function isAboutArea() {
+    return window.scrollY > 20;
   }
 
   function shouldLockPageScroll() {
-    if (isCoarsePortrait() && isSideView()) return true;
-    if (isCoarseLandscape() && isSideView()) return true;
-    return false;
+    if (isAboutArea()) return false;
+    return isTouchStage() && isSideView();
   }
 
   function updateStageScrollLock() {
@@ -36,6 +37,7 @@
       galleryScroll &&
       mqCoarse.matches &&
       body.classList.contains('view-left') &&
+      !isAboutArea() &&
       galleryScroll.contains(target)
     );
   }
@@ -56,6 +58,7 @@
     }
 
     const touch = e.touches[0];
+
     touchState = {
       startX: touch.clientX,
       startY: touch.clientY,
@@ -74,13 +77,12 @@
 
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) return;
 
-    const nextTop = clamp(
+    galleryScroll.scrollTop = clamp(
       touchState.startTop - dy,
       0,
       maxGalleryScrollTop()
     );
 
-    galleryScroll.scrollTop = nextTop;
     e.preventDefault();
     e.stopPropagation();
   }
@@ -91,16 +93,15 @@
 
   window.addEventListener('resize', updateStageScrollLock);
   window.addEventListener('orientationchange', updateStageScrollLock);
+  window.addEventListener('scroll', updateStageScrollLock, { passive: true });
 
-  if (mqPortrait.addEventListener) {
-    mqCoarse.addEventListener('change', updateStageScrollLock);
-    mqPortrait.addEventListener('change', updateStageScrollLock);
-    mqLandscape.addEventListener('change', updateStageScrollLock);
-  } else {
-    mqCoarse.addListener(updateStageScrollLock);
-    mqPortrait.addListener(updateStageScrollLock);
-    mqLandscape.addListener(updateStageScrollLock);
-  }
+  [mqCoarse, mqPortrait, mqLandscape].forEach((mq) => {
+    if (mq.addEventListener) {
+      mq.addEventListener('change', updateStageScrollLock);
+    } else {
+      mq.addListener(updateStageScrollLock);
+    }
+  });
 
   if (galleryScroll) {
     galleryScroll.addEventListener('touchstart', onGalleryTouchStart, { passive: true });
@@ -109,9 +110,7 @@
     galleryScroll.addEventListener('touchcancel', onGalleryTouchEnd, { passive: true });
   }
 
-  const observer = new MutationObserver(() => {
-    updateStageScrollLock();
-  });
+  const observer = new MutationObserver(updateStageScrollLock);
 
   observer.observe(body, {
     attributes: true,
