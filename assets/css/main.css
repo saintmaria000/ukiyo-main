@@ -273,7 +273,7 @@ a{
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
   --about-content-pad-x:6vw;
-  --about-content-pad-bottom:180px;
+  --about-content-pad-bottom:50px;
 
   /* About ロゴ */
   --about-hero-min-h:100svh;
@@ -313,7 +313,7 @@ a{
   --about-credit-block-gap:72px;
 
   /* About 戻るリンク */
-  --about-back-margin-top:180px;
+  --about-back-margin-top:30px;
 
   /* Modal 表示枠 */
   --modal-width:min(92vw, 1400px);
@@ -938,7 +938,7 @@ body.view-right .inner-shell{
   max-width:var(--about-stack-max-w);
   margin-top:-6svh;
   margin-left:0;
-  margin-right:auto;
+  margin-right:auto;--abou
   padding:
     var(--about-stack-pad-top)
     var(--about-stack-pad-x)
