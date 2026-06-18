@@ -84,8 +84,8 @@ a { color: inherit; }
   --inner-shell-shrink:     0.82;
 
   /* --- 主要レイアウト寸法 --- */
-  /* video-w: 元の固定値。clampにしない——動画サイズは意図的に固定。 */
-  --video-w:   960px;
+  /* video-w: 画面の30%。NAVと重ならない前提の固定比率。 */
+  --video-w:   30vw;
   --gallery-w: clamp(178px, 22vw, 520px);
   --contact-w: clamp(220px, 30vw, 750px);
 
@@ -286,17 +286,17 @@ body.view-right  .outer-space { transform: translateX(-200vw); }
 }
 
 body.view-center .inner-shell {
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%) translateY(-50%);
 }
 body.view-left .inner-shell {
   transform:
-    translate(-50%, -50%)
+    translateX(-50%) translateY(-50%)
     translateX(var(--inner-shell-side-shift))
     scale(var(--inner-shell-shrink));
 }
 body.view-right .inner-shell {
   transform:
-    translate(-50%, -50%)
+    translateX(-50%) translateY(-50%)
     translateX(calc(var(--inner-shell-side-shift) * -1))
     scale(var(--inner-shell-shrink));
 }
@@ -350,8 +350,8 @@ body.view-right .inner-shell {
   color: #fff;
   filter: drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
-.edge-btn--left   { top: 50%; left:  var(--edge-offset); transform: translateY(-50%); }
-.edge-btn--right  { top: 50%; right: var(--edge-offset); transform: translateY(-50%); }
+.edge-btn--left   { top: 50%; left:  calc(50% - 15vw - 80px); transform: translateY(-50%); }
+.edge-btn--right  { top: 50%; right: calc(50% - 15vw - 80px); transform: translateY(-50%); }
 .edge-btn--bottom { bottom: var(--edge-offset); left: 50%; transform: translateX(-50%); }
 
 /* =========================================================
