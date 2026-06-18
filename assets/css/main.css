@@ -276,7 +276,7 @@ a{
   --about-content-pad-bottom:180px;
 
   /* About ロゴ */
-  --about-hero-min-h:88svh;
+  --about-hero-min-h:95svh;
   --about-hero-pad-top:45px;
   --about-hero-pad-bottom:0px;
   --about-hero-gap:25px;
@@ -936,6 +936,7 @@ body.view-right .inner-shell{
   position:relative;
   width:100%;
   max-width:var(--about-stack-max-w);
+  margin-top:-6svh;
   margin-left:0;
   margin-right:auto;
   padding:
