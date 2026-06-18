@@ -70,29 +70,21 @@ a { color: inherit; }
      stage-w = 100vw にすることで stage.scale.js が不要になる。
      outer-space の移動量・inner-shell のシフトがすべて vw 基準に統一される。
   ---------------------------------------- */
-  /* 元: 1600px。scale(0.8)補正後の等価値: 1600 × 0.8 = 1280px */
-  --stage-perspective:      1280px;
+  --stage-perspective:      1600px;
   --stage-pad-y:            40px;
   --stage-pad-x:            clamp(24px, 3.75vw, 90px);
   --edge-offset:            clamp(18px, 2.1vw,  32px);
 
   /* --- Camera（体験の核心・触らない）---
-
-     元のコード: stage-w=2400px, scale=0.8(1920px画面想定),
-     side-shift=1920px, depth=-350px
-
-     100vw化後の視覚的等価値:
-     - side-shift: 1920px × scale(0.8) = 1536px = 80vw ← 見切れの意図を保持
-     - depth: -350px × scale(0.8) = -280px
-       ※ scaleがなくなった分だけ奥行きを補正。
-         これをしないとGallery/Contactで動画が非対称に動いて見える。
+     inner-shell-side-shift: 80vw = 画面1枚分より少し手前で止まる。
+     動画の端が画面端からはみ出しつつ少し残る意図的な見切れ。
+     inner-shell-depth: -350px + perspective 1600px = 約21%縮んで見える奥行き。
   ---------------------------------------- */
   --inner-shell-side-shift: 80vw;
-  --inner-shell-depth:      -280px;
+  --inner-shell-depth:      -350px;
 
   /* --- 主要レイアウト寸法 --- */
-  /* video-w: 元の固定値。clampにしない——動画サイズは意図的に固定。 */
-  --video-w:   960px;
+  --video-w:   clamp(480px, 60vw, 960px);
   --gallery-w: clamp(178px, 22vw, 520px);
   --contact-w: clamp(220px, 30vw, 750px);
 
