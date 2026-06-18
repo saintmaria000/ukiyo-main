@@ -2,6 +2,7 @@
 (() => {
   const STAGE_W = 2400;
   const STAGE_H = 1080;
+  const COARSE_POINTER = "(pointer:coarse)";
 
   function readVV() {
     const vv = window.visualViewport;
@@ -13,6 +14,7 @@
         left: vv.offsetLeft || 0,
       };
     }
+
     return {
       w: window.innerWidth,
       h: window.innerHeight,
@@ -21,70 +23,27 @@
     };
   }
 
-  function readNumberVar(style, name, fallback) {
-    const raw = style.getPropertyValue(name).trim();
-    const num = parseFloat(raw);
-    return Number.isFinite(num) ? num : fallback;
+  function isTouchStage() {
+    return window.matchMedia(COARSE_POINTER).matches;
   }
 
-  function updateMobileVideoMetrics({ w, h, scale }) {
-    const root = document.documentElement;
-    const rootStyle = root.style;
-    const computed = getComputedStyle(root);
+  function readStageScale(w, h) {
+    if (isTouchStage()) return 1;
 
-    const isCoarse = window.matchMedia("(pointer:coarse)").matches;
-
-    // PCやfine pointer環境は既存値のまま
-    if (!isCoarse) {
-      rootStyle.setProperty("--video-mobile-stage-w", "960px");
-      rootStyle.setProperty("--video-mobile-stage-offset-y", "0px");
-      return;
-    }
-
-    const isPortrait = h >= w;
-
-    const ratio = isPortrait
-      ? readNumberVar(computed, "--video-mobile-portrait-visible-ratio", 0.92)
-      : readNumberVar(computed, "--video-mobile-landscape-visible-ratio", 0.78);
-
-    const maxVisible = isPortrait
-      ? readNumberVar(computed, "--video-mobile-portrait-visible-max", 760)
-      : readNumberVar(computed, "--video-mobile-landscape-visible-max", 980);
-
-    const visibleOffsetY = isPortrait
-      ? readNumberVar(computed, "--video-mobile-portrait-visible-offset-y", 72)
-      : readNumberVar(computed, "--video-mobile-landscape-visible-offset-y", 0);
-
-    const safe = readNumberVar(computed, "--video-side-safe", 24);
-
-    // 実際に画面上で見せたい幅
-    const visibleWidth = Math.max(
-      0,
-      Math.min(w * ratio, Math.max(0, w - safe), maxVisible)
-    );
-
-    // stage全体にscaleがかかるので、内部widthへ逆算
-    const stageWidth = scale > 0 ? (visibleWidth / scale) : 960;
-    const stageOffsetY = scale > 0 ? (visibleOffsetY / scale) : 0;
-
-    rootStyle.setProperty("--video-mobile-stage-w", `${stageWidth}px`);
-    rootStyle.setProperty("--video-mobile-stage-offset-y", `${stageOffsetY}px`);
+    const scale = Math.min(w / STAGE_W, h / STAGE_H);
+    return Number.isFinite(scale) && scale > 0 ? scale : 1;
   }
 
   function updateStageMetrics() {
     const { w, h, top, left } = readVV();
-
-    let scale = Math.min(w / STAGE_W, h / STAGE_H);
-    if (!Number.isFinite(scale) || scale <= 0) scale = 1;
-
     const root = document.documentElement.style;
+    const scale = readStageScale(w, h);
+
     root.setProperty("--stage-scale", String(scale));
     root.setProperty("--vvw", `${w}px`);
     root.setProperty("--vvh", `${h}px`);
     root.setProperty("--vv-top", `${top}px`);
     root.setProperty("--vv-left", `${left}px`);
-
-    updateMobileVideoMetrics({ w, h, scale });
 
     return scale;
   }
