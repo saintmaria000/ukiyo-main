@@ -71,22 +71,24 @@ a { color: inherit; }
      outer-space の移動量・inner-shell のシフトがすべて vw 基準に統一される。
   ---------------------------------------- */
   --stage-perspective:      none;
-  --stage-pad-y:            40px;
+  --stage-pad-y:            clamp(14px, 3.7vh, 40px);
   --stage-pad-x:            clamp(24px, 3.75vw, 90px);
-  --edge-offset:            clamp(18px, 2.1vw,  32px);
+  --edge-offset:            18px;
+  --nav-video-gap:          clamp(48px, 8vw, 170px);
 
   /* --- Camera（体験の核心）---
      元: stage-w=2400px, scale=viewport/2400
      1920px幅基準での視覚的等価値:
-     - video-w:   960px × 0.8 = 768px = 40vw
-     - side-shift: 1920px × 0.8 = 1536px = 80vw
+     - video-w:   viewport に合わせた 16:9 枠。幅・高さ・最大幅で止める
+     - side-shift: PC は 80vw、横スマホは画面内の着地を優先して上書き
      - shrink:    1600 / (1600 + 350) = 0.82
   ---------------------------------------- */
   --inner-shell-side-shift: 80vw;
   --inner-shell-shrink:     0.82;
 
   /* --- 主要レイアウト寸法 --- */
-  --video-w:   40vw;
+  --video-w:      min(52vw, 156.444svh, 1280px);
+  --video-half-w: min(26vw, 78.222svh, 640px);
   --gallery-w: clamp(178px, 22vw, 520px);
   --contact-w: clamp(220px, 30vw, 750px);
 
@@ -103,12 +105,12 @@ a { color: inherit; }
   --gallery-panel-h: calc(var(--gallery-item-h) * 5 + 1px);
 
   /* --- Typography: clamp で全デバイス連続スケール --- */
-  --text-nav:          clamp(1.2rem,  1.4vw,  1.5rem);
-  --text-edge:         clamp(1.2rem,  1.4vw,  1.5rem);
-  --text-gallery-item: clamp(.82rem,  1vw,    .96rem);
-  --text-gallery-meta: clamp(.72rem,  .85vw,  .78rem);
-  --text-contact-label: 1.3rem;
-  --text-contact-value: 1.14rem;
+  --text-nav:          .76rem;
+  --text-edge:         .76rem;
+  --text-gallery-item: .66rem;
+  --text-gallery-meta: .48rem;
+  --text-contact-label:.68rem;
+  --text-contact-value:.82rem;
   --text-about-logo:   clamp(3.5rem,  5vw,    5.2rem);
   --text-about-heading:clamp(1.4rem,  1.8vw,  1.7rem);
   --text-about-body:   clamp(.95rem,  1.1vw,  1.12rem);
@@ -349,8 +351,16 @@ body.view-right .inner-shell {
   color: #fff;
   filter: drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
-.edge-btn--left   { top: 50%; left:  calc(50% - 20vw - 60px); transform: translateY(-50%); }
-.edge-btn--right  { top: 50%; right: calc(50% - 20vw - 60px); transform: translateY(-50%); }
+.edge-btn--left {
+  top: 50%;
+  left: calc(50% - var(--video-half-w) - var(--nav-video-gap));
+  transform: translate(-100%, -50%);
+}
+.edge-btn--right {
+  top: 50%;
+  right: calc(50% - var(--video-half-w) - var(--nav-video-gap));
+  transform: translate(100%, -50%);
+}
 .edge-btn--bottom { bottom: var(--edge-offset); left: 50%; transform: translateX(-50%); }
 
 /* =========================================================
@@ -464,7 +474,7 @@ body.view-right .inner-shell {
   max-width: var(--contact-w);
   font-size: .86rem;
   letter-spacing: .12em;
-  line-height: 1.8;
+  line-height: 1.62;
 }
 .view-right .contact-block { margin-top: 0; text-align: right; }
 
@@ -473,7 +483,7 @@ body.view-right .inner-shell {
   font-size: var(--text-contact-label);
   letter-spacing: .12em;
   text-transform: uppercase;
-  margin-top: 16px;
+  margin-top: clamp(8px, 2vh, 14px);
 }
 .contact-value p,
 .contact-value a { font-size: var(--text-contact-value); text-decoration: none; }
@@ -810,8 +820,27 @@ body.view-right .inner-shell {
   .gallery-panel { isolation: isolate; }
 }
 
+@media (pointer: coarse) and (orientation: landscape) {
+  :root {
+    --inner-shell-side-shift: 66vw;
+    --video-w: min(48vw, 88svh, 960px);
+    --video-half-w: min(24vw, 44svh, 480px);
+    --nav-video-gap: clamp(40px, 8vw, 72px);
+    --gallery-w: clamp(178px, 22vw, 260px);
+    --gallery-panel-h: min(70svh, 360px);
+    --contact-w: clamp(220px, 30vw, 360px);
+  }
+}
+
+@media (pointer: fine) {
+  :root {
+    --stage-pad-y: clamp(40px, calc((100vh - 45vw) / 2 + 19px), 120px);
+    --gallery-panel-h: min(44vh, 360px);
+  }
+}
+
 /* =========================================================
-   14. Mobile portrait — スコープ外、変更なし
+   14. Mobile portrait
 ========================================================= */
 @media (pointer: coarse) and (orientation: portrait) {
 
@@ -1008,17 +1037,21 @@ body.view-right .inner-shell {
   }
 
   .view.view-center > .view-inner > .edge-btn[data-stage-view="left"] {
+    top: auto !important;
     bottom: calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 2) !important;
   }
   .view.view-center > .view-inner > .edge-btn[data-stage-view="right"] {
+    top: auto !important;
     bottom: calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step)) !important;
   }
   .view.view-center > .view-inner > .edge-btn[data-scroll-to="#about"] {
+    top: auto !important;
     bottom: calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap)) !important;
   }
 
   .view.view-left  .edge-btn[data-stage-view="center"],
   .view.view-right .edge-btn[data-stage-view="center"] {
+    top: auto !important;
     bottom: calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 3) !important;
     right: 0 !important;
     opacity: 0 !important;
