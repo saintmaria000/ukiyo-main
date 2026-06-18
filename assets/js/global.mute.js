@@ -20,6 +20,13 @@
   // ==== HTML5 media ====
   function applyHtmlMedia() {
     document.querySelectorAll('video, audio').forEach((m) => {
+      if (document.body.classList.contains('is-modal-open') && m.id === 'mainVideo') {
+        if (m.dataset.prevVol == null) m.dataset.prevVol = String(m.volume ?? 1);
+        m.muted = true;
+        m.volume = 0;
+        return;
+      }
+
       if (isMuted) {
         if (m.dataset.prevVol == null) m.dataset.prevVol = String(m.volume ?? 1);
         m.muted = true;

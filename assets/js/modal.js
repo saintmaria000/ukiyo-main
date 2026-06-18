@@ -14,6 +14,9 @@
 
   let lastActiveEl = null;
   let lastScrollY = 0;
+  let mainVideoWasMuted = true;
+  let mainVideoWasVolume = 1;
+  let globalMuteWasMuted = null;
 
   // =========================
   // YouTube URL補完
@@ -51,6 +54,91 @@
   function stopYouTube(iframeEl) {
     ytCommandTo(iframeEl, "stopVideo");
     ytCommandTo(iframeEl, "pauseVideo");
+  }
+
+  function isHtmlVideo(el) {
+    return !!(el && el.tagName && el.tagName.toLowerCase() === 'video');
+  }
+
+  function rememberMainVideoState() {
+    if (isHtmlVideo(mainVideo)) {
+      mainVideoWasMuted = mainVideo.muted;
+      mainVideoWasVolume = mainVideo.volume ?? 1;
+    }
+
+    globalMuteWasMuted =
+      window.GlobalMute && typeof window.GlobalMute.state === 'boolean'
+        ? window.GlobalMute.state
+        : null;
+  }
+
+  function pauseMainVideoForModal() {
+    if (!mainVideo) return;
+
+    if (isHtmlVideo(mainVideo)) {
+      try { mainVideo.pause(); } catch (_) {}
+      mainVideo.muted = true;
+      mainVideo.volume = 0;
+      mainVideo.setAttribute('muted', '');
+      return;
+    }
+
+    stopYouTube(mainVideo);
+  }
+
+  function restoreMainVideoSoundState() {
+    if (!isHtmlVideo(mainVideo)) return;
+
+    mainVideo.volume = mainVideoWasVolume;
+    mainVideo.muted = mainVideoWasMuted;
+
+    if (mainVideoWasMuted) {
+      mainVideo.defaultMuted = true;
+      mainVideo.setAttribute('muted', '');
+    } else {
+      mainVideo.removeAttribute('muted');
+    }
+  }
+
+  function playHtmlVideo(video, forceMuted = false) {
+    if (!video) return;
+
+    video.playsInline = true;
+    video.setAttribute('playsinline', '');
+
+    if (forceMuted) {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.setAttribute('muted', '');
+    }
+
+    try {
+      const p = video.play();
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => {
+          if (!video.muted) {
+            playHtmlVideo(video, true);
+          }
+        });
+      }
+    } catch (_) {
+      if (!video.muted) playHtmlVideo(video, true);
+    }
+  }
+
+  function resumeMainVideo() {
+    if (!mainVideo) return;
+
+    if (isHtmlVideo(mainVideo)) {
+      restoreMainVideoSoundState();
+
+      playHtmlVideo(mainVideo, mainVideoWasMuted);
+      setTimeout(() => playHtmlVideo(mainVideo, mainVideoWasMuted), 120);
+      setTimeout(() => playHtmlVideo(mainVideo, mainVideoWasMuted), 420);
+      return;
+    }
+
+    ytCommandTo(mainVideo, "playVideo");
   }
 
   // 毎回アンミュート保証（前の動画の状態を引き継がない）
@@ -137,9 +225,10 @@
   // =========================
   function open({ title, video, credits }) {
     lastActiveEl = document.activeElement;
+    rememberMainVideoState();
 
     // メイン停止
-    stopYouTube(mainVideo);
+    pauseMainVideoForModal();
 
     // モーダル動画セット
     if (modalVideo) {
@@ -154,13 +243,17 @@
     lockScroll();
 
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
+    modal.classList.remove('modal--credit-open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
     // 背景は常に再生維持
     resumeKeepPlayingVideos();
 
     // グローバルUIもアンミュートへ
-    if (window.GlobalMute) window.GlobalMute.set(false);
+    if (window.GlobalMute) {
+      window.GlobalMute.set(false);
+      pauseMainVideoForModal();
+    }
 
     const firstClose = modal.querySelector('[data-modal-close]');
     if (firstClose) firstClose.focus();
@@ -180,14 +273,21 @@
     if (modalVideo) modalVideo.src = '';
 
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
+    modal.classList.remove('modal--credit-open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
+    if (window.GlobalMute && globalMuteWasMuted !== null) {
+      window.GlobalMute.set(globalMuteWasMuted);
+    }
+
     resumeKeepPlayingVideos(); // 背景復帰保証
+    resumeMainVideo();
 
     if (lastActiveEl && typeof lastActiveEl.focus === 'function') {
       lastActiveEl.focus();
     }
     lastActiveEl = null;
+    globalMuteWasMuted = null;
   }
 
   // イベント
@@ -201,6 +301,7 @@
     creditToggle.addEventListener('click', () => {
       const isOpen = creditOverlay.classList.contains('modal__credit--open');
       creditOverlay.classList.toggle('modal__credit--open', !isOpen);
+      modal.classList.toggle('modal--credit-open', !isOpen);
       creditToggle.textContent = isOpen ? 'Credit' : 'Close';
     });
   }

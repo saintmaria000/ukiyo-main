@@ -1,7 +1,10 @@
 (function () {
   const body = document.body;
+  const galleryScroll = document.querySelector('.view.view-left .gallery-scroll');
+  const mqCoarse = window.matchMedia('(pointer: coarse)');
   const mqPortrait = window.matchMedia('(pointer: coarse) and (orientation: portrait)');
   const mqLandscape = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
+  let touchState = null;
 
   function isSideView() {
     return (
@@ -28,15 +31,82 @@
     body.classList.toggle('is-stage-scroll-lock', shouldLockPageScroll());
   }
 
+  function shouldHandleGalleryTouch(target) {
+    return !!(
+      galleryScroll &&
+      mqCoarse.matches &&
+      body.classList.contains('view-left') &&
+      galleryScroll.contains(target)
+    );
+  }
+
+  function maxGalleryScrollTop() {
+    if (!galleryScroll) return 0;
+    return Math.max(0, galleryScroll.scrollHeight - galleryScroll.clientHeight);
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function onGalleryTouchStart(e) {
+    if (!e.touches || !e.touches.length || !shouldHandleGalleryTouch(e.target)) {
+      touchState = null;
+      return;
+    }
+
+    const touch = e.touches[0];
+    touchState = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startTop: galleryScroll.scrollTop
+    };
+  }
+
+  function onGalleryTouchMove(e) {
+    if (!touchState || !e.touches || !e.touches.length || !shouldHandleGalleryTouch(e.target)) {
+      return;
+    }
+
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchState.startX;
+    const dy = touch.clientY - touchState.startY;
+
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) return;
+
+    const nextTop = clamp(
+      touchState.startTop - dy,
+      0,
+      maxGalleryScrollTop()
+    );
+
+    galleryScroll.scrollTop = nextTop;
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onGalleryTouchEnd() {
+    touchState = null;
+  }
+
   window.addEventListener('resize', updateStageScrollLock);
   window.addEventListener('orientationchange', updateStageScrollLock);
 
   if (mqPortrait.addEventListener) {
+    mqCoarse.addEventListener('change', updateStageScrollLock);
     mqPortrait.addEventListener('change', updateStageScrollLock);
     mqLandscape.addEventListener('change', updateStageScrollLock);
   } else {
+    mqCoarse.addListener(updateStageScrollLock);
     mqPortrait.addListener(updateStageScrollLock);
     mqLandscape.addListener(updateStageScrollLock);
+  }
+
+  if (galleryScroll) {
+    galleryScroll.addEventListener('touchstart', onGalleryTouchStart, { passive: true });
+    galleryScroll.addEventListener('touchmove', onGalleryTouchMove, { passive: false });
+    galleryScroll.addEventListener('touchend', onGalleryTouchEnd, { passive: true });
+    galleryScroll.addEventListener('touchcancel', onGalleryTouchEnd, { passive: true });
   }
 
   const observer = new MutationObserver(() => {

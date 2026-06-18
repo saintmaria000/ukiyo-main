@@ -646,10 +646,13 @@ body.view-right .inner-shell{
   justify-content:center;
   box-shadow:var(--shadow-video);
   position:relative;
+  overflow:hidden;
   pointer-events:auto;
 }
 
-.video-frame iframe{
+.video-frame iframe,
+.video-frame video,
+.video-frame .main-video{
   width:100%;
   height:100%;
   max-width:100%;
@@ -657,6 +660,11 @@ body.view-right .inner-shell{
   border:0;
   display:block;
   pointer-events:auto;
+}
+
+.video-frame video,
+.video-frame .main-video{
+  object-fit:cover;
 }
 
 
@@ -1076,8 +1084,11 @@ body.view-right .inner-shell{
   z-index:1;
   width:var(--modal-width);
   max-width:var(--modal-max-w);
+  max-height:calc(100svh - 72px);
   background:rgba(0,0,0,.9);
   box-shadow:var(--shadow-modal);
+  display:flex;
+  flex-direction:column;
 }
 
 .modal__close{
@@ -1095,6 +1106,7 @@ body.view-right .inner-shell{
 
 .modal__video{
   width:100%;
+  min-height:0;
 }
 
 .modal__video-frame{
@@ -1139,6 +1151,10 @@ body.view-right .inner-shell{
   display:flex;
   align-items:center;
   justify-content:center;
+  padding:clamp(16px, 2vw, 32px);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
   opacity:0;
   pointer-events:none;
   transition:opacity .25s ease;
@@ -1153,6 +1169,7 @@ body.view-right .inner-shell{
   text-align:center;
   max-width:var(--modal-credit-inner-max-w);
   width:var(--modal-credit-inner-width);
+  min-width:0;
   padding:
     var(--modal-credit-inner-pad-top)
     var(--modal-credit-inner-pad-x)
@@ -1163,28 +1180,37 @@ body.view-right .inner-shell{
   font-size:var(--modal-credit-title-size);
   margin-bottom:var(--modal-credit-title-gap);
   letter-spacing:var(--modal-credit-title-spacing);
+  line-height:1.35;
+  overflow-wrap:anywhere;
 }
 
 .modal__credit-list{
   font-size:var(--modal-credit-list-size);
   line-height:var(--modal-credit-list-line);
   margin-bottom:var(--modal-credit-list-gap);
+  display:grid;
+  gap:4px;
 }
 
 .credit-row{
   display:flex;
   justify-content:space-between;
   gap:var(--modal-credit-row-gap);
+  min-width:0;
 }
 
 .credit-role{
   opacity:.7;
   text-align:left;
+  min-width:0;
+  overflow-wrap:anywhere;
 }
 
 .credit-name{
   font-weight:500;
   text-align:right;
+  min-width:0;
+  overflow-wrap:anywhere;
 }
 
 .modal__credit-close{
@@ -1244,6 +1270,110 @@ body.view-right .inner-shell{
 }
 
 @media (pointer:coarse){
+  .modal{
+    align-items:center;
+    justify-content:center;
+    padding:
+      max(14px, env(safe-area-inset-top))
+      14px
+      calc(56px + env(safe-area-inset-bottom));
+  }
+
+  .modal__content{
+    width:min(94vw, 126svh);
+    max-width:none;
+    max-height:calc(100svh - 86px - env(safe-area-inset-bottom));
+    box-shadow:none;
+  }
+
+  .modal__video-frame{
+    max-height:none;
+  }
+
+  .modal__footer{
+    margin-top:8px;
+    padding-bottom:0;
+    position:relative;
+    z-index:3;
+  }
+
+  .modal__credit{
+    position:fixed;
+    inset:
+      max(14px, env(safe-area-inset-top))
+      14px
+      calc(66px + env(safe-area-inset-bottom))
+      14px;
+    z-index:calc(var(--z-modal) + 1);
+    align-items:flex-start;
+    justify-content:center;
+    padding:clamp(18px, 4vw, 30px) 0;
+    background:rgba(0,0,0,.88);
+  }
+
+  .modal__credit-inner{
+    width:min(100%, 560px);
+    max-width:none;
+    padding:0 12px;
+    text-align:left;
+  }
+
+  .modal__credit-title{
+    font-size:clamp(.82rem, 3.6vw, 1rem);
+    line-height:1.32;
+    letter-spacing:.08em;
+    margin-bottom:14px;
+  }
+
+  .modal__credit-list{
+    font-size:clamp(.68rem, 3vw, .86rem);
+    line-height:1.42;
+    margin-bottom:0;
+    gap:0;
+  }
+
+  .credit-row{
+    display:grid;
+    grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
+    align-items:start;
+    gap:8px;
+    padding:7px 0;
+    border-bottom:1px solid rgba(255,255,255,.14);
+  }
+
+  .credit-row:first-child{
+    border-top:1px solid rgba(255,255,255,.14);
+  }
+
+  .credit-role{
+    line-height:1.35;
+  }
+
+  .credit-name{
+    line-height:1.35;
+  }
+
+  .modal.modal--credit-open .modal__footer{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:calc(18px + env(safe-area-inset-bottom));
+    z-index:calc(var(--z-modal) + 2);
+    margin:0;
+    padding:0;
+    pointer-events:none;
+  }
+
+  .modal.modal--credit-open .modal__credit-toggle{
+    pointer-events:auto;
+    padding:8px 0;
+  }
+
+  .modal.modal--credit-open .modal__close-line{
+    opacity:0;
+    pointer-events:none;
+  }
+
   .modal__close-line{
     height:1px;
     background:transparent;
@@ -1262,6 +1392,79 @@ body.view-right .inner-shell{
     box-shadow:
       0 0 6px rgba(255,255,255,.25),
       0 0 18px rgba(255,255,255,.12);
+  }
+}
+
+@media (pointer:coarse) and (max-width:480px){
+  .modal__credit-inner{
+    padding:0 10px;
+  }
+
+  .credit-row{
+    grid-template-columns:1fr;
+    gap:2px;
+  }
+
+  .credit-role,
+  .credit-name{
+    text-align:left;
+  }
+
+  .credit-role{
+    font-size:.9em;
+  }
+}
+
+@media (pointer:coarse) and (orientation:landscape){
+  .modal{
+    padding:
+      max(10px, env(safe-area-inset-top))
+      16px
+      calc(42px + env(safe-area-inset-bottom));
+  }
+
+  .modal__content{
+    width:min(94vw, 132svh);
+    max-height:calc(100svh - 58px - env(safe-area-inset-bottom));
+  }
+
+  .modal__footer{
+    margin-top:6px;
+  }
+
+  .modal__credit{
+    inset:
+      max(10px, env(safe-area-inset-top))
+      16px
+      calc(50px + env(safe-area-inset-bottom))
+      16px;
+    padding:10px 0;
+  }
+
+  .modal__credit-inner{
+    width:min(100%, 680px);
+    padding:0 10px;
+  }
+
+  .modal__credit-title{
+    font-size:.72rem;
+    line-height:1.22;
+    margin-bottom:8px;
+  }
+
+  .modal__credit-list{
+    font-size:.62rem;
+    line-height:1.18;
+  }
+
+  .credit-row{
+    grid-template-columns:minmax(0, .9fr) minmax(0, 1.2fr);
+    gap:8px;
+    padding:4px 0;
+  }
+
+  .modal.modal--credit-open .modal__footer{
+    bottom:calc(8px + env(safe-area-inset-bottom));
   }
 }
 
@@ -1455,7 +1658,8 @@ body.view-right .inner-shell{
 }
 
 /* =========================================================
-   13-04. タッチ横向き
+   13-04. Touch Landscape
+   Keep the desktop three-panel model; only widen touch scrolling.
 ========================================================= */
 @media (pointer:coarse) and (orientation:landscape){
   :root{
@@ -1465,11 +1669,12 @@ body.view-right .inner-shell{
 
     /* 画面ナビ / 戻る導線 */
     --view-header-size:1.6rem;
-    --edge-btn-size:1.4rem;
+    --edge-btn-size:1.25rem;
 
     /* Gallery リスト */
-    --gallery-item-size:1.5rem;
-    --gallery-meta-size:1.08rem;
+    --gallery-item-size:1.05rem;
+    --gallery-meta-size:.74rem;
+    --gallery-item-pad-y:7px;
 
     /* Contact 本文 */
     --contact-block-size:1.18rem;
@@ -1505,7 +1710,7 @@ body.view-right .inner-shell{
   .gallery-panel{
     display:flex;
     flex-direction:column;
-    height:min(470px, calc(100svh - 72px));
+    height:min(560px, calc(100svh - 48px));
     min-height:0;
     overflow:hidden;
   }
@@ -1521,14 +1726,22 @@ body.view-right .inner-shell{
     touch-action:pan-y !important;
   }
 }
-/* 13-5 sndafilwdbsvak
-d faefbheavbhjaefjvbasfjlv
-ｓんｈｆｂjdwkbvjk*/
+/* =========================================================
+   13-05. Touch Portrait / Mobile Stage
+   Contract:
+   - PC and touch-landscape rules above must not be affected.
+   - Gallery / Contact / About are the original Home-panel buttons.
+   - The nav is stage-local absolute, not fixed: it stays visually still
+     during horizontal panel changes, then scrolls away with #top.
+   - Gallery preview switches in the center screen; the main video is hidden
+     in Gallery and softly visible behind Contact.
+========================================================= */
 @media (pointer:coarse) and (orientation:portrait){
 
+  /* 13-05-01. Portrait tokens */
   :root{
     --view-header-size:1rem;
-    --edge-btn-size:.92rem;
+    --edge-btn-size:.86rem;
 
     --gallery-item-size:.62rem;
     --gallery-meta-size:.46rem;
@@ -1539,17 +1752,20 @@ d faefbheavbhjaefjvbasfjlv
 
     --mobile-video-frame-w:100vw;
     --mobile-video-frame-h:56.25vw;
+    --mobile-video-frame-half-h:28.125vw;
 
     --mobile-ui-inset-x:24px;
     --mobile-ui-inset-y:24px;
     --mobile-nav-right:var(--mobile-ui-inset-x);
     --mobile-nav-top:72px;
-    --mobile-nav-gap:30px;
-    --mobile-nav-step:50px;
+    --mobile-nav-gap:44px;
+    --mobile-nav-step:44px;
+    --mobile-nav-video-gap:28px;
   }
 
+  /* 13-05-02. Page and stage shell */
   body.is-stage-scroll-lock{
-    overflow:auto;
+    overflow:hidden;
     overflow-x:hidden;
   }
 
@@ -1587,18 +1803,7 @@ d faefbheavbhjaefjvbasfjlv
     transform:none !important;
   }
 
-  body.view-left .outer-space{
-    transform:none !important;
-  }
-
-  body.view-center .outer-space{
-    transform:none !important;
-  }
-
-  body.view-right .outer-space{
-    transform:none !important;
-  }
-
+  /* 13-05-03. Three-panel mobile layout */
   .view{
     position:absolute;
     inset:0;
@@ -1635,9 +1840,6 @@ d faefbheavbhjaefjvbasfjlv
 
   .view.view-center{
     transform:none;
-  }
-
-  .view.view-center{
     z-index:60;
   }
 
@@ -1646,6 +1848,7 @@ d faefbheavbhjaefjvbasfjlv
     z-index:30;
   }
 
+  /* 13-05-04. Pointer routing */
   body.view-left .view-left,
   body.view-right .view-right{
     pointer-events:auto;
@@ -1665,6 +1868,7 @@ d faefbheavbhjaefjvbasfjlv
     pointer-events:auto;
   }
 
+  /* 13-05-05. Center screen: main video and Gallery preview */
   .inner-shell{
     position:fixed;
     inset:0;
@@ -1770,6 +1974,7 @@ d faefbheavbhjaefjvbasfjlv
     display:none;
   }
 
+  /* 13-05-06. Labels, nav, and mute */
   .view-header{
     display:block !important;
     position:absolute !important;
@@ -1813,16 +2018,21 @@ d faefbheavbhjaefjvbasfjlv
     z-index:140 !important;
   }
 
+  /* Home-panel nav. It is absolute inside #top so vertical About scroll
+     carries it away; do not convert this back to position:fixed. */
   .view.view-center > .view-inner > .edge-btn[data-stage-view="left"]{
-    top:calc(var(--mobile-nav-top) - var(--mobile-ui-inset-y) + var(--mobile-nav-step)) !important;
+    top:auto !important;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) + var(--mobile-nav-step)) !important;
   }
 
   .view.view-center > .view-inner > .edge-btn[data-stage-view="right"]{
-    top:calc(var(--mobile-nav-top) - var(--mobile-ui-inset-y) + var(--mobile-nav-step) * 2) !important;
+    top:auto !important;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step)) !important;
   }
 
   .view.view-center > .view-inner > .edge-btn[data-scroll-to="#about"]{
-    top:calc(var(--mobile-nav-top) - var(--mobile-ui-inset-y) + var(--mobile-nav-step) * 3) !important;
+    top:auto !important;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap)) !important;
   }
 
   .view.view-left .edge-btn[data-stage-view="center"],
@@ -1835,6 +2045,8 @@ d faefbheavbhjaefjvbasfjlv
     border-bottom-color:transparent !important;
   }
 
+  /* Side-panel Home button occupies the first nav row only when that panel
+     is active. Home screen itself keeps Home hidden. */
   body.view-left .view.view-left .edge-btn[data-stage-view="center"],
   body.view-right .view.view-right .edge-btn[data-stage-view="center"]{
     opacity:1 !important;
@@ -1854,6 +2066,7 @@ d faefbheavbhjaefjvbasfjlv
     right:calc(var(--mobile-ui-inset-x) - var(--global-mute-pad));
   }
 
+  /* 13-05-07. Side-panel backgrounds and alignment */
   .view.view-left::before,
   .view.view-right::before{
     content:"";
@@ -1897,6 +2110,7 @@ d faefbheavbhjaefjvbasfjlv
     display:none;
   }
 
+  /* 13-05-08. Gallery list */
   .gallery-panel{
     position:absolute;
     left:0;
@@ -1915,6 +2129,8 @@ d faefbheavbhjaefjvbasfjlv
     transform:translateY(-50%);
   }
 
+  /* The panel is taller than the text needs so swipe scrolling feels reliable
+     on touch screens while text stays left of the center preview. */
   .gallery-scroll{
     width:100%;
     height:100%;
@@ -1962,6 +2178,7 @@ d faefbheavbhjaefjvbasfjlv
     margin-top:2px;
   }
 
+  /* 13-05-09. Contact */
   .contact-block{
     max-width:calc(100vw - 48px);
     margin-top:0;
@@ -1985,6 +2202,7 @@ d faefbheavbhjaefjvbasfjlv
     text-align:right;
   }
 
+  /* 13-05-10. About */
   #about{
     position:relative;
     z-index:2;
