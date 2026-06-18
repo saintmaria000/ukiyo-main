@@ -1548,7 +1548,7 @@ body.view-right .inner-shell{
     --video-side-safe:32px;
 
     /* About 全体 */
-    --about-content-pad-top:100px;
+    --about-content-pad-top:0px;
     --about-content-pad-x:7vw;
     --about-content-pad-bottom:120px;
   }
