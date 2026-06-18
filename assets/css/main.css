@@ -276,7 +276,7 @@ a{
   --about-content-pad-bottom:180px;
 
   /* About ロゴ */
-  --about-hero-min-h:95svh;
+  --about-hero-min-h:100svh;
   --about-hero-pad-top:45px;
   --about-hero-pad-bottom:0px;
   --about-hero-gap:25px;
