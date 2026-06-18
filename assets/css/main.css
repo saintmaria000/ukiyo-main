@@ -70,21 +70,22 @@ a { color: inherit; }
      stage-w = 100vw にすることで stage.scale.js が不要になる。
      outer-space の移動量・inner-shell のシフトがすべて vw 基準に統一される。
   ---------------------------------------- */
-  --stage-perspective:      1600px;
+  --stage-perspective:      none;
   --stage-pad-y:            40px;
   --stage-pad-x:            clamp(24px, 3.75vw, 90px);
   --edge-offset:            clamp(18px, 2.1vw,  32px);
 
-  /* --- Camera（体験の核心・触らない）---
-     inner-shell-side-shift: 80vw = 画面1枚分より少し手前で止まる。
-     動画の端が画面端からはみ出しつつ少し残る意図的な見切れ。
-     inner-shell-depth: -350px + perspective 1600px = 約21%縮んで見える奥行き。
+  /* --- Camera（体験の核心）---
+     side-shift: 画面1枚分より少し手前で止まる。動画端が見切れて残る。
+     shrink:     左右パネルに移動したとき動画が小さく引いて見える縮小率。
+                 元: perspective(1600px) + translateZ(-350px) → 1600/(1600+350) ≈ 0.82
   ---------------------------------------- */
   --inner-shell-side-shift: 80vw;
-  --inner-shell-depth:      -350px;
+  --inner-shell-shrink:     0.82;
 
   /* --- 主要レイアウト寸法 --- */
-  --video-w:   clamp(480px, 60vw, 960px);
+  /* video-w: 元の固定値。clampにしない——動画サイズは意図的に固定。 */
+  --video-w:   960px;
   --gallery-w: clamp(178px, 22vw, 520px);
   --contact-w: clamp(220px, 30vw, 750px);
 
@@ -224,7 +225,6 @@ body.is-pull-hint-visible .pull-return {
   inset: 0;
   width: 100vw;
   height: 100svh;
-  perspective: var(--stage-perspective);
 }
 
 .outer-space {
@@ -269,8 +269,8 @@ body.is-pull-hint-visible .pull-return {
    06. Camera
 
    パネル移動: outer-space を translateX で1画面ずつスライド。
-   動画の浮遊: inner-shell は translateZ（奥行き）+ translateX（横）の合成。
-   80vw シフト = 画面1枚分より少し手前で止まり、動画端が見切れて残る。
+   動画の浮遊: scale で小さく引きながら translateX で横にずれる。
+   shrink(0.82) + side-shift(80vw) = 縮みながら見切れて残る。
 ========================================================= */
 body.view-center .outer-space { transform: translateX(-100vw); }
 body.view-left   .outer-space { transform: translateX(0); }
@@ -291,14 +291,14 @@ body.view-center .inner-shell {
 body.view-left .inner-shell {
   transform:
     translate(-50%, -50%)
-    translateZ(var(--inner-shell-depth))
-    translateX(var(--inner-shell-side-shift));
+    translateX(var(--inner-shell-side-shift))
+    scale(var(--inner-shell-shrink));
 }
 body.view-right .inner-shell {
   transform:
     translate(-50%, -50%)
-    translateZ(var(--inner-shell-depth))
-    translateX(calc(var(--inner-shell-side-shift) * -1));
+    translateX(calc(var(--inner-shell-side-shift) * -1))
+    scale(var(--inner-shell-shrink));
 }
 
 /* =========================================================
