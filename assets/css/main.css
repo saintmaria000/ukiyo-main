@@ -173,7 +173,7 @@ a{
   --contact-value-size:1.14rem;
 
   /* About ロゴ */
-  --about-logo-main-size:6.2rem;
+  --about-logo-main-size:5.2rem;
   --about-logo-sub-size:1.24rem;
 
   /* About 紹介文 */
@@ -277,7 +277,7 @@ a{
 
   /* About ロゴ */
   --about-hero-min-h:100svh;
-  --about-hero-pad-top:45px;
+  --about-hero-pad-top:0px;
   --about-hero-pad-bottom:0px;
   --about-hero-gap:25px;
   --about-hero-max-w:1280px;
