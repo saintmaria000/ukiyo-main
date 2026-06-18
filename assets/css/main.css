@@ -1759,7 +1759,7 @@ body.view-right .inner-shell{
     --mobile-nav-right:var(--mobile-ui-inset-x);
     --mobile-nav-top:72px;
     --mobile-nav-gap:42px;
-    --mobile-nav-step:42px;
+    --mobile-nav-step:32px;
     --mobile-nav-video-gap:52px;
   }
 
