@@ -644,8 +644,13 @@ body.view-right .inner-shell{
 }
 
 @media (pointer:fine) and (orientation:landscape){
-  .video-frame{
+  .inner-shell{
     width:var(--landscape-video-w, var(--video-w));
+    max-width:none;
+  }
+
+  .video-frame{
+    width:100%;
     max-width:none;
   }
 }
