@@ -752,7 +752,7 @@ body.view-right .inner-shell{
   transform:scale(1);
 }
 
-@media (pointer:fine){
+@media (orientation:landscape){
   .gallery-preview{
     background:transparent;
   }
