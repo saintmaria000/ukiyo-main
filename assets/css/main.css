@@ -2731,8 +2731,10 @@ body.view-right .inner-shell{
    overflow-y: auto → 長いクレジットも見切れない
 ----------------------------------------- */
 .modal__credit {
-  align-items: flex-start;
-  padding: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0 !important;
+  width: 100% !important;
   overflow-y: auto;
 }
 
@@ -2795,8 +2797,9 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 @media (pointer:coarse) {
   .modal__credit {
-    align-items: flex-start;
-    padding: 0;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0 !important;
   }
 
   .modal__credit-inner {
@@ -2846,8 +2849,9 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape) {
   .modal__credit {
-    padding: 0;
-    align-items: flex-start;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0 !important;
   }
 
   .modal__credit-inner {
