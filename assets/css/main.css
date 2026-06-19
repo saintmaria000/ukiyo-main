@@ -752,6 +752,12 @@ body.view-right .inner-shell{
   transform:scale(1);
 }
 
+@media (pointer:fine){
+  .gallery-preview{
+    background:transparent;
+  }
+}
+
 .center-gallery-preview{
   display:none;
 }
