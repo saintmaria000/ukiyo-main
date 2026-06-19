@@ -2712,9 +2712,9 @@ body.view-right .inner-shell{
 :root {
   --modal-credit-inner-max-w: none;
   --modal-credit-inner-width: 100%;
-  --modal-credit-inner-pad-top: 32px;
-  --modal-credit-inner-pad-x: clamp(24px, 3vw, 48px);
-  --modal-credit-inner-pad-bottom: 32px;
+  --modal-credit-inner-pad-top: 0px;
+  --modal-credit-inner-pad-x: 0px;
+  --modal-credit-inner-pad-bottom: 0px;
 
   --modal-credit-title-size: clamp(0.9rem, 1.1vw, 1.1rem);
   --modal-credit-list-size: clamp(0.78rem, 0.9vw, 0.95rem);
@@ -2730,7 +2730,7 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 .modal__credit {
   align-items: flex-start;
-  padding: clamp(24px, 3vw, 48px);
+  padding: 0;
   overflow-y: auto;
 }
 
@@ -2739,15 +2739,14 @@ body.view-right .inner-shell{
    モーダル幅にぴったり合わせる / 内部スクロールなし
 ----------------------------------------- */
 .modal__credit-inner {
-  max-width: none;
-  width: 100%;
+  max-width: none !important;
+  width: 100% !important;
+  min-width: 0;
   max-height: none;
   overflow-y: visible;
   text-align: center;
-  padding:
-    var(--modal-credit-inner-pad-top)
-    var(--modal-credit-inner-pad-x)
-    var(--modal-credit-inner-pad-bottom);
+  padding: 0 !important;
+  box-sizing: border-box;
 }
 
 /* -----------------------------------------
@@ -2795,13 +2794,13 @@ body.view-right .inner-shell{
 @media (pointer:coarse) {
   .modal__credit {
     align-items: flex-start;
-    padding: clamp(16px, 4vw, 28px);
+    padding: 0;
   }
 
   .modal__credit-inner {
     width: 100%;
     max-width: none;
-    padding: 0 12px;
+    padding: 0;
     text-align: center;
     overflow-y: visible;
     max-height: none;
@@ -2845,14 +2844,14 @@ body.view-right .inner-shell{
 ----------------------------------------- */
 @media (pointer:coarse) and (orientation:landscape) {
   .modal__credit {
-    padding: 10px clamp(10px, 2vw, 20px);
+    padding: 0;
     align-items: flex-start;
   }
 
   .modal__credit-inner {
     width: 100%;
     max-width: none;
-    padding: 0 8px;
+    padding: 0;
     overflow-y: visible;
     max-height: none;
   }
