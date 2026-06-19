@@ -2700,3 +2700,208 @@ body.view-right .inner-shell{
     background:rgba(0,0,0,.46);
   }
 }
+/* =========================================================
+   Modal Credit — 修正パッチ
+   既存CSSの末尾にこのファイルを読み込む、または
+   該当箇所に上書きしてください
+========================================================= */
+
+/* -----------------------------------------
+   変数の上書き
+----------------------------------------- */
+:root {
+  --modal-credit-inner-max-w: none;
+  --modal-credit-inner-width: 100%;
+  --modal-credit-inner-pad-top: 32px;
+  --modal-credit-inner-pad-x: clamp(24px, 3vw, 48px);
+  --modal-credit-inner-pad-bottom: 32px;
+
+  --modal-credit-title-size: clamp(0.9rem, 1.1vw, 1.1rem);
+  --modal-credit-list-size: clamp(0.78rem, 0.9vw, 0.95rem);
+  --modal-credit-list-line: 1.5;
+  --modal-credit-list-gap: 0px;
+  --modal-credit-title-gap: clamp(16px, 2vw, 28px);
+}
+
+/* -----------------------------------------
+   .modal__credit
+   align-items を flex-start に → コンテンツが上から始まる
+   overflow-y: auto → 長いクレジットも見切れない
+----------------------------------------- */
+.modal__credit {
+  align-items: flex-start;
+  padding: clamp(24px, 3vw, 48px);
+  overflow-y: auto;
+}
+
+/* -----------------------------------------
+   .modal__credit-inner
+   モーダル幅にぴったり合わせる / 内部スクロールなし
+----------------------------------------- */
+.modal__credit-inner {
+  max-width: none;
+  width: 100%;
+  max-height: none;
+  overflow-y: visible;
+  text-align: center;
+  padding:
+    var(--modal-credit-inner-pad-top)
+    var(--modal-credit-inner-pad-x)
+    var(--modal-credit-inner-pad-bottom);
+}
+
+/* -----------------------------------------
+   .modal__credit-list
+   auto-fit グリッド：幅に応じて列数が自動で変わる
+----------------------------------------- */
+.modal__credit-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: clamp(8px, 1.2vw, 16px);
+  margin-bottom: 0;
+}
+
+/* -----------------------------------------
+   .credit-row
+   flex column で 役職 → 名前 の縦並び・中央揃え
+----------------------------------------- */
+.credit-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: clamp(8px, 1vw, 14px) clamp(10px, 1.2vw, 18px);
+  border: none;
+  grid-template-columns: unset;
+}
+
+.credit-role {
+  opacity: .7;
+  font-size: clamp(0.68rem, 0.82vw, 0.8rem);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.credit-name {
+  font-size: clamp(0.88rem, 1vw, 1rem);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* -----------------------------------------
+   pointer:coarse（スマホ縦）
+----------------------------------------- */
+@media (pointer:coarse) {
+  .modal__credit {
+    align-items: flex-start;
+    padding: clamp(16px, 4vw, 28px);
+  }
+
+  .modal__credit-inner {
+    width: 100%;
+    max-width: none;
+    padding: 0 12px;
+    text-align: center;
+    overflow-y: visible;
+    max-height: none;
+  }
+
+  .modal__credit-list {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: clamp(6px, 2vw, 12px);
+    margin-bottom: 0;
+  }
+
+  .credit-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 6px;
+    border-bottom: none;
+    grid-template-columns: unset;
+  }
+
+  .credit-row:first-child {
+    border-top: none;
+  }
+
+  .credit-role {
+    font-size: clamp(0.6rem, 2.8vw, 0.76rem);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .credit-name {
+    font-size: clamp(0.78rem, 3.2vw, 0.92rem);
+    text-align: center;
+    line-height: 1.3;
+  }
+}
+
+/* -----------------------------------------
+   pointer:coarse + landscape
+----------------------------------------- */
+@media (pointer:coarse) and (orientation:landscape) {
+  .modal__credit {
+    padding: 10px clamp(10px, 2vw, 20px);
+    align-items: flex-start;
+  }
+
+  .modal__credit-inner {
+    width: 100%;
+    max-width: none;
+    padding: 0 8px;
+    overflow-y: visible;
+    max-height: none;
+  }
+
+  .modal__credit-list {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 6px;
+  }
+
+  .credit-row {
+    padding: 4px 6px;
+    gap: 2px;
+  }
+
+  .credit-role {
+    font-size: clamp(0.56rem, 1.8svh, 0.7rem);
+  }
+
+  .credit-name {
+    font-size: clamp(0.68rem, 2svh, 0.82rem);
+  }
+}
+
+/* -----------------------------------------
+   orientation:landscape 共通
+----------------------------------------- */
+@media (orientation:landscape) {
+  .modal__credit-inner {
+    text-align: center;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .credit-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 0;
+    border-bottom: 0;
+    grid-template-columns: unset;
+  }
+
+  .credit-row:first-child {
+    border-top: 0;
+  }
+
+  .credit-role,
+  .credit-name {
+    text-align: center;
+  }
+}
