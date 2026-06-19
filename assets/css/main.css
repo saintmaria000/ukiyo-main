@@ -1188,8 +1188,9 @@ body.view-right .inner-shell{
 }
 
 .credit-row{
-  display:flex;
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
+  align-items:baseline;
   gap:var(--modal-credit-row-gap);
   min-width:0;
 }
@@ -1203,7 +1204,7 @@ body.view-right .inner-shell{
 
 .credit-name{
   font-weight:500;
-  text-align:right;
+  text-align:left;
   min-width:0;
   overflow-wrap:anywhere;
 }
@@ -1328,7 +1329,6 @@ body.view-right .inner-shell{
   }
 
   .credit-row{
-    display:grid;
     grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
     align-items:start;
     gap:8px;
@@ -1342,10 +1342,12 @@ body.view-right .inner-shell{
 
   .credit-role{
     line-height:1.35;
+    text-align:left;
   }
 
   .credit-name{
     line-height:1.35;
+    text-align:left;
   }
 
   .modal.modal--credit-open .modal__footer{
@@ -1396,8 +1398,8 @@ body.view-right .inner-shell{
   }
 
   .credit-row{
-    grid-template-columns:1fr;
-    gap:2px;
+    grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
+    gap:6px;
   }
 
   .credit-role,
