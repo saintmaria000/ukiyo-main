@@ -2,6 +2,8 @@
 (() => {
   const STAGE_W = 2400;
   const STAGE_H = 1080;
+  const VIDEO_ASPECT = 16 / 9;
+  const LANDSCAPE_VIDEO_RATIO = 0.8;
   const COARSE_POINTER = "(pointer:coarse)";
 
   function readVV() {
@@ -38,12 +40,17 @@
     const { w, h, top, left } = readVV();
     const root = document.documentElement.style;
     const scale = readStageScale(w, h);
+    const landscapeVideoW = Math.min(
+      w * LANDSCAPE_VIDEO_RATIO,
+      h * LANDSCAPE_VIDEO_RATIO * VIDEO_ASPECT
+    ) / scale;
 
     root.setProperty("--stage-scale", String(scale));
     root.setProperty("--vvw", `${w}px`);
     root.setProperty("--vvh", `${h}px`);
     root.setProperty("--vv-top", `${top}px`);
     root.setProperty("--vv-left", `${left}px`);
+    root.setProperty("--landscape-video-w", `${landscapeVideoW}px`);
 
     return scale;
   }
