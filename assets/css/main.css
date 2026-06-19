@@ -1465,6 +1465,42 @@ body.view-right .inner-shell{
   }
 }
 
+@media (orientation:landscape){
+  .modal__credit{
+    overflow-y:auto;
+  }
+
+  .modal__credit-inner{
+    text-align:center;
+    max-height:100%;
+    margin-block:auto;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+
+  .modal__credit-list{
+    gap:4px;
+  }
+
+  .credit-row{
+    grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
+    align-items:baseline;
+    gap:var(--modal-credit-row-gap);
+    padding:0;
+    border-bottom:0;
+  }
+
+  .credit-row:first-child{
+    border-top:0;
+  }
+
+  .credit-role,
+  .credit-name{
+    text-align:left;
+  }
+}
+
 @keyframes closeLineGlow{
   0%{
     opacity:.55;
