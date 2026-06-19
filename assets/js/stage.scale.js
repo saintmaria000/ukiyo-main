@@ -3,7 +3,7 @@
   const STAGE_W = 2400;
   const STAGE_H = 1080;
   const VIDEO_ASPECT = 16 / 9;
-  const LANDSCAPE_VIDEO_RATIO = 0.8;
+  const LANDSCAPE_VIDEO_RATIO = 0.74;
   const COARSE_POINTER = "(pointer:coarse)";
 
   function readVV() {

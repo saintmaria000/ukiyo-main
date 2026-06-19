@@ -11,6 +11,9 @@
   const creditToggle  = document.getElementById('creditToggleBtn');
   const creditTitle   = document.getElementById('modalCreditTitle');
   const creditListEl  = document.getElementById('modalCreditList');
+  const creditInner   = creditOverlay
+    ? creditOverlay.querySelector('.modal__credit-inner')
+    : null;
 
   let lastActiveEl = null;
   let lastScrollY = 0;
@@ -220,6 +223,11 @@
     });
   }
 
+  function resetCreditScroll() {
+    if (creditOverlay) creditOverlay.scrollTop = 0;
+    if (creditInner) creditInner.scrollTop = 0;
+  }
+
   // =========================
   // OPEN
   // =========================
@@ -237,12 +245,14 @@
     }
 
     renderCredits(title, credits);
+    resetCreditScroll();
 
     modal.classList.add('modal--open');
     modal.setAttribute('aria-hidden', 'false');
     lockScroll();
 
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
+    resetCreditScroll();
     modal.classList.remove('modal--credit-open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
@@ -273,6 +283,7 @@
     if (modalVideo) modalVideo.src = '';
 
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
+    resetCreditScroll();
     modal.classList.remove('modal--credit-open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
@@ -303,6 +314,10 @@
       creditOverlay.classList.toggle('modal__credit--open', !isOpen);
       modal.classList.toggle('modal--credit-open', !isOpen);
       creditToggle.textContent = isOpen ? 'Credit' : 'Close';
+      if (!isOpen) {
+        resetCreditScroll();
+        requestAnimationFrame(resetCreditScroll);
+      }
     });
   }
 
