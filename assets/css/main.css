@@ -295,7 +295,8 @@ a{
   --about-back-margin-top:30px;
 
   /* Modal 表示枠 */
-  --modal-width:min(92vw, 1400px);
+  /* --modal-height:min(80vw, 1400px); */
+  --modal-width:min(80vw, 1400px);
   --modal-max-w:1400px;
   --modal-video-max-h:80vh;
 
@@ -1077,6 +1078,7 @@ body.view-right .inner-shell{
 .modal__content{
   position:relative;
   z-index:1;
+  /* height:var(--modal-height); */
   width:var(--modal-width);
   max-width:var(--modal-max-w);
   max-height:calc(100svh - 72px);
