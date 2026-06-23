@@ -4,33 +4,12 @@
   const galleryScroll = document.querySelector('.view.view-left .gallery-scroll');
 
   const mqCoarse = window.matchMedia('(pointer: coarse)');
-  const mqPortrait = window.matchMedia('(pointer: coarse) and (orientation: portrait)');
-  const mqLandscape = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
   let touchState = null;
   let hintRaf = 0;
 
-  function isSideView() {
-    return (
-      body.classList.contains('view-left') ||
-      body.classList.contains('view-right')
-    );
-  }
-
-  function isTouchStage() {
-    return mqPortrait.matches || mqLandscape.matches;
-  }
-
   function isAboutArea() {
     return window.scrollY > 20;
-  }
-
-  function shouldLockPageScroll() {
-    return false;
-  }
-
-  function updateStageScrollLock() {
-    body.classList.toggle('is-stage-scroll-lock', shouldLockPageScroll());
   }
 
   function updateGalleryContinueHint() {
@@ -110,19 +89,8 @@
     touchState = null;
   }
 
-  window.addEventListener('resize', updateStageScrollLock);
-  window.addEventListener('orientationchange', updateStageScrollLock);
-  window.addEventListener('scroll', updateStageScrollLock, { passive: true });
   window.addEventListener('resize', requestGalleryHintUpdate);
   window.addEventListener('orientationchange', requestGalleryHintUpdate);
-
-  [mqCoarse, mqPortrait, mqLandscape].forEach((mq) => {
-    if (mq.addEventListener) {
-      mq.addEventListener('change', updateStageScrollLock);
-    } else {
-      mq.addListener(updateStageScrollLock);
-    }
-  });
 
   if (galleryScroll) {
     galleryScroll.addEventListener('touchstart', onGalleryTouchStart, { passive: true });
@@ -136,13 +104,6 @@
     galleryPanel.addEventListener('galleryloopready', requestGalleryHintUpdate);
   }
 
-  const observer = new MutationObserver(updateStageScrollLock);
-
-  observer.observe(body, {
-    attributes: true,
-    attributeFilter: ['class']
-  });
-
-  updateStageScrollLock();
+  body.classList.remove('is-stage-scroll-lock');
   requestGalleryHintUpdate();
 })();

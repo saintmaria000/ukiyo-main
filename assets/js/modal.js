@@ -144,13 +144,14 @@
     ytCommandTo(mainVideo, "playVideo");
   }
 
-  // 毎回アンミュート保証（前の動画の状態を引き継がない）
-  function forceUnmuteYouTubeSoon(iframeEl) {
+  // 現在のmute状態をモーダル動画にも反映する
+  function forceYouTubeMuteStateSoon(iframeEl, muted) {
     if (!iframeEl) return;
 
+    const command = muted ? "mute" : "unMute";
     const start = Date.now();
     const timer = setInterval(() => {
-      ytCommandTo(iframeEl, "unMute");
+      ytCommandTo(iframeEl, command);
       if (Date.now() - start > 1200) clearInterval(timer);
     }, 200);
   }
@@ -173,10 +174,21 @@
   function lockScroll() {
     lastScrollY = window.scrollY || 0;
     document.body.classList.add('is-modal-open');
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${lastScrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
   }
 
   function unlockScroll() {
     document.body.classList.remove('is-modal-open');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, lastScrollY);
   }
 
   // =========================
@@ -234,7 +246,7 @@
     // モーダル動画セット
     if (modalVideo) {
       modalVideo.src = withEnableJsApi(video || '');
-      forceUnmuteYouTubeSoon(modalVideo); // ← 重要
+      forceYouTubeMuteStateSoon(modalVideo, globalMuteWasMuted === true);
     }
 
     renderCredits(title, credits);
@@ -251,12 +263,6 @@
 
     // 背景は常に再生維持
     resumeKeepPlayingVideos();
-
-    // グローバルUIもアンミュートへ
-    if (window.GlobalMute) {
-      window.GlobalMute.set(false);
-      pauseMainVideoForModal();
-    }
 
     const firstClose = modal.querySelector('[data-modal-close]');
     if (firstClose) firstClose.focus();

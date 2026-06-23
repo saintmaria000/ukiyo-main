@@ -3040,9 +3040,8 @@ body.view-right .inner-shell{
 /* =========================================================
    Gallery Continue Hint / Body Scroll
 ========================================================= */
-body.is-stage-scroll-lock,
 body.is-modal-open{
-  overflow-y:auto !important;
+  overflow:hidden !important;
 }
 
 .gallery-panel::after{
