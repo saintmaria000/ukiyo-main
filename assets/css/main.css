@@ -1729,7 +1729,7 @@ body.view-right .inner-shell{
     --contact-value-size:.82rem;
 
     /* About 紹介文 */
-    --about-lead-size:.9rem;
+    --about-lead-size:.8rem;
 
     /* About リスト本文 */
     --about-heading-size:1.2rem;
@@ -1822,7 +1822,6 @@ body.view-right .inner-shell{
     --contact-value-size:.86rem;
 
     --about-logo-main-size: 4.2rem;
-    --about-lead-size:.8rem;
     --about-heading-size:1.2rem;
     --about-body-size:.95rem;
     --about-col-title-size:1.05rem;
