@@ -166,7 +166,7 @@ a{
   --about-logo-main-size: 5.2rem;
   --about-logo-sub-size:  1.24rem;
 
-  --about-lead-size:    clamp(.95rem, 1.11vw, 1rem);
+  --about-lead-size:    clamp(.75rem, 1.11vw, 1rem);
   --about-heading-size: clamp(1.4rem, 1.64vw, 1.7rem);
   --about-body-size:    clamp(1rem,   1.17vw, 1.12rem);
 
