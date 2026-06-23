@@ -166,7 +166,7 @@ a{
   --about-logo-main-size: 5.2rem;
   --about-logo-sub-size:  1.24rem;
 
-  --about-lead-size:    clamp(.75rem, 1.11vw, 1rem);
+  --about-lead-size:    clamp(.95rem, 1.11vw, 1rem);
   --about-heading-size: clamp(1.4rem, 1.64vw, 1.7rem);
   --about-body-size:    clamp(1rem,   1.17vw, 1.12rem);
 
@@ -359,7 +359,6 @@ a{
   display:block;
   fill:#fff;
   stroke:#fff;
-  mix-blend-mode:difference;
 }
 
 .icon-cross{
@@ -397,7 +396,7 @@ body.is-pull-hint-visible .pull-return{
   letter-spacing:var(--pull-return-link-letter-spacing);
   text-transform:none;
   color:#fff;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
   text-decoration:none;
   padding-bottom:var(--pull-return-link-pad-bottom);
   opacity:var(--pull-return-link-opacity);
@@ -468,7 +467,7 @@ body.is-pull-hint-visible .pull-return{
   text-transform:uppercase;
   opacity:.8;
   color:#fff;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
 }
 
 .view.view-left .view-header{
@@ -596,7 +595,7 @@ body.view-right .inner-shell{
   letter-spacing:var(--edge-btn-spacing);
   text-transform:uppercase;
   color:#fff;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
   opacity:.8;
   cursor:pointer;
   padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
@@ -604,12 +603,21 @@ body.view-right .inner-shell{
   min-height:var(--edge-btn-min-h);
   z-index:var(--z-stage-component);
   pointer-events:auto;
-  transition:color .2s ease, filter .2s ease, transform .1s ease;
+  transition:color .3s ease, filter .2s ease, transform .1s ease;
 }
 
 .edge-btn:hover{
   color:#fff;
   filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
+}
+
+/* -----------------------------------------
+   動画輝度連動 — JS が body.is-bright を付与したとき
+   edge-btn のみ黒反転。text-shadow は白固定のまま。
+   transition で滑らかに切り替わる。
+----------------------------------------- */
+body.is-bright .edge-btn{
+  color:#000;
 }
 
 .edge-btn--left{
@@ -728,9 +736,9 @@ body.view-right .inner-shell{
   font-size:var(--gallery-item-size);
   letter-spacing:var(--gallery-item-spacing);
   color:#fff;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
   cursor:pointer;
-  transition:color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
+  transition:color .2s ease, filter .2s ease, text-shadow .2s ease, transform .1s ease, background .2s ease;
 }
 
 .gallery-item > *{
@@ -767,7 +775,7 @@ body.view-right .inner-shell{
   letter-spacing:var(--contact-block-spacing);
   line-height:1.8;
   color:#fff;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
 }
 
 .view-right .contact-block{
@@ -852,7 +860,7 @@ body.view-right .inner-shell{
   font-size:var(--about-logo-main-size);
   line-height:.92;
   color:#fff;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
 }
 
 .about-logo-sub{
@@ -868,7 +876,7 @@ body.view-right .inner-shell{
   letter-spacing:var(--about-lead-spacing);
   opacity:.9;
   color:#fff;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
 }
 
 .about-stack{
@@ -893,7 +901,7 @@ body.view-right .inner-shell{
   letter-spacing:var(--about-heading-spacing);
   margin-bottom:var(--about-item-heading-gap);
   color:#fff;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
 }
 
 .about-item p{
@@ -923,7 +931,6 @@ body.view-right .inner-shell{
 
 .about-col{
   color:#fff;
-  mix-blend-mode:difference;
 }
 
 .about-col h4{
@@ -950,7 +957,6 @@ body.view-right .inner-shell{
 .about-credit{
   margin-top:var(--about-credit-margin-top);
   color:#fff;
-  mix-blend-mode:difference;
 }
 
 .about-credit-title{
@@ -993,7 +999,6 @@ body.view-right .inner-shell{
   border-bottom:1px solid rgba(255,255,255,.2);
   padding-bottom:2px;
   color:#fff;
-  mix-blend-mode:difference;
   transition:
     color .2s ease,
     filter .2s ease,
@@ -1093,7 +1098,7 @@ body.view-right .inner-shell{
   text-transform:uppercase;
   cursor:pointer;
   opacity:.85;
-  mix-blend-mode:difference;
+  text-shadow:0 1px 3px rgba(0,0,0,.55), 0 0 8px rgba(0,0,0,.35);
 }
 
 /* -----------------------------------------
