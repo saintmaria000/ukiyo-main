@@ -92,15 +92,29 @@
   function restoreMainVideoSoundState() {
     if (!isHtmlVideo(mainVideo)) return;
 
-    mainVideo.volume = mainVideoWasVolume;
-    mainVideo.muted = mainVideoWasMuted;
+    const shouldMute =
+      window.GlobalMute && typeof window.GlobalMute.state === 'boolean'
+        ? window.GlobalMute.state
+        : mainVideoWasMuted;
 
-    if (mainVideoWasMuted) {
+    if (shouldMute) {
+      if (mainVideo.dataset.prevVol == null && mainVideoWasVolume > 0) {
+        mainVideo.dataset.prevVol = String(mainVideoWasVolume);
+      }
+
+      mainVideo.volume = 0;
+      mainVideo.muted = true;
       mainVideo.defaultMuted = true;
       mainVideo.setAttribute('muted', '');
-    } else {
-      mainVideo.removeAttribute('muted');
+      return;
     }
+
+    const prevVol = Number(mainVideo.dataset.prevVol);
+    mainVideo.volume = Number.isNaN(prevVol) ? mainVideoWasVolume || 1 : prevVol;
+    mainVideo.muted = false;
+
+    delete mainVideo.dataset.prevVol;
+    mainVideo.removeAttribute('muted');
   }
 
   function playHtmlVideo(video, forceMuted = false) {
@@ -132,12 +146,17 @@
   function resumeMainVideo() {
     if (!mainVideo) return;
 
+    const shouldMute =
+      window.GlobalMute && typeof window.GlobalMute.state === 'boolean'
+        ? window.GlobalMute.state
+        : mainVideoWasMuted;
+
     if (isHtmlVideo(mainVideo)) {
       restoreMainVideoSoundState();
 
-      playHtmlVideo(mainVideo, mainVideoWasMuted);
-      setTimeout(() => playHtmlVideo(mainVideo, mainVideoWasMuted), 120);
-      setTimeout(() => playHtmlVideo(mainVideo, mainVideoWasMuted), 420);
+      playHtmlVideo(mainVideo, shouldMute);
+      setTimeout(() => playHtmlVideo(mainVideo, shouldMute), 120);
+      setTimeout(() => playHtmlVideo(mainVideo, shouldMute), 420);
       return;
     }
 
@@ -148,12 +167,42 @@
   function forceYouTubeMuteStateSoon(iframeEl, muted) {
     if (!iframeEl) return;
 
-    const command = muted ? "mute" : "unMute";
     const start = Date.now();
     const timer = setInterval(() => {
+      const shouldMute =
+        window.GlobalMute && typeof window.GlobalMute.state === 'boolean'
+          ? window.GlobalMute.state
+          : muted;
+      const command = shouldMute ? "mute" : "unMute";
+
       ytCommandTo(iframeEl, command);
       if (Date.now() - start > 1200) clearInterval(timer);
     }, 200);
+  }
+
+  function registerModalVideoWithGlobalMute() {
+    if (!window.GlobalMute || typeof window.GlobalMute.registerYT !== 'function') return;
+
+    const register = () => {
+      try {
+        window.GlobalMute.registerYT('modalVideo');
+        if (typeof window.GlobalMute.apply === 'function') {
+          window.GlobalMute.apply();
+        }
+      } catch (_) {}
+    };
+
+    requestAnimationFrame(register);
+    setTimeout(register, 300);
+    setTimeout(register, 900);
+  }
+
+  function unregisterModalVideoFromGlobalMute() {
+    if (!window.GlobalMute || typeof window.GlobalMute.unregisterYT !== 'function') return;
+
+    try {
+      window.GlobalMute.unregisterYT('modalVideo');
+    } catch (_) {}
   }
 
   // =========================
@@ -247,6 +296,7 @@
     if (modalVideo) {
       modalVideo.src = withEnableJsApi(video || '');
       forceYouTubeMuteStateSoon(modalVideo, globalMuteWasMuted === true);
+      registerModalVideoWithGlobalMute();
     }
 
     renderCredits(title, credits);
@@ -279,6 +329,7 @@
     unlockScroll();
 
     stopYouTube(modalVideo);
+    unregisterModalVideoFromGlobalMute();
     if (modalVideo) modalVideo.src = '';
 
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
@@ -286,12 +337,11 @@
     modal.classList.remove('modal--credit-open');
     if (creditToggle) creditToggle.textContent = 'Credit';
 
-    if (window.GlobalMute && globalMuteWasMuted !== null) {
-      window.GlobalMute.set(globalMuteWasMuted);
-    }
-
     resumeKeepPlayingVideos(); // 背景復帰保証
     resumeMainVideo();
+    if (window.GlobalMute && typeof window.GlobalMute.apply === 'function') {
+      window.GlobalMute.apply();
+    }
 
     if (lastActiveEl && typeof lastActiveEl.focus === 'function') {
       lastActiveEl.focus();

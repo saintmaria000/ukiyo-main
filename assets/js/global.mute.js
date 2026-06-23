@@ -146,7 +146,7 @@
           },
           onStateChange: (e) => {
             // 再生したら自動でミュート解除
-            if (e && e.data === 1 && isMuted) {
+            if (e && e.data === 1 && isMuted && !document.body.classList.contains('is-modal-open')) {
               setMuted(false, 'ui');
             }
           }
