@@ -1,5 +1,6 @@
 (function () {
   const body = document.body;
+  const galleryPanel = document.querySelector('.view.view-left .gallery-panel');
   const galleryScroll = document.querySelector('.view.view-left .gallery-scroll');
 
   const mqCoarse = window.matchMedia('(pointer: coarse)');
@@ -7,6 +8,7 @@
   const mqLandscape = window.matchMedia('(pointer: coarse) and (orientation: landscape)');
 
   let touchState = null;
+  let hintRaf = 0;
 
   function isSideView() {
     return (
@@ -24,12 +26,29 @@
   }
 
   function shouldLockPageScroll() {
-    if (isAboutArea()) return false;
-    return isTouchStage() && isSideView();
+    return false;
   }
 
   function updateStageScrollLock() {
     body.classList.toggle('is-stage-scroll-lock', shouldLockPageScroll());
+  }
+
+  function updateGalleryContinueHint() {
+    if (!galleryPanel || !galleryScroll) return;
+
+    const max = maxGalleryScrollTop();
+    const hasMoreBelow = max > 2 && galleryScroll.scrollTop < max - 2;
+
+    galleryPanel.classList.toggle('has-more-below', hasMoreBelow);
+  }
+
+  function requestGalleryHintUpdate() {
+    if (hintRaf) return;
+
+    hintRaf = requestAnimationFrame(() => {
+      hintRaf = 0;
+      updateGalleryContinueHint();
+    });
   }
 
   function shouldHandleGalleryTouch(target) {
@@ -94,6 +113,8 @@
   window.addEventListener('resize', updateStageScrollLock);
   window.addEventListener('orientationchange', updateStageScrollLock);
   window.addEventListener('scroll', updateStageScrollLock, { passive: true });
+  window.addEventListener('resize', requestGalleryHintUpdate);
+  window.addEventListener('orientationchange', requestGalleryHintUpdate);
 
   [mqCoarse, mqPortrait, mqLandscape].forEach((mq) => {
     if (mq.addEventListener) {
@@ -108,6 +129,11 @@
     galleryScroll.addEventListener('touchmove', onGalleryTouchMove, { passive: false });
     galleryScroll.addEventListener('touchend', onGalleryTouchEnd, { passive: true });
     galleryScroll.addEventListener('touchcancel', onGalleryTouchEnd, { passive: true });
+    galleryScroll.addEventListener('scroll', requestGalleryHintUpdate, { passive: true });
+  }
+
+  if (galleryPanel) {
+    galleryPanel.addEventListener('galleryloopready', requestGalleryHintUpdate);
   }
 
   const observer = new MutationObserver(updateStageScrollLock);
@@ -118,4 +144,5 @@
   });
 
   updateStageScrollLock();
+  requestGalleryHintUpdate();
 })();

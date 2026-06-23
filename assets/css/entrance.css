@@ -31,7 +31,8 @@ body{
   background:#000;
   color:var(--fg);
   font-family:-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
-  overflow:hidden;
+  overflow-x:hidden;
+  overflow-y:auto;
   -webkit-text-size-adjust:100%;
   text-size-adjust:100%;
   -webkit-tap-highlight-color:transparent;

@@ -173,17 +173,10 @@
   function lockScroll() {
     lastScrollY = window.scrollY || 0;
     document.body.classList.add('is-modal-open');
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${lastScrollY}px`;
-    document.body.style.width = '100%';
   }
 
   function unlockScroll() {
     document.body.classList.remove('is-modal-open');
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    window.scrollTo(0, lastScrollY);
   }
 
   // =========================
