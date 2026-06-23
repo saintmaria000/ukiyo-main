@@ -82,190 +82,165 @@ a{
 
 /* =========================================================
    03. Root Variables
-   役割:
-   - ここは「設計値」と「補正値」を集約する層
-   - 数値自体は既存のまま維持
+   - 設計値と補正値を一箇所に集約
+   - 後付けパッチによる上書きは廃止し、ここで完結させる
 ========================================================= */
 :root{
   /* -----------------------------------------
      03-01. Viewport helper
-     JS / 実機補助で使う viewport 実寸
   ----------------------------------------- */
   --vvw:100vw;
   --vvh:100vh;
   --vv-top:0px;
   --vv-left:0px;
+
   /* -----------------------------------------
-     03-02. Stage / 画面の土台
-     サイト全体の舞台サイズと3面空間の基準
+     03-02. Stage
   ----------------------------------------- */
   --stage-w:2400px;
   --stage-h:1080px;
   --stage-scale:1;
   --stage-perspective:1600px;
   --stage-header-top:20px;
+
   /* -----------------------------------------
-     03-03. Camera / 横移動の見え方
-     Gallery / Contact へ移動するときの視点補正
+     03-03. Camera
   ----------------------------------------- */
   --inner-shell-side-shift:1920px;
   --inner-shell-depth:-350px;
+
   /* -----------------------------------------
      03-04. Color
-     色だけをここに集約
   ----------------------------------------- */
-  /* 文字色 */
-
-  /* 線 */
   --line-soft:rgba(255,255,255,.08);
-
-  /* 背景オーバーレイ */
   --overlay-dark:rgba(0,0,0,.45);
   --overlay-modal:rgba(0,0,0,.65);
   --overlay-credit:rgba(0,0,0,.75);
-
-  /* 影 */
   --shadow-video:0 0 40px rgba(255,255,255,.3);
   --shadow-modal:0 0 40px rgba(0,0,0,.7);
 
   /* -----------------------------------------
      03-05. Z-index
-     前後関係だけをここに集約
+     スタッキング順: video < stage < ui < modal < pull-return
+     100刻みで管理し、+1〜+9 は同層内の微調整用
+     --z-portrait-* はモバイル縦画面専用レイヤー
   ----------------------------------------- */
-  --z-stage:10020;
-  --z-video-flash:9;
-  --z-ui:9000;
-  --z-video:9999;
-  --z-modal:10000;
-  --z-stage-component:10030;
-  --z-pull-return:21000;
-  /* -----------------------------------------
-     03-06. FONT
-     文字サイズだけをここに集約
-  ----------------------------------------- */
-  /* 基本フォント */
-  --font-ui-sm:1.5rem;
+  --z-video-flash:100;
+  --z-video:200;
+  --z-stage:300;
+  --z-stage-component:310;
+  --z-ui:400;
+  --z-modal:500;
+  --z-pull-return:600;
 
-  /* 画面ナビ / 戻る導線 */
-  --view-header-size:var(--font-ui-sm);
-  --edge-btn-size:1.5rem;
-  --pull-return-link-size:1.05rem;
-
-  /* Gallery リスト */
-  --gallery-item-size:.96rem;
-  --gallery-meta-size:.78rem;
-
-  /* Contact 本文 */
-  --contact-block-size:.86rem;
-  --contact-label-size:1.3rem;
-  --contact-value-size:1.14rem;
-
-  /* About ロゴ */
-  --about-logo-main-size:5.2rem;
-  --about-logo-sub-size:1.24rem;
-
-  /* About 紹介文 */
-  --about-lead-size:1rem;
-
-  /* About リスト本文 */
-  --about-heading-size:1.7rem;
-  --about-body-size:1.12rem;
-
-  /* About 会社情報リスト */
-  --about-col-title-size:1.42rem;
-  --about-col-item-size:1.08rem;
-
-  /* About クレジット */
-  --about-credit-title-size:1rem;
-  --about-credit-name-size:1.7rem;
-  --about-credit-link-size:1rem;
-
-  /* About 戻るリンク */
-  --about-back-size:.95rem;
-
-  /* Modal 閉じるボタン */
-  --modal-close-size:1.2rem;
-
-  /* Modal クレジット表示ボタン */
-  --modal-credit-toggle-size:.86rem;
-
-  /* Modal クレジット本文 */
-  --modal-credit-title-size:1.05rem;
-  --modal-credit-list-size:.86rem;
-
-  /* Modal クレジット閉じる */
-  --modal-credit-close-size:.78rem;
+  /* portrait mobile layer (outer-space > side-view > center-view > nav > mute) */
+  --z-portrait-shell:1;
+  --z-portrait-outer:20;
+  --z-portrait-side:30;
+  --z-portrait-header:30;
+  --z-portrait-center:60;
+  --z-portrait-nav-btn:100;
+  --z-portrait-mute:120;
 
   /* -----------------------------------------
-     03-07. SPACING
-     余白 / 幅 / 高さ / 最大幅をここに集約
+     03-06. PC フォントサイズ
+     clamp(small-PC値, vw基準, デスクトップ値)
+     小型 PC breakpoint = pointer:fine かつ width≤1366px or height≤0820px
+     ※ gallery / contact 系は小型PCで逆に大きくなる設計のため
+         clamp不可 → breakpoint 14-03 で上書き
+     ※ tablet / landscape / portrait は各 breakpoint で上書き
   ----------------------------------------- */
-  /* 画面余白 / 端ボタン位置 */
+  --view-header-size:      1.5rem;                    /* 小型PCと同値のため固定 */
+  --edge-btn-size:         clamp(1.35rem, 1.58vw, 1.5rem);
+  --pull-return-link-size: 1.05rem;
+
+  /* gallery: 小型PCで拡大するため breakpoint 14-03 で上書き */
+  --gallery-item-size: .96rem;
+  --gallery-meta-size: .78rem;
+
+  /* contact: 小型PCで拡大するため breakpoint 14-03 で上書き */
+  --contact-block-size: .86rem;
+  --contact-label-size: 1.3rem;
+  --contact-value-size: 1.14rem;
+
+  --about-logo-main-size: 5.2rem;
+  --about-logo-sub-size:  1.24rem;
+
+  --about-lead-size:    clamp(.95rem, 1.11vw, 1rem);
+  --about-heading-size: clamp(1.4rem, 1.64vw, 1.7rem);
+  --about-body-size:    clamp(1rem,   1.17vw, 1.12rem);
+
+  /* about col: 小型PCで定義なし → デスクトップ値を固定 */
+  --about-col-title-size: 1.42rem;
+  --about-col-item-size:  1.08rem;
+
+  --about-credit-title-size: 1rem;
+  --about-credit-name-size:  1.7rem;
+  --about-credit-link-size:  1rem;
+
+  --about-back-size: .95rem;
+
+  --modal-close-size:         1.2rem;
+  --modal-credit-toggle-size: .86rem;
+  --modal-credit-title-size:  clamp(.9rem, 1.1vw, 1.1rem);
+  --modal-credit-list-size:   clamp(.78rem, .9vw, .95rem);
+
+
+  /* -----------------------------------------
+     03-07. Spacing
+  ----------------------------------------- */
   --stage-pad-y:40px;
   --stage-pad-x:90px;
   --edge-offset:32px;
 
-  /* 音声ボタン */
   --global-mute-top:24px;
   --global-mute-right:32px;
   --global-mute-pad:8px;
   --global-mute-icon-size:22px;
   --global-mute-hover-scale:1.05;
 
-  /* 上部に戻る導線 */
   --pull-return-top:8px;
   --pull-return-offset-y:-14px;
   --pull-return-link-pad-bottom:3px;
   --pull-return-link-opacity:.75;
 
-  /* 中央動画 */
   --video-w:1560px;
   --video-side-safe:48px;
 
-  /* 画面ナビボタン */
   --edge-btn-pad-y:4px;
   --edge-btn-pad-x:0;
   --edge-btn-min-w:auto;
   --edge-btn-min-h:auto;
 
-  /* スマホ中央動画 */
   --video-mobile-stage-w:960px;
   --video-mobile-stage-offset-y:0px;
 
-  /* Gallery エリア */
   --gallery-w:520px;
-  /* --gallery-panel-gap-top:32px; */
   --gallery-panel-max-h:760px;
   --gallery-panel-min-h:320px;
   --gallery-panel-vh-offset:180px;
 
-  /* Gallery リスト内 */
   --gallery-item-pad-y:10px;
   --gallery-meta-gap-top:4px;
 
-  /* Contact エリア */
   --contact-w:750px;
   --contact-block-margin-top:40px;
   --contact-label-margin-top:16px;
 
-  /* About 全体 */
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
   --about-content-pad-x:6vw;
   --about-content-pad-bottom:0px;
 
-  /* About ロゴ */
   --about-hero-min-h:100svh;
   --about-hero-pad-top:0px;
   --about-hero-pad-bottom:0px;
   --about-hero-gap:25px;
   --about-hero-max-w:1280px;
 
-  /* About 紹介文 */
   --about-lead-max-w:1040px;
   --about-lead-line:1.95;
 
-  /* About リスト本文 */
   --about-stack-max-w:1320px;
   --about-stack-gap:220px;
   --about-stack-pad-top:90px;
@@ -275,7 +250,6 @@ a{
   --about-body-line:1.95;
   --about-body-max-w:700px;
 
-  /* About 会社情報リスト */
   --about-split-gap:56px;
   --about-split-pad-top:56px;
   --about-split-pad-x:54px;
@@ -285,97 +259,59 @@ a{
   --about-col-heading-gap:18px;
   --about-col-item-line:2;
 
-  /* About クレジット */
   --about-credit-margin-top:0px;
   --about-credit-title-gap:12px;
   --about-credit-name-gap:24px;
   --about-credit-block-gap:72px;
 
-  /* About 戻るリンク */
   --about-back-margin-top:30px;
 
-  /* Modal 表示枠 */
-  /* --modal-height:min(80vw, 1400px); */
   --modal-width:min(80vw, 1400px);
   --modal-max-w:1400px;
   --modal-video-max-h:80vh;
 
-  /* Modal 閉じるボタン */
   --modal-close-top:8px;
   --modal-close-right:12px;
 
-  /* Modal 下部ボタン */
   --modal-footer-gap-top:10px;
   --modal-footer-pad-bottom:10px;
 
-  /* Modal クレジット枠 */
-  --modal-credit-inner-max-w:520px;
-  --modal-credit-inner-width:auto;
-  --modal-credit-inner-pad-top:24px;
-  --modal-credit-inner-pad-x:32px;
-  --modal-credit-inner-pad-bottom:20px;
-
-  /* Modal クレジット本文 */
-  --modal-credit-title-gap:18px;
-  --modal-credit-list-line:1.8;
-  --modal-credit-list-gap:18px;
-  --modal-credit-row-gap:16px;
-
   /* -----------------------------------------
-     03-08. LETTER SPACING
-     字間だけをここに集約
+     03-08. Letter spacing
   ----------------------------------------- */
-  /* 基本字間 */
   --ls-ui:.25em;
-  --ls-body:.08em;
 
-  /* 画面ナビ / 戻る導線 */
   --view-header-spacing:var(--ls-ui);
   --edge-btn-spacing:.25em;
   --pull-return-link-letter-spacing:.12em;
 
-  /* Gallery リスト */
   --gallery-item-spacing:.08em;
   --gallery-meta-spacing:.08em;
 
-  /* Contact 本文 */
   --contact-block-spacing:.12em;
   --contact-label-spacing:.12em;
 
-  /* About ロゴ */
   --about-logo-spacing:.28em;
   --about-logo-sub-spacing:.18em;
 
-  /* About 紹介文 */
   --about-lead-spacing:.05em;
 
-  /* About リスト本文 */
   --about-heading-spacing:.20em;
   --about-body-spacing:.05em;
 
-  /* About 会社情報リスト */
   --about-col-title-spacing:.16em;
   --about-col-item-spacing:.05em;
 
-  /* About クレジット */
   --about-credit-title-spacing:.18em;
   --about-credit-name-spacing:.12em;
 
-  /* About 戻るリンク */
   --about-back-spacing:.16em;
 
-  /* Modal クレジット表示ボタン */
   --modal-credit-toggle-spacing:.18em;
-
-  /* Modal クレジット本文 */
   --modal-credit-title-spacing:.16em;
-
-  /* Modal クレジット閉じる */
-  --modal-credit-close-spacing:.18em;
 
   /* -----------------------------------------
      03-09. Effects
-     動画クリック時の光演出
   ----------------------------------------- */
   --video-unlock-flash-blur:14px;
   --video-unlock-flash-scale:.96;
@@ -387,15 +323,11 @@ a{
    03-15. Viewport actual height support
 ----------------------------------------- */
 @supports (height:100svh){
-  :root{
-    --vvh:100svh;
-  }
+  :root{ --vvh:100svh; }
 }
 
 @supports (height:100dvh){
-  :root{
-    --vvh:100dvh;
-  }
+  :root{ --vvh:100dvh; }
 }
 
 /* =========================================================
@@ -427,6 +359,7 @@ a{
   display:block;
   fill:#fff;
   stroke:#fff;
+  mix-blend-mode:difference;
 }
 
 .icon-cross{
@@ -464,6 +397,7 @@ body.is-pull-hint-visible .pull-return{
   letter-spacing:var(--pull-return-link-letter-spacing);
   text-transform:none;
   color:#fff;
+  mix-blend-mode:difference;
   text-decoration:none;
   padding-bottom:var(--pull-return-link-pad-bottom);
   opacity:var(--pull-return-link-opacity);
@@ -481,10 +415,6 @@ body.is-pull-hint-visible .pull-return{
 
 /* =========================================================
    05. Stage / World
-   役割:
-   - stage = 基準空間
-   - outer-space = 3面コンテナ
-   - view = 左右中央の各面
 ========================================================= */
 .space-wrapper{
   position:relative;
@@ -537,6 +467,8 @@ body.is-pull-hint-visible .pull-return{
   letter-spacing:var(--view-header-spacing);
   text-transform:uppercase;
   opacity:.8;
+  color:#fff;
+  mix-blend-mode:difference;
 }
 
 .view.view-left .view-header{
@@ -556,9 +488,6 @@ body.is-pull-hint-visible .pull-return{
 
 /* =========================================================
    06. Camera / Focus shift
-   役割:
-   - outer-space を横へ送る
-   - inner-shell は中央動画の視点を補正しながら追従
 ========================================================= */
 .inner-shell{
   position:absolute;
@@ -656,7 +585,6 @@ body.view-right .inner-shell{
   }
 }
 
-
 .edge-btn{
   position:absolute;
   display:inline-flex;
@@ -667,6 +595,8 @@ body.view-right .inner-shell{
   font-size:var(--edge-btn-size);
   letter-spacing:var(--edge-btn-spacing);
   text-transform:uppercase;
+  color:#fff;
+  mix-blend-mode:difference;
   opacity:.8;
   cursor:pointer;
   padding:var(--edge-btn-pad-y) var(--edge-btn-pad-x);
@@ -731,7 +661,7 @@ body.view-right .inner-shell{
   flex-direction:column;
   overflow:hidden;
   align-self:flex-start;
-  z-index: 2;
+  z-index:2;
 }
 
 .gallery-preview{
@@ -797,6 +727,8 @@ body.view-right .inner-shell{
   border-bottom:1px solid var(--line-soft);
   font-size:var(--gallery-item-size);
   letter-spacing:var(--gallery-item-spacing);
+  color:#fff;
+  mix-blend-mode:difference;
   cursor:pointer;
   transition:color .2s ease, filter .2s ease, transform .1s ease, background .2s ease;
 }
@@ -834,6 +766,8 @@ body.view-right .inner-shell{
   font-size:var(--contact-block-size);
   letter-spacing:var(--contact-block-spacing);
   line-height:1.8;
+  color:#fff;
+  mix-blend-mode:difference;
 }
 
 .view-right .contact-block{
@@ -917,6 +851,8 @@ body.view-right .inner-shell{
 .about-logo-main{
   font-size:var(--about-logo-main-size);
   line-height:.92;
+  color:#fff;
+  mix-blend-mode:difference;
 }
 
 .about-logo-sub{
@@ -931,6 +867,8 @@ body.view-right .inner-shell{
   line-height:var(--about-lead-line);
   letter-spacing:var(--about-lead-spacing);
   opacity:.9;
+  color:#fff;
+  mix-blend-mode:difference;
 }
 
 .about-stack{
@@ -954,6 +892,8 @@ body.view-right .inner-shell{
   font-size:var(--about-heading-size);
   letter-spacing:var(--about-heading-spacing);
   margin-bottom:var(--about-item-heading-gap);
+  color:#fff;
+  mix-blend-mode:difference;
 }
 
 .about-item p{
@@ -981,6 +921,11 @@ body.view-right .inner-shell{
   margin-right:auto;
 }
 
+.about-col{
+  color:#fff;
+  mix-blend-mode:difference;
+}
+
 .about-col h4{
   font-size:var(--about-col-title-size);
   letter-spacing:var(--about-col-title-spacing);
@@ -1004,6 +949,8 @@ body.view-right .inner-shell{
 
 .about-credit{
   margin-top:var(--about-credit-margin-top);
+  color:#fff;
+  mix-blend-mode:difference;
 }
 
 .about-credit-title{
@@ -1045,6 +992,8 @@ body.view-right .inner-shell{
   text-decoration:none;
   border-bottom:1px solid rgba(255,255,255,.2);
   padding-bottom:2px;
+  color:#fff;
+  mix-blend-mode:difference;
   transition:
     color .2s ease,
     filter .2s ease,
@@ -1084,7 +1033,6 @@ body.view-right .inner-shell{
 .modal__content{
   position:relative;
   z-index:1;
-  /* height:var(--modal-height); */
   width:var(--modal-width);
   max-width:var(--modal-max-w);
   max-height:calc(100svh - 72px);
@@ -1145,97 +1093,104 @@ body.view-right .inner-shell{
   text-transform:uppercase;
   cursor:pointer;
   opacity:.85;
+  mix-blend-mode:difference;
 }
 
-.modal__credit{
+/* -----------------------------------------
+   11-01. Modal Credit
+   credit overlay は modal__video-frame 内に absolute で配置される
+   セレクタは .modal__video-frame > .modal__credit で詳細度を確保し、
+   !important なしでモバイル上書きルールより確実に勝つ
+----------------------------------------- */
+.modal__video-frame > .modal__credit{
   position:absolute;
   inset:0;
-  background:var(--overlay-credit);
+  z-index:2;
+  width:100%;
+  height:100%;
+  max-height:100%;
   display:flex;
-  align-items:center;
+  align-items:stretch;
   justify-content:center;
-  padding:clamp(16px, 2vw, 32px);
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
+  padding:0;
+  overflow:hidden;
+  background:var(--overlay-credit);
   opacity:0;
   pointer-events:none;
   transition:opacity .25s ease;
 }
 
-.modal__credit--open{
+.modal__video-frame > .modal__credit.modal__credit--open{
   opacity:1;
   pointer-events:auto;
 }
 
 .modal__credit-inner{
-  text-align:center;
-  max-width:var(--modal-credit-inner-max-w);
-  width:var(--modal-credit-inner-width);
-  min-width:0;
-  box-sizing:border-box;
+  width:100%;
+  height:100%;
+  max-width:none;
   max-height:100%;
+  box-sizing:border-box;
+  padding:clamp(18px, 3vw, 42px) clamp(18px, 4vw, 56px);
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
-  padding:
-    var(--modal-credit-inner-pad-top)
-    var(--modal-credit-inner-pad-x)
-    var(--modal-credit-inner-pad-bottom);
+  text-align:center;
 }
 
 .modal__credit-title{
+  margin:0 0 clamp(14px, 2.2vw, 30px);
   font-size:var(--modal-credit-title-size);
-  margin-bottom:var(--modal-credit-title-gap);
+  line-height:1.32;
   letter-spacing:var(--modal-credit-title-spacing);
-  line-height:1.35;
   overflow-wrap:anywhere;
 }
 
+/* -----------------------------------------
+   credit-row / credit-role / credit-name
+   縦並び・中央揃えのみ。メディアクエリで上書きしない。
+   portrait と landscape の違いはフォントサイズ変数で吸収する。
+----------------------------------------- */
 .modal__credit-list{
+  width:min(100%, 560px);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:clamp(8px, 1vw, 14px);
   font-size:var(--modal-credit-list-size);
-  line-height:var(--modal-credit-list-line);
-  margin-bottom:var(--modal-credit-list-gap);
-  display:grid;
-  gap:4px;
+  line-height:1.45;
 }
 
 .credit-row{
-  display:grid;
-  grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
-  align-items:baseline;
-  gap:var(--modal-credit-row-gap);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
   min-width:0;
+  padding:0;
 }
 
 .credit-role{
   opacity:.7;
-  text-align:left;
-  min-width:0;
+  font-size:clamp(.62rem, .78vw, .78rem);
+  line-height:1.35;
+  letter-spacing:.1em;
+  text-align:center;
+  text-transform:uppercase;
   overflow-wrap:anywhere;
 }
 
 .credit-name{
+  font-size:clamp(.78rem, .95vw, .96rem);
+  line-height:1.36;
   font-weight:500;
-  text-align:left;
-  min-width:0;
+  text-align:center;
   overflow-wrap:anywhere;
-}
-
-.modal__credit-close{
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:var(--modal-credit-close-size);
-  letter-spacing:var(--modal-credit-close-spacing);
-  text-transform:uppercase;
-  cursor:pointer;
-  opacity:.85;
 }
 
 /* -----------------------------------------
    11-02. Modal bottom close line
-   見た目は線のみ / coarse ではタップ領域を確保
 ----------------------------------------- */
 .modal__close-line{
   position:fixed;
@@ -1248,7 +1203,7 @@ body.view-right .inner-shell{
   max-width:none;
 
   height:1px;
-  background:rgba(255, 255, 255, 0.849);
+  background:rgba(255,255,255,.849);
 
   border:none;
   padding:0;
@@ -1276,272 +1231,6 @@ body.view-right .inner-shell{
 .modal:not(.modal--open) .modal__close-line{
   opacity:0;
   pointer-events:none;
-}
-
-@media (pointer:coarse){
-  .modal{
-    align-items:center;
-    justify-content:center;
-    padding:
-      max(14px, env(safe-area-inset-top))
-      14px
-      calc(56px + env(safe-area-inset-bottom));
-  }
-
-  .modal__content{
-    width:min(94vw, 126svh);
-    max-width:none;
-    max-height:calc(100svh - 86px - env(safe-area-inset-bottom));
-    box-shadow:none;
-  }
-
-  .modal__video-frame{
-    max-height:none;
-  }
-
-  .modal__footer{
-    margin-top:8px;
-    padding-bottom:0;
-    position:relative;
-    z-index:3;
-  }
-
-  .modal__credit{
-    position:fixed;
-    inset:
-      max(14px, env(safe-area-inset-top))
-      14px
-      calc(66px + env(safe-area-inset-bottom))
-      14px;
-    z-index:calc(var(--z-modal) + 1);
-    align-items:flex-start;
-    justify-content:center;
-    padding:clamp(18px, 4vw, 30px) 0;
-    background:rgba(0,0,0,.88);
-  }
-
-  .modal__credit-inner{
-    width:min(100%, 560px);
-    max-width:none;
-    padding:0 12px;
-    text-align:left;
-  }
-
-  .modal__credit-title{
-    font-size:clamp(.82rem, 3.6vw, 1rem);
-    line-height:1.32;
-    letter-spacing:.08em;
-    margin-bottom:14px;
-  }
-
-  .modal__credit-list{
-    font-size:clamp(.68rem, 3vw, .86rem);
-    line-height:1.42;
-    margin-bottom:0;
-    gap:0;
-  }
-
-  .credit-row{
-    grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
-    align-items:start;
-    gap:8px;
-    padding:7px 0;
-    border-bottom:1px solid rgba(255,255,255,.14);
-  }
-
-  .credit-row:first-child{
-    border-top:1px solid rgba(255,255,255,.14);
-  }
-
-  .credit-role{
-    line-height:1.35;
-    text-align:left;
-  }
-
-  .credit-name{
-    line-height:1.35;
-    text-align:left;
-  }
-
-  .modal.modal--credit-open .modal__footer{
-    position:fixed;
-    left:0;
-    right:0;
-    bottom:calc(18px + env(safe-area-inset-bottom));
-    z-index:calc(var(--z-modal) + 2);
-    margin:0;
-    padding:0;
-    pointer-events:none;
-  }
-
-  .modal.modal--credit-open .modal__credit-toggle{
-    pointer-events:auto;
-    padding:8px 0;
-  }
-
-  .modal.modal--credit-open .modal__close-line{
-    opacity:0;
-    pointer-events:none;
-  }
-
-  .modal__close-line{
-    height:1px;
-    background:transparent;
-    box-shadow:none;
-  }
-
-  .modal__close-line::after{
-    content:"";
-    position:absolute;
-    left:0;
-    right:0;
-    top:50%;
-    height:1px;
-    background:rgba(255,255,255,.42);
-    transform:translateY(-50%);
-    box-shadow:
-      0 0 6px rgba(255,255,255,.25),
-      0 0 18px rgba(255,255,255,.12);
-  }
-}
-
-@media (pointer:coarse) and (max-width:480px){
-  .modal__credit-inner{
-    padding:0 10px;
-  }
-
-  .credit-row{
-    grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
-    gap:6px;
-  }
-
-  .credit-role,
-  .credit-name{
-    text-align:left;
-  }
-
-  .credit-role{
-    font-size:.9em;
-  }
-}
-
-@media (pointer:coarse) and (orientation:landscape){
-  .modal{
-    padding:
-      max(10px, env(safe-area-inset-top))
-      16px
-      calc(42px + env(safe-area-inset-bottom));
-  }
-
-  .modal__content{
-    width:min(94vw, 132svh);
-    max-height:calc(100svh - 58px - env(safe-area-inset-bottom));
-  }
-
-  .modal__footer{
-    margin-top:6px;
-  }
-
-  .modal__credit{
-    inset:
-      max(10px, env(safe-area-inset-top))
-      16px
-      calc(50px + env(safe-area-inset-bottom))
-      16px;
-    padding:10px 0;
-  }
-
-  .modal__credit-inner{
-    width:min(100%, 680px);
-    padding:0 10px;
-  }
-
-  .modal__credit-title{
-    font-size:.72rem;
-    line-height:1.22;
-    margin-bottom:8px;
-  }
-
-  .modal__credit-list{
-    font-size:.62rem;
-    line-height:1.18;
-  }
-
-  .credit-row{
-    grid-template-columns:minmax(0, .9fr) minmax(0, 1.2fr);
-    gap:8px;
-    padding:4px 0;
-  }
-
-  .modal.modal--credit-open .modal__footer{
-    bottom:calc(8px + env(safe-area-inset-bottom));
-  }
-}
-
-@media (orientation:landscape){
-  .modal__credit{
-    align-items:flex-start;
-    overflow-y:auto;
-  }
-
-  .modal__credit-inner{
-    text-align:center;
-    max-height:100%;
-    margin-block:0;
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior:contain;
-  }
-
-  .modal__credit-title{
-    font-size:clamp(.62rem, 2.2svh, var(--modal-credit-title-size));
-    line-height:1.28;
-    margin-bottom:clamp(6px, 1.6svh, var(--modal-credit-title-gap));
-  }
-
-  .modal__credit-list{
-    font-size:clamp(.56rem, 1.9svh, var(--modal-credit-list-size));
-    line-height:1.34;
-    gap:4px;
-  }
-
-  .credit-row{
-    grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr);
-    align-items:baseline;
-    gap:var(--modal-credit-row-gap);
-    padding:0;
-    border-bottom:0;
-  }
-
-  .credit-row:first-child{
-    border-top:0;
-  }
-
-  .credit-role,
-  .credit-name{
-    text-align:left;
-  }
-}
-
-@keyframes closeLineGlow{
-  0%{
-    opacity:.55;
-    box-shadow:
-      0 0 4px rgba(255,255,255,.18),
-      0 0 10px rgba(255,255,255,.08);
-  }
-  50%{
-    opacity:.85;
-    box-shadow:
-      0 0 10px rgba(255,255,255,.35),
-      0 0 24px rgba(255,255,255,.18);
-  }
-  100%{
-    opacity:.55;
-    box-shadow:
-      0 0 4px rgba(255,255,255,.18),
-      0 0 10px rgba(255,255,255,.08);
-  }
 }
 
 /* =========================================================
@@ -1588,1483 +1277,32 @@ body.view-right .inner-shell{
   }
 }
 
-/* =========================================================
-   13. Responsive - 文字サイズ調整重視版
-========================================================= */
-
-/* -----------------------------------------
-   13-01. 狭い幅 共通
------------------------------------------ */
-@media (max-width:900px){
-  :root{
-    /* ===== SPACING ===== */
-    /* 中央動画 */
-    --video-side-safe:32px;
-
-    /* About 全体 */
-    --about-content-pad-top:0px;
-    --about-content-pad-x:7vw;
-    --about-content-pad-bottom:120px;
+@keyframes closeLineGlow{
+  0%{
+    opacity:.55;
+    box-shadow:
+      0 0 4px rgba(255,255,255,.18),
+      0 0 10px rgba(255,255,255,.08);
   }
-
-  .about-split{ grid-template-columns:1fr; }
-}
-
-/* -----------------------------------------
-   13-01b. タブレット文字サイズのみ
------------------------------------------ */
-@media (pointer:coarse) and (min-width:768px) and (min-height:600px){
-  :root{
-    /* ===== FONT ===== */
-    /* 基本フォント */
-    --font-ui-sm:1.5rem;
-
-    /* 画面ナビ / 戻る導線 */
-    --view-header-size:1.5rem;
-    --edge-btn-size:1.8rem;
-
-    /* Gallery リスト */
-    --gallery-item-size:1.2rem;
-    --gallery-meta-size:.9rem;
-
-    /* Contact 本文 */
-    --contact-block-size:1.05rem;
-    --contact-label-size:1.35rem;
-    --contact-value-size:1.45rem;
-
-    /* About 紹介文 */
-    --about-lead-size:1rem;
-
-    /* About リスト本文 */
-    --about-heading-size:1.45rem;
-    --about-body-size:1rem;
-
-    /* About 会社情報リスト */
-    --about-col-title-size:1.18rem;
-    --about-col-item-size:1rem;
+  50%{
+    opacity:.85;
+    box-shadow:
+      0 0 10px rgba(255,255,255,.35),
+      0 0 24px rgba(255,255,255,.18);
   }
-}
-
-/* -----------------------------------------
-   13-02. 小型PC
------------------------------------------ */
-@media (pointer:fine) and (max-width:1366px),
-       (pointer:fine) and (max-height:820px){
-  :root{
-    /* ===== FONT ===== */
-    /* 画面ナビ / 戻る導線 */
-    --view-header-size:1.5rem;
-    --edge-btn-size:1.35rem;
-
-    /* Gallery リスト */
-    --gallery-item-size:1.1rem;
-    --gallery-meta-size:1rem;
-
-    /* Contact 本文 */
-    --contact-block-size:.92rem;
-    --contact-label-size:1.36rem;
-    --contact-value-size:1.24rem;
-
-    /* About 紹介文 */
-    --about-lead-size:.95rem;
-
-    /* About リスト本文 */
-    --about-heading-size:1.4rem;
-    --about-body-size:1rem;
+  100%{
+    opacity:.55;
+    box-shadow:
+      0 0 4px rgba(255,255,255,.18),
+      0 0 10px rgba(255,255,255,.08);
   }
 }
 
 /* =========================================================
-   13-03. タッチ端末 共通（ベース値）
-========================================================= */
-@media (pointer:coarse){
-  .inner-shell{ max-width: none; }
-
-  body.view-center .inner-shell{
-    transform: translate(-50%, -50%) translateY(var(--video-mobile-stage-offset-y));
-  }
-
-  .video-frame{ width:var(--video-mobile-stage-w); max-width:none; }
-  .video-frame iframe{ pointer-events:auto; }
-
-  .view.view-left,
-  .view.view-right .view-inner{ pointer-events:auto; }
-
-  .gallery-panel{ isolation: isolate; }
-
-  .gallery-scroll{
-    position: relative;
-    z-index: 3;
-    width: 100%;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
-    will-change: auto;
-  }
-
-  .gallery-item{ flex: 0 0 auto; min-height: 1px; }
-}
-
-/* =========================================================
-   13-04. Touch Landscape
-   Keep the desktop three-panel model; only widen touch scrolling.
-========================================================= */
-@media (pointer:coarse) and (orientation:landscape){
-  :root{
-    /* ===== FONT ===== */
-    /* 基本フォント */
-    --font-ui-sm:.82rem;
-
-    /* 画面ナビ / 戻る導線 */
-    --view-header-size:.72rem;
-    --edge-btn-size:.76rem;
-
-    /* Gallery リスト */
-    --gallery-item-size:.66rem;
-    --gallery-meta-size:.48rem;
-    --gallery-item-pad-y:6px;
-
-    /* Contact 本文 */
-    --contact-block-size:.72rem;
-    --contact-label-size:.68rem;
-    --contact-value-size:.82rem;
-
-    /* About 紹介文 */
-    --about-lead-size:.8rem;
-
-    /* About リスト本文 */
-    --about-heading-size:1.2rem;
-    --about-body-size:.95rem;
-
-    /* About 会社情報リスト */
-    --about-col-title-size:1.05rem;
-    --about-col-item-size:.95rem;
-
-    /* ===== SPACING ===== */
-    /* 中央動画 */
-    --stage-w:var(--vvw);
-    --stage-h:var(--vvh);
-    --stage-pad-y:clamp(14px, 3.7svh, 24px);
-    --stage-pad-x:clamp(24px, 3.75svw, 44px);
-    --stage-header-top:clamp(10px, 2.2svh, 20px);
-    --edge-offset:clamp(18px, 2.1svw, 32px);
-    --video-w:min(74svw, 131.556svh);
-    --video-side-safe:40px;
-    --gallery-w:clamp(178px, 22svw, 260px);
-    --contact-w:clamp(220px, 30svw, 360px);
-    --global-mute-top:clamp(14px, 4svh, 24px);
-    --global-mute-right:clamp(18px, 4svw, 32px);
-
-    /* ===== OTHER ===== */
-    --inner-shell-side-shift:80vw;
-  }
-
-  .stage{
-    transform:translate(-50%, -50%) scale(1) !important;
-  }
-
-  body.view-center .inner-shell{
-    transform:translate(-50%, -50%);
-  }
-
-  .video-frame{
-    width:var(--landscape-video-w, var(--video-w));
-  }
-
-  .view.view-left,
-  .view-left .view-inner,
-  .view-left .gallery-panel,
-  .view-left .gallery-scroll{
-    pointer-events:auto;
-  }
-
-  .gallery-panel{
-    display:flex;
-    flex-direction:column;
-    max-width:var(--gallery-w);
-    height:min(70svh, 360px);
-    min-height:0;
-    overflow:hidden;
-  }
-
-  .contact-block{
-    max-width:var(--contact-w);
-    line-height:1.62;
-  }
-
-  .contact-label{
-    margin-top:clamp(8px, 2svh, 14px);
-  }
-
-  .gallery-scroll{
-    flex:1 1 auto;
-    min-height:0;
-    height:100%;
-    overflow-y:auto !important;
-    overflow-x:hidden !important;
-    -webkit-overflow-scrolling:touch !important;
-    overscroll-behavior-y:contain;
-    touch-action:pan-y !important;
-  }
-}
-
-/* Retired: landscape must keep the desktop panel/nav structure. */
-@media (pointer:coarse) and (orientation:landscape) and (max-width:0px){
-  :root{
-    --view-header-size:.82rem;
-    --edge-btn-size:.86rem;
-
-    --gallery-item-size:.72rem;
-    --gallery-meta-size:.52rem;
-    --gallery-item-pad-y:7px;
-
-    --contact-block-size:.82rem;
-    --contact-label-size:.72rem;
-    --contact-value-size:.86rem;
-
-    --about-logo-main-size: 4.2rem;
-    --about-heading-size:1.2rem;
-    --about-body-size:.75rem;
-    --about-col-title-size:1.05rem;
-    --about-col-item-size:.95rem;
-
-    --edge-offset:clamp(22px, 4svw, 48px);
-    --mobile-landscape-pad-x:clamp(22px, 4svw, 54px);
-    --mobile-landscape-pad-y:clamp(16px, 5svh, 34px);
-    --mobile-landscape-video-w:min(62svw, 124svh, 680px);
-    --mobile-landscape-panel-w:min(34svw, 360px);
-    --mobile-landscape-panel-h:min(76svh, 420px);
-  }
-
-  .space-wrapper{
-    height:100vh;
-    height:100svh;
-    overflow:hidden;
-  }
-
-  .stage{
-    position:relative;
-    width:100vw;
-    width:100svw;
-    height:100vh;
-    height:100svh;
-    left:auto;
-    top:auto;
-    transform:none !important;
-    perspective:none;
-    overflow:hidden;
-  }
-
-  .outer-space{
-    position:absolute;
-    inset:0;
-    display:block;
-    width:100vw;
-    width:100svw;
-    height:100vh;
-    height:100svh;
-    z-index:20;
-    pointer-events:none;
-    transition:transform .8s ease;
-    transform:none !important;
-  }
-
-  body.view-left .outer-space,
-  body.view-center .outer-space,
-  body.view-right .outer-space{
-    transform:none !important;
-  }
-
-  .view{
-    position:absolute;
-    inset:0;
-    width:100vw;
-    width:100svw;
-    height:100vh;
-    height:100svh;
-    flex:0 0 100vw;
-    flex-basis:100svw;
-    padding:var(--mobile-landscape-pad-y) var(--mobile-landscape-pad-x);
-    overflow:hidden;
-    pointer-events:none;
-  }
-
-  .view.view-left,
-  .view.view-right{
-    z-index:30;
-    transition:transform .8s ease;
-  }
-
-  .view.view-center{
-    z-index:60;
-    transform:none;
-  }
-
-  body.view-center .view.view-left,
-  body.view-right .view.view-left{
-    transform:translateX(calc(-100svw - 2px));
-  }
-
-  body.view-left .view.view-left{
-    transform:translateX(0);
-  }
-
-  body.view-left .view.view-right,
-  body.view-center .view.view-right{
-    transform:translateX(calc(100svw + 2px));
-  }
-
-  body.view-right .view.view-right{
-    transform:translateX(0);
-  }
-
-  body.view-left .view.view-left,
-  body.view-right .view.view-right{
-    pointer-events:auto;
-  }
-
-  .view-inner{
-    position:relative;
-    width:100%;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    pointer-events:none;
-  }
-
-  .view.view-left .view-inner,
-  .view.view-right .view-inner{
-    pointer-events:auto;
-  }
-
-  .view.view-center .view-inner{
-    justify-content:space-between;
-    align-items:stretch;
-  }
-
-  .view.view-left .view-inner{
-    justify-content:center;
-    align-items:flex-start;
-    z-index:2;
-  }
-
-  .view.view-right .view-inner{
-    justify-content:center;
-    align-items:flex-end;
-    z-index:2;
-  }
-
-  .inner-shell{
-    position:fixed;
-    inset:0;
-    width:100vw;
-    width:100svw;
-    height:100vh;
-    height:100svh;
-    z-index:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    max-width:none;
-    background:transparent;
-    transform:none !important;
-    opacity:1;
-    pointer-events:none;
-  }
-
-  body.view-center .inner-shell,
-  body.is-about-active .inner-shell{
-    pointer-events:auto;
-  }
-
-  .video-frame{
-    width:var(--mobile-landscape-video-w);
-    height:auto;
-    aspect-ratio:16 / 9;
-    max-width:none;
-    background:#000;
-    box-shadow:var(--shadow-video);
-    pointer-events:auto;
-    transition:opacity .28s ease;
-  }
-
-  .video-frame iframe,
-  .video-frame video,
-  .video-frame .main-video{
-    width:100%;
-    height:100%;
-    max-width:none;
-    object-fit:contain;
-    pointer-events:auto;
-  }
-
-  body.view-left .video-frame,
-  body.view-right .video-frame{
-    pointer-events:none;
-  }
-
-  body.view-left .video-frame{
-    opacity:0;
-  }
-
-  body.view-right .video-frame{
-    opacity:.68;
-  }
-
-  body.is-about-active .video-frame{
-    opacity:.42;
-  }
-
-  .center-gallery-preview{
-    position:absolute;
-    left:50%;
-    top:50%;
-    display:block;
-    width:var(--mobile-landscape-video-w);
-    height:auto;
-    aspect-ratio:16 / 9;
-    background:#000;
-    opacity:0;
-    visibility:hidden;
-    pointer-events:none;
-    overflow:hidden;
-    transform:translate(-50%, -50%);
-    transition:opacity .24s ease, visibility .24s ease;
-    z-index:2;
-  }
-
-  .center-gallery-preview-img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-    opacity:0;
-    transform:scale(1.02);
-    filter:brightness(.95);
-    transition:opacity .28s ease, transform .48s ease;
-  }
-
-  body.view-left .center-gallery-preview.is-visible{
-    opacity:1;
-    visibility:visible;
-  }
-
-  body.view-left .center-gallery-preview.is-visible .center-gallery-preview-img{
-    opacity:1;
-    transform:scale(1);
-  }
-
-  body.is-about-active .center-gallery-preview{
-    opacity:0;
-    visibility:hidden;
-  }
-
-  .video-unlock-flash{
-    display:none;
-  }
-
-  .view.view-left::before,
-  .view.view-right::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    z-index:0;
-    pointer-events:none;
-  }
-
-  .view.view-left::before{
-    background:rgba(0,0,0,.12);
-  }
-
-  .view.view-right::before{
-    background:
-      linear-gradient(
-        to left,
-        rgba(0,0,0,.55),
-        rgba(0,0,0,.12)
-      );
-  }
-
-  .view-header{
-    font-size:var(--view-header-size);
-    letter-spacing:.28em;
-    z-index:30;
-    pointer-events:none;
-  }
-
-  .edge-btn{
-    font-size:var(--edge-btn-size);
-    letter-spacing:.32em;
-    z-index:100;
-    pointer-events:auto;
-  }
-
-  .global-mute{
-    z-index:120 !important;
-    pointer-events:auto !important;
-    top:calc(var(--mobile-landscape-pad-y) - var(--global-mute-pad));
-    right:calc(var(--mobile-landscape-pad-x) - var(--global-mute-pad));
-  }
-
-  .view.view-left .gallery-preview{
-    display:none;
-  }
-
-  .gallery-panel{
-    position:relative;
-    display:flex;
-    flex-direction:column;
-    width:var(--mobile-landscape-panel-w);
-    max-width:none;
-    height:var(--mobile-landscape-panel-h);
-    min-height:0;
-    max-height:none;
-    margin-top:0;
-    overflow:hidden;
-    align-self:flex-start;
-    z-index:3;
-    pointer-events:auto;
-    text-align:left;
-  }
-
-  .gallery-scroll{
-    width:100%;
-    flex:1 1 auto;
-    min-height:0;
-    height:100%;
-    overflow-y:auto !important;
-    overflow-x:hidden !important;
-    -webkit-overflow-scrolling:touch !important;
-    overscroll-behavior-y:contain;
-    touch-action:pan-y !important;
-    scrollbar-width:none;
-  }
-
-  .gallery-scroll::-webkit-scrollbar{
-    display:none;
-  }
-
-  .gallery-item{
-    width:100%;
-    height:auto;
-    min-height:0;
-    max-height:none;
-    padding:var(--gallery-item-pad-y) 0;
-    box-sizing:border-box;
-    display:block;
-    font-size:var(--gallery-item-size);
-    text-align:left;
-    overflow:hidden;
-  }
-
-  .gallery-item-title,
-  .gallery-item-meta{
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-
-  .gallery-item-title{
-    line-height:1.15;
-  }
-
-  .gallery-item-meta{
-    font-size:var(--gallery-meta-size);
-    line-height:1.1;
-    margin-top:2px;
-  }
-
-  .contact-block{
-    width:min(38svw, 360px);
-    max-width:calc(100svw - (var(--mobile-landscape-pad-x) * 2));
-    margin-top:0;
-    background:transparent;
-    font-size:var(--contact-block-size);
-    line-height:1.58;
-    text-align:right;
-    pointer-events:auto;
-  }
-
-  .contact-label{
-    font-size:var(--contact-label-size);
-    margin-top:10px;
-    text-align:right;
-  }
-
-  .contact-value,
-  .contact-value p,
-  .contact-value a{
-    font-size:var(--contact-value-size);
-    text-align:right;
-  }
-
-  #about{
-    position:relative;
-    z-index:2;
-  }
-}
-/* =========================================================
-   13-05. Touch Portrait / Mobile Stage
-   Contract:
-   - PC and touch-landscape rules above must not be affected.
-   - Gallery / Contact / About are the original Home-panel buttons.
-   - The nav is stage-local absolute, not fixed: it stays visually still
-     during horizontal panel changes, then scrolls away with #top.
-   - Gallery preview switches in the center screen; the main video is hidden
-     in Gallery and softly visible behind Contact.
-========================================================= */
-@media (pointer:coarse) and (orientation:portrait){
-
-  /* 13-05-01. Portrait tokens */
-  :root{
-    --view-header-size:1rem;
-    --edge-btn-size:.86rem;
-
-    --gallery-item-size:.62rem;
-    --gallery-meta-size:.46rem;
-
-    --contact-block-size:1rem;
-    --contact-label-size:.78rem;
-    --contact-value-size:1rem;
-
-    --mobile-video-frame-w:100vw;
-    --mobile-video-frame-h:56.25vw;
-    --mobile-video-frame-half-h:28.125vw;
-
-    --mobile-ui-inset-x:24px;
-    --mobile-ui-inset-y:24px;
-    --mobile-nav-right:var(--mobile-ui-inset-x);
-    --mobile-nav-top:72px;
-    --mobile-nav-gap:42px;
-    --mobile-nav-step:32px;
-    --mobile-nav-video-gap:52px;
-  }
-
-  /* 13-05-02. Page and stage shell */
-  .space-wrapper{
-    height:100svh;
-    overflow:visible;
-  }
-
-  .stage{
-    position:relative;
-    width:100vw;
-    height:100svh;
-    left:auto;
-    top:auto;
-    transform:none !important;
-    perspective:none;
-    overflow:hidden;
-  }
-
-  .outer-space{
-    position:absolute;
-    inset:0;
-    display:block;
-    width:100vw;
-    height:100svh;
-    z-index:20;
-    pointer-events:none;
-    transition:transform .8s ease;
-    transform:none !important;
-  }
-
-  body.view-left .outer-space,
-  body.view-center .outer-space,
-  body.view-right .outer-space{
-    transform:none !important;
-  }
-
-  /* 13-05-03. Three-panel mobile layout */
-  .view{
-    position:absolute;
-    inset:0;
-    width:100vw;
-    height:100svh;
-    flex:0 0 100vw;
-    padding:var(--mobile-ui-inset-y) var(--mobile-ui-inset-x);
-    overflow:hidden;
-    pointer-events:none;
-  }
-
-  .view.view-left,
-  .view.view-right{
-    transition:transform .8s ease;
-  }
-
-  body.view-center .view.view-left,
-  body.view-right .view.view-left{
-    transform:translateX(-100vw);
-  }
-
-  body.view-left .view.view-left{
-    transform:translateX(0);
-  }
-
-  body.view-left .view.view-right,
-  body.view-center .view.view-right{
-    transform:translateX(100vw);
-  }
-
-  body.view-right .view.view-right{
-    transform:translateX(0);
-  }
-
-  .view.view-center{
-    transform:none;
-    z-index:60;
-  }
-
-  .view.view-left,
-  .view.view-right{
-    z-index:30;
-  }
-
-  /* 13-05-04. Pointer routing */
-  body.view-left .view-left,
-  body.view-right .view-right{
-    pointer-events:auto;
-  }
-
-  .view-inner{
-    position:relative;
-    width:100%;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    pointer-events:none;
-  }
-
-  .view.view-left .view-inner,
-  .view.view-right .view-inner{
-    pointer-events:auto;
-  }
-
-  /* 13-05-05. Center screen: main video and Gallery preview */
-  .inner-shell{
-    position:fixed;
-    inset:0;
-    width:100vw;
-    height:100svh;
-    z-index:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:transparent;
-    transform:none !important;
-    opacity:1;
-    pointer-events:none;
-  }
-
-  body.view-center .inner-shell,
-  body.is-about-active .inner-shell{
-    pointer-events:auto;
-  }
-
-  .video-frame{
-    width:var(--mobile-video-frame-w);
-    height:var(--mobile-video-frame-h);
-    aspect-ratio:16 / 9;
-    max-width:none;
-    background:#000;
-    box-shadow:none;
-    pointer-events:auto;
-    transition:opacity .28s ease;
-  }
-
-  .video-frame iframe,
-  .video-frame video,
-  .video-frame .main-video{
-    width:100%;
-    height:100%;
-    max-width:none;
-    object-fit:contain;
-    pointer-events:auto;
-  }
-
-  body.view-left .video-frame,
-  body.view-right .video-frame{
-    pointer-events:none;
-  }
-
-  body.view-left .video-frame{
-    opacity:0;
-  }
-
-  body.view-right .video-frame{
-    opacity:.68;
-  }
-
-  body.is-about-active .video-frame{
-    opacity:.42;
-  }
-
-  .center-gallery-preview{
-    position:absolute;
-    left:50%;
-    top:50%;
-    display:block;
-    width:var(--mobile-video-frame-w);
-    height:var(--mobile-video-frame-h);
-    aspect-ratio:16 / 9;
-    background:#000;
-    opacity:0;
-    visibility:hidden;
-    pointer-events:none;
-    overflow:hidden;
-    transform:translate(-50%, -50%);
-    transition:opacity .24s ease, visibility .24s ease;
-  }
-
-  .center-gallery-preview-img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-    opacity:0;
-    transform:scale(1.02);
-    filter:brightness(.95);
-    transition:opacity .28s ease, transform .48s ease;
-  }
-
-  body.view-left .center-gallery-preview.is-visible{
-    opacity:1;
-    visibility:visible;
-  }
-
-  body.view-left .center-gallery-preview.is-visible .center-gallery-preview-img{
-    opacity:1;
-    transform:scale(1);
-  }
-
-  body.is-about-active .center-gallery-preview{
-    opacity:0;
-    visibility:hidden;
-  }
-
-  .video-unlock-flash{
-    display:none;
-  }
-
-  /* 13-05-06. Labels, nav, and mute */
-  .view-header{
-    display:block !important;
-    position:absolute !important;
-    top:0 !important;
-    left:0 !important;
-    right:auto !important;
-    margin:0 !important;
-    font-size:var(--view-header-size);
-    text-align:left !important;
-    z-index:30;
-    pointer-events:none;
-  }
-
-  .edge-btn{
-    position:absolute !important;
-    left:auto !important;
-    right:var(--mobile-nav-right) !important;
-    bottom:auto !important;
-    transform:none !important;
-    z-index:100 !important;
-    display:flex !important;
-    visibility:visible !important;
-    opacity:1 !important;
-    width:auto;
-    padding:0 0 4px 0;
-    background:transparent !important;
-    color:#fff;
-    font-size:var(--edge-btn-size);
-    line-height:1;
-    letter-spacing:0;
-    text-align:right;
-    justify-content:flex-end;
-    border-bottom:1px solid transparent;
-    pointer-events:auto !important;
-  }
-
-  .view.view-center > .view-inner > .edge-btn{
-    position:absolute !important;
-    right:0 !important;
-    transform:none !important;
-    z-index:140 !important;
-  }
-
-  /* Home-panel nav. It is absolute inside #top so vertical About scroll
-     carries it away; do not convert this back to position:fixed. */
-  .view.view-center > .view-inner > .edge-btn[data-stage-view="left"]{
-    top:auto !important;
-    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 2) !important;
-  }
-
-  .view.view-center > .view-inner > .edge-btn[data-stage-view="right"]{
-    top:auto !important;
-    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step)) !important;
-  }
-
-  .view.view-center > .view-inner > .edge-btn[data-scroll-to="#about"]{
-    top:auto !important;
-    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap)) !important;
-  }
-
-  .view.view-center > .view-inner > .edge-btn--mobile-home{
-    display:flex !important;
-    top:auto !important;
-    right:0 !important;
-    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 3) !important;
-    opacity:0 !important;
-    pointer-events:none !important;
-    border-bottom-color:transparent !important;
-    transition:opacity .24s ease, color .2s ease, filter .2s ease !important;
-  }
-
-  body.view-left .view.view-center > .view-inner > .edge-btn--mobile-home,
-  body.view-right .view.view-center > .view-inner > .edge-btn--mobile-home{
-    opacity:1 !important;
-    pointer-events:auto !important;
-  }
-
-  .view.view-left .edge-btn[data-stage-view="center"],
-  .view.view-right .edge-btn[data-stage-view="center"]{
-    top:auto !important;
-    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 3) !important;
-    right:0 !important;
-    opacity:0 !important;
-    pointer-events:none !important;
-    border-bottom-color:transparent !important;
-  }
-
-  /* Side-panel Home button occupies the first nav row only when that panel
-     is active. Home screen itself keeps Home hidden. */
-  body.view-left .view.view-left .edge-btn[data-stage-view="center"],
-  body.view-right .view.view-right .edge-btn[data-stage-view="center"]{
-    opacity:0 !important;
-    pointer-events:none !important;
-  }
-
-  body.view-left:not(.is-about-active) .view.view-center > .view-inner > .edge-btn[data-stage-view="left"],
-  body.view-right:not(.is-about-active) .view.view-center > .view-inner > .edge-btn[data-stage-view="right"],
-  body.is-about-active .view.view-center > .view-inner > .edge-btn[data-scroll-to="#about"]{
-    border-bottom-color:rgba(255,255,255,.9);
-  }
-
-  .global-mute{
-    z-index:120 !important;
-    pointer-events:auto !important;
-    top:calc(var(--mobile-ui-inset-y) - var(--global-mute-pad));
-    right:calc(var(--mobile-ui-inset-x) - var(--global-mute-pad));
-  }
-
-  /* 13-05-07. Side-panel backgrounds and alignment */
-  .view.view-left::before,
-  .view.view-right::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    z-index:0;
-    pointer-events:none;
-  }
-
-  .view.view-left::before{
-    background:rgba(0,0,0,.12);
-  }
-
-  .view.view-right::before{
-    background:
-      linear-gradient(
-        to left,
-        rgba(0,0,0,.55),
-        rgba(0,0,0,.12)
-      );
-  }
-
-  .view.view-center .view-inner{
-    justify-content:space-between;
-    align-items:stretch;
-  }
-
-  .view.view-left .view-inner{
-    justify-content:flex-start;
-    align-items:flex-start;
-    z-index:2;
-  }
-
-  .view.view-right .view-inner{
-    justify-content:center;
-    align-items:flex-end;
-    z-index:2;
-  }
-
-  .view.view-left .gallery-preview{
-    display:none;
-  }
-
-  /* 13-05-08. Gallery list */
-  .gallery-panel{
-    position:absolute;
-    left:0;
-    top:50%;
-    width:min(58vw, 250px);
-    max-width:none;
-    height:min(64svh, calc(var(--mobile-video-frame-h) + 170px));
-    min-height:0;
-    max-height:none;
-    margin-top:0;
-    overflow:hidden;
-    align-self:flex-start;
-    z-index:3;
-    pointer-events:auto;
-    text-align:left;
-    transform:translateY(-50%);
-  }
-
-  /* The panel is taller than the text needs so swipe scrolling feels reliable
-     on touch screens while text stays left of the center preview. */
-  .gallery-scroll{
-    width:100%;
-    height:100%;
-    overflow-y:auto !important;
-    overflow-x:hidden !important;
-    -webkit-overflow-scrolling:touch !important;
-    overscroll-behavior-y:contain;
-    touch-action:pan-y;
-    scrollbar-width:none;
-  }
-
-  .gallery-scroll::-webkit-scrollbar{
-    display:none;
-  }
-
-  .gallery-item{
-    width:100%;
-    height:16.666%;
-    min-height:16.666%;
-    max-height:16.666%;
-    padding:1px 0;
-    box-sizing:border-box;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    font-size:var(--gallery-item-size);
-    text-align:left;
-    overflow:hidden;
-  }
-
-  .gallery-item-title,
-  .gallery-item-meta{
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-
-  .gallery-item-title{
-    line-height:1.12;
-  }
-
-  .gallery-item-meta{
-    font-size:var(--gallery-meta-size);
-    line-height:1.08;
-    margin-top:2px;
-  }
-
-  /* 13-05-09. Contact */
-  .contact-block{
-    max-width:calc(100vw - 48px);
-    margin-top:0;
-    background:transparent;
-    font-size:var(--contact-block-size);
-    line-height:1.7;
-    text-align:right;
-    pointer-events:auto;
-  }
-
-  .contact-label{
-    font-size:var(--contact-label-size);
-    margin-top:14px;
-    text-align:right;
-  }
-
-  .contact-value,
-  .contact-value p,
-  .contact-value a{
-    font-size:var(--contact-value-size);
-    text-align:right;
-  }
-
-  /* 13-05-10. About */
-  #about{
-    position:relative;
-    z-index:2;
-    background:transparent;
-    overflow:hidden;
-  }
-
-  #about .about-bg-video{
-    display:block;
-    opacity:.42;
-  }
-
-  #about .about-overlay{
-    background:rgba(0,0,0,.46);
-  }
-}
-/* =========================================================
-   Modal Credit — 修正パッチ
-   既存CSSの末尾にこのファイルを読み込む、または
-   該当箇所に上書きしてください
-========================================================= */
-
-/* -----------------------------------------
-   変数の上書き
------------------------------------------ */
-:root {
-  --modal-credit-inner-max-w: none;
-  --modal-credit-inner-width: 100%;
-  --modal-credit-inner-pad-top: 0px;
-  --modal-credit-inner-pad-x: 0px;
-  --modal-credit-inner-pad-bottom: 0px;
-
-  --modal-credit-title-size: clamp(0.9rem, 1.1vw, 1.1rem);
-  --modal-credit-list-size: clamp(0.78rem, 0.9vw, 0.95rem);
-  --modal-credit-list-line: 1.5;
-  --modal-credit-list-gap: 0px;
-  --modal-credit-title-gap: clamp(16px, 2vw, 28px);
-}
-
-/* -----------------------------------------
-   .modal__credit
-   align-items を flex-start に → コンテンツが上から始まる
-   overflow-y: auto → 長いクレジットも見切れない
------------------------------------------ */
-.modal__credit {
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: 0 !important;
-  width: 100% !important;
-  overflow-y: auto;
-}
-
-/* -----------------------------------------
-   .modal__credit-inner
-   モーダル幅にぴったり合わせる / 内部スクロールなし
------------------------------------------ */
-.modal__credit-inner {
-  max-width: none !important;
-  width: 100% !important;
-  min-width: 0;
-  max-height: none;
-  overflow-y: visible;
-  text-align: center;
-  padding: 0 !important;
-  box-sizing: border-box;
-}
-
-/* -----------------------------------------
-   .modal__credit-list
-   auto-fit グリッド：幅に応じて列数が自動で変わる
------------------------------------------ */
-.modal__credit-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: clamp(8px, 1.2vw, 16px);
-  margin-bottom: 0;
-}
-
-/* -----------------------------------------
-   .credit-row
-   flex column で 役職 → 名前 の縦並び・中央揃え
------------------------------------------ */
-.credit-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: clamp(8px, 1vw, 14px) clamp(10px, 1.2vw, 18px);
-  border: none;
-  grid-template-columns: unset;
-}
-
-.credit-role {
-  opacity: .7;
-  font-size: clamp(0.68rem, 0.82vw, 0.8rem);
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-.credit-name {
-  font-size: clamp(0.88rem, 1vw, 1rem);
-  font-weight: 500;
-  text-align: center;
-}
-
-/* -----------------------------------------
-   pointer:coarse（スマホ縦）
------------------------------------------ */
-@media (pointer:coarse) {
-  .modal__credit {
-    align-items: stretch;
-    justify-content: flex-start;
-    padding: 0 !important;
-  }
-
-  .modal__credit-inner {
-    width: 100%;
-    max-width: none;
-    padding: 0;
-    text-align: center;
-    overflow-y: visible;
-    max-height: none;
-  }
-
-  .modal__credit-list {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: clamp(6px, 2vw, 12px);
-    margin-bottom: 0;
-  }
-
-  .credit-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 8px 6px;
-    border-bottom: none;
-    grid-template-columns: unset;
-  }
-
-  .credit-row:first-child {
-    border-top: none;
-  }
-
-  .credit-role {
-    font-size: clamp(0.6rem, 2.8vw, 0.76rem);
-    text-align: center;
-    line-height: 1.3;
-  }
-
-  .credit-name {
-    font-size: clamp(0.78rem, 3.2vw, 0.92rem);
-    text-align: center;
-    line-height: 1.3;
-  }
-}
-
-/* -----------------------------------------
-   pointer:coarse + landscape
------------------------------------------ */
-@media (pointer:coarse) and (orientation:landscape) {
-  .modal__credit {
-    align-items: stretch;
-    justify-content: flex-start;
-    padding: 0 !important;
-  }
-
-  .modal__credit-inner {
-    width: 100%;
-    max-width: none;
-    padding: 0;
-    overflow-y: visible;
-    max-height: none;
-  }
-
-  .modal__credit-list {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 6px;
-  }
-
-  .credit-row {
-    padding: 4px 6px;
-    gap: 2px;
-  }
-
-  .credit-role {
-    font-size: clamp(0.56rem, 1.8svh, 0.7rem);
-  }
-
-  .credit-name {
-    font-size: clamp(0.68rem, 2svh, 0.82rem);
-  }
-}
-
-/* -----------------------------------------
-   orientation:landscape 共通
------------------------------------------ */
-@media (orientation:landscape) {
-  .modal__credit-inner {
-    text-align: center;
-    max-height: none;
-    overflow-y: visible;
-  }
-
-  .credit-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 0;
-    border-bottom: 0;
-    grid-template-columns: unset;
-  }
-
-  .credit-row:first-child {
-    border-top: 0;
-  }
-
-  .credit-role,
-  .credit-name {
-    text-align: center;
-  }
-}
-
-/* =========================================================
-   Modal Credit Screen
-   Credit overlay always matches the modal video frame.
-========================================================= */
-.modal__video-frame > .modal__credit{
-  position:absolute !important;
-  inset:0 !important;
-  z-index:2;
-  width:100% !important;
-  height:100% !important;
-  max-height:100%;
-  display:flex;
-  align-items:stretch;
-  justify-content:center;
-  padding:0 !important;
-  overflow:hidden !important;
-  background:var(--overlay-credit);
-}
-
-.modal__credit-inner{
-  width:100% !important;
-  height:100%;
-  max-width:none !important;
-  max-height:100% !important;
-  box-sizing:border-box;
-  padding:clamp(18px, 3vw, 42px) clamp(18px, 4vw, 56px) !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
-  text-align:center;
-}
-
-.modal__credit-title{
-  margin:0 0 clamp(14px, 2.2vw, 30px);
-  font-size:clamp(.9rem, 1.1vw, 1.1rem);
-  line-height:1.32;
-  letter-spacing:var(--modal-credit-title-spacing);
-  overflow-wrap:anywhere;
-}
-
-.modal__credit-list{
-  width:min(100%, 560px);
-  margin:0 auto;
-  display:flex;
-  flex-direction:column;
-  align-items:stretch;
-  gap:clamp(8px, 1vw, 14px);
-  font-size:var(--modal-credit-list-size);
-  line-height:1.45;
-}
-
-.credit-row{
-  display:flex !important;
-  flex-direction:column;
-  align-items:center;
-  gap:3px;
-  min-width:0;
-  padding:0;
-  border:0;
-}
-
-.credit-row:first-child{
-  border-top:0;
-}
-
-.credit-role{
-  opacity:.7;
-  font-size:clamp(.62rem, .78vw, .78rem);
-  line-height:1.35;
-  letter-spacing:.1em;
-  text-align:center;
-  text-transform:uppercase;
-  overflow-wrap:anywhere;
-}
-
-.credit-name{
-  font-size:clamp(.78rem, .95vw, .96rem);
-  line-height:1.36;
-  font-weight:500;
-  text-align:center;
-  overflow-wrap:anywhere;
-}
-
-@media (pointer:coarse){
-  .modal__credit-inner{
-    padding:clamp(14px, 4vw, 28px) clamp(14px, 5vw, 30px) !important;
-  }
-
-  .modal__credit-title{
-    margin-bottom:clamp(12px, 3.2vw, 20px);
-    font-size:clamp(.76rem, 3.2vw, .98rem);
-  }
-
-  .modal__credit-list{
-    width:min(100%, 520px);
-    gap:clamp(7px, 2.2vw, 12px);
-  }
-
-  .credit-role{
-    font-size:clamp(.56rem, 2.4vw, .72rem);
-  }
-
-  .credit-name{
-    font-size:clamp(.7rem, 2.9vw, .9rem);
-  }
-}
-
-@media (orientation:landscape){
-  .modal__credit-inner{
-    padding:clamp(12px, 3svh, 28px) clamp(18px, 4vw, 48px) !important;
-  }
-
-  .modal__credit-title{
-    margin-bottom:clamp(8px, 2svh, 18px);
-    font-size:clamp(.62rem, 2.2svh, 1.02rem);
-    line-height:1.26;
-  }
-
-  .modal__credit-list{
-    width:min(100%, 520px);
-    gap:clamp(5px, 1.35svh, 12px);
-  }
-
-  .credit-row{
-    gap:2px;
-  }
-
-  .credit-role{
-    font-size:clamp(.5rem, 1.75svh, .72rem);
-    line-height:1.25;
-  }
-
-  .credit-name{
-    font-size:clamp(.6rem, 2svh, .88rem);
-    line-height:1.25;
-  }
-}
-
-/* =========================================================
-   Gallery Continue Hint / Body Scroll
+   13. Gallery Continue Hint / Body Scroll
 ========================================================= */
 body.is-modal-open{
-  overflow:hidden !important;
+  overflow:hidden;
 }
 
 .gallery-panel::after{
@@ -3114,29 +1352,861 @@ body.is-modal-open{
 }
 
 /* =========================================================
-   Text Contrast
+   14. Responsive
 ========================================================= */
-.edge-btn,
-.view-header,
-.pull-return-link,
-.global-mute,
-.gallery-item-title,
-.gallery-item-meta,
-.contact-label,
-.contact-value,
-.about-logo-main,
-.about-logo-sub,
-.about-lead,
-.about-item h3,
-.about-item p,
-.about-col,
-.about-credit,
-.about-action-link,
-.modal__credit-toggle{
-  color:#fff;
-  mix-blend-mode:difference;
+
+/* -----------------------------------------
+   14-01. 狭い幅 共通
+----------------------------------------- */
+@media (max-width:900px){
+  :root{
+    --video-side-safe:32px;
+    --about-content-pad-top:0px;
+    --about-content-pad-x:7vw;
+    --about-content-pad-bottom:120px;
+  }
+
+  .about-split{ grid-template-columns:1fr; }
 }
 
-.icon-sound{
-  mix-blend-mode:difference;
+/* -----------------------------------------
+   14-02. タブレット (pointer:coarse かつ 768px以上)
+   タッチ操作のためタップ領域を確保 → edge-btn, contact-value を
+   PCより意図的に大きくする
+----------------------------------------- */
+@media (pointer:coarse) and (min-width:768px) and (min-height:600px){
+  :root{
+    --view-header-size:  1.5rem;
+    --edge-btn-size:     1.8rem;   /* PC(1.5rem)より大 → タップ領域確保 */
+    --gallery-item-size: 1.2rem;
+    --gallery-meta-size: .9rem;
+    --contact-block-size:  1.05rem;
+    --contact-label-size:  1.35rem;
+    --contact-value-size:  1.45rem; /* PC(1.14rem)より大 → タップ領域確保 */
+    --about-lead-size:     1rem;
+    --about-heading-size:  1.45rem;
+    --about-body-size:     1rem;
+    --about-col-title-size:1.18rem;
+    --about-col-item-size: 1rem;
+  }
+}
+
+/* -----------------------------------------
+   14-03. 小型PC (pointer:fine かつ width≦1366px or height≦820px)
+   clamp統合済み: edge-btn / about-lead / about-heading / about-body
+   ここで残すのは「小型PCで意図的に大きくする」gallery / contact 系のみ
+----------------------------------------- */
+@media (pointer:fine) and (max-width:1366px),
+       (pointer:fine) and (max-height:820px){
+  :root{
+    /* 小型PCでは密度が上がるため gallery / contact を拡大 */
+    --gallery-item-size:  1.1rem;   /* desktop: .96rem → 意図的に大きく */
+    --gallery-meta-size:  1rem;     /* desktop: .78rem → 意図的に大きく */
+    --contact-block-size: .92rem;   /* desktop: .86rem → 意図的に大きく */
+    --contact-label-size: 1.36rem;  /* desktop: 1.3rem → 意図的に大きく */
+    --contact-value-size: 1.24rem;  /* desktop: 1.14rem → 意図的に大きく */
+  }
+}
+
+/* -----------------------------------------
+   14-04. タッチ端末 共通
+----------------------------------------- */
+@media (pointer:coarse){
+  .inner-shell{ max-width:none; }
+
+  body.view-center .inner-shell{
+    transform:translate(-50%, -50%) translateY(var(--video-mobile-stage-offset-y));
+  }
+
+  .video-frame{
+    width:var(--video-mobile-stage-w);
+    max-width:none;
+  }
+
+  .video-frame iframe{ pointer-events:auto; }
+
+  .view.view-left,
+  .view.view-right .view-inner{ pointer-events:auto; }
+
+  .gallery-panel{ isolation:isolate; }
+
+  .gallery-scroll{
+    position:relative;
+    z-index:3;
+    width:100%;
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:scroll;
+    -webkit-overflow-scrolling:touch;
+    transform:translate3d(0,0,0);
+    backface-visibility:hidden;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
+    will-change:auto;
+  }
+
+  .gallery-item{ flex:0 0 auto; min-height:1px; }
+
+  /* modal credit: タッチではフォントサイズのみ調整 */
+  .modal__credit-title{
+    font-size:clamp(.76rem, 3.2vw, .98rem);
+    margin-bottom:clamp(12px, 3.2vw, 20px);
+  }
+
+  .credit-role{
+    font-size:clamp(.56rem, 2.4vw, .72rem);
+  }
+
+  .credit-name{
+    font-size:clamp(.7rem, 2.9vw, .9rem);
+  }
+
+  .modal__credit-inner{
+    padding:clamp(14px, 4vw, 28px) clamp(14px, 5vw, 30px);
+  }
+
+  .modal__credit-list{
+    width:min(100%, 520px);
+    gap:clamp(7px, 2.2vw, 12px);
+  }
+
+  /* coarse: close-line は視覚線を ::after で描画 */
+  .modal__close-line{
+    height:1px;
+    background:transparent;
+    box-shadow:none;
+  }
+
+  .modal__close-line::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    top:50%;
+    height:1px;
+    background:rgba(255,255,255,.42);
+    transform:translateY(-50%);
+    box-shadow:
+      0 0 6px rgba(255,255,255,.25),
+      0 0 18px rgba(255,255,255,.12);
+  }
+
+  /* coarse: modal レイアウト */
+  .modal{
+    align-items:center;
+    justify-content:center;
+    padding:
+      max(14px, env(safe-area-inset-top))
+      14px
+      calc(56px + env(safe-area-inset-bottom));
+  }
+
+  .modal__content{
+    width:min(94vw, 126svh);
+    max-width:none;
+    max-height:calc(100svh - 86px - env(safe-area-inset-bottom));
+    box-shadow:none;
+  }
+
+  .modal__video-frame{
+    max-height:none;
+  }
+
+  .modal__footer{
+    margin-top:8px;
+    padding-bottom:0;
+    position:relative;
+    z-index:3;
+  }
+
+  .modal__credit-inner{
+    padding:clamp(14px, 4vw, 28px) clamp(14px, 5vw, 30px);
+  }
+
+  /* coarse: credit overlay は fixed で画面全体を覆う */
+  .modal__video-frame > .modal__credit{
+    position:fixed;
+    inset:
+      max(14px, env(safe-area-inset-top))
+      14px
+      calc(66px + env(safe-area-inset-bottom))
+      14px;
+    height:auto;
+    max-height:none;
+    align-items:flex-start;
+    z-index:calc(var(--z-modal) + 1);
+    background:rgba(0,0,0,.88);
+    overflow-y:auto;
+    padding:clamp(18px, 4vw, 30px) 0;
+  }
+
+  .modal.modal--credit-open .modal__footer{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:calc(18px + env(safe-area-inset-bottom));
+    z-index:calc(var(--z-modal) + 2);
+    margin:0;
+    padding:0;
+    pointer-events:none;
+  }
+
+  .modal.modal--credit-open .modal__credit-toggle{
+    pointer-events:auto;
+    padding:8px 0;
+  }
+
+  .modal.modal--credit-open .modal__close-line{
+    opacity:0;
+    pointer-events:none;
+  }
+}
+
+/* -----------------------------------------
+   14-05. Touch Landscape (pointer:coarse かつ landscape)
+   画面高が低いため UI 全体を小さくする設計
+   全フォントサイズが desktop / portrait より大幅に縮小
+   → clamp不可（portrait と landscape は値の方向が逆のため）
+----------------------------------------- */
+@media (pointer:coarse) and (orientation:landscape){
+  :root{
+    --view-header-size:.72rem;
+    --edge-btn-size:.76rem;
+    --gallery-item-size:.66rem;
+    --gallery-meta-size:.48rem;
+    --gallery-item-pad-y:6px;
+    --contact-block-size:.72rem;
+    --contact-label-size:.68rem;
+    --contact-value-size:.82rem;
+    --about-lead-size:.8rem;
+    --about-heading-size:1.2rem;
+    --about-body-size:.95rem;
+    --about-col-title-size:1.05rem;
+    --about-col-item-size:.95rem;
+
+    --stage-w:var(--vvw);
+    --stage-h:var(--vvh);
+    --stage-pad-y:clamp(14px, 3.7svh, 24px);
+    --stage-pad-x:clamp(24px, 3.75svw, 44px);
+    --stage-header-top:clamp(10px, 2.2svh, 20px);
+    --edge-offset:clamp(18px, 2.1svw, 32px);
+    --video-w:min(74svw, 131.556svh);
+    --video-side-safe:40px;
+    --gallery-w:clamp(178px, 22svw, 260px);
+    --contact-w:clamp(220px, 30svw, 360px);
+    --global-mute-top:clamp(14px, 4svh, 24px);
+    --global-mute-right:clamp(18px, 4svw, 32px);
+
+    --inner-shell-side-shift:80vw;
+  }
+
+  .stage{
+    transform:translate(-50%, -50%) scale(1);
+  }
+
+  body.view-center .inner-shell{
+    transform:translate(-50%, -50%);
+  }
+
+  .video-frame{
+    width:var(--landscape-video-w, var(--video-w));
+  }
+
+  .view.view-left,
+  .view-left .view-inner,
+  .view-left .gallery-panel,
+  .view-left .gallery-scroll{
+    pointer-events:auto;
+  }
+
+  .gallery-panel{
+    display:flex;
+    flex-direction:column;
+    max-width:var(--gallery-w);
+    height:min(70svh, 360px);
+    min-height:0;
+    overflow:hidden;
+  }
+
+  .contact-block{
+    max-width:var(--contact-w);
+    line-height:1.62;
+  }
+
+  .contact-label{
+    margin-top:clamp(8px, 2svh, 14px);
+  }
+
+  .gallery-scroll{
+    flex:1 1 auto;
+    min-height:0;
+    height:100%;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
+  }
+
+  /* modal credit landscape: フォントサイズのみ調整 */
+  .modal__credit-inner{
+    padding:clamp(12px, 3svh, 28px) clamp(18px, 4vw, 48px);
+  }
+
+  .modal__credit-title{
+    margin-bottom:clamp(8px, 2svh, 18px);
+    font-size:clamp(.62rem, 2.2svh, 1.02rem);
+    line-height:1.26;
+  }
+
+  .modal__credit-list{
+    width:min(100%, 520px);
+    gap:clamp(5px, 1.35svh, 12px);
+  }
+
+  .credit-row{
+    gap:2px;
+  }
+
+  .credit-role{
+    font-size:clamp(.5rem, 1.75svh, .72rem);
+    line-height:1.25;
+  }
+
+  .credit-name{
+    font-size:clamp(.6rem, 2svh, .88rem);
+    line-height:1.25;
+  }
+
+  /* coarse landscape: close-line は pointer:coarse 共通ルールで処理済み */
+  .modal{
+    padding:
+      max(10px, env(safe-area-inset-top))
+      16px
+      calc(42px + env(safe-area-inset-bottom));
+  }
+
+  .modal__content{
+    width:min(94vw, 132svh);
+    max-height:calc(100svh - 58px - env(safe-area-inset-bottom));
+  }
+
+  .modal__footer{
+    margin-top:6px;
+  }
+
+  .modal__video-frame > .modal__credit{
+    inset:
+      max(10px, env(safe-area-inset-top))
+      16px
+      calc(50px + env(safe-area-inset-bottom))
+      16px;
+    padding:10px 0;
+  }
+
+  .modal.modal--credit-open .modal__footer{
+    bottom:calc(8px + env(safe-area-inset-bottom));
+  }
+}
+
+/* -----------------------------------------
+   14-05-dead. 旧 landscape レイアウト（廃止済み / 参照用に保持）
+   max-width:0px で永遠にマッチしないため実害なし
+----------------------------------------- */
+/*
+@media (pointer:coarse) and (orientation:landscape) and (max-width:0px){
+  ... (retired mobile-landscape single-panel layout) ...
+}
+*/
+
+/* -----------------------------------------
+   14-06. Touch Portrait / Mobile Stage
+   縦持ちスマホ専用レイアウト（3面スライド式パネル）
+   gallery / contact は landscape より大きい値（読みやすさ優先）
+   about 系はここで上書きなし → desktop の clamp 値が継続適用
+----------------------------------------- */
+@media (pointer:coarse) and (orientation:portrait){
+
+  /* 14-06-01. Portrait tokens */
+  :root{
+    --view-header-size:1rem;
+    --edge-btn-size:.86rem;
+    --gallery-item-size:.62rem;
+    --gallery-meta-size:.46rem;
+    --contact-block-size:1rem;
+    --contact-label-size:.78rem;
+    --contact-value-size:1rem;
+    --mobile-video-frame-w:100vw;
+    --mobile-video-frame-h:56.25vw;
+    --mobile-video-frame-half-h:28.125vw;
+    --mobile-ui-inset-x:24px;
+    --mobile-ui-inset-y:24px;
+    --mobile-nav-step:32px;
+    --mobile-nav-video-gap:52px;
+  }
+
+  /* 14-06-02. Page and stage shell */
+  .space-wrapper{
+    height:100svh;
+    overflow:visible;
+  }
+
+  .stage{
+    position:relative;
+    width:100vw;
+    height:100svh;
+    left:auto;
+    top:auto;
+    transform:none;
+    perspective:none;
+    overflow:hidden;
+  }
+
+  .outer-space{
+    position:absolute;
+    inset:0;
+    display:block;
+    width:100vw;
+    height:100svh;
+    z-index:var(--z-portrait-outer);
+    pointer-events:none;
+    transition:transform .8s ease;
+    transform:none;
+  }
+
+  body.view-left .outer-space,
+  body.view-center .outer-space,
+  body.view-right .outer-space{
+    transform:none;
+  }
+
+  /* 14-06-03. Three-panel mobile layout */
+  .view{
+    position:absolute;
+    inset:0;
+    width:100vw;
+    height:100svh;
+    flex:0 0 100vw;
+    padding:var(--mobile-ui-inset-y) var(--mobile-ui-inset-x);
+    overflow:hidden;
+    pointer-events:none;
+  }
+
+  .view.view-left,
+  .view.view-right{
+    transition:transform .8s ease;
+  }
+
+  body.view-center .view.view-left,
+  body.view-right .view.view-left{
+    transform:translateX(-100vw);
+  }
+
+  body.view-left .view.view-left{
+    transform:translateX(0);
+  }
+
+  body.view-left .view.view-right,
+  body.view-center .view.view-right{
+    transform:translateX(100vw);
+  }
+
+  body.view-right .view.view-right{
+    transform:translateX(0);
+  }
+
+  .view.view-center{
+    transform:none;
+    z-index:var(--z-portrait-center);
+  }
+
+  .view.view-left,
+  .view.view-right{
+    z-index:var(--z-portrait-side);
+  }
+
+  /* 14-06-04. Pointer routing */
+  body.view-left .view-left,
+  body.view-right .view-right{
+    pointer-events:auto;
+  }
+
+  .view-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    pointer-events:none;
+  }
+
+  .view.view-left .view-inner,
+  .view.view-right .view-inner{
+    pointer-events:auto;
+  }
+
+  /* 14-06-05. Center screen */
+  .inner-shell{
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100svh;
+    z-index:var(--z-portrait-shell);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:transparent;
+    transform:none;
+    opacity:1;
+    pointer-events:none;
+  }
+
+  body.view-center .inner-shell,
+  body.is-about-active .inner-shell{
+    pointer-events:auto;
+  }
+
+  .video-frame{
+    width:var(--mobile-video-frame-w);
+    height:var(--mobile-video-frame-h);
+    aspect-ratio:16 / 9;
+    max-width:none;
+    background:#000;
+    box-shadow:none;
+    pointer-events:auto;
+    transition:opacity .28s ease;
+  }
+
+  .video-frame iframe,
+  .video-frame video,
+  .video-frame .main-video{
+    width:100%;
+    height:100%;
+    max-width:none;
+    object-fit:contain;
+    pointer-events:auto;
+  }
+
+  body.view-left .video-frame,
+  body.view-right .video-frame{
+    pointer-events:none;
+  }
+
+  body.view-left .video-frame{
+    opacity:0;
+  }
+
+  body.view-right .video-frame{
+    opacity:.68;
+  }
+
+  body.is-about-active .video-frame{
+    opacity:.42;
+  }
+
+  .center-gallery-preview{
+    position:absolute;
+    left:50%;
+    top:50%;
+    display:block;
+    width:var(--mobile-video-frame-w);
+    height:var(--mobile-video-frame-h);
+    aspect-ratio:16 / 9;
+    background:#000;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    overflow:hidden;
+    transform:translate(-50%, -50%);
+    transition:opacity .24s ease, visibility .24s ease;
+  }
+
+  .center-gallery-preview-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    opacity:0;
+    transform:scale(1.02);
+    filter:brightness(.95);
+    transition:opacity .28s ease, transform .48s ease;
+  }
+
+  body.view-left .center-gallery-preview.is-visible{
+    opacity:1;
+    visibility:visible;
+  }
+
+  body.view-left .center-gallery-preview.is-visible .center-gallery-preview-img{
+    opacity:1;
+    transform:scale(1);
+  }
+
+  body.is-about-active .center-gallery-preview{
+    opacity:0;
+    visibility:hidden;
+  }
+
+  .video-unlock-flash{
+    display:none;
+  }
+
+  /* 14-06-06. Labels, nav, and mute */
+  .view-header{
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+    right:auto;
+    margin:0;
+    font-size:var(--view-header-size);
+    text-align:left;
+    z-index:var(--z-portrait-header);
+    pointer-events:none;
+  }
+
+  /* portrait では全 edge-btn に共通の見た目ベースを当て、
+     opacity と pointer-events だけパネルごとに上書きする */
+  .view > .view-inner > .edge-btn{
+    position:absolute;
+    left:auto;
+    right:0;
+    bottom:auto;
+    transform:none;
+    z-index:var(--z-portrait-nav-btn);
+    display:flex;
+    visibility:visible;
+    width:auto;
+    padding:0 0 4px 0;
+    background:transparent;
+    color:#fff;
+    font-size:var(--edge-btn-size);
+    line-height:1;
+    letter-spacing:0;
+    text-align:right;
+    justify-content:flex-end;
+    border-bottom:1px solid transparent;
+  }
+
+  /* center パネルのボタンはデフォルト表示 */
+  .view.view-center > .view-inner > .edge-btn{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  /* side パネルのボタンはデフォルト非表示（個別ルールで必要な場合に上書き） */
+  .view.view-left > .view-inner > .edge-btn,
+  .view.view-right > .view-inner > .edge-btn{
+    opacity:0;
+    pointer-events:none;
+  }
+
+  /* nav ボタン位置 */
+  .view.view-center > .view-inner > .edge-btn[data-stage-view="left"]{
+    top:auto;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 2);
+  }
+
+  .view.view-center > .view-inner > .edge-btn[data-stage-view="right"]{
+    top:auto;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step));
+  }
+
+  .view.view-center > .view-inner > .edge-btn[data-scroll-to="#about"]{
+    top:auto;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap));
+  }
+
+  .view.view-center > .view-inner > .edge-btn--mobile-home{
+    display:flex;
+    top:auto;
+    right:0;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 3);
+    opacity:0;
+    pointer-events:none;
+    border-bottom-color:transparent;
+    transition:opacity .24s ease, color .2s ease, filter .2s ease;
+  }
+
+  body.view-left .view.view-center > .view-inner > .edge-btn--mobile-home,
+  body.view-right .view.view-center > .view-inner > .edge-btn--mobile-home{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  /* サイドパネルから center へ戻るボタン（side-panel 内） */
+  .view.view-left > .view-inner > .edge-btn[data-stage-view="center"],
+  .view.view-right > .view-inner > .edge-btn[data-stage-view="center"]{
+    top:auto;
+    bottom:calc(50% + var(--mobile-video-frame-half-h) + var(--mobile-nav-video-gap) + var(--mobile-nav-step) * 3);
+    right:0;
+    opacity:0;
+    pointer-events:none;
+    border-bottom-color:transparent;
+  }
+
+  /* アクティブ状態のアンダーライン */
+  body.view-left .view.view-center > .view-inner > .edge-btn[data-stage-view="left"],
+  body.view-right .view.view-center > .view-inner > .edge-btn[data-stage-view="right"],
+  body.is-about-active .view.view-center > .view-inner > .edge-btn[data-scroll-to="#about"]{
+    border-bottom-color:rgba(255,255,255,.9);
+  }
+
+  .global-mute{
+    z-index:var(--z-portrait-mute);
+    pointer-events:auto;
+    top:calc(var(--mobile-ui-inset-y) - var(--global-mute-pad));
+    right:calc(var(--mobile-ui-inset-x) - var(--global-mute-pad));
+  }
+
+  /* 14-06-07. Side-panel backgrounds and alignment */
+  .view.view-left::before,
+  .view.view-right::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  .view.view-left::before{
+    background:rgba(0,0,0,.12);
+  }
+
+  .view.view-right::before{
+    background:
+      linear-gradient(
+        to left,
+        rgba(0,0,0,.55),
+        rgba(0,0,0,.12)
+      );
+  }
+
+  .view.view-center .view-inner{
+    justify-content:space-between;
+    align-items:stretch;
+  }
+
+  .view.view-left .view-inner{
+    justify-content:flex-start;
+    align-items:flex-start;
+    z-index:2;
+  }
+
+  .view.view-right .view-inner{
+    justify-content:center;
+    align-items:flex-end;
+    z-index:2;
+  }
+
+  .view.view-left .gallery-preview{
+    display:none;
+  }
+
+  /* 14-06-08. Gallery list */
+  .gallery-panel{
+    position:absolute;
+    left:0;
+    top:50%;
+    width:min(58vw, 250px);
+    max-width:none;
+    height:min(64svh, calc(var(--mobile-video-frame-h) + 170px));
+    min-height:0;
+    max-height:none;
+    margin-top:0;
+    overflow:hidden;
+    align-self:flex-start;
+    z-index:3;
+    pointer-events:auto;
+    text-align:left;
+    transform:translateY(-50%);
+  }
+
+  .gallery-scroll{
+    width:100%;
+    height:100%;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
+    scrollbar-width:none;
+  }
+
+  .gallery-scroll::-webkit-scrollbar{
+    display:none;
+  }
+
+  .gallery-item{
+    width:100%;
+    height:16.666%;
+    min-height:16.666%;
+    max-height:16.666%;
+    padding:1px 0;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    font-size:var(--gallery-item-size);
+    text-align:left;
+    overflow:hidden;
+  }
+
+  .gallery-item-title,
+  .gallery-item-meta{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .gallery-item-title{
+    line-height:1.12;
+  }
+
+  .gallery-item-meta{
+    font-size:var(--gallery-meta-size);
+    line-height:1.08;
+    margin-top:2px;
+  }
+
+  /* 14-06-09. Contact */
+  .contact-block{
+    max-width:calc(100vw - 48px);
+    margin-top:0;
+    background:transparent;
+    font-size:var(--contact-block-size);
+    line-height:1.7;
+    text-align:right;
+    pointer-events:auto;
+  }
+
+  .contact-label{
+    font-size:var(--contact-label-size);
+    margin-top:14px;
+    text-align:right;
+  }
+
+  .contact-value,
+  .contact-value p,
+  .contact-value a{
+    font-size:var(--contact-value-size);
+    text-align:right;
+  }
+
+  /* 14-06-10. About */
+  #about{
+    position:relative;
+    z-index:2;
+    background:transparent;
+    overflow:hidden;
+  }
+
+  #about .about-bg-video{
+    display:block;
+    opacity:.42;
+  }
+
+  #about .about-overlay{
+    background:rgba(0,0,0,.46);
+  }
 }
