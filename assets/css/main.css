@@ -2910,3 +2910,141 @@ body.view-right .inner-shell{
     text-align: center;
   }
 }
+
+/* =========================================================
+   Modal Credit Screen
+   Credit overlay always matches the modal video frame.
+========================================================= */
+.modal__video-frame > .modal__credit{
+  position:absolute !important;
+  inset:0 !important;
+  z-index:2;
+  width:100% !important;
+  height:100% !important;
+  max-height:100%;
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  padding:0 !important;
+  overflow:hidden !important;
+  background:var(--overlay-credit);
+}
+
+.modal__credit-inner{
+  width:100% !important;
+  height:100%;
+  max-width:none !important;
+  max-height:100% !important;
+  box-sizing:border-box;
+  padding:clamp(18px, 3vw, 42px) clamp(18px, 4vw, 56px) !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  text-align:center;
+}
+
+.modal__credit-title{
+  margin:0 0 clamp(14px, 2.2vw, 30px);
+  font-size:clamp(.9rem, 1.1vw, 1.1rem);
+  line-height:1.32;
+  letter-spacing:var(--modal-credit-title-spacing);
+  overflow-wrap:anywhere;
+}
+
+.modal__credit-list{
+  width:min(100%, 560px);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:clamp(8px, 1vw, 14px);
+  font-size:var(--modal-credit-list-size);
+  line-height:1.45;
+}
+
+.credit-row{
+  display:flex !important;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  min-width:0;
+  padding:0;
+  border:0;
+}
+
+.credit-row:first-child{
+  border-top:0;
+}
+
+.credit-role{
+  opacity:.7;
+  font-size:clamp(.62rem, .78vw, .78rem);
+  line-height:1.35;
+  letter-spacing:.1em;
+  text-align:center;
+  text-transform:uppercase;
+  overflow-wrap:anywhere;
+}
+
+.credit-name{
+  font-size:clamp(.78rem, .95vw, .96rem);
+  line-height:1.36;
+  font-weight:500;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+
+@media (pointer:coarse){
+  .modal__credit-inner{
+    padding:clamp(14px, 4vw, 28px) clamp(14px, 5vw, 30px) !important;
+  }
+
+  .modal__credit-title{
+    margin-bottom:clamp(12px, 3.2vw, 20px);
+    font-size:clamp(.76rem, 3.2vw, .98rem);
+  }
+
+  .modal__credit-list{
+    width:min(100%, 520px);
+    gap:clamp(7px, 2.2vw, 12px);
+  }
+
+  .credit-role{
+    font-size:clamp(.56rem, 2.4vw, .72rem);
+  }
+
+  .credit-name{
+    font-size:clamp(.7rem, 2.9vw, .9rem);
+  }
+}
+
+@media (orientation:landscape){
+  .modal__credit-inner{
+    padding:clamp(12px, 3svh, 28px) clamp(18px, 4vw, 48px) !important;
+  }
+
+  .modal__credit-title{
+    margin-bottom:clamp(8px, 2svh, 18px);
+    font-size:clamp(.62rem, 2.2svh, 1.02rem);
+    line-height:1.26;
+  }
+
+  .modal__credit-list{
+    width:min(100%, 520px);
+    gap:clamp(5px, 1.35svh, 12px);
+  }
+
+  .credit-row{
+    gap:2px;
+  }
+
+  .credit-role{
+    font-size:clamp(.5rem, 1.75svh, .72rem);
+    line-height:1.25;
+  }
+
+  .credit-name{
+    font-size:clamp(.6rem, 2svh, .88rem);
+    line-height:1.25;
+  }
+}
