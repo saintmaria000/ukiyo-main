@@ -33,23 +33,20 @@ export function openEntranceGateFallback(dom, runtime) {
     );
 
   buttons.forEach((button) => {
+    if (button.dataset.entranceBound === "true") return;
+    button.dataset.entranceBound = "true";
 
     button.addEventListener("click", () => {
 
       const lang =
         button.getAttribute("data-lang");
 
-      if (lang === "ja") {
+      const destination =
+        lang === "en"
+          ? "./en/index.html"
+          : "./ja/index.html";
 
-        window.location.href =
-          "./ja/index.html";
-
-      } else {
-
-        window.location.href =
-          "./en/english.html";
-
-      }
+      window.location.assign(destination);
 
     });
 

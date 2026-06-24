@@ -230,7 +230,7 @@ a{
   --about-content-max-w:2000px;
   --about-content-pad-top:0px;
   --about-content-pad-x:6vw;
-  --about-content-pad-bottom:0px;
+  --about-content-pad-bottom:clamp(120px, 14vh, 180px);
 
   --about-hero-min-h:100svh;
   --about-hero-pad-top:0px;
@@ -611,13 +611,12 @@ body.view-right .inner-shell{
   filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
 }
 
-/* -----------------------------------------
-   動画輝度連動 — JS が body.is-bright を付与したとき
-   edge-btn のみ黒反転。text-shadow は白固定のまま。
-   transition で滑らかに切り替わる。
------------------------------------------ */
-body.is-bright .edge-btn{
+/* 動画上のナビだけ、背後の明度に合わせて個別に反転する */
+.edge-btn.is-on-bright,
+.edge-btn.is-on-bright:hover{
   color:#000;
+  text-shadow:0 1px 2px rgba(255,255,255,.72), 0 0 8px rgba(255,255,255,.5);
+  filter:drop-shadow(0 0 5px rgba(255,255,255,.35));
 }
 
 .edge-btn--left{
@@ -1311,49 +1310,32 @@ body.is-modal-open{
 }
 
 .gallery-panel::after{
-  content:"";
+  content:"▽";
   position:absolute;
-  right:0;
-  bottom:clamp(8px, 1.8vh, 14px);
-  width:1px;
-  height:clamp(34px, 7vh, 58px);
+  left:50%;
+  bottom:clamp(4px, 1vh, 8px);
   z-index:6;
   pointer-events:none;
   opacity:0;
-  background:
-    linear-gradient(
-      to top,
-      rgba(0,0,0,0),
-      rgba(255,255,255,.78)
-    );
-  box-shadow:0 0 8px rgba(255,255,255,.36);
-  transition:opacity .22s ease;
+  color:rgba(255,255,255,.88);
+  font-size:clamp(.78rem, 1.2vw, 1rem);
+  line-height:1;
+  text-shadow:0 1px 3px rgba(0,0,0,.8), 0 0 8px rgba(255,255,255,.3);
+  transform:translateX(-50%);
+  transition:opacity .22s ease, transform .22s ease;
 }
 
 .gallery-panel::before{
-  content:"";
-  position:absolute;
-  right:-3px;
-  bottom:clamp(7px, 1.6vh, 12px);
-  width:7px;
-  height:7px;
-  z-index:7;
-  pointer-events:none;
-  opacity:0;
-  border-right:1px solid rgba(255,255,255,.72);
-  border-bottom:1px solid rgba(255,255,255,.72);
-  filter:drop-shadow(0 0 6px rgba(255,255,255,.35));
-  transform:rotate(45deg);
-  transition:opacity .22s ease;
+  content:none;
 }
 
 .gallery-panel.has-more-below .gallery-scroll{
-  padding-bottom:clamp(38px, 8vh, 66px);
+  padding-bottom:clamp(28px, 5vh, 42px);
 }
 
-.gallery-panel.has-more-below::after,
-.gallery-panel.has-more-below::before{
+.gallery-panel.has-more-below::after{
   opacity:1;
+  transform:translateX(-50%) translateY(2px);
 }
 
 /* =========================================================
@@ -1993,6 +1975,11 @@ body.is-modal-open{
     border-bottom:1px solid transparent;
   }
 
+  .view > .view-inner > .edge-btn.is-on-bright,
+  .view > .view-inner > .edge-btn.is-on-bright:hover{
+    color:#000;
+  }
+
   /* center パネルのボタンはデフォルト表示 */
   .view.view-center > .view-inner > .edge-btn{
     opacity:1;
@@ -2055,6 +2042,12 @@ body.is-modal-open{
   body.view-right .view.view-center > .view-inner > .edge-btn[data-stage-view="right"],
   body.is-about-active .view.view-center > .view-inner > .edge-btn[data-scroll-to="#about"]{
     border-bottom-color:rgba(255,255,255,.9);
+  }
+
+  body.view-left .view.view-center > .view-inner > .edge-btn.is-on-bright[data-stage-view="left"],
+  body.view-right .view.view-center > .view-inner > .edge-btn.is-on-bright[data-stage-view="right"],
+  body.is-about-active .view.view-center > .view-inner > .edge-btn.is-on-bright[data-scroll-to="#about"]{
+    border-bottom-color:rgba(0,0,0,.82);
   }
 
   .global-mute{
