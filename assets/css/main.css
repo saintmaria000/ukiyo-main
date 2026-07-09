@@ -203,7 +203,7 @@ a{
   --pull-return-link-pad-bottom:3px;
   --pull-return-link-opacity:.75;
 
-  --video-w:min(61.8vw, 109.9svh);
+  --video-w:min(72vw, 128svh);
   --video-side-safe:48px;
 
   --edge-btn-pad-y:4px;
