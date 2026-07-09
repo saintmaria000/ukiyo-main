@@ -75,4 +75,9 @@
   const unlock = () => play();
   window.addEventListener('pointerdown', unlock, { once: true, passive: true });
   window.addEventListener('touchstart', unlock, { once: true, passive: true });
+
+  // --- クリック/タップでの一時停止を完全に殺す ---
+  // 動画をクリック/タップしても何も起きない。停止できるのは JS からの pause だけ。
+  video.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
+  video.addEventListener('dblclick', (e) => { e.preventDefault(); e.stopPropagation(); });
 })();

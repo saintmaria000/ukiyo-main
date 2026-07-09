@@ -1,4 +1,4 @@
-// assets/js/modal.js
+// assets/js/modal.ui.js
 (function () {
   const modal      = document.getElementById('galleryModal');
   if (!modal) return;
@@ -19,12 +19,11 @@
   let lastScrollY = 0;
   let mainVideoWasMuted = true;
   let mainVideoWasVolume = 1;
-  let globalMuteWasMuted = null;
 
   // =========================
   // YouTube URL補完
-  //  - 毎回「開いた瞬間に自動再生」するため、必要なパラメータを必ず付ける
-  //  - autoplay=1 と mute=1 はセット（音アリ自動再生はブラウザが拒否するため）
+  //  - 押して開いた瞬間に「音アリ」で自動再生を狙う（autoplay=1 / mute=0）
+  //  - ブラウザに音アリ再生を拒否された場合は、後述の保険でミュート再生に落とす
   //  - controls は付けない → YouTube標準のコントローラーはそのまま表示
   // =========================
   function withEnableJsApi(url) {
@@ -38,7 +37,7 @@
       if (isYouTube) {
         u.searchParams.set('enablejsapi', '1');
         u.searchParams.set('autoplay', '1');
-        u.searchParams.set('mute', '1');
+        u.searchParams.set('mute', '0');
         u.searchParams.set('playsinline', '1');
         u.searchParams.set('rel', '0');
       }
@@ -76,11 +75,6 @@
       mainVideoWasMuted = mainVideo.muted;
       mainVideoWasVolume = mainVideo.volume ?? 1;
     }
-
-    globalMuteWasMuted =
-      window.GlobalMute && typeof window.GlobalMute.state === 'boolean'
-        ? window.GlobalMute.state
-        : null;
   }
 
   function pauseMainVideoForModal() {
@@ -171,21 +165,38 @@
     ytCommandTo(mainVideo, "playVideo");
   }
 
-  // 現在のmute状態をモーダル動画にも反映する（postMessageで直接指示）
-  function forceYouTubeMuteStateSoon(iframeEl, muted) {
+  // モーダル動画を「音アリで強制再生」する。
+  //  - 開いた直後にしばらく unMute + playVideo を送り続けて確実に鳴らす
+  //  - ブラウザが音アリ再生を拒否して止まった場合だけ、mute + play に落とす
+  //    （黙って止まらないための保険。次のユーザー操作で音は復帰させられる）
+  function forcePlayModalWithSound(iframeEl) {
     if (!iframeEl) return;
 
     const start = Date.now();
-    const timer = setInterval(() => {
-      const shouldMute =
-        window.GlobalMute && typeof window.GlobalMute.state === 'boolean'
-          ? window.GlobalMute.state
-          : muted;
-      const command = shouldMute ? "mute" : "unMute";
+    let fellBackToMute = false;
 
-      ytCommandTo(iframeEl, command);
-      if (Date.now() - start > 1200) clearInterval(timer);
+    const timer = setInterval(() => {
+      // 音アリで再生を促す
+      if (!fellBackToMute) {
+        ytCommandTo(iframeEl, "unMute");
+        ytCommandTo(iframeEl, "playVideo");
+      } else {
+        ytCommandTo(iframeEl, "mute");
+        ytCommandTo(iframeEl, "playVideo");
+      }
+      if (Date.now() - start > 1500) clearInterval(timer);
     }, 200);
+
+    // 800ms 経っても再生が始まっていなければ、音アリ拒否とみなしミュート再生に落とす
+    setTimeout(() => { fellBackToMute = true; }, 800);
+  }
+
+  // 一度でも画面を操作したら、モーダル動画の音を戻す（保険でミュートに落ちた時用）
+  function restoreModalSoundOnInteraction(iframeEl) {
+    if (!iframeEl) return;
+    const handler = () => ytCommandTo(iframeEl, "unMute");
+    window.addEventListener('pointerdown', handler, { once: true, passive: true });
+    window.addEventListener('touchstart', handler, { once: true, passive: true });
   }
 
   // =========================
@@ -275,10 +286,11 @@
     // メイン停止
     pauseMainVideoForModal();
 
-    // モーダル動画セット（URLに autoplay/mute が入っているので即再生される）
+    // モーダル動画セット（URLに autoplay=1/mute=0。押した勢いで音アリ再生を狙う）
     if (modalVideo) {
       modalVideo.src = withEnableJsApi(video || '');
-      forceYouTubeMuteStateSoon(modalVideo, globalMuteWasMuted === true);
+      forcePlayModalWithSound(modalVideo);
+      restoreModalSoundOnInteraction(modalVideo);
     }
 
     renderCredits(title, credits);
@@ -329,7 +341,6 @@
       lastActiveEl.focus();
     }
     lastActiveEl = null;
-    globalMuteWasMuted = null;
   }
 
   // イベント

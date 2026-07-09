@@ -180,7 +180,6 @@ a{
 
   --about-back-size: .95rem;
 
-  --modal-close-size:         1.2rem;
   --modal-credit-toggle-size: .86rem;
   --modal-credit-title-size:  clamp(.9rem, 1.1vw, 1.1rem);
   --modal-credit-list-size:   clamp(.78rem, .9vw, .95rem);
@@ -269,9 +268,6 @@ a{
   --modal-width:min(80vw, 1400px);
   --modal-max-w:1400px;
   --modal-video-max-h:80vh;
-
-  --modal-close-top:8px;
-  --modal-close-right:12px;
 
   --modal-footer-gap-top:10px;
   --modal-footer-pad-bottom:10px;
@@ -1028,19 +1024,6 @@ body.view-right .inner-shell{
   flex-direction:column;
 }
 
-.modal__close{
-  position:absolute;
-  top:var(--modal-close-top);
-  right:var(--modal-close-right);
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:var(--modal-close-size);
-  cursor:pointer;
-  opacity:.85;
-  z-index:2;
-}
-
 .modal__video{
   width:100%;
   min-height:0;
@@ -1305,10 +1288,6 @@ body.is-modal-open{
   text-shadow:0 1px 3px rgba(0,0,0,.8), 0 0 8px rgba(255,255,255,.3);
   transform:translateX(-50%);
   transition:opacity .22s ease, transform .22s ease;
-}
-
-.gallery-panel::before{
-  content:none;
 }
 
 .gallery-panel.has-more-below .gallery-scroll{
@@ -1673,16 +1652,6 @@ body.is-modal-open{
     bottom:calc(8px + env(safe-area-inset-bottom));
   }
 }
-
-/* -----------------------------------------
-   14-05-dead. 旧 landscape レイアウト（廃止済み / 参照用に保持）
-   max-width:0px で永遠にマッチしないため実害なし
------------------------------------------ */
-/*
-@media (pointer:coarse) and (orientation:landscape) and (max-width:0px){
-  ... (retired mobile-landscape single-panel layout) ...
-}
-*/
 
 /* -----------------------------------------
    14-06. Touch Portrait / Mobile Stage
