@@ -56,6 +56,10 @@
     const normalized = !!next;
     if (isMuted === normalized) {
       render();
+      applyHtmlMedia();
+      if (source !== 'player') {
+        applyYT();
+      }
       return;
     }
 

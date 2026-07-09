@@ -1849,6 +1849,13 @@ body.is-modal-open{
   }
 
   body.view-center .inner-shell,
+  body.view-left .inner-shell,
+  body.view-right .inner-shell,
+  body.is-about-active .inner-shell{
+    transform:none;
+  }
+
+  body.view-center .inner-shell,
   body.is-about-active .inner-shell{
     pointer-events:auto;
   }
