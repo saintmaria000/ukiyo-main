@@ -572,18 +572,6 @@ body.view-right .inner-shell{
   object-fit:contain;
 }
 
-@media (pointer:fine) and (orientation:landscape){
-  .inner-shell{
-    width:var(--landscape-video-w, var(--video-w));
-    max-width:none;
-  }
-
-  .video-frame{
-    width:100%;
-    max-width:none;
-  }
-}
-
 .edge-btn{
   position:absolute;
   display:inline-flex;
@@ -661,7 +649,7 @@ body.view-right .inner-shell{
   width:100%;
   max-width:var(--gallery-w);
   min-width:0;
-  margin-top:var(--gallery-panel-gap-top);
+  margin-top:0;
   height:min(var(--gallery-panel-max-h), calc(100vh - var(--gallery-panel-vh-offset)));
   min-height:var(--gallery-panel-min-h);
   display:flex;
@@ -694,12 +682,6 @@ body.view-right .inner-shell{
 .gallery-preview.is-visible .gallery-preview-img{
   opacity:.35;
   transform:scale(1);
-}
-
-@media (orientation:landscape){
-  .gallery-preview{
-    background:transparent;
-  }
 }
 
 .center-gallery-preview{
@@ -1506,10 +1488,6 @@ body.is-modal-open{
     z-index:3;
   }
 
-  .modal__credit-inner{
-    padding:clamp(14px, 4vw, 28px) clamp(14px, 5vw, 30px);
-  }
-
   /* coarse: credit overlay は fixed で画面全体を覆う */
   .modal__video-frame > .modal__credit{
     position:fixed;
@@ -1596,7 +1574,7 @@ body.is-modal-open{
   }
 
   .video-frame{
-    width:var(--landscape-video-w, var(--video-w));
+    width:var(--video-w);
   }
 
   .view.view-left,
@@ -2213,5 +2191,31 @@ body.is-modal-open{
 
   #about .about-overlay{
     background:rgba(0,0,0,.46);
+  }
+}
+
+/* -----------------------------------------
+   14-07. PC横長 (pointer:fine かつ landscape)
+   旧: 07セクションに取り残されていたブロックをここに移設（内容は無変更）
+----------------------------------------- */
+@media (pointer:fine) and (orientation:landscape){
+  .inner-shell{
+    width:var(--video-w);
+    max-width:none;
+  }
+
+  .video-frame{
+    width:100%;
+    max-width:none;
+  }
+}
+
+/* -----------------------------------------
+   14-08. landscape 共通 (pointer指定なし)
+   旧: 08セクションに取り残されていたブロックをここに移設（内容は無変更）
+----------------------------------------- */
+@media (orientation:landscape){
+  .gallery-preview{
+    background:transparent;
   }
 }
