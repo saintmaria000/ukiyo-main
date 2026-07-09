@@ -1,130 +1,78 @@
-// assets/js/video.enable.js
+// assets/js/main.video.js
+// メイン動画を「開いたら必ず再生・以後は流しっぱなし」に保つ。
+// 音のオン/オフは mute.js（GlobalMute）が管理する。ここは再生専任。
 (() => {
-  const flash = document.querySelector('.video-frame .video-unlock-flash');
-  const mainVideo = document.getElementById('mainVideo');
+  const video = document.getElementById('mainVideo');
+  if (!video) return;
 
-  if (!mainVideo || !flash) return;
+  const modal = document.getElementById('galleryModal');
 
-  function isModalOpen() {
-    const modal = document.getElementById('galleryModal');
-    return (
-      document.body.classList.contains('is-modal-open') ||
-      !!(modal && modal.classList.contains('modal--open'))
-    );
-  }
+  const isModalOpen = () =>
+    document.body.classList.contains('is-modal-open') ||
+    !!(modal && modal.classList.contains('modal--open'));
 
-  function shouldMuteForAutoplay() {
-    return !window.GlobalMute || window.GlobalMute.state !== false;
-  }
+  // GlobalMute が「解除(false)」以外なら、ミュートを維持する
+  const shouldMute = () => !window.GlobalMute || window.GlobalMute.state !== false;
 
-  function muteForAutoplay(syncGlobalMute = false) {
-    if (mainVideo.dataset.prevVol == null && (mainVideo.volume ?? 1) > 0) {
-      mainVideo.dataset.prevVol = String(mainVideo.volume ?? 1);
+  // 自動再生をブラウザに通すためのミュート（元音量は退避しておく）
+  function muteForAutoplay() {
+    if (video.dataset.prevVol == null && (video.volume ?? 1) > 0) {
+      video.dataset.prevVol = String(video.volume ?? 1);
     }
+    video.muted = true;
+    video.defaultMuted = true;
+    video.volume = 0;
+    video.setAttribute('muted', '');
 
-    mainVideo.muted = true;
-    mainVideo.defaultMuted = true;
-    mainVideo.volume = 0;
-    mainVideo.setAttribute('muted', '');
-
-    if (
-      syncGlobalMute &&
-      window.GlobalMute &&
-      window.GlobalMute.state === false &&
-      typeof window.GlobalMute.set === 'function'
-    ) {
+    if (window.GlobalMute && window.GlobalMute.state === false) {
       window.GlobalMute.set(true);
     }
   }
 
-  function syncPlaybackAttributes(forceMuted = false) {
-    mainVideo.autoplay = true;
-    mainVideo.loop = true;
-    mainVideo.playsInline = true;
-    mainVideo.preload = 'auto';
-    mainVideo.controls = false;
-    mainVideo.setAttribute('autoplay', '');
-    mainVideo.setAttribute('loop', '');
-    mainVideo.setAttribute('playsinline', '');
-    mainVideo.setAttribute('webkit-playsinline', '');
-    mainVideo.setAttribute('preload', 'auto');
-    mainVideo.removeAttribute('controls');
+  // 再生に必要な属性を一度だけ整える（再生ボタン等は出さない）
+  function setupAttributes() {
+    video.autoplay = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.controls = false;
+    video.setAttribute('autoplay', '');
+    video.setAttribute('loop', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('preload', 'auto');
+    video.removeAttribute('controls');
+  }
 
-    if (forceMuted || shouldMuteForAutoplay()) {
-      muteForAutoplay(false);
+  // 再生を試みる。失敗したらミュートに落として必ずもう一度。
+  function play() {
+    if (isModalOpen() || document.hidden) return;
+    if (shouldMute()) muteForAutoplay();
+
+    const p = video.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {
+        muteForAutoplay();
+        const retry = video.play();
+        if (retry && typeof retry.catch === 'function') retry.catch(() => {});
+      });
     }
   }
 
-  function retryMuted() {
-    if (isModalOpen() || document.hidden) return;
+  // --- 初期化：開いたら必ず再生 ---
+  setupAttributes();
+  play();
 
-    muteForAutoplay(true);
+  // --- 止まっても流し続ける ---
+  video.addEventListener('canplay', play, { passive: true });
+  video.addEventListener('ended', play, { passive: true });
 
-    try {
-      const p = mainVideo.play();
-      if (p && typeof p.catch === 'function') p.catch(() => {});
-    } catch (_) {}
-  }
+  // --- タブ/ページ復帰で戻す ---
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) play(); });
+  window.addEventListener('pageshow', play, { passive: true });
 
-  function playMainVideo(forceMuted = false) {
-    if (isModalOpen() || document.hidden) return;
-
-    syncPlaybackAttributes(forceMuted === true);
-
-    try {
-      const p = mainVideo.play();
-
-      if (p && typeof p.catch === 'function') {
-        p.catch(() => {
-          retryMuted();
-        });
-      }
-    } catch (_) {
-      retryMuted();
-    }
-  }
-
-  function playFlash() {
-    flash.classList.remove('is-active');
-    void flash.offsetWidth;
-    flash.classList.add('is-active');
-  }
-
-  function playFromInteraction() {
-    playFlash();
-    playMainVideo(false);
-  }
-
-  function schedulePlay(delay = 80) {
-    setTimeout(() => playMainVideo(), delay);
-  }
-
-  mainVideo.addEventListener('pointerdown', playFromInteraction);
-
-  mainVideo.addEventListener('touchstart', playFromInteraction, {
-    passive: true
-  });
-
-  syncPlaybackAttributes();
-  playMainVideo();
-  setTimeout(playMainVideo, 120);
-  setTimeout(playMainVideo, 520);
-  setTimeout(playMainVideo, 1200);
-
-  window.addEventListener('pageshow', playMainVideo, { passive: true });
-  window.addEventListener('focus', playMainVideo, { passive: true });
-  window.addEventListener('orientationchange', () => setTimeout(playMainVideo, 160), { passive: true });
-  window.addEventListener('resize', () => setTimeout(playMainVideo, 80), { passive: true });
-  window.addEventListener('touchstart', playMainVideo, { passive: true });
-  window.addEventListener('click', playMainVideo, { passive: true });
-  window.addEventListener('scroll', playMainVideo, { passive: true });
-
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) playMainVideo();
-  });
-
-  mainVideo.addEventListener('loadedmetadata', playMainVideo, { passive: true });
-  mainVideo.addEventListener('canplay', playMainVideo, { passive: true });
-  mainVideo.addEventListener('ended', () => playMainVideo(true), { passive: true });
-  mainVideo.addEventListener('pause', () => schedulePlay(), { passive: true });
+  // --- 最初のユーザー操作でブラウザの自動再生ロックを解除（1回だけ） ---
+  const unlock = () => play();
+  window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+  window.addEventListener('touchstart', unlock, { once: true, passive: true });
 })();
