@@ -1,4 +1,4 @@
-// assets/js/modal.ui.js
+// assets/js/modal.js
 (function () {
   const modal      = document.getElementById('galleryModal');
   if (!modal) return;
@@ -23,6 +23,9 @@
 
   // =========================
   // YouTube URL補完
+  //  - 毎回「開いた瞬間に自動再生」するため、必要なパラメータを必ず付ける
+  //  - autoplay=1 と mute=1 はセット（音アリ自動再生はブラウザが拒否するため）
+  //  - controls は付けない → YouTube標準のコントローラーはそのまま表示
   // =========================
   function withEnableJsApi(url) {
     if (!url) return '';
@@ -32,8 +35,12 @@
         /(^|\.)youtube\.com$/.test(u.hostname) ||
         /(^|\.)youtube-nocookie\.com$/.test(u.hostname);
 
-      if (isYouTube && !u.searchParams.has('enablejsapi')) {
+      if (isYouTube) {
         u.searchParams.set('enablejsapi', '1');
+        u.searchParams.set('autoplay', '1');
+        u.searchParams.set('mute', '1');
+        u.searchParams.set('playsinline', '1');
+        u.searchParams.set('rel', '0');
       }
       return u.toString();
     } catch {
@@ -42,7 +49,8 @@
   }
 
   // =========================
-  // YouTube制御
+  // YouTube制御（enablejsapi=1 の iframe には postMessage で直接指示できる。
+  // 自前で YT.Player を生成・破棄しないので iframe 自体は壊れない）
   // =========================
   function ytCommandTo(iframeEl, func) {
     if (!iframeEl) return;
@@ -163,7 +171,7 @@
     ytCommandTo(mainVideo, "playVideo");
   }
 
-  // 現在のmute状態をモーダル動画にも反映する
+  // 現在のmute状態をモーダル動画にも反映する（postMessageで直接指示）
   function forceYouTubeMuteStateSoon(iframeEl, muted) {
     if (!iframeEl) return;
 
@@ -178,31 +186,6 @@
       ytCommandTo(iframeEl, command);
       if (Date.now() - start > 1200) clearInterval(timer);
     }, 200);
-  }
-
-  function registerModalVideoWithGlobalMute() {
-    if (!window.GlobalMute || typeof window.GlobalMute.registerYT !== 'function') return;
-
-    const register = () => {
-      try {
-        window.GlobalMute.registerYT('modalVideo');
-        if (typeof window.GlobalMute.apply === 'function') {
-          window.GlobalMute.apply();
-        }
-      } catch (_) {}
-    };
-
-    requestAnimationFrame(register);
-    setTimeout(register, 300);
-    setTimeout(register, 900);
-  }
-
-  function unregisterModalVideoFromGlobalMute() {
-    if (!window.GlobalMute || typeof window.GlobalMute.unregisterYT !== 'function') return;
-
-    try {
-      window.GlobalMute.unregisterYT('modalVideo');
-    } catch (_) {}
   }
 
   // =========================
@@ -292,11 +275,10 @@
     // メイン停止
     pauseMainVideoForModal();
 
-    // モーダル動画セット
+    // モーダル動画セット（URLに autoplay/mute が入っているので即再生される）
     if (modalVideo) {
       modalVideo.src = withEnableJsApi(video || '');
       forceYouTubeMuteStateSoon(modalVideo, globalMuteWasMuted === true);
-      registerModalVideoWithGlobalMute();
     }
 
     renderCredits(title, credits);
@@ -328,8 +310,8 @@
     modal.setAttribute('aria-hidden', 'true');
     unlockScroll();
 
+    // 停止して src を空にするだけ（iframe要素は破棄しない＝次回も再利用できる）
     stopYouTube(modalVideo);
-    unregisterModalVideoFromGlobalMute();
     if (modalVideo) modalVideo.src = '';
 
     if (creditOverlay) creditOverlay.classList.remove('modal__credit--open');
